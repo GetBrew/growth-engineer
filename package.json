@@ -1,9 +1,9 @@
 {
-  "name": "next-convex-clerk-starter",
+  "name": "growth-engineer",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@11.25.0",
-  "description": "Production-shaped Next.js 16 + Convex + Clerk starter: authorization by construction, proportional validation, and CI that blocks on more than tsc.",
+  "description": "growth.engineer — the agent-friendly marketplace for go-to-market tools and workflows. Every tool and workflow is one markdown file any agent can run.",
   "engines": {
     "node": ">=22",
     "pnpm": ">=11"
@@ -32,7 +32,9 @@
     "perf:bundle": "node scripts/client-bundle-budget.mjs --mode=check",
     "perf:bundle:snapshot": "node scripts/client-bundle-budget.mjs --mode=snapshot",
     "cache:prune": "node scripts/prune-next-dev-cache.mjs",
-    "validate": "pnpm lint && pnpm tsc && pnpm test:run && pnpm test:convex"
+    "validate": "pnpm lint && pnpm tsc && pnpm test:run && pnpm test:convex",
+    "seed": "convex run seed/run:run",
+    "seed:reset": "convex run seed/run:reset"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.6",
@@ -42,7 +44,6 @@
     "convex-helpers": "0.1.114",
     "lucide-react": "^1.8.0",
     "next": "16.3.4",
-    "next-themes": "^0.4.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",

@@ -29,13 +29,18 @@
  * nobody. Display data (name, email, avatar) belongs in the `users` mirror the
  * Clerk webhook writes, not in a token every request carries.
  */
+/**
+ * No issuer configured = no provider. Public reads need no identity, and every
+ * guarded function already refuses a null identity, so a deployment without
+ * Clerk yet is safely read-only rather than broken. Set the variable and the
+ * provider appears on the next push — no placeholder to forget to replace.
+ */
+const issuerDomain = process.env.CLERK_JWT_ISSUER_DOMAIN
+
 const authConfig = {
-  providers: [
-    {
-      domain: process.env.CLERK_JWT_ISSUER_DOMAIN,
-      applicationID: 'convex',
-    },
-  ],
+  providers: issuerDomain
+    ? [{ domain: issuerDomain, applicationID: 'convex' }]
+    : [],
 }
 
 export default authConfig

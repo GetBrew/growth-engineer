@@ -1,5 +1,11 @@
 # Adding a second app
 
+> For growth.engineer the second app is the **admin app** (review queue, scan
+> flags, tag proposals, job runs, edit history — see `docs/data-model.md`).
+> It reads the same Convex deployment through the admin tier builders
+> (`orgAdminMutation` today; a platform-admin tier arrives with it) and
+> deploys on its own schedule, which is exactly the case below.
+
 Most apps never need this. Read the first section before you decide you do.
 
 ## When it is worth it
@@ -46,8 +52,8 @@ for every URL anyone bookmarked.
    {
      "$schema": "https://openapi.vercel.sh/microfrontends.json",
      "applications": {
-       "your-web-project": { "packageName": "next-convex-clerk-starter" },
-       "your-admin-project": {
+       "growth-engineer": { "packageName": "growth-engineer" },
+       "growth-engineer-admin": {
          "packageName": "@app/admin",
          "routing": [{ "group": "admin", "paths": ["/admin", "/admin/:path*"] }]
        }
@@ -82,8 +88,8 @@ for every URL anyone bookmarked.
   reaches into the parent through a relative path or a shared `@/*` alias is
   not independently deployable — that is the whole property you are buying.
 - **Shared code goes in `packages/*`**, imported by a workspace alias that both
-  apps declare in their own path map (and which `tests/tsconfig-paths-
-  consistency.test.ts` keeps in sync).
+  apps declare in their own path map. `convex/model/*` is the first candidate:
+  it is already pure so both apps can bundle the key grammar and the renderer.
 - **One Convex backend** is usually right: both apps authenticate the same
   users against the same data, and the tier builders already distinguish an
   admin caller from a member.

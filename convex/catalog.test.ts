@@ -1,0 +1,183 @@
+import { convexTest } from 'convex-test'
+import { beforeAll, describe, expect, test } from 'vitest'
+import { api, internal } from './_generated/api'
+import {
+  TOOL_FILE_MAX_LINES,
+  WORKFLOW_FILE_MAX_LINES,
+} from './model/render_markdown'
+import schema from './schema'
+
+/**
+ * The seed is the first real caller of every public read, so the two are
+ * tested together: seed once, then ask every question a page asks — as an
+ * anonymous caller, because that is who reads the catalog.
+ */
+
+const modules = import.meta.glob('./**/*.*s')
+
+describe('catalog', () => {
+  const t = convexTest(schema, modules)
+
+  beforeAll(async () => {
+    const first = await t.mutation(internal.seed.run.run, {})
+    expect(first.companies).toBe(25)
+    expect(first.documents.rendered).toBeGreaterThan(0)
+  })
+
+  test('the seed is idempotent: a second run rewrites nothing', async () => {
+    const second = await t.mutation(internal.seed.run.run, {})
+    expect(second.documents.rendered).toBe(0)
+    expect(second.documents.unchanged).toBe(
+      second.companies + second.tools + second.workflows
+    )
+  })
+
+  test('companies list and resolve by handle, anonymously', async () => {
+    const companies = await t.query(api.companies.list, {})
+    expect(companies.length).toBe(25)
+    expect(companies.every((row) => row.category !== undefined)).toBe(true)
+    const clay = await t.query(api.companies.getByKey, { key: 'clay' })
+    expect(clay?.name).toBe('Clay')
+    expect(await t.query(api.companies.getByKey, { key: 'nobody' })).toBeNull()
+  })
+
+  test('a tool page has its company and capabilities', async () => {
+    const result = await t.query(api.tools.getByKey, { key: 'clay/clay' })
+    expect(result?.company.key).toBe('clay')
+    expect(result?.tool.agentLevel).toBe('unverified')
+    expect(result?.capabilities.map((c) => c.slug)).toContain('enrich-contacts')
+  })
+
+  test('a tool with no verified way in is not published, but its company lists', async () => {
+    expect(
+      await t.query(api.tools.getByKey, { key: 'salesforce/salesforce' })
+    ).toBeNull()
+    expect(
+      await t.query(api.companies.getByKey, { key: 'salesforce' })
+    ).not.toBeNull()
+  })
+
+  test('workflow lists honour sort and the hack format', async () => {
+    const trending = await t.query(api.workflows.list, { sort: 'trending' })
+    expect(trending.length).toBe(12)
+    expect(trending[0]?.workflow.key).toBe('brew/funding-signal-outbound')
+    const hacks = await t.query(api.workflows.list, {
+      sort: 'trending',
+      format: 'hack',
+    })
+    expect(hacks.map((row) => row.workflow.format)).toEqual(['hack', 'hack'])
+    const top = await t.query(api.workflows.list, {
+      sort: 'top',
+      format: 'workflow',
+    })
+    expect(top.every((row) => row.workflow.format === 'workflow')).toBe(true)
+  })
+
+  test('a workflow page has its version, tools and history', async () => {
+    const result = await t.query(api.workflows.getByKey, {
+      key: 'brew/clay-waterfall-order',
+    })
+    expect(result?.version.version).toBe(1)
+    expect(result?.tools.map((entry) => entry.tool.key)).toEqual(['clay/clay'])
+    expect(result?.versions).toHaveLength(1)
+    expect(
+      await t.query(api.workflows.getByKey, {
+        key: 'brew/clay-waterfall-order',
+        version: 2,
+      })
+    ).toBeNull()
+  })
+
+  test('workflows are reachable from the tools and companies they use', async () => {
+    const byTool = await t.query(api.workflows.listByTool, {
+      toolKey: 'brew/brew',
+    })
+    expect(byTool.length).toBeGreaterThan(3)
+    const byCompany = await t.query(api.workflows.listByCompany, {
+      companyKey: 'clay',
+    })
+    expect(byCompany.map((row) => row.workflow.key)).toContain(
+      'brew/clay-waterfall-order'
+    )
+  })
+
+  test('every file is rendered, within its line cap, and reachable by ref', async () => {
+    const refs = await t.query(api.documents.listRefs, {})
+    expect(refs.length).toBe(25 + 25 + 12)
+    const documents = await Promise.all(
+      refs.map(({ ref }) => t.query(api.documents.getByRef, { ref }))
+    )
+    refs.forEach(({ ref }, index) => {
+      const document = documents[index]
+      expect(document, ref).not.toBeNull()
+      const cap = ref.startsWith('workflow:')
+        ? WORKFLOW_FILE_MAX_LINES
+        : TOOL_FILE_MAX_LINES
+      expect(document?.lineCount, ref).toBeLessThanOrEqual(cap)
+    })
+    const clay = await t.query(api.documents.getByRef, {
+      ref: 'tool:clay/clay',
+    })
+    expect(clay?.markdown).toContain('# Clay')
+    expect(clay?.markdown.trimEnd().endsWith('- Never print API keys.')).toBe(
+      true
+    )
+  })
+
+  test('search: derived chips filter from the row, curated chips from taggings', async () => {
+    const mcp = await t.query(api.tools.search, { q: '', chips: ['has:mcp'] })
+    expect(mcp.results.length).toBeGreaterThan(0)
+    expect(
+      mcp.results.every((card) =>
+        card.tool.access.some((a) => a.type === 'mcp')
+      )
+    ).toBe(true)
+
+    const enrich = await t.query(api.tools.search, {
+      q: '',
+      chips: ['capability:enrich-contacts'],
+    })
+    expect(enrich.results.map((card) => card.tool.key)).toContain('clay/clay')
+
+    // AND across groups: enrich-contacts tools that ALSO have an MCP server.
+    const both = await t.query(api.tools.search, {
+      q: '',
+      chips: ['capability:enrich-contacts', 'has:mcp'],
+    })
+    expect(
+      both.results.every((card) =>
+        card.tool.access.some((a) => a.type === 'mcp')
+      )
+    ).toBe(true)
+    expect(both.results.length).toBeLessThanOrEqual(enrich.results.length)
+
+    const nonsense = await t.query(api.tools.search, {
+      q: '',
+      chips: ['category:nonexistent'],
+    })
+    expect(nonsense.results).toEqual([])
+  })
+
+  test('tags: the derived namespaces exist and counts are projections of taggings', async () => {
+    const agent = await t.query(api.tags.listActive, { namespace: 'agent' })
+    expect(agent.map((tag) => tag.slug).sort()).toEqual([
+      'friendly',
+      'native',
+      'possible',
+      'unverified',
+    ])
+    const unverified = agent.find((tag) => tag.slug === 'unverified')
+    // 25 seeded tools, 4 with no verifiable way in (in_review, unlisted).
+    expect(unverified?.counts.tools).toBe(21)
+    expect(unverified?.derived).toBe(true)
+  })
+
+  test('an unknown key has no alias', async () => {
+    expect(
+      await t.query(api.aliases.resolve, {
+        entityType: 'tool',
+        key: 'nope/nope',
+      })
+    ).toBeNull()
+  })
+})

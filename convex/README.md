@@ -1,46 +1,50 @@
 # convex/
 
-Backend functions, schema, and the authorization spine.
+The backend: the data model (`schema.ts`, v0.3.1), the public reads, the one
+render path, and the seed.
 
 ## Rules
 
 1. **Every public function uses a tier builder** from
-   [`shared/builders.ts`](shared/builders.ts). Never import `query` /
-   `mutation` / `action` from `_generated/server` — `tests/convex-builders.test.ts`
-   fails if you do.
-2. **Read the actor from `ctx.actor`**, never from `args`. The builder consumed
-   the caller's identity claims before the handler ran; that is the guarantee.
-3. **Re-check ownership on the row** for anything addressed by id, and answer
-   "not yours" as `NOT_FOUND`.
-4. **Index what you read.** `.withIndex(...)`, `.take(n)`. Never `.filter(...)`
-   as a substitute for an index, never an unbounded `.collect()`.
-5. **Throw typed errors** from [`shared/errors.ts`](shared/errors.ts).
-6. **Filenames** use letters, numbers, underscores and periods only — the
-   Convex CLI rejects hyphens in function paths.
+   [`shared/builders.ts`](shared/builders.ts): `publicQuery` for the catalog,
+   `serviceMutation` for machine writes, the `authenticated*` / `org*` tiers
+   for signed-in surfaces. Never import `query` / `mutation` from
+   `_generated/server` (`tests/convex-builders.test.ts`).
+2. **`internalMutation` lives in `seed/run.ts` and `documents.ts` only**
+   (`tests/convex-internal-builders.test.ts`).
+3. **`model/*` is pure** — no runtime `convex/*`, `_generated/server`,
+   `shared/*`, `node:*` or `server-only` imports — because Next bundles it
+   (`tests/convex-model-purity.test.ts`).
+4. **Read from an index, bound every read** (`.withIndex`, `.take(n)`), and
+   resolve a key once through `by_key`. `.filter(...)` is a table scan.
+5. **Projection fields have one writer.** `searchText`, `agentLevel`,
+   `listed`, `format`, `toolCount`, `taggings.*`, `tags.counts` and
+   `workflowTools` are rewritten by the helper that owns them (today: the
+   seed), never patched ad hoc.
+6. **Nothing but `documents_render.ts` writes a file.** A changed tool marks
+   its dependents stale; `documents.renderStale` re-renders in bounded batches.
+7. **Throw typed errors** from [`shared/errors.ts`](shared/errors.ts).
+8. **Filenames** use letters, digits, underscores and periods — the CLI
+   rejects hyphens.
 
 ## Files
 
 | File | Purpose |
 | --- | --- |
-| `schema.ts` | the single `defineSchema(...)` root export |
-| `auth.config.ts` | which JWT issuer Convex trusts — see docs/setup.md |
-| `shared/builders.ts` | the tier-named builders |
-| `shared/auth.ts` | the reviewed guards; one place per decision |
-| `shared/errors.ts` | typed `ConvexError` payloads |
-| `tasks.ts` | worked example — copy its shape |
-| `users.ts` | the Clerk user mirror, written only by the webhook |
-
-## Adding a tier
-
-The builders cover queries and mutations. An ACTION tier (for calling a
-third-party API from Convex) is the same four lines over `customAction` and
-`action` — it is not shipped unused, because a builder nothing calls is a
-pattern nobody has checked.
+| `schema.ts` | the data model — `docs/data-model.md` |
+| `auth.config.ts` | which JWT issuer Convex trusts; empty issuer = no provider |
+| `model/keys.ts` | key grammar, refs, reserved handles, file paths |
+| `model/agent_level.ts` | the agent-readiness rules table |
+| `model/render_markdown.ts`, `model/render_access.ts`, `model/hash.ts` | THE renderer — `docs/markdown-files.md` |
+| `companies.ts`, `tools.ts`, `workflows.ts`, `tags.ts`, `documents.ts`, `aliases.ts` | public reads (`tools.search` is the one search entry point) |
+| `documents_render.ts` | the one render path: fields → `documents` row |
+| `users.ts` | the Clerk mirror, written only by the webhook |
+| `seed/` | the illustrative catalog; `pnpm seed`, `pnpm seed:reset` |
+| `shared/` | tier builders, guards, typed errors, return validators, `reads.ts` (`getMany`) |
 
 ## Tests
 
-Convex function tests live HERE, not in `tests/` — `convex-test` needs an
-`import.meta.glob` beside `convex/`. Run them with `pnpm test:convex`.
-
-Write the negative cases. `tasks.test.ts` is the template: anonymous refused,
-one user cannot touch another's row, a forged transport arg buys nothing.
+Convex function tests live HERE (`convex-test` needs an `import.meta.glob`
+beside `convex/`): `pnpm test:convex`. `catalog.test.ts` seeds once and asks
+every question a page asks, anonymously; `users.test.ts` holds the
+authorization negatives. A guard is not done until it has failed.

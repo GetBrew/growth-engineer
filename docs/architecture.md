@@ -3,85 +3,90 @@
 One request, end to end, and where each decision is allowed to live.
 
 ```
-browser ──▶ proxy.ts ──▶ app/(app)/… ──▶ lib/convex/gateway.ts ──▶ Convex
-   │        (Clerk gate)     (RSC)         (server transport)      (guards)
-   └──────────── ConvexProviderWithAuth ──── websocket ───────────────▲
-                 (named Clerk JWT template)                           │
-                                                     convex/shared/builders.ts
+agent / browser ─▶ proxy.ts ──────▶ app/(site)/… ──▶ lib/catalog/loaders.ts ──▶ Convex publicQuery reads
+                    │  .md URL or        (RSC shells      (publicQuery transport,      (indexed, bounded,
+                    │  Accept: text/markdown  + Suspense)    the caching contract)      tier builders)
+                    └─▶ app/api/markdown/[...path] ──▶ documents.getByRef ──▶ documents table
+                                                                               ▲
+                                              convex/documents_render.ts ──────┘  the ONE render path
+                                              convex/model/render_markdown.ts     pure; golden-tested
 ```
 
-## The layers
+## Layers
 
-**`proxy.ts`** — the coarse gate. It decides *is this route reachable at all*,
-from the one route policy in `lib/auth/routes.ts`. It never decides what data
-you may see.
+**`proxy.ts`** — two jobs, in order. First, the markdown files: a `.md` URL
+or any page requested with `Accept: text/markdown` is rewritten to the file
+handler before auth runs (agents carry no session, and on Vercel the proxy
+runs ahead of the CDN cache, which does not key on `Vary`). Second, the
+coarse auth gate from the one route policy in `lib/auth/routes.ts`: `/submit`
+and `/api/*` are private by default, with the four public API carve-outs
+listed with their reasons.
 
-**Server components** — read through `lib/convex/gateway.ts`, which attaches
-the caller identity Convex will verify. A raw `convex/nextjs` import elsewhere
-is a lint error.
+**Pages** (`app/(site)/`) — Server Components. A page's default export is
+synchronous and returns a `<Suspense>`; the async child does every
+request-time read. Filters and search are links and GET forms: the URL is
+the state, so an agent can use the same URL.
 
-**Client components** — read through `hooks/use-authed-query.ts`, which holds
-a query until the Clerk JWT has attached to the websocket.
+**Loaders** (`lib/catalog/loaders.ts`) — every server-side read, through the
+identity-less `publicQuery` transport in `lib/convex/gateway.ts`. This is
+also where the caching contract lives.
 
-**Convex functions** — the fine gate, and the only one that actually protects
-data. Everything above it is convenience and latency.
+**Convex** — `publicQuery` functions built with the tier builders, every read
+indexed and bounded. The `documents` table holds the files; nothing renders
+on the request path.
 
-## Why the identity is never an argument
+## The caching contract
 
-The tier builders in `convex/shared/builders.ts` DECLARE the transport args and
-CONSUME them: `input` returns `args: {}`, so a handler's `args` contains only
-its own domain fields. A handler physically cannot read a caller-supplied
-`orgId`; it reads the verified one from `ctx.actor`.
+`convex/nextjs` fetches are `cache: 'no-store'`. Inside a `'use cache'` scope
+they run for real — including at build time for a page with no params — and
+a `try/catch` inside that scope would cache the empty result for the whole
+`cacheLife` window (on Vercel, production builds prerender against the
+*previous* Convex deployment). So:
 
-This is the difference between a convention and a guarantee. The convention
-("call `requireOrgActor` first") is unenforceable: a reviewer has to prove, per
-function, that no early return slips past the check, and the reviewer is you,
-at 6pm, on your own diff. The builder makes the same property structural — the
-guard runs before the handler is entered, and there is no path around it.
-
-The second half is that a browser and a server call the same function. The
-browser presents a Clerk JWT and cannot name anyone but itself. The server
-presents a service token, which proves only that the CALL came from our
-deployment — never that a person authorized it — so the person rides alongside
-in `actingUserId` and a token that names nobody is refused for anything
-user-scoped.
-
-## The tiers
-
-| Builder | Who | Reads |
+| Read | Treatment | Why |
 | --- | --- | --- |
-| `publicQuery` | anyone | nothing identity-scoped |
-| `authenticatedQuery/Mutation` | any verified human | `ctx.actor.userId` |
-| `orgMemberQuery/Mutation` | a member of the verified org | `ctx.actor.orgId` |
-| `orgAdminMutation` | Clerk `org:admin` | the org control plane |
-| `serviceMutation` | machines only | unreachable from a browser |
+| Per key (`[handle]`, `[owner]/[name]`, the `.md` file) | `'use cache: remote'` + `cacheTag(ref)` + one hour fresh / a day stale | Keyed by request-time params, so it never runs at build; `revalidateTag(ref, 'max')` purges the page and its file together |
+| Lists (`/`, `/companies`, `/workflows`, `/hacks`) | plain read after `await connection()` in the Suspense child | The build stops at the boundary and never contacts Convex; Convex's query cache is the cache |
+| Search (`/tools?q=`) | plain read, never cached here | unique per URL |
+| Errors | never caught inside a cached scope | `error.tsx` renders them; an outage is never cached as an empty catalog |
 
-`serviceMutation` requires its token at the WIRE level, not at runtime. That
-distinction is the whole tier: an optional token is a runtime-only guarantee
-(`tsc` cannot see a caller that forgot it, and the function merely refuses); a
-required one means a browser cannot form a well-typed call at all.
+Verified in CI: `NEXT_PRIVATE_DEBUG_CACHE=1 pnpm build` with placeholder env
+makes zero Convex requests, and every catalog route is `◐` (partial
+prerender).
 
-## Ownership is still checked on the row
+## Search v1 (`convex/tools.ts` → `search`)
 
-The builder proves WHO is calling. Only the row proves they own it. Every
-id-addressed read or write re-checks — and answers "not yours" as `NOT_FOUND`,
-so an id space cannot be enumerated by watching which errors differ.
+Index-only and bounded, in two steps. **Candidates** (≤ 60): with words, the
+`search_tools` index filtered to published, plus one `agentLevel` when exactly
+one `agent:` chip is present; with curated chips only, the most selective tag
+group (fewest tagged tools) read through `taggings.by_tag_popular` — chips in
+one group union; with derived chips only, `tools.by_agent_level`; with
+nothing, the newest tools. **Post-filter** in memory from fields already on
+the row (`agentLevel`, `access[].type`), then the remaining curated groups
+through `taggings.by_entity_tag` point reads (AND across groups). The
+grammar — words, chips, partial completion, the canonical URL — is pure
+(`lib/catalog/query.ts`) and shared with the search box; MCP `search` will
+reuse both. Recall is bounded by the candidate cap; a dedicated search engine
+takes over when that stops being enough.
 
-## Errors
+## Convex authorization
 
-Convex functions throw typed `ConvexError` payloads (`convex/shared/errors.ts`).
-Convex redacts a plain `Error`'s message in production, so the client would see
-"Server Error" and be able to show nothing useful. Callers decode with
-`getAppErrorMessage(error, fallback)`: a typed message was written for this
-user and is safe verbatim; anything else keeps the generic fallback.
+The tier builders in `convex/shared/builders.ts` declare AND consume the
+transport args, so a handler physically cannot read a caller-supplied id — it
+reads `ctx.actor`. The catalog is `publicQuery` (anyone); the Clerk mirror is
+`serviceMutation` (machine only, unreachable from a browser);
+`internalMutation` is confined to the seed and the render pipeline.
+`convex/model/*` is pure so Next can bundle the key grammar and the renderer
+too.
 
 ## Where to add things
 
 | You are adding | It goes in |
 | --- | --- |
-| A page | `app/(app)/…` (signed in) or `app/(marketing)/…` (public) |
-| A backend function | `convex/<feature>.ts`, built with a tier builder |
-| A table | `convex/schema.ts`, with the indexes its reads need |
-| A shared guard | `convex/shared/auth.ts` — never a second copy |
-| A server-side read | a `tenantQuery` call, never `fetchQuery` |
-| A public API route | `app/api/…` plus an entry in `PUBLIC_API_ROUTE_PATTERNS` |
+| A page | `app/(site)/…`, sync shell + Suspense child; reserve its first segment in `convex/model/keys.ts` |
+| A public read | a `publicQuery` in the entity's module, indexed + `.take()`, then a loader under the contract |
+| A field that a file shows | the schema (additive), the renderer, its golden fixture, in one commit |
+| A projection | the helper that owns it, and the seed |
+| A machine write from Next | `serviceMutation` + `systemMutation` |
+| A public API route | `app/api/…` plus a reasoned entry in `PUBLIC_API_ROUTE_PATTERNS` |
+| The admin app | its own project — [`docs/microfrontends.md`](microfrontends.md) |

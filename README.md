@@ -1,109 +1,113 @@
-# next-convex-clerk-starter
+# growth.engineer
 
-A Next.js 16 + Convex + Clerk starter that carries the parts you normally add
-in year two: authorization that cannot be forgotten, a test suite that runs on
-a fresh clone with no credentials, and CI that blocks on more than `tsc`.
+The agent-friendly marketplace for go-to-market tools and workflows.
 
-Small on purpose — one example table, one example page. The value is in the
-wiring.
+People come here to find three things: **companies**, the **tools** those
+companies make, and **workflows** that put tools to work. A **growth hack** is
+a workflow that uses a single tool. Every tool and workflow is **one markdown
+file any agent can run** — copying that file is the whole setup.
+
+Powered by [Brew](https://brew.new). Built on
+[`GetBrew/next-convex-clerk-starter`](https://github.com/GetBrew/next-convex-clerk-starter).
+
+## Why
+
+Whether the motion is cold outbound, warm inbound or midbound, finding the
+right tool is hard: what it can do, what it costs to reach, whether an agent
+can drive it, who else runs it. It is harder still to hand the answer to an
+agent. growth.engineer is a result-based catalog where every listing is
+readable by people and runnable by agents: the same page is a markdown file
+with the setup, the inputs, the steps and the rules inline.
+
+- **Companies** make tools. `clay`
+- **Tools** are one product each, with every way in — MCP, CLI, API — and an
+  agent-readiness level from checked facts. `clay/clay`
+- **Workflows** are steps across tools that reach a result; a hack is one
+  tool. `brew/intent-to-meeting`
+
+Full vision: [`docs/vision.md`](docs/vision.md).
+
+## Quickstart
 
 ```bash
 pnpm install
-cp .env.example .env.local
-npx convex dev          # in one terminal
-pnpm dev                # in another
+cp .env.example .env.local     # then fill in Convex + Clerk (docs/setup.md)
+npx convex dev                  # one terminal: pushes schema + functions, watches convex/
+pnpm seed                       # 25 companies, 25 tools, 12 workflows, every file rendered
+pnpm dev                        # http://localhost:3000
 ```
 
-Full first-run, including the Clerk JWT template that everything depends on:
-**[`docs/setup.md`](docs/setup.md)**.
+Convex is required. Clerk is optional until you need the signed-in surface;
+without it every public page, file and search still works.
+[`docs/setup.md`](docs/setup.md) has the whole first run, including the Clerk
+JWT template everything authenticated depends on.
 
-## What is in the box
+## The routes
 
-**Authorization by construction.** Every Convex function is built with a
-tier-named builder (`authenticatedQuery`, `orgMemberQuery`,
-`orgAdminMutation`, `serviceMutation`). The guard runs before the handler is
-entered, and the builder CONSUMES the caller's identity args — so a handler
-cannot read a caller-supplied `orgId` even by accident. Cross-tenant access
-stops being a mistake you can make.
-→ [`docs/architecture.md`](docs/architecture.md)
+| Route | Shows |
+| --- | --- |
+| `/` | New tools, trending workflows |
+| `/companies`, `/companies/[handle]` | The directory; a company, its tools, workflows using them |
+| `/tools`, `/tools/[handle]/[name]` | Search (words + chips); THE tool file + workflows using it |
+| `/workflows`, `/workflows/[owner]/[name]` | Trending / Top / New; THE workflow file + versions |
+| `/hacks` | Workflows with one tool |
+| `…/*.md`, `Accept: text/markdown`, `/llms.txt` | The raw files, for agents |
+| `/submit` | Signed in. The publish flow, arriving with the pipeline |
 
-**Cache Components, wired correctly.** Pages are synchronous shells around a
-`<Suspense>`; request-time reads live in the async child. `next dev` flags a
-route that breaks the rule.
-→ [`docs/performance.md`](docs/performance.md)
+## For agents
 
-**A hermetic test suite.** `.env.test` is committed and non-secret, so
-`pnpm test:run` is green on a fresh clone with no credentials — CI runners and
-cloud agents need zero setup. The Convex tests assert the NEGATIVE cases:
-anonymous refused, one user cannot touch another's row.
-
-**CI that blocks on what matters.** Lint (including import cycles), five
-typecheck programs in parallel, a real production build on the pull request,
-both test suites, and a hygiene job covering doc links, Convex codegen
-freshness, dead code and duplicate dependencies.
-→ [`docs/ci.md`](docs/ci.md)
-
-**A client bundle ratchet.** Each route's client JavaScript may grow 5% or
-15 KB, whichever is smaller, before CI says so. Re-baselining is deliberate and
-reviewed.
-
-**A dev loop that survives several worktrees and a coding agent.** Heavy
-commands serialize through one lock per repository; `pnpm dev` prunes the
-Turbopack cache and reaps the detached telemetry flusher Next leaves behind on
-every shutdown.
-→ [`docs/validation.md`](docs/validation.md)
-
-**Agent-ready.** [`AGENTS.md`](AGENTS.md) holds the invariants in the form an
-agent can follow, capped at 200 lines by CI so it stays a policy file and does
-not rot into a changelog.
+Reads need no sign-in. Fetch any page with `Accept: text/markdown`, or its
+`.md` URL, to get the file; `/llms.txt` lists every file. Read-only MCP
+(`search`, `get`, `resolve`) and a REST mirror arrive later, rate-limited per
+IP with a free key for more.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `pnpm dev` | Next dev server (cache prune, heap cap, flusher reap) |
-| `pnpm dev:convex` | Convex dev, watching `convex/` |
+| `pnpm dev` / `pnpm dev:convex` | Next dev server (cache prune, heap cap, flusher reap) / Convex dev |
+| `pnpm seed` / `pnpm seed:reset` | Load the illustrative catalog, idempotently / remove it |
 | `pnpm check` | Biome + fast typecheck — once per unit of work |
-| `pnpm tsc` / `pnpm lint` | The full gate, at handoff |
-| `pnpm tsc app` | One TypeScript program (`app`, `tests`, `scripts`, `convex`, `convex:tests`) |
-| `pnpm test:run` / `pnpm test:convex` | Unit suite / Convex function suite |
-| `pnpm test:run tests/x.test.ts` | One test file — the inner loop |
+| `pnpm tsc` / `pnpm lint` | The full gate, at handoff (`pnpm tsc app` for one program) |
+| `pnpm test:run` / `pnpm test:convex` | Unit suite / Convex function suite (the authorization tests) |
 | `pnpm validate` | Everything, in order |
-| `pnpm build` | Production build (Turbopack) |
-| `pnpm perf:bundle` | Client bundle budget, after a build |
-| `pnpm hygiene` | Docs, codegen freshness, knip, duplicate deps |
+| `pnpm build` · `pnpm perf:bundle` | Production build · client bundle ratchet |
+| `pnpm hygiene` | Docs links, Convex codegen freshness, knip, duplicate deps |
 
 ## Layout
 
 ```
 app/
-  (marketing)/         public, fully static
-  (app)/               signed in — the proxy gates the group
-  api/                 health probe, Clerk webhook
+  (site)/                  every page, with the site chrome: /, companies, tools, workflows, hacks, submit
+  api/markdown/[...path]   the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
+  api/revalidate           purge a ref's cache, service-token gated
+  llms.txt                 the file index
 convex/
-  schema.ts            tables + the indexes their reads need
-  shared/builders.ts   the tier-named function builders
-  shared/auth.ts       the reviewed guards they delegate to
-  shared/errors.ts     typed ConvexError payloads
-  tasks.ts             worked example — copy its shape
-  tasks.test.ts        authorization tests, both directions
+  schema.ts                the data model, v0.3.1 (docs/data-model.md)
+  model/                   PURE: keys + refs, agent-level rules, THE markdown renderer
+  companies.ts tools.ts workflows.ts tags.ts documents.ts aliases.ts   public reads, indexed + bounded
+  documents_render.ts      the one render path: fields → documents row
+  seed/                    the illustrative catalog
+  shared/                  tier builders, guards, validators, `getMany` point reads
 lib/
-  auth/routes.ts       THE route policy (default deny)
-  convex/gateway.ts    the only server-side Convex transport
-  env.ts               validated environment access
-hooks/
-  use-authed-query.ts  client reads that wait for the JWT
-scripts/               dev wrapper, heavy lock, typecheck, CI gates
-docs/                  the deep dives AGENTS.md routes to
+  catalog/loaders.ts       server loaders + the caching contract
+  catalog/query.ts         the search grammar (words, chips, URL)
+  convex/gateway.ts        the only server-side Convex transport
+components/
+  site/ catalog/ document/ marketing/ ui/
+docs/                      vision, data model, file contract, architecture, setup, validation, ci
 ```
 
-## Making it yours
+## Fonts
 
-1. Rename the project in `package.json` and `vercel.json`.
-2. Replace `convex/tasks.ts` and the `tasks` table with your domain — keep the
-   shape.
-3. Add routes under `app/(app)/`; they are protected by the proxy's default
-   deny the moment they exist.
-4. Snapshot your bundle budget once you have real routes:
-   `pnpm build && pnpm perf:bundle:snapshot`.
-5. Keep `AGENTS.md` current. It is the file every agent reads first.
+The UI uses the Season variable font under a **trial license**
+(`public/fonts/season/LicenseAgreement.pdf`). Buy the license before this
+repository or the site goes public; the font is one `--font-sans` token, so
+swapping it is a one-line change in `app/layout.tsx`.
+
+## Docs
+
+[`AGENTS.md`](AGENTS.md) holds the invariants and routes to everything else:
+[`docs/vision.md`](docs/vision.md) · [`docs/data-model.md`](docs/data-model.md)
+· [`docs/markdown-files.md`](docs/markdown-files.md) ·
+[`docs/architecture.md`](docs/architecture.md) · [`docs/setup.md`](docs/setup.md).
