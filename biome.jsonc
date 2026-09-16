@@ -41,7 +41,7 @@
       // source on upgrade.
       "!!components/marketing/thinking-orb/thinking-orbs.js",
       // Static assets: Biome 2.5 parses .svg as HTML and wants <title>s.
-      "!!public/**",
+      "!!public",
       // Fixtures are INPUTS and snapshots are compared as raw strings;
       // formatting either one changes the thing under test.
       "!!tests/fixtures",
