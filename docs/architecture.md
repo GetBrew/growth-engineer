@@ -54,7 +54,7 @@ Verified in CI: `NEXT_PRIVATE_DEBUG_CACHE=1 pnpm build` with placeholder env
 makes zero Convex requests, and every catalog route is `◐` (partial
 prerender).
 
-## Search v1 (`convex/tools.ts` → `search`)
+## Search v1 (`convex/tools_search.ts`, behind `tools.search`)
 
 Index-only and bounded, in two steps. **Candidates** (≤ 60): with words, the
 `search_tools` index filtered to published, plus one `agentLevel` when exactly

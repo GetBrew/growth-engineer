@@ -37,6 +37,7 @@ render path, and the seed.
 | `model/agent_level.ts` | the agent-readiness rules table |
 | `model/render_markdown.ts`, `model/render_access.ts`, `model/hash.ts` | THE renderer — `docs/markdown-files.md` |
 | `companies.ts`, `tools.ts`, `workflows.ts`, `tags.ts`, `documents.ts`, `aliases.ts` | public reads (`tools.search` is the one search entry point) |
+| `tools_search.ts` | the search query plan behind `tools.search` — `docs/architecture.md` |
 | `documents_render.ts` | the one render path: fields → `documents` row |
 | `users.ts` | the Clerk mirror, written only by the webhook |
 | `seed/` | the illustrative catalog; `pnpm seed`, `pnpm seed:reset` |

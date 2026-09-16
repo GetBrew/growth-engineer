@@ -86,6 +86,7 @@ convex/
   schema.ts                the data model, v0.3.1 (docs/data-model.md)
   model/                   PURE: keys + refs, agent-level rules, THE markdown renderer
   companies.ts tools.ts workflows.ts tags.ts documents.ts aliases.ts   public reads, indexed + bounded
+  tools_search.ts          the search query plan (candidates from one index, then post-filter)
   documents_render.ts      the one render path: fields → documents row
   seed/                    the illustrative catalog
   shared/                  tier builders, guards, validators, `getMany` point reads
