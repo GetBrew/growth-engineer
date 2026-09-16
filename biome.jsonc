@@ -1,0 +1,181 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "root": true,
+
+  // Biome is the ONE formatter and linter. There is no ESLint and no
+  // Prettier: two tools that both claim formatting is how a repo ends up with
+  // a `// prettier-ignore` next to an `/* eslint-disable */`.
+  //
+  // Ultracite ships the curated rule sets; everything below is a deliberate
+  // deviation with the reason attached.
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next"
+  ],
+
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+
+  // `vcs.useIgnoreFile` above already skips everything in .gitignore (.next,
+  // node_modules, coverage, build output), so this list carries ONLY the paths
+  // git TRACKS but Biome must not touch. Restating the gitignore here would be
+  // a second list to keep in sync, for no effect.
+  //
+  // `!!` = never scanned at all; `!` = scanned, not processed.
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      // Generated code: never lint, never format. The freshness gate
+      // (`pnpm convex:codegen:check`) diffs it, so one formatter touch is a
+      // red CI run on a file nobody edited.
+      "!!**/_generated",
+      "!!**/*.gen.*",
+      "!!**/pnpm-lock.yaml",
+      // Fixtures are INPUTS and snapshots are compared as raw strings;
+      // formatting either one changes the thing under test.
+      "!!tests/fixtures",
+      "!!**/__snapshots__"
+    ]
+  },
+
+  // Tailwind v4 at-rules in app/globals.css (@theme / @plugin / @source / …).
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded",
+      "quoteStyle": "single"
+    }
+  },
+
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on",
+        // Key/property order is OBSERVABLE here: Convex validator definitions,
+        // JSON.stringify snapshots, anything content-hashed. Alphabetical
+        // re-sorting is a behavior risk, not a style preference.
+        "useSortedKeys": "off",
+        "useSortedProperties": "off",
+        "useSortedAttributes": "off",
+        // package.json scripts are grouped by workflow — dev loop, then the
+        // validation ladder, then release — which is how anyone reads them.
+        // Alphabetical order interleaves the three.
+        "useSortedPackageJson": "off"
+      }
+    }
+  },
+
+  "linter": {
+    "rules": {
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              // Server-side Convex calls go through the gateway, which injects
+              // the service token and the acting user by construction. A raw
+              // client is how a call ends up unauthenticated at runtime with a
+              // green typecheck. The gateway itself is exempt via an override.
+              "convex/nextjs": "Server-side Convex calls go through lib/convex/gateway.ts (tenantQuery / tenantMutation / systemQuery / systemMutation) — it injects the caller identity the Convex guards verify."
+            }
+          }
+        },
+        // `Array<T>` over `T[]`, one spelling, decided once.
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": { "syntax": "generic" }
+        },
+        // `interface` and `type` are both used deliberately.
+        "useConsistentTypeDefinitions": "off",
+        // convex/ REQUIRES underscore filenames (the CLI rejects hyphens in
+        // function paths) while app/ and components/ are kebab-case — no
+        // single convention can hold repo-wide.
+        "useFilenamingConvention": "off",
+        // THE LOAD-BEARING LINE CAP. A file at 400 lines is a file with more
+        // than one reason to change. Biome's count excludes comment-only
+        // lines, so this is a real budget for code. Split the file; do not add
+        // an override.
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": { "maxLines": 400 }
+        },
+        // `!` is idiomatic under strict TS with runtime guards.
+        "noNonNullAssertion": "off",
+        // Rewriting property access into destructuring is shape churn.
+        "useDestructuring": "off",
+        // Exhaustive TS switches deliberately omit `default` so the compiler's
+        // never-check catches a new variant.
+        "useDefaultSwitchClause": "off"
+      },
+      "suspicious": {
+        // Import cycles are a build-order bug waiting for a cold start. This
+        // is the gate that keeps them out, and it is why every program mirrors
+        // the path map (Biome reads the nearest tsconfig.json only).
+        "noImportCycles": "error",
+        // Handler signatures across Next and Convex are async by interface.
+        "useAwait": "off",
+        // `== null` is the deliberate null|undefined check.
+        "noEqualsToNull": "off"
+      },
+      "performance": {
+        // Inline JSX handlers are idiomatic React 19; memoization is the React
+        // Compiler's job, not lint's.
+        "noJsxPropsBind": "off"
+      },
+      "correctness": {
+        // Node-context files (tests, configs, scripts) use __dirname by
+        // design; tsc owns real ESM misuse.
+        "noGlobalDirnameFilename": "off"
+      }
+    }
+  },
+
+  "overrides": [
+    {
+      // The gateway is the one module allowed to construct a raw Convex
+      // client — that is what makes the ban above enforceable everywhere else.
+      "includes": ["lib/convex/gateway.ts"],
+      "linter": {
+        "rules": {
+          "style": { "noRestrictedImports": "off" }
+        }
+      }
+    },
+    {
+      // Tests and scripts import the raw client on purpose (no request context
+      // to derive an identity from) and routinely run long. They are also cold
+      // paths by definition, so two performance rules that are worth enforcing
+      // in the app are pure noise here.
+      "includes": ["tests/**", "scripts/**", "convex/**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off",
+            "noExcessiveLinesPerFile": "off"
+          },
+          "performance": {
+            // A regex in a source-scanning script runs a few hundred times, not
+            // a few million. Hoisting each one costs readability and buys
+            // nothing measurable.
+            "useTopLevelRegex": "off"
+          },
+          "suspicious": {
+            // Node's `error?.code` on a caught `unknown` reads as an
+            // "unnecessary" condition to partial inference — it is not.
+            "noUnnecessaryConditions": "off"
+          }
+        }
+      }
+    }
+  ]
+}

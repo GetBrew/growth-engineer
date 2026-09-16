@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-09-16T17:25:59.375Z",
+  "policy": {
+    "maxPercentGrowth": 0.05,
+    "maxAbsoluteGrowthBytes": 15360,
+    "allowedGrowth": "minimum of percentage and absolute thresholds"
+  },
+  "routes": {
+    "/": 1235985,
+    "/_global-error": 567843,
+    "/_not-found": 1235985,
+    "/dashboard": 1276536,
+    "/sign-in/[[...sign-in]]": 1235985,
+    "/sign-up/[[...sign-up]]": 1235985
+  }
+}

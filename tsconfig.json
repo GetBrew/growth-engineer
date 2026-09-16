@@ -1,0 +1,41 @@
+{
+  // The APP program: what `next build`, `next typegen`, `tsgo` (pnpm check)
+  // and `pnpm tsc:app` compile — runtime code plus whatever it imports.
+  // tests/ and scripts/ have their own programs so the build and the fast
+  // check never pay for files no runtime depends on. Compiler options come
+  // from tsconfig.base.json; only the Next-specific bits live here.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "incremental": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsc/app.tsbuildinfo",
+    "plugins": [{ "name": "next" }],
+    // MIRROR of the tsconfig.base.json map — Biome's module graph reads this
+    // file's `paths` without following `extends`. Add aliases to the base;
+    // tests/tsconfig-paths-consistency.test.ts fails when this copy drifts.
+    "paths": {
+      "@/*": ["./*"],
+      "@convex/*": ["./convex/*"]
+    }
+  },
+  // Explicit directories, not `**/*.ts`: the broad pattern is what pulls
+  // tests/ and scripts/ into every build. convex/ is not listed — the files it
+  // contributes are reached through imports. Root-level `*.ts` covers
+  // next.config.ts, the Vitest configs and proxy.ts.
+  "include": [
+    "next-env.d.ts",
+    "*.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx",
+    "types/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx"]
+}

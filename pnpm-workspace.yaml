@@ -1,0 +1,23 @@
+# The root IS the web app. These globs are here so a second Vercel project
+# (an admin surface, a docs site, a shared UI package) is `mkdir` + `pnpm
+# install` away rather than a restructure — see docs/microfrontends.md.
+packages:
+  - apps/*
+  - packages/*
+
+# pnpm 11 no longer reads `pnpm.overrides` from package.json.
+#
+# Pin what the whole tree must agree on. A second copy of React's types or of
+# Next is not a version bump — it is two incompatible `JSX.Element` types and a
+# build that fails with errors naming neither package.
+overrides:
+  next: 16.3.4
+  '@types/react': 19.2.18
+  '@types/react-dom': 19.2.4
+
+# Dependency install scripts are BLOCKED by default in pnpm 11 — a postinstall
+# is arbitrary code from the internet, running on your machine and in CI. Allow
+# only the ones that genuinely need one, with the reason: esbuild downloads its
+# platform binary, and the Convex bundler depends on esbuild.
+allowBuilds:
+  esbuild: true

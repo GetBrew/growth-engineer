@@ -1,0 +1,29 @@
+{
+  // The Convex DEPLOY program — `npx convex deploy` runs `tsc --project
+  // convex`, so anything reachable here can fail a production deploy.
+  // Shared compiler options come from ../tsconfig.base.json; only the
+  // isolate-specific settings are overridden.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "incremental": true,
+    "tsBuildInfoFile": "../node_modules/.cache/tsc/convex.tsbuildinfo",
+    "target": "ESNext",
+    "lib": ["ES2023", "dom", "dom.iterable"],
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    // MIRROR of the tsconfig.base.json map, relative to `baseUrl`. Both the
+    // Convex bundler (esbuild) and Biome read THIS file's `paths` without
+    // following `extends`.
+    "paths": {
+      "@/*": ["./*"],
+      "@convex/*": ["./convex/*"]
+    }
+  },
+  "include": ["./**/*"],
+  // Keep this aligned with what the Convex bundler actually ships: the bundler
+  // skips every basename containing more than one dot, so `*.test.ts` is never
+  // uploaded as a function module and must not gate the deploy. The convex
+  // tests are typechecked by ./tsconfig.test.json instead.
+  "exclude": ["./_generated", "./**/*.test.ts", "./**/*.test.tsx"]
+}

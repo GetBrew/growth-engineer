@@ -1,0 +1,29 @@
+{
+  // The TESTS program: every file under tests/ plus whatever they import.
+  // Split out of the app program so `next build`, `next typegen` and `tsgo`
+  // stop compiling test files no runtime depends on.
+  //
+  // `vitest/globals` is visible ONLY here. A helper under tests/** that is
+  // imported by a script must therefore not use the globals — the scripts
+  // program cannot see them, which is the point.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "types": ["node", "vitest/globals"],
+    "incremental": true,
+    "tsBuildInfoFile": "../node_modules/.cache/tsc/tests.tsbuildinfo",
+    // MIRROR of the tsconfig.base.json map, relative to `baseUrl`.
+    "paths": {
+      "@/*": ["./*"],
+      "@convex/*": ["./convex/*"]
+    }
+  },
+  "include": [
+    // next-env.d.ts carries the CSS-module / image-import ambient types the
+    // imported app code relies on; it needs `next typegen` to have run.
+    "../next-env.d.ts",
+    "../types/**/*",
+    "./**/*.ts",
+    "./**/*.tsx"
+  ]
+}

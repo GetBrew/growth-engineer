@@ -1,0 +1,21 @@
+{
+  // The SCRIPTS program: every `scripts/**/*.ts` plus whatever it imports.
+  // No `vitest/globals` — a script that imports a tests/** helper gets exactly
+  // what the app program would see.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "types": ["node"],
+    "incremental": true,
+    "tsBuildInfoFile": "../node_modules/.cache/tsc/scripts.tsbuildinfo",
+    // MIRROR of the tsconfig.base.json map, relative to `baseUrl`, plus the
+    // one override: `server-only` throws when imported outside a React Server
+    // Component bundle, so tsx CLIs resolve it to an inert shim.
+    "paths": {
+      "@/*": ["./*"],
+      "@convex/*": ["./convex/*"],
+      "server-only": ["./scripts/shims/server-only.ts"]
+    }
+  },
+  "include": ["../types/**/*", "./**/*.ts"]
+}

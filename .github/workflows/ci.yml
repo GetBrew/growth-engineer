@@ -1,0 +1,229 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Rapid pushes to the same PR branch supersede each other — cancel the stale
+# run instead of paying for both. Push events key the group by SHA so every
+# commit on main gets its own run: a concurrency group holds at most ONE
+# pending run even with cancel-in-progress:false, so a shared main group would
+# silently skip intermediate commits.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Least privilege by default. Nothing here writes to the repository — it reads
+# code and reports status. Without this block the token inherits the
+# organization default, which is often read-WRITE, handing every third-party
+# action and every dependency install script a push-capable token.
+permissions:
+  contents: read
+
+env:
+  NODE_OPTIONS: --max-old-space-size=6144
+  # The heavy-command lock serializes local runs across worktrees. A CI runner
+  # is already one job on one machine, so it only adds latency here.
+  HEAVY_LOCK_DISABLE: '1'
+  NEXT_TELEMETRY_DISABLED: '1'
+
+# ---------------------------------------------------------------------------
+# RUNNER SIZING. `runs-on` reads a repository VARIABLE with a default, rather
+# than a literal, for one reason: it is the rollback plan. If you move to a
+# faster runner fleet and that fleet has an incident, "open a PR changing
+# runs-on back" requires the CI you no longer have. Setting the repo variable
+# CI_RUNNER_LARGE / CI_RUNNER_SMALL (Settings → Secrets and variables →
+# Actions) moves every job in seconds, with no commit and no green build.
+# ---------------------------------------------------------------------------
+
+jobs:
+  lint:
+    # Biome: whole-repo lint AND the formatting gate, in about a minute. No
+    # cache needed — it is cold-start fast by design.
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Lint and check formatting (Biome)
+        run: pnpm lint
+
+  typecheck:
+    # `pnpm tsc` chains FIVE TypeScript programs. Here each one is a matrix leg,
+    # so wall time is the SLOWEST program instead of the sum of all five, and a
+    # failure names its program in the job title instead of making you read a
+    # log to find out which of the five went red.
+    name: typecheck (${{ matrix.program }})
+    strategy:
+      fail-fast: false
+      matrix:
+        program: [app, tests, scripts, convex, 'convex:tests']
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # One script owns the program list (scripts/typecheck.mjs); the matrix
+      # passes a name straight through, so adding a program is a one-line
+      # change in one file rather than a new package script plus a new leg.
+      - name: Type check
+        run: pnpm tsc ${{ matrix.program }}
+
+  build:
+    # A production build in CI is not redundant with the platform's build: this
+    # one runs on the PULL REQUEST. Without it, a broken build and every client
+    # bundle regression reach main first and are discovered after merge.
+    runs-on: ${{ vars.CI_RUNNER_LARGE || 'ubuntu-latest' }}
+    timeout-minutes: 25
+    env:
+      # PLACEHOLDER ENV, NOT SECRETS. A pull-request run must never see a
+      # credential, so the build gets exactly what module-scope code reads at
+      # build time and nothing more: a Convex URL, a syntactically valid Clerk
+      # publishable key (`pk_test_` + base64("clerk.example.com$") — Clerk
+      # decodes the frontend-API host out of it at import), and the service
+      # token the server gateway validates the shape of.
+      NEXT_PUBLIC_CONVEX_URL: https://ci-placeholder.convex.cloud
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
+      CLERK_SECRET_KEY: sk_test_ci_placeholder
+      CONVEX_SERVICE_TOKEN: ci-placeholder-service-token
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+
+      - name: Read the Next.js version
+        id: next
+        run: echo "version=$(node -p "require('next/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      # Turbopack's persistent build cache. Keyed on the Next version and the
+      # lockfile (a compiler or dependency change invalidates it) with the
+      # commit SHA last, so every run saves a fresh entry and the next run
+      # restores the closest one through restore-keys — an older cache is a
+      # valid warm start, never a wrong one.
+      - name: Restore .next/cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-cache-${{ runner.os }}-${{ steps.next.outputs.version }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            next-cache-${{ runner.os }}-${{ steps.next.outputs.version }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            next-cache-${{ runner.os }}-${{ steps.next.outputs.version }}-
+
+      - name: Build (Turbopack)
+        run: pnpm build
+
+      # Reads THIS build's manifests, so it has to live in this job.
+      - name: Client bundle budget
+        run: pnpm perf:bundle
+
+  test-unit:
+    name: test (unit)
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # No env block: `.env.test` makes the suite hermetic. If a test needs a
+      # credential to pass, that is a test that will be skipped in CI forever —
+      # fix the test, do not add a secret here.
+      - name: Run unit tests
+        run: pnpm test:run
+
+  test-convex:
+    name: test (convex)
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # No env block here either: `.env.test` carries the one non-secret value
+      # the authorization tests need. If CI has to inject something for a test
+      # to pass, the test is not hermetic.
+      - name: Run Convex function tests
+        run: pnpm test:convex
+
+  test:
+    # The required-check name. `if: always()` so a sibling failure shows as a
+    # RED `test` status instead of a skipped required check that a branch
+    # protection rule would happily merge past.
+    if: always()
+    needs: [test-unit, test-convex]
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - name: Require sibling test jobs
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          node -e '
+            const needs = JSON.parse(process.env.NEEDS)
+            const failed = Object.entries(needs)
+              .filter(([, job]) => job.result !== "success")
+              .map(([id]) => id)
+            if (failed.length > 0) {
+              console.error(`✗ test suites failed: ${failed.join(", ")}`)
+              process.exit(1)
+            }
+            console.log("✓ unit and convex suites passed")
+          '
+
+  hygiene:
+    # EVERY GATE RUNS, EVEN AFTER ONE FAILS. These checks are mutually
+    # independent, but steps run sequentially and a bare failure aborts the
+    # rest — so the job would report exactly one problem per run: fix one gate,
+    # push, wait, discover the docs are broken too, push, wait. With
+    # `continue-on-error` on each step plus the aggregator at the end, one run
+    # gives you the complete list.
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+
+      - name: Documentation links and AGENTS.md cap
+        id: docs
+        continue-on-error: true
+        run: pnpm docs:check
+
+      - name: Convex codegen freshness
+        id: codegen
+        continue-on-error: true
+        run: pnpm convex:codegen:check
+
+      - name: Unused files, exports and dependencies (knip)
+        id: knip
+        continue-on-error: true
+        run: pnpm knip
+
+      - name: Duplicate dependencies
+        id: dedupe
+        continue-on-error: true
+        run: pnpm deps:dedupe:check
+
+      - name: Require every hygiene gate
+        env:
+          OUTCOMES: ${{ toJSON(steps) }}
+        run: |
+          node -e '
+            const steps = JSON.parse(process.env.OUTCOMES)
+            const failed = Object.entries(steps)
+              .filter(([, step]) => step.outcome === "failure")
+              .map(([id]) => id)
+            if (failed.length > 0) {
+              console.error(`✗ hygiene gates failed: ${failed.join(", ")}`)
+              process.exit(1)
+            }
+            console.log("✓ all hygiene gates passed")
+          '

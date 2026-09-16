@@ -1,0 +1,43 @@
+{
+  // THE ONE compiler-options + path-alias source for every TypeScript program
+  // in the repo. `tsconfig.json` (app + Next), `tests/tsconfig.json`,
+  // `scripts/tsconfig.json`, `convex/tsconfig.json` and
+  // `convex/tsconfig.test.json` all extend this file, and the Vitest configs
+  // load this `paths` map through `vite-tsconfig-paths` — so an alias is added
+  // HERE, once.
+  //
+  // Two tools force the map to be MIRRORED into each program rather than
+  // inherited, which is why the copies exist:
+  //   - TypeScript never deep-merges `paths` under `extends`, so a program
+  //     that needs one extra alias has to restate all of them.
+  //   - Biome builds its module graph (noImportCycles) from the NEAREST
+  //     tsconfig.json WITHOUT following `extends`: with the map only here,
+  //     every `@/…` import reads as unresolved and cycle detection silently
+  //     switches off.
+  // `tests/tsconfig-paths-consistency.test.ts` fails CI when a mirror drifts,
+  // so the copies can never resolve one import differently in one tool.
+  //
+  // Relative targets resolve against THIS file's directory (the repo root).
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    // `noUncheckedIndexedAccess` is deliberately ON: `array[i]` is `T |
+    // undefined`, which is the truth. Turning it off later is a one-line
+    // change; turning it on after 50k lines is a migration.
+    "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@convex/*": ["./convex/*"]
+    }
+  }
+}
