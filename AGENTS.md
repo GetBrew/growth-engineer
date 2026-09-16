@@ -85,6 +85,10 @@ freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
   the handler reads `ctx.actor`, never a caller-supplied id.
 - `internalMutation` appears ONLY in `convex/seed/run.ts` and
   `convex/documents.ts` (`tests/convex-internal-builders.test.ts`).
+- **A route's authority lives in the route**, never in the proxy's matcher
+  alone: every `/api/*` handler authenticates itself and `/submit` calls
+  `auth.protect()`. `proxy.ts` is the fast 307, and Clerk has deprecated
+  matcher-only gating.
 - **Server callers go through the gateway**
   ([`lib/convex/gateway.ts`](lib/convex/gateway.ts)): `publicQuery` for the
   catalog (no identity), `tenant*` when a verified human acts, `system*` for
@@ -116,6 +120,9 @@ freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
 - A page's default export is SYNCHRONOUS and returns a `<Suspense>`; every
   request-time read (`params`, `searchParams`, `connection()`, a Convex query)
   lives in the async child. Never `export const dynamic = 'force-dynamic'`.
+  A redirect is therefore never a page: decided in a Suspense child it becomes
+  a `<meta refresh>` that agents ignore, and an async shell cannot prerender
+  at all. A redirect-only URL is a route handler (`/tools/[handle]`).
 - The contract in [`lib/catalog/loaders.ts`](lib/catalog/loaders.ts):
   per-key loaders are `'use cache: remote'` + `cacheTag(ref)`; list pages
   `await connection()` first so a build never contacts Convex; search is

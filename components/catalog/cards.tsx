@@ -115,6 +115,7 @@ export function CompanyRow({ company }: { company: Doc<'companies'> }) {
     >
       <EntityLogo
         className="transition-transform duration-300 group-hover/row:-rotate-6 group-hover/row:scale-105"
+        domain={company.domain}
         logoUrl={company.logo?.url}
         name={company.name}
         size={44}

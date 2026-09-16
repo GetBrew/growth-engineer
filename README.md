@@ -49,6 +49,7 @@ JWT template everything authenticated depends on.
 | `/` | New tools, trending workflows |
 | `/companies`, `/companies/[handle]` | The directory; a company, its tools, workflows using them |
 | `/tools`, `/tools/[handle]/[name]` | Search (words + chips); THE tool file + workflows using it |
+| `/tools/[handle]` | A shortcut (route handler): 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[owner]/[name]` | Trending / Top / New; THE workflow file + versions |
 | `/hacks` | Workflows with one tool |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt` | The raw files, for agents |

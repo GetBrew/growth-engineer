@@ -79,6 +79,7 @@ async function CompanyDetail({ params }: { params: Params }) {
       <header className="flex flex-col gap-6 border-border border-b pb-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex gap-4">
           <EntityLogo
+            domain={company.domain}
             logoUrl={company.logo?.url}
             name={company.name}
             size={56}

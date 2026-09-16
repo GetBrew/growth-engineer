@@ -8,6 +8,13 @@
  *   PRIVATE   needs a signed-in user; the proxy redirects to sign-in.
  *   AUTH_ONLY the sign-in / sign-up pages; a signed-in visitor is bounced home.
  *
+ * THE PROXY IS THE FAST PATH, NOT THE ONLY GUARD. Clerk deprecated
+ * matcher-only gating because path matching can diverge from how Next routes
+ * a request. So every `/api/*` route authenticates itself (see the carve-outs
+ * below for how each one does it), and `/submit` calls `auth.protect()` in
+ * the page. The proxy stays because it turns a signed-out visit into a real
+ * 307 before anything renders.
+ *
  * DEFAULT DENY IS THE OTHER HALF. `/api(.*)` is private, so a new route
  * handler is protected the moment it exists; a PUBLIC API route is the thing
  * you add deliberately, below, with its reason.

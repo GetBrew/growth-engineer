@@ -24,7 +24,10 @@ listed with their reasons.
 
 **Pages** (`app/(site)/`) — Server Components. A page's default export is
 synchronous and returns a `<Suspense>`; the async child does every
-request-time read. Filters and search are links and GET forms: the URL is
+request-time read. A URL whose only job is to redirect is a route handler
+instead of a page (`/tools/[handle]`): a redirect decided after the shell has
+flushed can only be a `<meta refresh>`, which agents ignore, and an async
+page shell cannot prerender at all. Filters and search are links and GET forms: the URL is
 the state, so an agent can use the same URL.
 
 **Loaders** (`lib/catalog/loaders.ts`) — every server-side read, through the

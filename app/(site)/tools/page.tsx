@@ -1,6 +1,7 @@
 import { Search, X } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { ToolCard } from '@/components/catalog/cards'
 import {
@@ -53,6 +54,10 @@ export default function ToolsPage({
 }
 
 async function ToolsSearch({ searchParams }: { searchParams: SearchParams }) {
+  // The tag list is a plain (uncached) read, so say plainly that this subtree
+  // is request-time: without it Next's prospective prerender walks into the
+  // Convex client and reports its `Math.random()` as an unstable value.
+  await connection()
   const params = await searchParams
   // `q` may carry chips typed inline; lift them into the chip set.
   const typed = parseSearchText(searchStateFromParams(params).words.join(' '))

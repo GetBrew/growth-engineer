@@ -26,11 +26,10 @@ import { publicQuery } from '@/lib/convex/gateway'
  * by error.tsx, which is never cached.
  */
 
-export const LIST_TAG = {
-  companies: 'catalog:companies',
+/** List tags, for the per-key loaders whose result is a list. */
+const LIST_TAG = {
   tools: 'catalog:tools',
   workflows: 'catalog:workflows',
-  tags: 'catalog:tags',
 } as const
 
 /** One hour fresh, a day stale-while-revalidate. */

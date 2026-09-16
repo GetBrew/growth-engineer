@@ -1,5 +1,7 @@
+import { auth } from '@clerk/nextjs/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { Page, SectionHeading } from '@/components/catalog/primitives'
 
 export const metadata: Metadata = { title: 'Submit a workflow' }
@@ -28,11 +30,26 @@ const STEPS = [
 ] as const
 
 /**
- * Behind sign-in (proxy.ts). The publish flow ships with the submissions
- * pipeline; until then this page is the contract it will meet, so nobody
- * builds a form that renders a different file than the catalog does.
+ * The only page whose protection is not enforced inside the thing it
+ * protects, so it enforces it here too. `proxy.ts` gives a signed-out
+ * visitor the real 307; this `auth.protect()` is what still holds if path
+ * matching ever diverges from routing — the reason Clerk deprecated
+ * matcher-only gating. Every `/api/*` route already authenticates itself.
+ *
+ * The publish flow ships with the submissions pipeline; until then this page
+ * is the contract it will meet, so nobody builds a form that renders a
+ * different file than the catalog does.
  */
 export default function SubmitPage() {
+  return (
+    <Suspense fallback={null}>
+      <SubmitContent />
+    </Suspense>
+  )
+}
+
+async function SubmitContent() {
+  await auth.protect()
   return (
     <Page className="flex max-w-3xl flex-col gap-10">
       <SectionHeading
