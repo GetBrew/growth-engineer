@@ -75,6 +75,81 @@ describe('users', () => {
     expect(rows).toHaveLength(1)
   })
 
+  test('a blank email claims nobody: two accounts without one stay two rows', async () => {
+    const serviceToken = process.env.CONVEX_SERVICE_TOKEN ?? ''
+    const t = convexTest(schema, modules)
+    // Clerk sends no email for a phone-only account. Matching on '' would
+    // hand the second person the first person's row.
+    await t.mutation(api.users.upsertFromClerk, {
+      serviceToken,
+      clerkUserId: 'user_phone_one',
+      email: '',
+    })
+    await t.mutation(api.users.upsertFromClerk, {
+      serviceToken,
+      clerkUserId: 'user_phone_two',
+      email: '',
+    })
+    const rows = await t.run(
+      async (ctx) => await ctx.db.query('users').take(10)
+    )
+    expect(rows).toHaveLength(2)
+    expect(rows.map((row) => row.clerkUserId).sort()).toEqual([
+      'user_phone_one',
+      'user_phone_two',
+    ])
+  })
+
+  test('an email already bound to another account is never re-bound', async () => {
+    const serviceToken = process.env.CONVEX_SERVICE_TOKEN ?? ''
+    const t = convexTest(schema, modules)
+    await t.mutation(api.users.upsertFromClerk, {
+      serviceToken,
+      clerkUserId: ALICE.subject,
+      email: 'shared@example.com',
+      name: 'Alice',
+    })
+    await t.mutation(api.users.upsertFromClerk, {
+      serviceToken,
+      clerkUserId: 'user_mallory',
+      email: 'shared@example.com',
+      name: 'Mallory',
+    })
+    const rows = await t.run(
+      async (ctx) => await ctx.db.query('users').take(10)
+    )
+    expect(rows).toHaveLength(2)
+    // Alice's row still belongs to Alice.
+    expect(
+      (await t.withIdentity(ALICE).query(api.users.current, {}))?.name
+    ).toBe('Alice')
+  })
+
+  test('a row an admin created by email IS claimed on first sign-in', async () => {
+    const serviceToken = process.env.CONVEX_SERVICE_TOKEN ?? ''
+    const t = convexTest(schema, modules)
+    await t.run(async (ctx) => {
+      await ctx.db.insert('users', {
+        email: 'alice@example.com',
+        role: 'moderator',
+      })
+    })
+    await t.mutation(api.users.upsertFromClerk, {
+      serviceToken,
+      clerkUserId: ALICE.subject,
+      email: 'alice@example.com',
+      name: 'Alice',
+    })
+    const rows = await t.run(
+      async (ctx) => await ctx.db.query('users').take(10)
+    )
+    expect(rows).toHaveLength(1)
+    // The role an admin set survives the claim.
+    expect(
+      (await t.withIdentity(ALICE).query(api.users.current, {}))?.role
+    ).toBe('moderator')
+  })
+
   test('deleting the account deletes the row', async () => {
     const serviceToken = process.env.CONVEX_SERVICE_TOKEN ?? ''
     const t = convexTest(schema, modules)

@@ -47,15 +47,22 @@ function serverSlug(toolKey: string): string {
   return toolKey.split('/')[1] ?? toolKey
 }
 
+/**
+ * Every value goes through `JSON.stringify`, never straight into the string.
+ * The bytes are identical for an ordinary URL or command — and a value
+ * carrying a quote cannot end the string early and write its own JSON into a
+ * file people paste into an agent. Curated data is safe today; community
+ * submissions are the point of the pipeline.
+ */
 function mcpConfig(access: Extract<Access, { type: 'mcp' }>, toolKey: string) {
-  const slug = serverSlug(toolKey)
+  const slug = JSON.stringify(serverSlug(toolKey))
   if (access.transport === 'remote' && access.url) {
-    return `{ "mcpServers": { "${slug}": { "url": "${access.url}" } } }`
+    return `{ "mcpServers": { ${slug}: { "url": ${JSON.stringify(access.url)} } } }`
   }
   const [command = '', ...args] = (access.command ?? '')
     .trim()
     .split(WHITESPACE)
-  return `{ "mcpServers": { "${slug}": { "command": "${command}", "args": ${JSON.stringify(args)} } } }`
+  return `{ "mcpServers": { ${slug}: { "command": ${JSON.stringify(command)}, "args": ${JSON.stringify(args)} } } }`
 }
 
 function authHeaderLine(access: Access): string | null {

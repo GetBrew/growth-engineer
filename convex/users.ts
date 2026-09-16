@@ -26,13 +26,18 @@ export const upsertFromClerk = serviceMutation({
       .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', args.clerkUserId))
       .unique()
     // An admin may have created the row (by email) before the person signed
-    // in; the first sign-in claims it rather than duplicating it.
-    const existing =
-      byClerkId ??
-      (await ctx.db
-        .query('users')
-        .withIndex('by_email', (q) => q.eq('email', args.email))
-        .unique())
+    // in; the first sign-in claims it rather than duplicating it. TWO ways
+    // that claim becomes someone else's account, so both are closed here:
+    // a BLANK email (Clerk sends none for a phone-only account, and `by_email`
+    // on '' hands the next such person the first one's row), and a row that
+    // already belongs to a different Clerk account.
+    const byEmail = args.email
+      ? await ctx.db
+          .query('users')
+          .withIndex('by_email', (q) => q.eq('email', args.email))
+          .unique()
+      : null
+    const existing = byClerkId ?? (byEmail?.clerkUserId ? null : byEmail)
 
     if (existing) {
       await ctx.db.patch(existing._id, {

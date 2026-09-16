@@ -20,7 +20,14 @@ export const getByRef = publicQuery({
       .unique(),
 })
 
-/** Every rendered file, newest first — the `/llms.txt` index. */
+/**
+ * Every file, newest first — the `/llms.txt` index and (later) MCP `list`.
+ *
+ * Deliberately NOT filtered by `stale`: a stale file is one waiting to be
+ * re-rendered, and it still serves at its `.md` URL. Filtering here would
+ * drop a tool, its company and every dependent workflow from the index for
+ * as long as the render queue takes (`convex/catalog.test.ts` pins this).
+ */
 export const listRefs = publicQuery({
   args: { limit: v.optional(v.number()) },
   returns: v.array(
@@ -37,7 +44,7 @@ export const listRefs = publicQuery({
   handler: async (ctx, args) => {
     const documents = await ctx.db
       .query('documents')
-      .withIndex('by_stale', (q) => q.eq('stale', false))
+      .withIndex('by_rendered')
       .order('desc')
       .take(Math.min(args.limit ?? 1000, 1000))
     return documents.map(({ ref, entityType, renderedAt }) => ({

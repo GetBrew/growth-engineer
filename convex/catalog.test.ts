@@ -186,6 +186,32 @@ describe('catalog', () => {
     expect(unverified?.derived).toBe(true)
   })
 
+  test('the file index keeps listing a file while it waits to re-render', async () => {
+    const before = await t.query(api.documents.listRefs, {})
+    // A tool edit marks its own file, its company's and every dependent
+    // workflow's stale. None of them stop serving, so none may vanish from
+    // /llms.txt while the render queue catches up.
+    const clay = await t.run(
+      async (ctx) =>
+        await ctx.db
+          .query('tools')
+          .withIndex('by_key', (q) => q.eq('key', 'clay/clay'))
+          .unique()
+    )
+    if (!clay) {
+      throw new Error('the seed must contain clay/clay')
+    }
+    const marked = await t.mutation(internal.documents.markToolStale, {
+      toolId: clay._id,
+    })
+    expect(marked).toBeGreaterThan(1)
+    const after = await t.query(api.documents.listRefs, {})
+    expect(after).toHaveLength(before.length)
+    expect(after.map((row) => row.ref).sort()).toEqual(
+      before.map((row) => row.ref).sort()
+    )
+  })
+
   test('an unknown key has no alias', async () => {
     expect(
       await t.query(api.aliases.resolve, {

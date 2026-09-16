@@ -354,7 +354,11 @@ export default defineSchema({
   })
     .index('by_ref', ['ref'])
     .index('by_entity', ['entityId'])
-    .index('by_stale', ['stale', 'renderedAt']),
+    .index('by_stale', ['stale', 'renderedAt'])
+    // v0.3.1: the file INDEX (/llms.txt, MCP list) is every file, not every
+    // fresh one — a stale file still serves at its URL, so hiding it from the
+    // index would drop entries for as long as a re-render is queued.
+    .index('by_rendered', ['renderedAt']),
 
   /* ═════════════════════════════════ TAGS ════════════════════════════════ */
 

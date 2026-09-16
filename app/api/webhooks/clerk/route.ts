@@ -33,9 +33,13 @@ export async function POST(request: NextRequest) {
   switch (event.type) {
     case 'user.created':
     case 'user.updated': {
-      const primaryEmail = event.data.email_addresses.find(
-        (address) => address.id === event.data.primary_email_address_id
-      )
+      // The primary address, else any address, else none at all — Clerk sends
+      // no email for a phone-only account, and `users.upsertFromClerk` treats
+      // a blank one as "matches nobody" rather than as a key.
+      const primaryEmail =
+        event.data.email_addresses.find(
+          (address) => address.id === event.data.primary_email_address_id
+        ) ?? event.data.email_addresses[0]
       await systemMutation(api.users.upsertFromClerk, {
         clerkUserId: event.data.id,
         email: primaryEmail?.email_address ?? '',
