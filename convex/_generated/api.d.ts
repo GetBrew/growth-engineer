@@ -29,6 +29,7 @@ import type * as shared_reads from "../shared/reads.js";
 import type * as shared_validators from "../shared/validators.js";
 import type * as tags from "../tags.js";
 import type * as tools from "../tools.js";
+import type * as tools_search from "../tools_search.js";
 import type * as users from "../users.js";
 import type * as workflows from "../workflows.js";
 
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   "shared/validators": typeof shared_validators;
   tags: typeof tags;
   tools: typeof tools;
+  tools_search: typeof tools_search;
   users: typeof users;
   workflows: typeof workflows;
 }>;
