@@ -1,173 +1,172 @@
-# Agent Guidelines
+# Agent Guidelines — growth.engineer
 
 Canonical instructions for coding agents (Claude, Codex, Cursor, Copilot) and
 for humans. This file holds the durable invariants and the routing table into
 the deep-dive docs. CI caps it at 200 lines (`pnpm docs:check`) — keep it
 pointer-style: one canonical statement per policy, no history, no changelog.
 
+## What this is
+
+A catalog of **companies**, the **tools** they make, and **workflows** that
+put tools to work (a growth hack is a one-tool workflow). **Every tool and
+workflow is ONE generated markdown file any agent can run; copying it is the
+product action.** Reads are public; agents fetch files with no sign-in.
+Vision: [`docs/vision.md`](docs/vision.md). Model: [`docs/data-model.md`](docs/data-model.md).
+
 ## Stack
 
 Next.js 16 (App Router, Cache Components, Turbopack) · Convex · Clerk ·
-Tailwind v4 · Biome · Vitest · pnpm.
+Tailwind v4 · Biome · Vitest · pnpm. Generated from
+`GetBrew/next-convex-clerk-starter`.
 
 ## Validation — proportional, not ceremonial
 
-Run the smallest check that can find the mistake you just made.
-
 - **While editing**: `pnpm exec biome check --write <all touched files>` once
-  per unit of work, in ONE call — every invocation loads the whole project
-  layer no matter how many files you pass, so batch them and never call it per
-  file. Plus `pnpm test:run tests/<exact file>` for the behavior you touched —
-  a filter makes it the fast inner loop rather than the whole suite.
-- **Once per unit of work**: `pnpm check` (Biome + the fast `tsgo` typecheck).
-  Not after every patch.
-- **Once, at final handoff for code changes**: `pnpm tsc` then `pnpm lint`,
-  sequentially. Never submit work that breaks typecheck, lint, or the tests
-  that cover what you touched.
-- **Docs-only changes**: `pnpm docs:check`.
-- **Convex changes**: `pnpm test:convex` — its authorization tests are the
-  point of the suite.
+  per unit of work, in ONE call (every invocation loads the whole project).
+  Plus `pnpm test:run tests/<exact file>` for the behavior you touched.
+- **Once per unit of work**: `pnpm check` (Biome + `tsgo`). Not per patch.
+- **Final handoff**: `pnpm tsc` then `pnpm lint`. Touched `convex/`: also
+  `pnpm test:convex`. Touched the renderer: the goldens in
+  `tests/render-markdown.test.ts` must still pass byte for byte.
+- **Docs only**: `pnpm docs:check`.
 
 ### Serialized commands
 
-`pnpm check`, `pnpm tsc`, `build`, `test:run`, `test:convex` and `knip` run
-under `scripts/heavy-lock.mjs` — ONE at a time per repository, across all git
-worktrees. Each loads the whole project (gigabytes); two at once is swap and
-three is an OOM kill that reads like a mysterious test failure. A lock timeout
-is a QUEUE timeout, not a check failure, and the message names the holder.
-
-Never call the underlying binary directly (`vitest`, `tsc`, `next build`,
-`knip`) — that is the bypass the lock exists to prevent. `pnpm test:run` takes
-a file filter, so the inner loop needs no escape hatch.
-
-`pnpm tsc` takes an optional program name — `pnpm tsc app`, or `tests`,
-`scripts`, `convex`, `convex:tests` — and runs all five with no argument.
-`scripts/typecheck.mjs` owns that list; there is no per-program package script
-to keep in sync.
-
-**Dev servers**: start one with `pnpm dev`, never `npx next dev` — the wrapper
-prunes the Turbopack cache, caps the heap, and reaps the detached telemetry
-flusher Next leaves behind on every shutdown (a few hundred MB per stopped
-server, parented to init, forever). Stop what you start.
+`pnpm check`, `pnpm tsc`, `build`, `test:run`, `test:convex`, `knip` run under
+`scripts/heavy-lock.mjs` — one at a time per repository across all worktrees.
+A lock timeout is a QUEUE timeout, not a check failure. Never call the
+underlying binary (`vitest`, `tsc`, `next build`, `knip`) directly. Dev
+servers: `pnpm dev`, never `npx next dev`. `pnpm tsc <program>` runs one of
+`app`, `tests`, `scripts`, `convex`, `convex:tests`.
 
 ### What CI blocks on
 
-More than `tsc`. Every pull request runs: `pnpm lint` (Biome — also the
-formatting gate and the import-cycle gate), five typecheck programs as parallel
-matrix legs, `pnpm build` plus the client bundle budget, the unit and Convex
-test suites, and the hygiene job (`docs:check`, Convex codegen freshness,
-`knip`, duplicate dependencies). Details: [`docs/ci.md`](docs/ci.md).
+Lint (Biome — formatting and import cycles too), five typecheck programs in
+parallel, `pnpm build` with placeholder env plus the client bundle ratchet,
+the unit and Convex suites, and hygiene (`docs:check`, Convex codegen
+freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
 
 ## Critical invariants
 
-### Cache Components
+### The markdown file
 
-`cacheComponents: true` is on. Every route gets a prerendered static shell.
+- ONE render path: [`convex/model/render_markdown.ts`](convex/model/render_markdown.ts)
+  (pure) called only by [`convex/documents_render.ts`](convex/documents_render.ts),
+  which writes the `documents` table. Nothing else writes `documents.markdown`;
+  nothing renders on the request path; a file is never hand-edited.
+- The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
+  flat YAML header, setup picks the best way in (official MCP → CLI → API →
+  community; tool files list every option, workflow files ≤ 2 per tool or the
+  step's `via`), inputs in backticks, ≤ 10 steps, Rules last and immutable,
+  tool ≈ 60 lines, workflow ≈ 120. Change the format and the golden fixtures
+  in `tests/fixtures/markdown/` in the same commit.
+- An unchanged file is not rewritten (`hash`): a write re-runs every live
+  query that read the row.
 
-- A page's default export is SYNCHRONOUS and returns a `<Suspense>` boundary.
-  Every request-time read — `auth()`, `cookies()`, `headers()`, `params`,
-  `searchParams`, a Convex query — lives inside the async child. Canonical
-  pattern: [`app/(app)/dashboard/page.tsx`](<app/(app)/dashboard/page.tsx>).
-- `await` anything at the top of an async page and the whole route drops out of
-  the prerender. `next dev` flags it as a blocking route.
-- NEVER `export const dynamic = 'force-dynamic'`. Use `Cache-Control:
-  no-store` or the Next 16 cache model.
-- A Suspense fallback must be dimensionally stable — same box as the real
-  content — or the page lands and then jumps.
+### Keys and refs
+
+- Public identity is the `key` (`clay`, `clay/clay`, `brew/intent-to-meeting`,
+  `@3` pins a version); stored references are ALWAYS internal ids; a key is
+  resolved once at the edge via `by_key`. Grammar and reserved handles live in
+  [`convex/model/keys.ts`](convex/model/keys.ts); every top-level route must
+  be reserved (pinned by `tests/keys.test.ts`).
+- Keys never change after publishing. A rename adds a `keyAliases` row;
+  every `by_key` miss asks `aliases.resolve` before answering 404, and the
+  `.md` handler turns a hit into a real 308.
+- Deprecated stays visible with a warning; archived is hidden. A
+  `moderation: 'pending'` workflow is live at its link and absent from lists.
 
 ### Convex authorization
 
-- **Every public Convex function is built with a tier builder** from
-  [`convex/shared/builders.ts`](convex/shared/builders.ts): `publicQuery`,
-  `authenticatedQuery/Mutation`, `orgMemberQuery/Mutation`,
-  `orgAdminMutation`, `serviceMutation`. The builder runs the guard
-  before the handler is entered, so it cannot be skipped. Pinned by
-  `tests/convex-builders.test.ts`.
-- **The handler never reads a caller-supplied identity.** The builder declares
-  AND CONSUMES the transport args (`serviceToken`, `actingUserId`,
-  `actingOrgId`, `actingOrgRole`); read the verified actor from `ctx.actor`.
-  Never re-declare a consumed arg — a shadowing declaration hands the handler
-  an unverified value under a name that reads exactly like the verified one.
-- **An id is not a claim.** Re-check ownership on the row itself for every
-  id-addressed read or write, and answer "not yours" as NOT_FOUND so ids
-  cannot be enumerated.
-- **Server callers go through the gateway.** Every server-side Convex call uses
-  [`lib/convex/gateway.ts`](lib/convex/gateway.ts) — `tenantQuery`/
-  `tenantMutation` when a verified human acts, `systemQuery`/`systemMutation`
-  for machines. `convex/nextjs` is banned elsewhere (Biome
-  `noRestrictedImports`); the transport args are optional at the wire, so a
-  hand-threaded token that goes missing is invisible to `tsc` and throws only
-  at runtime.
-- **Client callers gate on auth.** Identity-scoped `useQuery` goes through
-  `useAuthedQuery` ([`hooks/use-authed-query.ts`](hooks/use-authed-query.ts))
-  — the Clerk JWT
-  attaches to the socket asynchronously after mount. Pinned by
-  `tests/convex-client-auth-gating.test.ts`.
-- **Errors are typed.** User-facing Convex functions throw `ConvexError` app
-  errors ([`convex/shared/errors.ts`](convex/shared/errors.ts)) — never a plain
-  `Error`, a silent no-op, or `{ success: false }`. Callers decode with
-  `getAppErrorMessage(error, fallback)`.
+- **Every public function is built with a tier builder** from
+  [`convex/shared/builders.ts`](convex/shared/builders.ts): `publicQuery` for
+  the catalog, `authenticatedQuery/Mutation`, `orgMemberQuery/Mutation`,
+  `orgAdminMutation`, `serviceMutation`. The guard runs before the handler;
+  the handler reads `ctx.actor`, never a caller-supplied id.
+- `internalMutation` appears ONLY in `convex/seed/run.ts` and
+  `convex/documents.ts` (`tests/convex-internal-builders.test.ts`).
+- **A route's authority lives in the route**, never in the proxy's matcher
+  alone: every `/api/*` handler authenticates itself and `/submit` calls
+  `auth.protect()`. `proxy.ts` is the fast 307, and Clerk has deprecated
+  matcher-only gating.
+- **Server callers go through the gateway**
+  ([`lib/convex/gateway.ts`](lib/convex/gateway.ts)): `publicQuery` for the
+  catalog (no identity), `tenant*` when a verified human acts, `system*` for
+  machines. `convex/nextjs` is banned elsewhere.
+- `convex/model/*` is PURE — no runtime import of `convex/*`,
+  `_generated/server`, `shared/*`, `node:*` or `server-only` — because Next
+  bundles it too (`tests/convex-model-purity.test.ts`).
 
 ### Convex data
 
-- `convex/schema.ts` is the single stable `defineSchema(...)` default export.
-- Every field you filter or sort on belongs in an INDEX. Read with
-  `.withIndex(...)`; `.filter(...)` is a table scan wearing a predicate.
-- Bound every read: `.take(n)`, not `.collect()`. A table that is small in
-  development is a 16 MB read limit in production.
-- Module filenames under `convex/` use letters, numbers, underscores and
-  periods only — the CLI rejects hyphens.
-- Build-time Convex reads hit the PREVIOUS deployment's functions (production
-  builds push functions after the build succeeds). A prerendered page must not
-  hard-depend on a signature introduced in the same commit.
-- Adding or renaming a module means committing regenerated
-  `convex/_generated` — `pnpm convex:codegen:check` catches the drift.
+- `convex/schema.ts` is v0.3.1 of the design doc, verbatim plus `auth.header`
+  and the `by_format_top` / `by_format_new` listing indexes. Keep it the
+  single `defineSchema` export.
+- Every read uses an index and is bounded (`.take(n)`); `.filter(...)` is a
+  scan. Every list is paged. Joins are parallel point reads (`getMany` in
+  [`convex/shared/reads.ts`](convex/shared/reads.ts)) — never an `await` in a loop.
+- PROJECTION fields (`searchText`, `agentLevel`, `listed`, `format`,
+  `toolCount`, `taggings.*`, `tags.counts`, `workflowTools`) are rewritten by
+  one helper or a scheduled batch — never by hand in a second place.
+- Hot counters never touch catalog documents: views/copies go to `events` and
+  roll up into `entityStats`.
+- Arrays stay short (access entries, steps); anything unbounded is a table.
+- Module filenames under `convex/` use letters, digits, underscores, periods.
+- Build-time reads hit the PREVIOUS deployment: a prerendered page must not
+  hard-depend on a function introduced in the same commit.
+
+### Rendering and caching
+
+- A page's default export is SYNCHRONOUS and returns a `<Suspense>`; every
+  request-time read (`params`, `searchParams`, `connection()`, a Convex query)
+  lives in the async child. Never `export const dynamic = 'force-dynamic'`.
+  A redirect is therefore never a page: decided in a Suspense child it becomes
+  a `<meta refresh>` that agents ignore, and an async shell cannot prerender
+  at all. A redirect-only URL is a route handler (`/tools/[handle]`).
+- The contract in [`lib/catalog/loaders.ts`](lib/catalog/loaders.ts):
+  per-key loaders are `'use cache: remote'` + `cacheTag(ref)`; list pages
+  `await connection()` first so a build never contacts Convex; search is
+  never cached; **no loader catches** — errors leave the cached scope and
+  `error.tsx` renders them, so an outage is never cached as an empty catalog.
+- `revalidateTag(ref, 'max')` through `POST /api/revalidate` purges a page
+  and its `.md` file together.
+- Fallbacks are dimensionally stable. Filters and search are LINKS and GET
+  forms — the URL is the state; an agent can use the same URL.
 
 ### Testing
 
-- Tests live in `tests/`, run in the cheap `node` environment; a file opts into
-  a DOM with a `// @vitest-environment jsdom` docblock.
-- Convex FUNCTION tests are the one exception — `convex-test` needs an
-  `import.meta.glob` beside `convex/`, so they live at `convex/**/*.test.ts`
-  and run via `pnpm test:convex`.
-- `.env.test` (committed, non-secret) is what makes a fresh clone hermetic:
-  the suite is green with no credentials at all. Add a variable there only when
-  a test fails without it; never add a real secret.
-- **A guard is not done until it has FAILED.** Delete the thing it protects and
-  watch it go red before you trust a new test.
-- Write the negative cases. The happy path is what you would notice broken in
-  five seconds of clicking; "anonymous caller refused" and "one user cannot
-  touch another's row" are what ship quietly.
+- `tests/` runs in `node`; `convex/**/*.test.ts` runs through `convex-test`
+  (`pnpm test:convex`). `.env.test` is committed and non-secret; the
+  suite is green on a fresh clone.
+- Write the negative cases. A guard is not done until it has FAILED.
+- The seed (`convex/seed/`) is the first caller of every read and is tested
+  end to end; it is idempotent and illustrative, and every seeded tool is
+  `agent: unverified` because nobody has checked the facts.
 
 ## Code conventions
 
-- **Tailwind**: never `space-x-*` / `space-y-*` — use `flex gap-*`. Pair
-  `flex-1` with `min-w-0` (horizontal) or `min-h-0` (vertical).
-- **File size**: target ~200 lines, hard cap 400 (Biome
-  `noExcessiveLinesPerFile`). Split the file rather than adding an override.
-- **One concern per file.** Shared types in `types.ts`, pure utilities in
-  `utils.ts` separate from React components. Name files by what they render
-  (`task-list.tsx`, not `list-renderer.tsx`).
-- **Booleans** take an `is`/`has`/`should`/`can` prefix.
-- **`Array<T>`**, not `T[]` (enforced).
-- Extract multi-line function props into named functions or `useCallback`;
-  one-liner references stay inline.
-- **Environment access** goes through [`lib/env.ts`](lib/env.ts), never a bare
-  `process.env.FOO!` at a call site.
+- Tailwind: `flex gap-*`, never `space-x/y-*`; `flex-1` pairs with `min-w-0`.
+- File size target ~200 lines, cap 400 (data tables and the schema exempt).
+- One concern per file; name files by what they render; `Array<T>`; booleans
+  take `is/has/should/can`; environment through `lib/env.ts`.
+- Icons from `lucide-react`; the vendored orb stays byte-identical.
 
 ## Documentation hygiene
 
-When a change moves a module boundary, update the closest README or this file
-in the same batch. `pnpm docs:check` fails on a broken relative link and on an
-AGENTS.md over its line cap.
+A change that moves a boundary updates the closest README or this file in the
+same batch. `pnpm docs:check` fails on a broken link or this file over cap.
 
 ## Docs routing table
 
 | Topic | Doc |
 | --- | --- |
-| First-run setup: Convex deployment, Clerk JWT template, webhooks | [`docs/setup.md`](docs/setup.md) |
-| Architecture: the request path, where each decision lives | [`docs/architecture.md`](docs/architecture.md) |
+| Product vision, phases, what is not in v1 | [`docs/vision.md`](docs/vision.md) |
+| Data model: keys, entities, access, tags, ranking, scaling | [`docs/data-model.md`](docs/data-model.md) |
+| The markdown file contract and where files are served | [`docs/markdown-files.md`](docs/markdown-files.md) |
+| Request path, caching contract, search plan, layout | [`docs/architecture.md`](docs/architecture.md) |
+| First run: Convex, service token, seed, Clerk, Vercel | [`docs/setup.md`](docs/setup.md) |
 | Validation, the heavy lock, dev servers, worktrees | [`docs/validation.md`](docs/validation.md) |
-| CI: what each job proves and why it is shaped that way | [`docs/ci.md`](docs/ci.md) |
-| Performance: Cache Components, bundle budgets, Turbopack | [`docs/performance.md`](docs/performance.md) |
-| Adding a second app (microfrontends, admin surfaces) | [`docs/microfrontends.md`](docs/microfrontends.md) |
+| CI jobs and why each exists | [`docs/ci.md`](docs/ci.md) |
+| Cache Components, bundle budget, Turbopack | [`docs/performance.md`](docs/performance.md) |
+| Adding the admin app as a second project | [`docs/microfrontends.md`](docs/microfrontends.md) |
+| Convex module rules and file map | [`convex/README.md`](convex/README.md) |

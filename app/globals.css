@@ -1,78 +1,62 @@
 @import "tailwindcss";
 
 /*
- * Tailwind v4: the design system lives in CSS, not in a tailwind.config.js.
- * `@theme inline` turns each token into a real utility (`bg-background`,
- * `text-muted-foreground`), so a component never hardcodes a hex value and a
- * rebrand is one block of this file.
- *
- * Dark mode is a CLASS, not a media query — next-themes toggles `.dark` on
- * <html>, which is what makes a user's explicit choice stick over their OS
- * setting.
+ * growth.engineer is a light, editorial interface: white, near-black ink,
+ * hairline borders, pill controls. Tokens live here (Tailwind v4 `@theme`) so
+ * a component never hardcodes a value it would later have to hunt down.
  */
-@custom-variant dark (&:is(.dark *));
 
 :root {
   --radius: 0.75rem;
-
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: #ffffff;
+  --foreground: #171717;
+  --muted: #f6f6f4;
+  --muted-foreground: #5c5c5c;
+  --border: rgb(23 23 23 / 0.1);
+  --input: rgb(23 23 23 / 0.1);
+  --ring: #171717;
+  --primary: #171717;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --accent: rgb(0 0 0 / 0.04);
+  --accent-foreground: #171717;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  /* Entity colours, from the data-model doc: one hue per kind, everywhere. */
+  --company: #2f55d4;
+  --tool: #0a8363;
+  --workflow: #9a650b;
+  --doc: #7245d4;
+  --tag: #b82a5b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-company: var(--company);
+  --color-tool: var(--tool);
+  --color-workflow: var(--workflow);
+  --color-doc: var(--doc);
+  --color-tag: var(--tag);
+  --font-sans: var(--font-season), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -80,18 +64,25 @@
 }
 
 @layer base {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
     @apply bg-background text-foreground;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
   }
-
-  /* Respect the OS setting for anyone who asked for less motion. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -102,4 +93,196 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid #171717;
+    outline-offset: 2px;
+  }
+}
+
+/* Hover text slide: each character lifts and its twin slides in from below. */
+@utility nav-text {
+  display: inline-flex;
+  height: 1.25em;
+  overflow: hidden;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* The "Explore with AI" trigger: a brushed-metal rim with a slow reflection. */
+@keyframes ai-rim-reflection {
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -80% 0;
+  }
+}
+
+.ai-metallic-trigger {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(
+      115deg,
+      #b8bbc2 0%,
+      #f8f8f8 24%,
+      #8d9199 48%,
+      #fff 72%,
+      #b4b7be 100%
+    )
+    border-box;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 0 rgb(0 0 0 / 0.05),
+    0 1px 2px rgb(0 0 0 / 0.07);
+  transition:
+    transform 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.ai-metallic-trigger::before {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.95) 48%,
+    transparent 66%
+  );
+  background-size: 260% 100%;
+  content: "";
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ai-rim-reflection 3.4s linear infinite;
+}
+
+.ai-metallic-trigger:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    inset 0 -1px 0 rgb(0 0 0 / 0.06),
+    0 5px 14px rgb(0 0 0 / 0.1);
+}
+
+.ai-metallic-trigger:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.ai-metallic-trigger[data-popup-open] {
+  background:
+    linear-gradient(#171717, #171717) padding-box,
+    linear-gradient(115deg, #777 0%, #e6e6e6 30%, #5f5f5f 58%, #d8d8d8 100%)
+    border-box;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    0 4px 12px rgb(0 0 0 / 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-metallic-trigger::before {
+    animation: none;
+  }
+}
+
+[data-thinking-orb] {
+  display: block;
+}
+
+/* Footer wordmark: a slow light sweep across the giant display type. */
+.footer-wordmark {
+  background-image: linear-gradient(
+    100deg,
+    rgb(0 0 0 / 0.1) 0%,
+    rgb(0 0 0 / 0.1) 32%,
+    rgb(0 0 0 / 0.42) 48%,
+    rgb(0 0 0 / 0.1) 64%,
+    rgb(0 0 0 / 0.1) 100%
+  );
+  background-size: 260% 100%;
+  background-clip: text;
+  animation: footer-wordmark-sweep 9s linear infinite;
+}
+
+.footer-wordmark .footer-wordmark-dot {
+  display: inline-block;
+  animation: footer-wordmark-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes footer-wordmark-sweep {
+  from {
+    background-position: 160% 50%;
+  }
+  to {
+    background-position: -60% 50%;
+  }
+}
+
+@keyframes footer-wordmark-pulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-0.06em) scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-wordmark,
+  .footer-wordmark .footer-wordmark-dot {
+    animation: none;
+  }
+}
+
+/* The rendered markdown file: the same tint scheme as the data-model doc. */
+.md-file {
+  color: var(--muted-foreground);
+}
+.md-file .fm {
+  color: #8a92a3;
+}
+.md-file .fm .k {
+  color: var(--muted-foreground);
+}
+.md-file .h {
+  font-weight: 500;
+  color: var(--foreground);
+}
+.md-file .h .mark {
+  color: #8a92a3;
+}
+.md-file .h1 {
+  font-size: 1.12em;
+}
+.md-file .fence {
+  color: #8a92a3;
+}
+.md-file .code {
+  color: var(--doc);
+}
+.md-file .ic {
+  background: #e9ecf2;
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.md-file .li {
+  color: #8a92a3;
+}
+.md-file .b {
+  font-weight: 500;
+  color: var(--foreground);
 }

@@ -12,6 +12,7 @@ exists; running it after every patch is how people stop running it at all.
 | Once per unit of work | `pnpm check` (Biome + `tsgo`) | seconds |
 | Final handoff | `pnpm tsc` then `pnpm lint` | a minute or two |
 | Touched `convex/` | `pnpm test:convex` | seconds |
+| Touched the renderer | `pnpm test:run tests/render-markdown.test.ts` — the goldens, byte for byte | ~1s |
 | Docs only | `pnpm docs:check` | instant |
 | Everything | `pnpm validate` | minutes |
 
@@ -78,6 +79,8 @@ agents — at once, and the failure mode is always memory, never git.
   no Convex client. A file opts into a DOM with `// @vitest-environment jsdom`.
 - Convex FUNCTION tests live at `convex/**/*.test.ts` — `convex-test` needs an
   `import.meta.glob` beside `convex/` — and run via `pnpm test:convex`.
+  `convex/catalog.test.ts` seeds the whole catalog once and asks every
+  question a page asks; extend it when you add a read.
 - `.env.test` is committed and non-secret, which is what makes a fresh clone
   hermetic: green with no credentials, so CI runners and cloud agents need zero
   setup.

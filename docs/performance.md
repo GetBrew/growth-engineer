@@ -1,5 +1,9 @@
 # Performance
 
+> The catalog's own caching contract — what is cached per ref, what awaits
+> `connection()`, why nothing is caught inside a cached scope — lives in
+> [`architecture.md`](architecture.md). This page is the general mechanics.
+
 Three mechanisms, each guarding a different way an app gets slow.
 
 ## 1. Cache Components — the static shell
@@ -22,13 +26,14 @@ export default function Page() {
 }
 
 async function Loader() {
-  const data = await tenantQuery(api.things.list, {})
-  return <Things data={data} />
+  await connection() // a list read: the build stops here, never at Convex
+  const tools = await loadNewTools()
+  return <ToolGrid tools={tools} />
 }
 
 // ❌ nothing prerenders — the whole route waits
-export default async function Page() {
-  const { userId } = await auth()
+export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
+  const { handle } = await params
   …
 }
 ```
@@ -102,5 +107,7 @@ a wrong one.
   read limit that takes the page down next year.
 - `Promise.all` independent reads. Two sequential awaits on unrelated data is
   two round trips for no reason.
+- Join by point reads: `getMany` in `convex/shared/reads.ts` loads a set of
+  ids in one parallel round; an `await` inside a loop is a Biome error here.
 - Suspense the leaf, not the page: start the promise early, suspend only the
   component that needs the result.

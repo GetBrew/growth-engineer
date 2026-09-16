@@ -9,7 +9,7 @@ reading a diff.
 | `typecheck (×5)` | each TypeScript program compiles, in parallel |
 | `build` | the production build works — on the PR — and no route's client JS grew past its budget |
 | `test (unit)` | the hermetic unit suite |
-| `test (convex)` | the authorization tests |
+| `test (convex)` | the seed → every catalog read, plus the authorization negatives |
 | `hygiene` | docs links, Convex codegen freshness, dead code, duplicate deps |
 
 ## Why the typecheck is a matrix

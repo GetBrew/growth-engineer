@@ -1,58 +1,52 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist_Mono } from 'next/font/google'
+import localFont from 'next/font/local'
 import type { ReactNode } from 'react'
 import { ConvexClientProvider } from '@/components/convex-client-provider'
-import { ThemeProvider } from '@/components/theme-provider'
+import { clientEnv } from '@/lib/env'
 
 import './globals.css'
 
 /**
  * The root layout is a SHELL. Under `cacheComponents: true` it is prerendered
- * once and reused by every route, so nothing here may read request-time data
- * (`auth()`, `cookies()`, `headers()`, `searchParams`) outside a `<Suspense>`
- * boundary — a dynamic read up here un-prerenders the entire application.
- *
- * `<ClerkProvider>` and `<ConvexClientProvider>` are client components that
- * only set up context, so they are shell-safe. Anything that READS the session
- * belongs further down, behind its own boundary.
+ * once and reused by every route, so nothing here reads request-time data.
+ * Both providers only set up context; anything that READS the session lives
+ * further down, behind its own Suspense boundary.
  */
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
+// Season (variable). TRIAL license — see README before this repo goes public.
+const season = localFont({
+  src: '../public/fonts/season/SeasonCollectionVF-TRIAL.woff2',
+  variable: '--font-season',
+  display: 'swap',
+  weight: '100 900',
+})
+
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(clientEnv.NEXT_PUBLIC_SITE_URL),
   title: {
-    default: 'Starter',
-    template: '%s · Starter',
+    default: 'growth.engineer',
+    template: '%s · growth.engineer',
   },
-  description: 'Next.js + Convex + Clerk starter.',
+  description:
+    'The agent-friendly marketplace for go-to-market tools and workflows. Every tool and workflow is one markdown file any agent can run.',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    // `suppressHydrationWarning` is required by next-themes: it writes the
-    // theme class onto <html> before React hydrates, which is what prevents a
-    // flash of the wrong theme. The attribute scopes the exemption to this one
-    // element.
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-svh antialiased`}
-      >
+    <html
+      className={`${season.variable} ${geistMono.variable} h-full antialiased`}
+      lang="en"
+    >
+      <body className="min-h-full">
         <ClerkProvider afterSignOutUrl="/">
-          <ConvexClientProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-            </ThemeProvider>
-          </ConvexClientProvider>
+          <ConvexClientProvider>{children}</ConvexClientProvider>
         </ClerkProvider>
       </body>
     </html>

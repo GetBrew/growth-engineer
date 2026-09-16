@@ -1,16 +1,23 @@
 {
-  "generatedAt": "2026-09-16T17:25:59.375Z",
+  "generatedAt": "2026-09-16T20:00:14.535Z",
   "policy": {
     "maxPercentGrowth": 0.05,
     "maxAbsoluteGrowthBytes": 15360,
     "allowedGrowth": "minimum of percentage and absolute thresholds"
   },
   "routes": {
-    "/": 1235985,
-    "/_global-error": 567843,
-    "/_not-found": 1235985,
-    "/dashboard": 1276536,
-    "/sign-in/[[...sign-in]]": 1235985,
-    "/sign-up/[[...sign-up]]": 1235985
+    "/": 1275359,
+    "/_global-error": 567825,
+    "/_not-found": 1268093,
+    "/companies": 1270829,
+    "/companies/[handle]": 1270829,
+    "/hacks": 1270829,
+    "/sign-in/[[...sign-in]]": 1268093,
+    "/sign-up/[[...sign-up]]": 1268093,
+    "/submit": 1270829,
+    "/tools": 1270829,
+    "/tools/[handle]/[name]": 1277902,
+    "/workflows": 1272404,
+    "/workflows/[owner]/[name]": 1277902
   }
 }

@@ -36,6 +36,12 @@
       "!!**/_generated",
       "!!**/*.gen.*",
       "!!**/pnpm-lock.yaml",
+      // Vendored (MIT): components/marketing/thinking-orb/thinking-orbs.js is
+      // upstream code, kept byte-identical so it can be diffed against the
+      // source on upgrade.
+      "!!components/marketing/thinking-orb/thinking-orbs.js",
+      // Static assets: Biome 2.5 parses .svg as HTML and wants <title>s.
+      "!!public",
       // Fixtures are INPUTS and snapshots are compared as raw strings;
       // formatting either one changes the thing under test.
       "!!tests/fixtures",
@@ -118,6 +124,9 @@
         "useDefaultSwitchClause": "off"
       },
       "suspicious": {
+        // Flags `if (ref.current)` and `if (!canvas)` on `T | null` values as
+        // "unnecessary" from partial inference. The guard is the point.
+        "noUnnecessaryConditions": "off",
         // Import cycles are a build-order bug waiting for a cold start. This
         // is the gate that keeps them out, and it is why every program mirrors
         // the path map (Biome reads the nearest tsconfig.json only).
@@ -141,6 +150,32 @@
   },
 
   "overrides": [
+    {
+      // The schema is the ONE table registry the design doc reads top to
+      // bottom (docs/data-model.md). The line cap exists to catch a module
+      // with more than one reason to change; this one has exactly one.
+      "includes": ["convex/schema.ts"],
+      "linter": {
+        "rules": {
+          "style": { "noExcessiveLinesPerFile": "off" }
+        }
+      }
+    },
+    {
+      // The seed: data tables plus one long, deliberately sequential mutation.
+      // Inside a Convex transaction parallel awaits buy nothing, and the ORDER
+      // of the writes (tags before taggings, tools before workflows) is the
+      // logic — so the loop rules and the complexity budget measure the wrong
+      // thing here.
+      "includes": ["convex/seed/**"],
+      "linter": {
+        "rules": {
+          "style": { "noExcessiveLinesPerFile": "off" },
+          "performance": { "noAwaitInLoops": "off" },
+          "complexity": { "noExcessiveCognitiveComplexity": "off" }
+        }
+      }
+    },
     {
       // The gateway is the one module allowed to construct a raw Convex
       // client — that is what makes the ban above enforceable everywhere else.
