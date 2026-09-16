@@ -71,6 +71,20 @@ describe('catalog', () => {
       format: 'workflow',
     })
     expect(top.every((row) => row.workflow.format === 'workflow')).toBe(true)
+    // The two hacks rank last of twelve on Top and New. An over-fetch-and-
+    // filter returned nothing here (seen live); the format indexes return both.
+    const topHacks = await t.query(api.workflows.list, {
+      sort: 'top',
+      format: 'hack',
+      limit: 3,
+    })
+    expect(topHacks.map((row) => row.workflow.format)).toEqual(['hack', 'hack'])
+    const newHacks = await t.query(api.workflows.list, {
+      sort: 'new',
+      format: 'hack',
+      limit: 3,
+    })
+    expect(newHacks).toHaveLength(2)
   })
 
   test('a workflow page has its version, tools and history', async () => {

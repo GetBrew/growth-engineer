@@ -1,5 +1,5 @@
 /**
- * Growth.Engineer — convex/schema.ts   (v0.3.1: v0.3 grilling decisions + auth.header)
+ * Growth.Engineer — convex/schema.ts   (v0.3.1: v0.3 grilling decisions + auth.header + by_format_top/new)
  *
  * What people see: companies, the tools they make, and workflows (growth hacks
  * are one-tool workflows). Every tool and workflow renders to ONE markdown
@@ -276,6 +276,8 @@ export default defineSchema({
     .index('by_top', ['listed', 'topScore'])
     .index('by_new', ['listed', 'publishedAt'])
     .index('by_format_trending', ['listed', 'format', 'trendScore'])
+    .index('by_format_top', ['listed', 'format', 'topScore'])
+    .index('by_format_new', ['listed', 'format', 'publishedAt'])
     .index('by_team', ['teamId', 'status'])
     .index('by_author', ['authorId', 'status'])
     .index('by_moderation', ['moderation', 'status'])

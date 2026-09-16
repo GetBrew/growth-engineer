@@ -95,8 +95,9 @@ freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
 
 ### Convex data
 
-- `convex/schema.ts` is v0.3.1 of the design doc, verbatim plus `auth.header`.
-  Keep it the single `defineSchema` export.
+- `convex/schema.ts` is v0.3.1 of the design doc, verbatim plus `auth.header`
+  and the `by_format_top` / `by_format_new` listing indexes. Keep it the
+  single `defineSchema` export.
 - Every read uses an index and is bounded (`.take(n)`); `.filter(...)` is a
   scan. Every list is paged. Joins are parallel point reads (`getMany` in
   [`convex/shared/reads.ts`](convex/shared/reads.ts)) — never an `await` in a loop.

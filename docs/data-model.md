@@ -1,9 +1,11 @@
 # Data model
 
 `convex/schema.ts` is the source of truth (v0.3.1: the design doc's v0.3
-"grilling decisions applied", plus one additive amendment, `auth.header`,
+"grilling decisions applied", plus two additive amendments — `auth.header`,
 because the API section of a file renders the header the key is sent in and
-v0.3 had nowhere to store it). This page is the map.
+v0.3 had nowhere to store it; and `by_format_top` / `by_format_new` on
+`workflows`, so Top and New with a format read an index instead of
+over-fetching). This page is the map.
 
 ## Identity
 

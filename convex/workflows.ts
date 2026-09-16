@@ -24,11 +24,16 @@ const sortValidator = v.union(
   v.literal('new')
 )
 const formatValidator = v.union(v.literal('hack'), v.literal('workflow'))
-/** The listing index behind each sort; all three key on `listed`. */
+/** The listing index behind each sort, with and without a format. */
 const SORT_INDEX = {
   trending: 'by_trending',
   top: 'by_top',
   new: 'by_new',
+} as const
+const FORMAT_SORT_INDEX = {
+  trending: 'by_format_trending',
+  top: 'by_format_top',
+  new: 'by_format_new',
 } as const
 
 type Row = {
@@ -85,11 +90,7 @@ async function toRows(
   }))
 }
 
-/**
- * Trending, Top or New, optionally one format. Trending + format has its own
- * index; the other two combinations over-fetch (3×) and filter in memory,
- * which is fine at these sizes and keeps the index count honest.
- */
+/** Trending, Top or New, optionally one format. Every combination reads its own index. */
 export const list = publicQuery({
   args: {
     sort: sortValidator,
@@ -99,28 +100,20 @@ export const list = publicQuery({
   returns: v.array(workflowRow),
   handler: async (ctx, args) => {
     const limit = Math.min(args.limit ?? 30, MAX_LIST)
-    let workflows: Array<Doc<'workflows'>>
-    if (args.sort === 'trending' && args.format) {
-      const format = args.format
-      workflows = await ctx.db
-        .query('workflows')
-        .withIndex('by_format_trending', (q) =>
-          q.eq('listed', true).eq('format', format)
-        )
-        .order('desc')
-        .take(limit)
-    } else {
-      const fetched = await ctx.db
-        .query('workflows')
-        .withIndex(SORT_INDEX[args.sort], (q) => q.eq('listed', true))
-        .order('desc')
-        .take(args.format ? limit * 3 : limit)
-      workflows = args.format
-        ? fetched
-            .filter((workflow) => workflow.format === args.format)
-            .slice(0, limit)
-        : fetched
-    }
+    const format = args.format
+    const workflows = format
+      ? await ctx.db
+          .query('workflows')
+          .withIndex(FORMAT_SORT_INDEX[args.sort], (q) =>
+            q.eq('listed', true).eq('format', format)
+          )
+          .order('desc')
+          .take(limit)
+      : await ctx.db
+          .query('workflows')
+          .withIndex(SORT_INDEX[args.sort], (q) => q.eq('listed', true))
+          .order('desc')
+          .take(limit)
     return await toRows(ctx, workflows)
   },
 })

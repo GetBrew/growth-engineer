@@ -68,8 +68,14 @@ async function ToolsSearch({ searchParams }: { searchParams: SearchParams }) {
   const state = { words: rawState.words, chips }
   const { results } = await searchTools(state.words.join(' '), state.chips)
 
+  // A chip nobody can match is noise: only tags with tools, plus any chip
+  // already in the URL so it can be toggled off.
   const byNamespace = (namespace: string) =>
-    tags.filter((tag) => tag.namespace === namespace)
+    tags.filter(
+      (tag) =>
+        tag.namespace === namespace &&
+        (tag.counts.tools > 0 || state.chips.includes(tag.key))
+    )
   const labelFor = new Map(tags.map((tag) => [tag.key, tag.label]))
 
   return (
