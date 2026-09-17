@@ -40,6 +40,12 @@
       // upstream code, kept byte-identical so it can be diffed against the
       // source on upgrade.
       "!!components/marketing/thinking-orb/thinking-orbs.js",
+      // Vendored agent skill: the same source also lives in
+      // GetBrew/growth-engineer-proxy, and the two copies are kept BYTE-IDENTICAL
+      // so a drift check is a plain `diff -r`. Formatting it here would fork them
+      // on the first save. It carries its own suite instead:
+      // `node --test .agents/skills/upload-to-growth-cdn/scripts/*.test.mjs`.
+      "!!.agents",
       // Static assets: Biome 2.5 parses .svg as HTML and wants <title>s.
       "!!public",
       // Fixtures are INPUTS and snapshots are compared as raw strings;
