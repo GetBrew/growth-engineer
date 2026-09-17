@@ -40,7 +40,7 @@ export function PoweredByBrew({ className }: { className?: string }) {
   return (
     <a
       className={cn(
-        'inline-flex items-center gap-1.5 text-[11px] text-foreground/60 transition-colors hover:text-foreground',
+        'inline-flex items-center gap-1.5 text-[11px] text-foreground/62 transition-colors hover:text-foreground',
         className
       )}
       href="https://brew.new"
@@ -48,14 +48,17 @@ export function PoweredByBrew({ className }: { className?: string }) {
       target="_blank"
     >
       <span>Powered by</span>
-      <Image
-        alt="Brew"
-        className="size-4 rounded-sm object-contain"
-        height={16}
-        src="/logos/brew.jpeg"
-        width={16}
-      />
-      <span className="font-medium text-foreground/80">Brew</span>
+      {/* The mark is the wordmark, so it replaces the name rather than
+          sitting beside it. */}
+      <span className="relative block h-4 w-12">
+        <Image
+          alt="Brew"
+          className="object-contain"
+          fill
+          sizes="48px"
+          src="/logos/brew.svg"
+        />
+      </span>
     </a>
   )
 }

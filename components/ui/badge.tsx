@@ -3,11 +3,11 @@ import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 const badgeVariants = cva(
-  'inline-flex h-6 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 font-normal text-[11px] leading-none',
+  'inline-flex h-6 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 font-medium text-[11px] leading-none',
   {
     variants: {
       variant: {
-        outline: 'border-border bg-background text-foreground/60',
+        outline: 'border-border bg-background text-foreground/62',
         soft: 'border-transparent bg-black/[0.04] text-foreground/70',
         solid: 'border-foreground bg-foreground text-background',
         company: 'border-company/40 bg-company/5 text-company',

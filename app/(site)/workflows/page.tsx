@@ -18,10 +18,10 @@ export const metadata: Metadata = {
 }
 
 const HERO_LOGOS = [
-  ['Slack', '/logos/slack.svg'],
-  ['Notion', '/logos/notion.svg'],
-  ['GitHub', '/logos/github.svg'],
-  ['Stripe', '/logos/stripe.svg'],
+  ['Slack', '/logos/slack.jpg'],
+  ['Notion', '/logos/notion.png'],
+  ['GitHub', '/logos/github.png'],
+  ['Canva', '/logos/canva.jpg'],
 ] as const
 
 /**
@@ -47,7 +47,7 @@ export default function WorkflowsPage({
               <div className="flex -space-x-2">
                 {HERO_LOGOS.map(([name, src]) => (
                   <span
-                    className="grid size-9 place-items-center rounded-full border-2 border-white bg-white p-1.5 shadow-sm"
+                    className="grid size-9 place-items-center rounded-full border border-border bg-white p-1.5 ring-2 ring-white"
                     key={name}
                   >
                     <Image

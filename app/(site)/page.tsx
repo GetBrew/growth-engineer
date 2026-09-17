@@ -31,7 +31,7 @@ export default function HomePage() {
         <h1 className="mt-10 max-w-[18ch] text-balance font-semibold text-4xl tracking-[-0.04em] sm:text-6xl">
           The tools and workflows behind your next growth move
         </h1>
-        <p className="mt-5 max-w-xl text-balance text-foreground/65 text-lg leading-7">
+        <p className="mt-5 max-w-xl text-balance text-foreground/62 text-lg leading-7">
           Companies, the tools they make, and workflows that put tools to work.
           Every tool and workflow is one markdown file any agent can run —
           copying it is the whole setup.
@@ -46,11 +46,11 @@ export default function HomePage() {
             <span className="sr-only">Search tools</span>
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-5 size-5 -translate-y-1/2 text-foreground/45"
+              className="pointer-events-none absolute top-1/2 left-5 size-5 -translate-y-1/2 text-foreground/55"
             />
             <input
               autoComplete="off"
-              className="focus-ring h-14 w-full rounded-full border border-border bg-white pr-32 pl-13 text-base shadow-[0_10px_40px_rgb(0_0_0/0.06)] placeholder:text-foreground/40"
+              className="focus-ring h-14 w-full rounded-full border border-border bg-white pr-32 pl-13 text-base shadow-[0_10px_40px_rgb(0_0_0/0.06)] placeholder:text-foreground/55"
               name="q"
               placeholder="enrich contacts has:mcp agent:native"
               type="search"
@@ -99,7 +99,7 @@ export default function HomePage() {
           <SectionHeading
             action={
               <Link
-                className="text-foreground/60 text-sm hover:text-foreground"
+                className="text-foreground/62 text-sm hover:text-foreground"
                 href="/workflows"
               >
                 All workflows →
@@ -118,7 +118,7 @@ export default function HomePage() {
           <SectionHeading
             action={
               <Link
-                className="text-foreground/60 text-sm hover:text-foreground"
+                className="text-foreground/62 text-sm hover:text-foreground"
                 href="/tools"
               >
                 All tools →

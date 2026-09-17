@@ -41,7 +41,7 @@ function isActive(pathname: string | null, href: string): boolean {
 
 function Links({ pathname }: { pathname: string | null }) {
   return (
-    <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+    <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
       {NAV_ITEMS.map((item) => {
         const current = isActive(pathname, item.href)
         return (

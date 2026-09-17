@@ -127,10 +127,10 @@ export async function WorkflowsIndex({
           <span className="sr-only">Search workflows</span>
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-foreground/40"
+            className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-foreground/55"
           />
           <input
-            className="focus-ring h-10 w-full rounded-full border border-border bg-white pr-4 pl-10 text-sm placeholder:text-foreground/35"
+            className="focus-ring h-10 w-full rounded-full border border-border bg-white pr-4 pl-10 text-sm placeholder:text-foreground/55"
             defaultValue={q}
             name="q"
             placeholder="Search workflows…"

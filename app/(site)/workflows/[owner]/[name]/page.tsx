@@ -60,7 +60,7 @@ export default function WorkflowPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-10">
       <Link
-        className="text-foreground/60 text-sm transition-colors hover:text-foreground"
+        className="text-foreground/62 text-sm transition-colors hover:text-foreground"
         href="/workflows"
       >
         ← All workflows
@@ -139,7 +139,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
         <div className="flex flex-wrap gap-2">
           {tools.map(({ tool, company }) => (
             <Link
-              className="focus-ring flex items-center gap-2 rounded-full border border-border bg-white py-1.5 pr-3 pl-1.5 text-xs transition-colors hover:border-foreground/25"
+              className="focus-ring flex items-center gap-2 rounded-full border border-border bg-white py-1.5 pr-3 pl-1.5 text-xs transition-colors hover:border-foreground/20"
               href={`/tools/${tool.key}`}
               key={tool._id}
             >
@@ -174,7 +174,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
           title={workflow.title}
         />
       ) : (
-        <p className="rounded-2xl border border-border border-dashed px-6 py-10 text-center text-foreground/60 text-sm">
+        <p className="rounded-2xl border border-border border-dashed px-6 py-10 text-center text-foreground/62 text-sm">
           The file for this workflow has not been rendered yet.
         </p>
       )}
@@ -199,7 +199,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
                   >
                     {tool.name}
                   </Link>
-                  <p className="truncate text-foreground/60 text-sm">
+                  <p className="truncate text-foreground/62 text-sm">
                     {tool.summary}
                   </p>
                 </div>
@@ -235,7 +235,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
                 >
                   v{entry.version}
                 </Link>
-                <span className="text-foreground/50 text-xs">
+                <span className="text-foreground/55 text-xs">
                   {new Date(entry.createdAt).toISOString().slice(0, 10)}
                   {entry.scanStatus === 'flagged' ? ' · flagged' : ''}
                 </span>

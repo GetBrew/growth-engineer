@@ -3,7 +3,7 @@ import { CONTEXT_LOGO_HOST } from '@/lib/logos-host'
 
 /**
  * Company logos. A seeded company carries a site-relative `logo.url`
- * (`/logos/clay.jpeg`); the logo job later replaces it with a context.dev URL
+ * (`/logos/clay.png`); the logo job later replaces it with a context.dev URL
  * built here. One builder, one client id, instead of the URL pasted around.
  */
 

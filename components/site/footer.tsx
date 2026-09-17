@@ -45,7 +45,7 @@ const YEAR = new Date().getFullYear()
 
 export function Footer() {
   return (
-    <footer className="overflow-hidden border-black/8 border-t bg-[#fafafa]">
+    <footer className="overflow-hidden border-border border-t bg-[#fafafa]">
       <div className="mx-auto max-w-6xl px-5 pt-14 pb-10 sm:px-8">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16">
           <div className="flex max-w-sm flex-col gap-6">
@@ -53,7 +53,7 @@ export function Footer() {
               <BrandMark />
               <PoweredByBrew />
             </div>
-            <p className="text-foreground/60 text-sm leading-6">
+            <p className="text-foreground/62 text-sm leading-6">
               Companies, the tools they make, and workflows that put tools to
               work. Every tool and workflow is one markdown file any agent can
               run.
@@ -105,8 +105,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 border-black/8 border-t pt-6 text-foreground/55 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <p>© {YEAR} growth.engineer. Powered by Brew.</p>
+        <div className="mt-14 flex flex-col gap-3 border-border border-t pt-6 text-foreground/55 text-xs sm:flex-row sm:items-center sm:justify-between">
+          <p>© {YEAR} growth.engineer · Powered by Brew.</p>
           <p>
             Reads are open to every agent. Copy a file; that is the whole setup.
           </p>
@@ -117,7 +117,7 @@ export function Footer() {
         aria-hidden="true"
         className="footer-wordmark -mb-[0.02em] w-full select-none whitespace-nowrap px-2 text-center font-semibold text-[15vw] text-transparent leading-[0.82] tracking-[-0.055em]"
       >
-        growth<span className="footer-wordmark-dot">.</span>engineer
+        growth.engineer
       </div>
     </footer>
   )

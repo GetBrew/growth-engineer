@@ -56,7 +56,7 @@ export function OpenInAgentMenu({
     { label: 'Open in Claude', href: `https://claude.ai/new?q=${prompt}` },
   ]
   const itemClass =
-    'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-foreground/75 text-sm hover:bg-black/[0.04] hover:text-foreground'
+    'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-foreground/70 text-sm hover:bg-black/[0.04] hover:text-foreground'
 
   function copyForAgent() {
     navigator.clipboard.writeText(markdown).catch(() => undefined)
@@ -68,7 +68,7 @@ export function OpenInAgentMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`ai-metallic-trigger focus-ring flex h-10 items-center gap-2 rounded-full px-4 text-sm ${open ? 'text-white' : 'text-foreground/80'}`}
+        className={`ai-metallic-trigger focus-ring flex h-10 items-center gap-2 rounded-full px-4 text-sm ${open ? 'text-white' : 'text-foreground/70'}`}
         data-popup-open={open ? '' : undefined}
         onClick={() => setOpen((value) => !value)}
         type="button"

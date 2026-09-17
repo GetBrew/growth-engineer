@@ -17,7 +17,7 @@ export default function SiteError({
       <h1 className="font-semibold text-2xl tracking-[-0.03em]">
         The catalog is unavailable
       </h1>
-      <p className="text-foreground/60 text-sm leading-6">
+      <p className="text-foreground/62 text-sm leading-6">
         The backend did not answer. The files themselves have not changed; try
         again in a moment.
       </p>

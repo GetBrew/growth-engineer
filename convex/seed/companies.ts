@@ -45,11 +45,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'brew.new',
     'email',
     'Email for modern teams and agents: design, send and automate on-brand campaigns and lifecycle flows.',
-    'brew.jpeg',
+    'brew.svg',
     {
       docs: 'https://brew.new/developers',
       description:
-        'Brew builds and sends beautiful, on-brand email campaigns and lifecycle automations, with an MCP server and API so agents can run the whole loop.',
+        "Brew is an AI-driven email marketing platform that learns your brand's colors, fonts, voice, and reference emails to generate on-brand email drafts from plain-language prompts.",
     }
   ),
   company(
@@ -58,7 +58,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'clay.com',
     'data-provider',
     'Enrich people and companies with data from many providers, then build lists from the results.',
-    'clay.jpeg'
+    'clay.png',
+    {
+      description:
+        'Clay is a go-to-market data platform that centralizes first- and third-party data, offers more than 200 data providers, and delivers real-time signals such as job changes and promotions.',
+    }
   ),
   company(
     'apollo',
@@ -66,9 +70,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'apollo.io',
     'data-provider',
     'Contact data, work emails and outbound sequences in one place.',
-    'apollo.jpeg',
+    'apollo.webp',
     {
       docs: 'https://docs.apollo.io',
+      description:
+        'Apollo.io is an AI-driven sales and revenue platform that helps modern B2B teams find, engage, and close prospects faster.',
     }
   ),
   company(
@@ -77,9 +83,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'attio.com',
     'crm',
     'A CRM you can shape to your process in an afternoon.',
-    'attio.webp',
+    'attio.png',
     {
       docs: 'https://docs.attio.com',
+      description:
+        'Attio is an AI-native CRM platform that orchestrates revenue-focused workflows, agents, and automations to build pipelines, advance deals, and grow accounts.',
     }
   ),
   company(
@@ -91,6 +99,8 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'hubspot.png',
     {
       docs: 'https://developers.hubspot.com',
+      description:
+        'HubSpot is a unified customer platform that combines marketing, sales, service, content, data, and revenue tools into a single AI-enhanced ecosystem.',
     }
   ),
   company(
@@ -99,7 +109,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'salesforce.com',
     'crm',
     'The system of record for enterprise sales teams.',
-    'salesforce.svg'
+    'salesforce.png',
+    {
+      description:
+        'Salesforce is a cloud-based software company that provides a comprehensive customer relationship management platform.',
+    }
   ),
   company(
     'slack',
@@ -107,9 +121,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'slack.com',
     'messaging',
     'Where the team already is — route signals to the right channel.',
-    'slack.svg',
+    'slack.jpg',
     {
       docs: 'https://api.slack.com',
+      description:
+        'Slack is a collaboration platform that unifies messaging, file sharing, and workflow automation for teams of all sizes.',
     }
   ),
   company(
@@ -118,9 +134,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'notion.so',
     'docs',
     'Docs, wikis and lightweight databases for the whole playbook.',
-    'notion.svg',
+    'notion.png',
     {
       docs: 'https://developers.notion.com',
+      description:
+        'Notion provides an AI-enhanced workspace that unifies note-taking, project management, and knowledge sharing.',
     }
   ),
   company(
@@ -129,10 +147,12 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'posthog.com',
     'product-analytics',
     'Product analytics, session replay and feature flags, self-serve.',
-    'posthog.svg',
+    'posthog.jpg',
     {
       docs: 'https://posthog.com/docs',
       github: 'https://github.com/PostHog/posthog',
+      description:
+        'PostHog is a product analytics platform that provides self-driving product capabilities.',
     }
   ),
   company(
@@ -141,9 +161,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'amplitude.com',
     'product-analytics',
     'Behavioral analytics across the funnel.',
-    'amplitude.svg',
+    'amplitude.jpg',
     {
       docs: 'https://amplitude.com/docs',
+      description:
+        'Amplitude is an AI-powered product analytics platform that helps businesses understand user behavior, optimize experiences, and drive growth.',
     }
   ),
   company(
@@ -152,9 +174,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'mixpanel.com',
     'product-analytics',
     'Conversion and retention analytics on product events.',
-    'mixpanel.png',
+    'mixpanel.jpg',
     {
       docs: 'https://developer.mixpanel.com',
+      description:
+        'Mixpanel is a product analytics platform that enables teams to track, analyze, and act on user behavior across web, mobile, and other digital experiences.',
     }
   ),
   company(
@@ -166,6 +190,8 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'metabase.svg',
     {
       github: 'https://github.com/metabase/metabase',
+      description:
+        'Metabase is an open-source analytics platform that enables data teams and their customers to explore, visualize, and share data securely.',
     }
   ),
   company(
@@ -174,7 +200,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'crustdata.com',
     'data-provider',
     'Live company, headcount and hiring data.',
-    'crustdata.jpeg'
+    'crustdata.png',
+    {
+      description:
+        'Crustdata provides real-time, enriched people and company data for AI-driven sales, recruiting, investment, and other enterprise workflows.',
+    }
   ),
   company(
     'firecrawl',
@@ -186,6 +216,8 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     {
       docs: 'https://docs.firecrawl.dev',
       github: 'https://github.com/mendableai/firecrawl',
+      description:
+        'Firecrawl is a web-data infrastructure platform that enables AI systems and agents to search, scrape, and interact with live web content at scale.',
     }
   ),
   company(
@@ -194,9 +226,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'zoom.us',
     'video',
     'Book and run the call, then work the attendance list.',
-    'zoom.svg',
+    'zoom.jpg',
     {
       docs: 'https://developers.zoom.us',
+      description:
+        'Zoom is a global communications platform that provides video conferencing, online meetings, chat, phone, and webinar solutions for individuals and businesses.',
     }
   ),
   company(
@@ -205,9 +239,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'anthropic.com',
     'ai-model',
     'Claude: models and agent tooling for drafting, reasoning and classification.',
-    'anthropic.svg',
+    'anthropic.png',
     {
       docs: 'https://docs.anthropic.com',
+      description:
+        "Claude is Anthropic's AI assistant for conversation, reasoning, code generation, collaboration, and connected work.",
     }
   ),
   company(
@@ -219,6 +255,8 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'openai.svg',
     {
       docs: 'https://platform.openai.com/docs',
+      description:
+        'OpenAI is a research-driven AI company that develops advanced machine-learning models and products, including ChatGPT and tools for developers, businesses, and educators.',
     }
   ),
   company(
@@ -227,9 +265,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'figma.com',
     'design',
     'Design the asset that ships.',
-    'figma.svg',
+    'figma.png',
     {
       docs: 'https://www.figma.com/developers/api',
+      description:
+        'Figma is a cloud-based collaborative platform that unifies design, prototyping, development, and presentation tools in a single AI-native workspace.',
     }
   ),
   company(
@@ -238,9 +278,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'canva.com',
     'design',
     'Create, review and edit designs without a designer in the loop.',
-    'canva.svg',
+    'canva.jpg',
     {
       docs: 'https://www.canva.dev/docs/connect',
+      description:
+        'Canva is a cloud-based design platform that helps individuals and teams create professional graphics, presentations, videos, documents, and marketing assets.',
     }
   ),
   company(
@@ -249,9 +291,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'dropbox.com',
     'storage',
     'Find, share and act on files.',
-    'dropbox.svg',
+    'dropbox.png',
     {
       docs: 'https://www.dropbox.com/developers/documentation',
+      description:
+        'Dropbox is a cloud-based platform that lets individuals and teams store, organize, and share files securely across devices.',
     }
   ),
   company(
@@ -260,9 +304,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'github.com',
     'code',
     'Triage pull requests, issues and CI where the code lives.',
-    'github.svg',
+    'github.png',
     {
       docs: 'https://docs.github.com/rest',
+      description:
+        'GitHub is a global developer platform that hosts source code, facilitates collaboration, and provides AI-powered tools to accelerate software creation.',
     }
   ),
   company(
@@ -271,9 +317,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'asana.com',
     'project-management',
     'Turn a signal into a task somebody owns.',
-    'asana.svg',
+    'asana.png',
     {
       docs: 'https://developers.asana.com',
+      description:
+        'Asana is an enterprise work-management platform that helps cross-functional teams plan, track, and execute projects.',
     }
   ),
   company(
@@ -282,9 +330,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'trello.com',
     'project-management',
     'Track the follow-up on a board.',
-    'trello.svg',
+    'trello.png',
     {
       docs: 'https://developer.atlassian.com/cloud/trello',
+      description:
+        'Trello is a visual collaboration platform that helps teams organize work, track projects, and streamline workflows using boards, lists, and cards.',
     }
   ),
   company(
@@ -293,9 +343,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'stripe.com',
     'payments',
     'Accept payments and run subscriptions; revenue events as triggers.',
-    'stripe.svg',
+    'stripe.jpg',
     {
       docs: 'https://docs.stripe.com',
+      description:
+        'Stripe is a global financial infrastructure platform that enables businesses of all sizes to accept payments, manage billing, and build custom revenue models.',
     }
   ),
   company(
@@ -304,9 +356,11 @@ export const SEED_COMPANIES: ReadonlyArray<SeedCompany> = [
     'clerk.com',
     'auth',
     'Authentication and user management; sign-up events as triggers.',
-    'clerk.svg',
+    'clerk.png',
     {
       docs: 'https://clerk.com/docs',
+      description:
+        'Clerk is a developer-focused platform that provides complete user management and authentication solutions.',
     }
   ),
 ]
