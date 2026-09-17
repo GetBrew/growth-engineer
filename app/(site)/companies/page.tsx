@@ -121,10 +121,10 @@ async function CompanyDirectory({
           <span className="sr-only">Search companies</span>
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-foreground/40"
+            className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-foreground/55"
           />
           <input
-            className="focus-ring h-10 w-full rounded-full border border-border bg-white pr-4 pl-10 text-sm placeholder:text-foreground/35"
+            className="focus-ring h-10 w-full rounded-full border border-border bg-white pr-4 pl-10 text-sm placeholder:text-foreground/55"
             defaultValue={q}
             name="q"
             placeholder="Search companies…"
@@ -151,9 +151,13 @@ async function CompanyDirectory({
                   {entries.length}
                 </span>
               </div>
-              <div className="grid gap-x-10 gap-y-1 sm:grid-cols-2">
-                {entries.map(({ company }) => (
-                  <CompanyRow company={company} key={company._id} />
+              <div className="grid grid-cols-1 gap-x-10 gap-y-1 sm:grid-cols-2">
+                {entries.map(({ company, access }) => (
+                  <CompanyRow
+                    access={access.map((type) => type.toUpperCase())}
+                    company={company}
+                    key={company._id}
+                  />
                 ))}
               </div>
             </section>

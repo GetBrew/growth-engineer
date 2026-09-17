@@ -15,7 +15,7 @@ export default function NotFound() {
       <Navbar />
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
         <h1 className="font-semibold text-2xl tracking-[-0.03em]">Not found</h1>
-        <p className="max-w-md text-foreground/60 text-sm leading-6">
+        <p className="max-w-md text-foreground/62 text-sm leading-6">
           No company, tool or workflow lives at this address. Keys are
           permanent, so if a link once worked it has an alias — or it never
           existed.

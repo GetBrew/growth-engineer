@@ -101,36 +101,52 @@ export function WorkflowRow({ workflow, tools }: WorkflowRowData) {
 
       <ArrowRight
         aria-hidden="true"
-        className="absolute top-6 right-0 size-5 text-foreground/50 transition-all duration-300 group-hover:translate-x-1 group-hover:text-foreground sm:static sm:ml-auto sm:self-center"
+        className="absolute top-6 right-0 size-5 text-foreground/55 transition-all duration-300 group-hover:translate-x-1 group-hover:text-foreground sm:static sm:ml-auto sm:self-center"
       />
     </article>
   )
 }
 
-export function CompanyRow({ company }: { company: Doc<'companies'> }) {
+export function CompanyRow({
+  company,
+  access = [],
+}: {
+  company: Doc<'companies'>
+  /** How agents reach this company's tools: MCP, CLI, API. Real, not decorative. */
+  access?: ReadonlyArray<string>
+}) {
   return (
     <Link
-      className="group/row focus-ring -mx-3 flex items-center gap-4 rounded-2xl px-3 py-3 transition-colors hover:bg-black/[0.03]"
+      className="group/row focus-ring -mx-3 flex items-center gap-4 rounded-2xl px-3 py-3 transition-colors hover:bg-black/[0.04]"
       href={`/companies/${company.key}`}
     >
       <EntityLogo
-        className="transition-transform duration-300 group-hover/row:-rotate-6 group-hover/row:scale-105"
+        className="shadow-[0_4px_14px_rgba(23,23,23,0.06)] transition-shadow duration-300 group-hover/row:shadow-[0_7px_20px_rgba(23,23,23,0.10)]"
         domain={company.domain}
         logoUrl={company.logo?.url}
         name={company.name}
         size={44}
       />
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium text-[15px] tracking-[-0.01em]">
-          {company.name}
-        </span>
-        {company.tagline ? (
-          <span className="block truncate text-foreground/60 text-sm">
-            {company.tagline}
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span className="truncate font-medium text-[15px] tracking-[-0.01em]">
+            {company.name}
           </span>
-        ) : null}
+          {access.map((label) => (
+            <span
+              className="rounded-full border border-border bg-white px-2 py-0.5 font-medium text-[10px] text-foreground/55"
+              key={label}
+            >
+              {label}
+            </span>
+          ))}
+        </span>
+        {/* The description is the fact; the tagline is ours. Prefer the fact. */}
+        <span className="mt-0.5 line-clamp-2 text-foreground/62 text-sm sm:line-clamp-1">
+          {company.description ?? company.tagline}
+        </span>
       </span>
-      <span className="grid size-7 shrink-0 place-items-center rounded-full border border-border bg-white text-foreground/70 transition-colors duration-300 group-hover/row:border-foreground group-hover/row:bg-foreground group-hover/row:text-background">
+      <span className="grid size-7 shrink-0 place-items-center rounded-full border border-border bg-white text-foreground/70 transition-colors duration-300 group-hover/row:border-foreground/20 group-hover/row:text-foreground">
         <ArrowRight aria-hidden="true" className="size-3.5" />
       </span>
     </Link>

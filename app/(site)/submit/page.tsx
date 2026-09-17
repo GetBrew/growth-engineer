@@ -61,19 +61,19 @@ async function SubmitContent() {
       <ol className="flex flex-col gap-5">
         {STEPS.map(([title, detail], index) => (
           <li className="flex gap-4" key={title}>
-            <span className="grid size-8 shrink-0 place-items-center rounded-full border border-border font-semibold text-foreground/60 text-sm">
+            <span className="grid size-8 shrink-0 place-items-center rounded-full border border-border font-semibold text-foreground/62 text-sm">
               {index + 1}
             </span>
             <div className="flex flex-col gap-1">
               <p className="font-semibold">{title}</p>
-              <p className="text-foreground/65 text-sm leading-6">{detail}</p>
+              <p className="text-foreground/62 text-sm leading-6">{detail}</p>
             </div>
           </li>
         ))}
       </ol>
       <div className="rounded-2xl border border-border bg-[#fafafa] p-6 text-sm leading-6">
         <p className="font-medium">Until the form ships</p>
-        <p className="mt-1 text-foreground/65">
+        <p className="mt-1 text-foreground/62">
           Read a published file first — for example{' '}
           <Link
             className="underline underline-offset-4"

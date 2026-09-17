@@ -142,7 +142,6 @@
     inset 0 -1px 0 rgb(0 0 0 / 0.05),
     0 1px 2px rgb(0 0 0 / 0.07);
   transition:
-    transform 180ms ease,
     color 180ms ease,
     box-shadow 180ms ease;
 }
@@ -171,7 +170,6 @@
 }
 
 .ai-metallic-trigger:hover {
-  transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.95),
     inset 0 -1px 0 rgb(0 0 0 / 0.06),
@@ -179,7 +177,10 @@
 }
 
 .ai-metallic-trigger:active {
-  transform: translateY(0) scale(0.97);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 0 rgb(0 0 0 / 0.06),
+    0 2px 6px rgb(0 0 0 / 0.09);
 }
 
 .ai-metallic-trigger[data-popup-open] {
@@ -213,13 +214,11 @@
     rgb(0 0 0 / 0.1) 100%
   );
   background-size: 260% 100%;
+  -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
   animation: footer-wordmark-sweep 9s linear infinite;
-}
-
-.footer-wordmark .footer-wordmark-dot {
-  display: inline-block;
-  animation: footer-wordmark-pulse 3.2s ease-in-out infinite;
 }
 
 @keyframes footer-wordmark-sweep {
@@ -231,19 +230,48 @@
   }
 }
 
-@keyframes footer-wordmark-pulse {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
+@media (prefers-reduced-motion: reduce) {
+  .footer-wordmark {
+    animation: none;
   }
-  50% {
-    transform: translateY(-0.06em) scale(1.35);
+}
+
+/*
+ * The mobile menu sheet and its backdrop. The same 220ms and easing the rest
+ * of the site uses; `tw-animate-css` is not a dependency here, so the two
+ * keyframes live where every other motion rule does.
+ */
+.sheet-backdrop {
+  animation: sheet-fade 200ms ease forwards;
+}
+
+.sheet-panel {
+  animation: sheet-drop 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sheet-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .footer-wordmark,
-  .footer-wordmark .footer-wordmark-dot {
+  .sheet-backdrop,
+  .sheet-panel {
     animation: none;
   }
 }

@@ -31,7 +31,7 @@ export function SectionHeading({
           {title}
         </Heading>
         {description ? (
-          <p className="max-w-xl text-foreground/60 text-sm leading-6">
+          <p className="max-w-xl text-foreground/62 text-sm leading-6">
             {description}
           </p>
         ) : null}
@@ -58,7 +58,7 @@ export function PillLink({
         'focus-ring flex h-10 items-center gap-2 rounded-full border px-4 text-sm transition-colors',
         {
           'border-foreground bg-foreground text-background': active,
-          'border-border bg-white text-foreground/60 hover:border-foreground/25 hover:text-foreground':
+          'border-border bg-white text-foreground/62 hover:border-foreground/20 hover:text-foreground':
             !active,
         }
       )}
@@ -72,7 +72,7 @@ export function PillLink({
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="rounded-2xl border border-border border-dashed px-6 py-14 text-center">
-      <p className="font-normal text-base text-foreground/75">{title}</p>
+      <p className="font-medium text-base text-foreground/70">{title}</p>
       {hint ? <p className="mt-1 text-foreground/55 text-sm">{hint}</p> : null}
     </div>
   )

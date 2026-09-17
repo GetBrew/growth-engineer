@@ -11,9 +11,15 @@ import { companyDoc, nullableCompanyDoc } from './shared/validators'
 
 const MAX_LIST = 200
 
+const ACCESS_ORDER = ['mcp', 'cli', 'api'] as const
+
 const categorised = v.object({
   company: companyDoc,
   category: v.optional(v.object({ slug: v.string(), label: v.string() })),
+  /** How agents reach this company's published tools: MCP, CLI, API. */
+  access: v.array(
+    v.union(v.literal('mcp'), v.literal('cli'), v.literal('api'))
+  ),
 })
 
 /** The company's `category:*` tag, if it has an active one. */
@@ -34,7 +40,28 @@ async function categoryOf(
   return tag ? { slug: tag.slug, label: tag.label } : undefined
 }
 
-/** Attach each company's category — what the directory groups by. */
+/**
+ * The ways in across a company's published tools, in setup order. A directory
+ * row states a FACT — this vendor is reachable over MCP — rather than a
+ * decorative badge, so it is read from the tools, never assumed.
+ */
+async function accessOf(
+  ctx: QueryCtx,
+  company: Doc<'companies'>
+): Promise<Array<'mcp' | 'cli' | 'api'>> {
+  const tools = await ctx.db
+    .query('tools')
+    .withIndex('by_company', (q) =>
+      q.eq('companyId', company._id).eq('status', 'published')
+    )
+    .take(20)
+  const types = new Set(
+    tools.flatMap((tool) => tool.access.map((entry) => entry.type))
+  )
+  return ACCESS_ORDER.filter((type) => types.has(type))
+}
+
+/** Attach each company's category and ways in — what the directory shows. */
 async function withCategory(
   ctx: QueryCtx,
   companies: ReadonlyArray<Doc<'companies'>>
@@ -42,12 +69,16 @@ async function withCategory(
   Array<{
     company: Doc<'companies'>
     category?: { slug: string; label: string }
+    access: Array<'mcp' | 'cli' | 'api'>
   }>
 > {
   return await Promise.all(
     companies.map(async (company) => {
-      const category = await categoryOf(ctx, company)
-      return category ? { company, category } : { company }
+      const [category, access] = await Promise.all([
+        categoryOf(ctx, company),
+        accessOf(ctx, company),
+      ])
+      return category ? { company, category, access } : { company, access }
     })
   )
 }

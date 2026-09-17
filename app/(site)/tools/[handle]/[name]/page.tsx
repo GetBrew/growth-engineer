@@ -103,7 +103,7 @@ async function ToolDetail({ params }: { params: Params }) {
               <h1 className="font-semibold text-3xl tracking-[-0.04em] sm:text-4xl">
                 {tool.name}
               </h1>
-              <p className="text-foreground/60 text-sm">
+              <p className="text-foreground/62 text-sm">
                 by{' '}
                 <Link
                   className="text-foreground hover:underline"
@@ -135,7 +135,7 @@ async function ToolDetail({ params }: { params: Params }) {
         <div className="flex flex-wrap gap-2">
           {company.links.website ? (
             <a
-              className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-white px-4 text-sm transition-colors hover:border-foreground/25"
+              className="focus-ring inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-white px-4 text-sm transition-colors hover:border-foreground/20"
               href={company.links.website}
               rel="noreferrer"
               target="_blank"
@@ -145,7 +145,7 @@ async function ToolDetail({ params }: { params: Params }) {
           ) : null}
           {tool.access.find((access) => access.docsUrl)?.docsUrl ? (
             <a
-              className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-white px-4 text-sm transition-colors hover:border-foreground/25"
+              className="focus-ring inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-white px-4 text-sm transition-colors hover:border-foreground/20"
               href={tool.access.find((access) => access.docsUrl)?.docsUrl}
               rel="noreferrer"
               target="_blank"

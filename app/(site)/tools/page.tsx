@@ -89,11 +89,11 @@ async function ToolsSearch({ searchParams }: { searchParams: SearchParams }) {
         <span className="sr-only">Search tools</span>
         <Search
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-5 size-5 -translate-y-1/2 text-foreground/45"
+          className="pointer-events-none absolute top-1/2 left-5 size-5 -translate-y-1/2 text-foreground/55"
         />
         <input
           autoComplete="off"
-          className="focus-ring h-13 w-full rounded-full border border-border bg-white pr-5 pl-13 font-mono text-sm placeholder:text-foreground/40"
+          className="focus-ring h-13 w-full rounded-full border border-border bg-white pr-5 pl-13 font-mono text-sm placeholder:text-foreground/55"
           defaultValue={searchText(state)}
           name="q"
           placeholder="enrich linkedin agent:native has:mcp"
@@ -124,7 +124,7 @@ async function ToolsSearch({ searchParams }: { searchParams: SearchParams }) {
           tags={byNamespace('capability')}
         />
         <details className="group/more">
-          <summary className="focus-ring w-fit cursor-pointer list-none rounded-full text-foreground/60 text-sm hover:text-foreground [&::-webkit-details-marker]:hidden">
+          <summary className="focus-ring w-fit cursor-pointer list-none rounded-full text-foreground/62 text-sm hover:text-foreground [&::-webkit-details-marker]:hidden">
             More filters: motion, channel, category, fit ▾
           </summary>
           <div className="mt-3 flex flex-col gap-3">
@@ -162,7 +162,7 @@ async function ToolsSearch({ searchParams }: { searchParams: SearchParams }) {
             >
               <span className="text-tag">{chip.split(':')[0]}:</span>
               {chip.split(':')[1]}
-              <X aria-hidden="true" className="size-3 text-foreground/50" />
+              <X aria-hidden="true" className="size-3 text-foreground/55" />
             </Link>
           ))}
           <Link
@@ -204,7 +204,7 @@ function ChipRow({
   }
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="w-full text-[11px] text-foreground/50 uppercase tracking-[0.12em] sm:w-32">
+      <span className="w-full text-[11px] text-foreground/55 uppercase tracking-[0.12em] sm:w-32">
         {label}
       </span>
       {tags.map((tag) => (

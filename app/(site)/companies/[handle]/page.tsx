@@ -1,6 +1,7 @@
 import { isValidHandle } from '@convex/model/keys'
 import { AlertTriangle, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { ToolCard, WorkflowRow } from '@/components/catalog/cards'
@@ -76,7 +77,15 @@ async function CompanyDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-12">
-      <header className="flex flex-col gap-6 border-border border-b pb-8 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <Link
+          className="text-foreground/62 text-sm transition-colors hover:text-foreground"
+          href="/companies"
+        >
+          ← All companies
+        </Link>
+      </div>
+      <header className="-mt-6 flex flex-col gap-6 border-border border-b pb-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex gap-4">
           <EntityLogo
             domain={company.domain}
@@ -86,7 +95,7 @@ async function CompanyDetail({ params }: { params: Params }) {
           />
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-semibold text-3xl tracking-[-0.04em] sm:text-4xl">
+              <h1 className="font-semibold text-3xl leading-[1.04] tracking-[-0.04em] sm:text-4xl">
                 {company.name}
               </h1>
               <Badge variant="company">{company.kind.replace('_', ' ')}</Badge>
@@ -103,7 +112,7 @@ async function CompanyDetail({ params }: { params: Params }) {
               </p>
             ) : null}
             {company.description ? (
-              <p className="max-w-2xl text-foreground/60 text-sm leading-6">
+              <p className="max-w-2xl text-foreground/62 text-sm leading-6">
                 {company.description}
               </p>
             ) : null}
@@ -112,7 +121,7 @@ async function CompanyDetail({ params }: { params: Params }) {
         <div className="flex flex-wrap gap-2">
           {links.map(([label, href]) => (
             <a
-              className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-white px-4 text-sm transition-colors hover:border-foreground/25"
+              className="focus-ring inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-white px-4 font-medium text-sm transition-colors hover:border-foreground/20"
               href={href}
               key={label}
               rel="noreferrer"
