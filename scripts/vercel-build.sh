@@ -34,6 +34,33 @@ is_convex_preview_deploy_key() {
   esac
 }
 
+# `next build` reads NEXT_PUBLIC_CONVEX_URL at module scope (lib/env.ts), so a
+# missing one does not fail here — it fails three minutes later, inside page
+# collection, as a Zod trace pointing at `/_not-found`. That error names the
+# variable but not the reason, and the reason is always one of the two below.
+#
+# On the deploy paths `convex deploy` WRITES this variable, so it is only ever
+# missing when no deploy ran. Say that, here, before the build starts.
+require_convex_url() {
+  if [ -n "${NEXT_PUBLIC_CONVEX_URL:-}" ]; then
+    return 0
+  fi
+  echo "############################################################" >&2
+  echo "NEXT_PUBLIC_CONVEX_URL is empty, and no convex deploy ran to" >&2
+  echo "set it. The build cannot start. Fix ONE of these:"            >&2
+  echo                                                                >&2
+  echo "  1. Set CONVEX_DEPLOY_KEY for this environment to a PREVIEW" >&2
+  echo "     key (preview:<team>:<project>|<secret>). Convex then"    >&2
+  echo "     creates a per-branch backend and sets the URL itself."   >&2
+  echo "  2. Or set NEXT_PUBLIC_CONVEX_URL to an existing deployment" >&2
+  echo "     URL (https://<name>.convex.cloud)."                      >&2
+  echo                                                                >&2
+  echo "A BLANK value counts as missing — check for a variable that"  >&2
+  echo "exists in the dashboard with nothing in it."                  >&2
+  echo "############################################################" >&2
+  exit 1
+}
+
 if [ "${VERCEL_ENV:-}" = "production" ]; then
   # Functions are pushed only AFTER the build succeeds — deliberate: a failing
   # build must never push backend changes.
@@ -67,9 +94,11 @@ elif [ "${VERCEL_ENV:-}" = "preview" ] && [ -n "${CONVEX_DEPLOY_KEY:-}" ]; then
     echo "  Skipping convex deploy; building against the existing"      >&2
     echo "  NEXT_PUBLIC_CONVEX_URL instead."                            >&2
     echo "############################################################" >&2
+    require_convex_url
     pnpm run build
   fi
 
 else
+  require_convex_url
   pnpm run build
 fi
