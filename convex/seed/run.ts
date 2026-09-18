@@ -291,8 +291,12 @@ export const run = internalMutation({
           `tool ${seed.key} names unknown company ${seed.companyKey}`
         )
       }
-      const capabilities = seed.capabilities.map((slug) =>
-        tagOrThrow(`capability:${slug}`)
+      // A tool IS one capability now, so it is not TAGGED with one — the key's
+      // own slug names it. The tag is still looked up, for its synonyms: a
+      // person searching "enrichment" must still reach `clay/enrich-contacts`,
+      // and the vocabulary is where that wording lives.
+      const capability = tagOrThrow(
+        `capability:${seed.key.split('/')[1] ?? ''}`
       )
       // Nobody has checked these facts: unverified, whatever the access says.
       const assessment = computeAgentLevel({
@@ -317,7 +321,8 @@ export const run = internalMutation({
           seed.name,
           companyNames.get(seed.companyKey) ?? '',
           seed.summary,
-          ...capabilities.flatMap((tag) => [tag.label, ...tag.synonyms]),
+          capability.label,
+          ...capability.synonyms,
         ].join(' '),
       }
       const existing = await ctx.db
@@ -350,7 +355,7 @@ export const run = internalMutation({
       await setTaggings(
         ctx,
         { type: 'tool', id },
-        [...capabilities, ...derived],
+        derived,
         isPublished,
         existing?.publishedAt ?? now,
         counters
@@ -382,10 +387,6 @@ export const run = internalMutation({
         moderation: 'approved' as const,
         status: 'published' as const,
         provenance: { source: 'admin' as const },
-        format:
-          distinctTools.length === 1
-            ? ('hack' as const)
-            : ('workflow' as const),
         listed: true,
         toolCount: distinctTools.length,
         trendScore,
@@ -540,7 +541,7 @@ const RESET_TABLES = [
 /**
  * Delete the seeded catalog, a bounded number of rows per call. Returns how
  * many rows are still left; call again until it is zero. Never touches
- * `users`, `teams` or anything Clerk owns.
+ * `users`, `teams` or anything an auth provider owns.
  */
 export const reset = internalMutation({
   args: {},

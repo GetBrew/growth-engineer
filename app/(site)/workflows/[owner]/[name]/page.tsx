@@ -8,12 +8,9 @@ import { AlertTriangle } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
+import { connection } from 'next/server'
 import { Suspense } from 'react'
-import {
-  AccessBadges,
-  AgentLevelBadge,
-  FormatBadge,
-} from '@/components/catalog/badges'
+import { AccessBadges, AgentLevelBadge } from '@/components/catalog/badges'
 import { EntityLogo } from '@/components/catalog/entity-logo'
 import { Page } from '@/components/catalog/primitives'
 import {
@@ -89,6 +86,12 @@ async function WorkflowDetail({ params }: { params: Params }) {
     loadDocument('workflow', resolved.key),
   ])
   if (!result) {
+    // `resolveAlias` is an UNCACHED read, and Next's prospective prerender
+    // walks this branch speculatively — where it reaches the Convex client and
+    // reports its `Math.random()` as an unstable value, dropping the route out
+    // of prerendering entirely. Saying plainly that the miss path is
+    // request-time keeps the hit path (the normal case) prerenderable.
+    await connection()
     const alias =
       resolved.version === undefined
         ? await resolveAlias('workflow', resolved.key)
@@ -115,7 +118,6 @@ async function WorkflowDetail({ params }: { params: Params }) {
       <header className="flex flex-col gap-6 border-border border-b pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex max-w-3xl flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <FormatBadge format={workflow.format} />
             <Badge variant="soft">v{version.version}</Badge>
             {workflow.status === 'deprecated' ? (
               <Badge variant="workflow">

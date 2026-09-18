@@ -5,11 +5,13 @@
   // files, exports and dependencies nothing reaches.
   //
   // `exports` / `types` are WARNINGS on purpose, and the current list is a
-  // CLOSED SET, not noise: `tenantMutation` and `systemQuery` complete the
-  // gateway's read/write × human/machine matrix (shipping half of it would
-  // make the next caller invent a fifth transport), and `AppErrorCode` is the
-  // public type of the error payload. Everything else was deleted rather than
-  // shipped unused. If this list grows, delete the addition or use it.
+  // CLOSED SET, not noise. `systemQuery` / `systemMutation` lost their only
+  // caller with the auth provider's webhook, and they stay because
+  // lib/convex/gateway.ts is THE server transport: deleting the machine half
+  // means the next cron or webhook hand-rolls `fetchMutation` with a token,
+  // which is the exact mistake that file exists to prevent. `AppErrorCode` is
+  // the public type of the error payload. Everything else was deleted rather
+  // than shipped unused. If this list grows, delete the addition or use it.
   //
   // Unused FILES and unused DEPENDENCIES stay errors — those are never
   // intentional.

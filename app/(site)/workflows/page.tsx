@@ -73,7 +73,7 @@ export default function WorkflowsPage({
       </section>
       <Page>
         <Suspense fallback={<WorkflowRowsSkeleton />}>
-          <WorkflowsIndex base="/workflows" searchParams={searchParams} />
+          <WorkflowsIndex searchParams={searchParams} />
         </Suspense>
       </Page>
     </>

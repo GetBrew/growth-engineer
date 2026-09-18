@@ -41,50 +41,52 @@ describe('catalog', () => {
     expect(await t.query(api.companies.getByKey, { key: 'nobody' })).toBeNull()
   })
 
-  test('a tool page has its company and capabilities', async () => {
-    const result = await t.query(api.tools.getByKey, { key: 'clay/clay' })
+  test('a tool is ONE function of one company', async () => {
+    const result = await t.query(api.tools.getByKey, {
+      key: 'clay/enrich-contacts',
+    })
     expect(result?.company.key).toBe('clay')
+    expect(result?.tool.name).toBe('Enrich contacts')
     expect(result?.tool.agentLevel).toBe('unverified')
-    expect(result?.capabilities.map((c) => c.slug)).toContain('enrich-contacts')
+    // Every way in names the exact call — that is what makes it one function.
+    expect(
+      result?.tool.access.every((entry) => entry.operation.length > 0)
+    ).toBe(true)
+    // The product is not a listing: there is no `clay/clay`.
+    expect(await t.query(api.tools.getByKey, { key: 'clay/clay' })).toBeNull()
+  })
+
+  test('one company lists many tools', async () => {
+    const clay = await t.query(api.tools.listByCompany, { companyKey: 'clay' })
+    expect(clay.map((tool) => tool.key).sort()).toEqual([
+      'clay/build-audience',
+      'clay/enrich-contacts',
+      'clay/find-work-emails',
+    ])
   })
 
   test('a tool with no verified way in is not published, but its company lists', async () => {
     expect(
-      await t.query(api.tools.getByKey, { key: 'salesforce/salesforce' })
+      await t.query(api.tools.getByKey, { key: 'salesforce/manage-crm' })
     ).toBeNull()
     expect(
       await t.query(api.companies.getByKey, { key: 'salesforce' })
     ).not.toBeNull()
   })
 
-  test('workflow lists honour sort and the hack format', async () => {
+  test('workflow lists honour sort, and there is only one kind', async () => {
     const trending = await t.query(api.workflows.list, { sort: 'trending' })
     expect(trending.length).toBe(12)
     expect(trending[0]?.workflow.key).toBe('brew/funding-signal-outbound')
-    const hacks = await t.query(api.workflows.list, {
-      sort: 'trending',
-      format: 'hack',
-    })
-    expect(hacks.map((row) => row.workflow.format)).toEqual(['hack', 'hack'])
-    const top = await t.query(api.workflows.list, {
-      sort: 'top',
-      format: 'workflow',
-    })
-    expect(top.every((row) => row.workflow.format === 'workflow')).toBe(true)
-    // The two hacks rank last of twelve on Top and New. An over-fetch-and-
-    // filter returned nothing here (seen live); the format indexes return both.
-    const topHacks = await t.query(api.workflows.list, {
-      sort: 'top',
-      format: 'hack',
-      limit: 3,
-    })
-    expect(topHacks.map((row) => row.workflow.format)).toEqual(['hack', 'hack'])
-    const newHacks = await t.query(api.workflows.list, {
-      sort: 'new',
-      format: 'hack',
-      limit: 3,
-    })
-    expect(newHacks).toHaveLength(2)
+    // Each sort reads its own index and returns the same set in a different
+    // order — a growth hack is a workflow, so nothing filters them apart.
+    const top = await t.query(api.workflows.list, { sort: 'top' })
+    const fresh = await t.query(api.workflows.list, { sort: 'new' })
+    expect(top).toHaveLength(12)
+    expect(fresh).toHaveLength(12)
+    expect(top.map((row) => row.workflow.key).sort()).toEqual(
+      trending.map((row) => row.workflow.key).sort()
+    )
   })
 
   test('a workflow page has its version, tools and history', async () => {
@@ -92,7 +94,9 @@ describe('catalog', () => {
       key: 'brew/clay-waterfall-order',
     })
     expect(result?.version.version).toBe(1)
-    expect(result?.tools.map((entry) => entry.tool.key)).toEqual(['clay/clay'])
+    expect(result?.tools.map((entry) => entry.tool.key)).toEqual([
+      'clay/find-work-emails',
+    ])
     expect(result?.versions).toHaveLength(1)
     expect(
       await t.query(api.workflows.getByKey, {
@@ -104,7 +108,7 @@ describe('catalog', () => {
 
   test('workflows are reachable from the tools and companies they use', async () => {
     const byTool = await t.query(api.workflows.listByTool, {
-      toolKey: 'brew/brew',
+      toolKey: 'brew/write-copy',
     })
     expect(byTool.length).toBeGreaterThan(3)
     const byCompany = await t.query(api.workflows.listByCompany, {
@@ -117,7 +121,8 @@ describe('catalog', () => {
 
   test('every file is rendered, within its line cap, and reachable by ref', async () => {
     const refs = await t.query(api.documents.listRefs, {})
-    expect(refs.length).toBe(25 + 25 + 12)
+    // 25 companies + 42 per-function tools + 12 workflows.
+    expect(refs.length).toBe(25 + 42 + 12)
     const documents = await Promise.all(
       refs.map(({ ref }) => t.query(api.documents.getByRef, { ref }))
     )
@@ -130,9 +135,9 @@ describe('catalog', () => {
       expect(document?.lineCount, ref).toBeLessThanOrEqual(cap)
     })
     const clay = await t.query(api.documents.getByRef, {
-      ref: 'tool:clay/clay',
+      ref: 'tool:clay/enrich-contacts',
     })
-    expect(clay?.markdown).toContain('# Clay')
+    expect(clay?.markdown).toContain('# Enrich contacts')
     expect(clay?.markdown.trimEnd().endsWith('- Never print API keys.')).toBe(
       true
     )
@@ -147,23 +152,22 @@ describe('catalog', () => {
       )
     ).toBe(true)
 
+    // A tool IS its capability now, so it is no longer TAGGED with one: the
+    // capability namespace belongs to workflows. Words still reach it, through
+    // the tool's name and the vocabulary's synonyms in `searchText`.
     const enrich = await t.query(api.tools.search, {
+      q: 'enrichment',
+      chips: [],
+    })
+    expect(enrich.results.map((card) => card.tool.key)).toContain(
+      'clay/enrich-contacts'
+    )
+
+    const capabilityChip = await t.query(api.tools.search, {
       q: '',
       chips: ['capability:enrich-contacts'],
     })
-    expect(enrich.results.map((card) => card.tool.key)).toContain('clay/clay')
-
-    // AND across groups: enrich-contacts tools that ALSO have an MCP server.
-    const both = await t.query(api.tools.search, {
-      q: '',
-      chips: ['capability:enrich-contacts', 'has:mcp'],
-    })
-    expect(
-      both.results.every((card) =>
-        card.tool.access.some((a) => a.type === 'mcp')
-      )
-    ).toBe(true)
-    expect(both.results.length).toBeLessThanOrEqual(enrich.results.length)
+    expect(capabilityChip.results).toEqual([])
 
     const nonsense = await t.query(api.tools.search, {
       q: '',
@@ -181,8 +185,9 @@ describe('catalog', () => {
       'unverified',
     ])
     const unverified = agent.find((tag) => tag.slug === 'unverified')
-    // 25 seeded tools, 4 with no verifiable way in (in_review, unlisted).
-    expect(unverified?.counts.tools).toBe(21)
+    // 42 seeded tools; the 5 whose product has no verifiable way in are
+    // in_review and unlisted, so they are not counted.
+    expect(unverified?.counts.tools).toBe(37)
     expect(unverified?.derived).toBe(true)
   })
 
@@ -195,11 +200,11 @@ describe('catalog', () => {
       async (ctx) =>
         await ctx.db
           .query('tools')
-          .withIndex('by_key', (q) => q.eq('key', 'clay/clay'))
+          .withIndex('by_key', (q) => q.eq('key', 'clay/enrich-contacts'))
           .unique()
     )
     if (!clay) {
-      throw new Error('the seed must contain clay/clay')
+      throw new Error('the seed must contain clay/enrich-contacts')
     }
     const marked = await t.mutation(internal.documents.markToolStale, {
       toolId: clay._id,

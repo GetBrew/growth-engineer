@@ -50,9 +50,3 @@ export function AccessBadges({ access }: { access: ReadonlyArray<Access> }) {
     </>
   )
 }
-
-export function FormatBadge({ format }: { format: 'hack' | 'workflow' }) {
-  return format === 'hack' ? (
-    <Badge variant="workflow">Growth hack</Badge>
-  ) : null
-}

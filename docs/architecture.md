@@ -14,13 +14,13 @@ agent / browser ─▶ proxy.ts ──────▶ app/(site)/… ──▶ l
 
 ## Layers
 
-**`proxy.ts`** — two jobs, in order. First, the markdown files: a `.md` URL
-or any page requested with `Accept: text/markdown` is rewritten to the file
-handler before auth runs (agents carry no session, and on Vercel the proxy
-runs ahead of the CDN cache, which does not key on `Vary`). Second, the
-coarse auth gate from the one route policy in `lib/auth/routes.ts`: `/submit`
-and `/api/*` are private by default, with the four public API carve-outs
-listed with their reasons.
+**`proxy.ts`** — one job: the markdown files. A `.md` URL or any page
+requested with `Accept: text/markdown` is rewritten to the file handler
+(agents carry no session, and on Vercel the proxy runs ahead of the CDN
+cache, which does not key on `Vary`). There is NO auth gate here — no auth
+provider exists, every route is public, and when auth returns the check goes
+in the page or handler that owns the data. Path matching in a proxy can
+diverge from how Next routes a request, so a gate here is not a gate.
 
 **Pages** (`app/(site)/`) — Server Components. A page's default export is
 synchronous and returns a `<Suspense>`; the async child does every
@@ -49,7 +49,7 @@ a `try/catch` inside that scope would cache the empty result for the whole
 | Read | Treatment | Why |
 | --- | --- | --- |
 | Per key (`[handle]`, `[owner]/[name]`, the `.md` file) | `'use cache: remote'` + `cacheTag(ref)` + one hour fresh / a day stale | Keyed by request-time params, so it never runs at build; `revalidateTag(ref, 'max')` purges the page and its file together |
-| Lists (`/`, `/companies`, `/workflows`, `/hacks`) | plain read after `await connection()` in the Suspense child | The build stops at the boundary and never contacts Convex; Convex's query cache is the cache |
+| Lists (`/`, `/companies`, `/workflows`, `/map`) | plain read after `await connection()` in the Suspense child | The build stops at the boundary and never contacts Convex; Convex's query cache is the cache |
 | Search (`/tools?q=`) | plain read, never cached here | unique per URL |
 | Errors | never caught inside a cached scope | `error.tsx` renders them; an outage is never cached as an empty catalog |
 
@@ -76,7 +76,7 @@ takes over when that stops being enough.
 
 The tier builders in `convex/shared/builders.ts` declare AND consume the
 transport args, so a handler physically cannot read a caller-supplied id — it
-reads `ctx.actor`. The catalog is `publicQuery` (anyone); the Clerk mirror is
+reads `ctx.actor`. The catalog is `publicQuery` (anyone); a user mirror is
 `serviceMutation` (machine only, unreachable from a browser);
 `internalMutation` is confined to the seed and the render pipeline.
 `convex/model/*` is pure so Next can bundle the key grammar and the renderer

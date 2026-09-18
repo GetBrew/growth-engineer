@@ -1,14 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import {
-  AUTH_ONLY_ROUTE_PATTERNS,
-  PRIVATE_ROUTE_PATTERNS,
-  PUBLIC_API_ROUTE_PATTERNS,
-} from '@/lib/auth/routes'
 import { hasBackslashInPath, markdownRewriteTarget } from '@/proxy'
 
 /**
- * The route policy is the security boundary for every page, and the markdown
- * rewrite is how every agent reaches a file. Both are cheap to pin.
+ * The markdown rewrite is how every agent reaches a file, and it runs for
+ * every request — cheap to pin, expensive to get wrong.
+ *
+ * The route-policy tests that used to live here went with the auth provider:
+ * every route is public now, so there is no policy left to assert. They come
+ * back with the gate, in the pages and handlers that own it.
  */
 
 describe('hasBackslashInPath', () => {
@@ -19,7 +18,7 @@ describe('hasBackslashInPath', () => {
     }
   )
 
-  test.each(['/', '/tools', '/api/health', '/sign-in/factor-one'])(
+  test.each(['/', '/tools', '/api/health', '/workflows/brew/x'])(
     'allows %s',
     (pathname) => {
       expect(hasBackslashInPath(pathname)).toBe(false)
@@ -64,27 +63,5 @@ describe('markdown file rewrite', () => {
         accept: null,
       })
     ).toBeNull()
-  })
-})
-
-describe('route policy', () => {
-  test('the whole /api tree is private by default', () => {
-    expect(PRIVATE_ROUTE_PATTERNS).toContain('/api(.*)')
-  })
-
-  test('every public API carve-out is under /api', () => {
-    for (const pattern of PUBLIC_API_ROUTE_PATTERNS) {
-      expect(pattern.startsWith('/api')).toBe(true)
-    }
-  })
-
-  test('the public API list stays short enough to audit by reading it', () => {
-    expect(PUBLIC_API_ROUTE_PATTERNS.length).toBeLessThanOrEqual(5)
-  })
-
-  test('sign-in and sign-up are auth-only, never private', () => {
-    for (const pattern of AUTH_ONLY_ROUTE_PATTERNS) {
-      expect(PRIVATE_ROUTE_PATTERNS).not.toContain(pattern)
-    }
   })
 })

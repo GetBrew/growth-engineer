@@ -6,11 +6,15 @@ import { z } from 'zod'
  * away as a 500. `clientEnv` ships to the browser (`NEXT_PUBLIC_*` only);
  * `serverEnv()` is read lazily so importing this module from a client
  * component cannot pull a secret into the bundle.
+ *
+ * NO AUTH PROVIDER YET. Every read is public and no human signs in, so the
+ * only server secret is the service token. When auth returns, its keys are
+ * added here first — a provider whose configuration is optional is a provider
+ * that is silently off in production.
  */
 
 const clientSchema = z.object({
   NEXT_PUBLIC_CONVEX_URL: z.url(),
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
   /** Absolute origin of this deployment — `/llms.txt` and the files use it. */
   NEXT_PUBLIC_SITE_URL: z.url().default('http://localhost:3000'),
   /** logos.context.dev public client id; absent = local logos only. */
@@ -20,20 +24,16 @@ const clientSchema = z.object({
 // Next inlines `process.env.NEXT_PUBLIC_*` only where written out literally.
 export const clientEnv = clientSchema.parse({
   NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID:
     process.env.NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID,
 })
 
 const serverSchema = z.object({
-  CLERK_SECRET_KEY: z.string().min(1),
   // The shared secret every server -> Convex call and the revalidate route
-  // carry. Convex verifies it before trusting the caller's claim about WHO is
-  // acting; it is never a person's authority by itself.
+  // carry. It proves the call came from OUR server; it is transport authority,
+  // never a person's.
   CONVEX_SERVICE_TOKEN: z.string().min(16),
-  CLERK_WEBHOOK_SECRET: z.string().min(1).optional(),
 })
 
 let cachedServerEnv: z.infer<typeof serverSchema> | null = null

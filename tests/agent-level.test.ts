@@ -16,12 +16,14 @@ const officialMcp: Access = {
   official: true,
   transport: 'remote',
   url: 'https://mcp.example/mcp',
+  operation: 'example_enrich_contacts',
   auth: { method: 'oauth', selfServe: true },
 }
 const officialApi: Access = {
   type: 'api',
   official: true,
   baseUrl: 'https://api.example/v1',
+  operation: 'POST /enrich-contacts',
   auth: { method: 'api_key', envVar: 'X', selfServe: true },
 }
 const gatedApi: Access = {
@@ -34,6 +36,7 @@ const communityCli: Access = {
   maintainer: 'jdoe',
   installCommand: 'npm i -g x',
   binary: 'x',
+  operation: 'clay enrich-contacts',
   auth: { method: 'none', selfServe: true },
 }
 

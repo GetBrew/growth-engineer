@@ -1,6 +1,5 @@
 import 'server-only'
 
-import { auth } from '@clerk/nextjs/server'
 import { fetchMutation, fetchQuery } from 'convex/nextjs'
 import type {
   FunctionArgs,
@@ -14,15 +13,21 @@ import { clientEnv, serverEnv } from '@/lib/env'
  * through here; `convex/nextjs` is banned everywhere else by Biome's
  * `noRestrictedImports` (this file is the one override).
  *
- * Three transports, and the difference is not stylistic:
+ * Two transports, and the difference is not stylistic:
  *
  *   publicQuery  — nobody is acting. The catalog reads. No token, no identity;
  *                  the Convex function must be built with `publicQuery` too.
- *   tenant*      — a VERIFIED HUMAN is acting, read from the Clerk session on
- *                  this request. Anything a signed-in user triggered.
- *   system*      — a MACHINE is acting: a webhook, a cron, a queue drain. It
+ *   system*      — a MACHINE is acting: a cron, a queue drain, a webhook. It
  *                  carries the service token and NO person, so a guard that
  *                  checks for an acting user can never mistake it for one.
+ *
+ * THE HUMAN TRANSPORT IS GONE WITH THE AUTH PROVIDER, not forgotten. It read
+ * the session on the request and attached `actingUserId` / `actingOrgId`
+ * alongside the service token, because the token proves only that a call came
+ * from our deployment — it is never authority to act as a person. Convex still
+ * enforces that pairing (`requireUserActor` in convex/shared/auth.ts refuses a
+ * token that names nobody), so the tier is waiting, not weakened. Restoring it
+ * is this file plus a provider; it is not a redesign.
  *
  * The transport args are OPTIONAL at the wire (the browser path never sends
  * them), so a hand-threaded token that goes missing is invisible to `tsc` and
@@ -46,44 +51,8 @@ export async function publicQuery<Query extends FunctionReference<'query'>>(
   return await fetchQuery(query, args, convexOptions)
 }
 
-async function tenantTransport(): Promise<Transport> {
-  const { userId, orgId, orgRole } = await auth()
-  return {
-    serviceToken: serverEnv().CONVEX_SERVICE_TOKEN,
-    ...(userId ? { actingUserId: userId } : {}),
-    ...(orgId ? { actingOrgId: orgId } : {}),
-    ...(orgRole ? { actingOrgRole: orgRole } : {}),
-  }
-}
-
 function systemTransport(): Transport {
   return { serviceToken: serverEnv().CONVEX_SERVICE_TOKEN }
-}
-
-/** Read as the signed-in user of THIS request. */
-export async function tenantQuery<Query extends FunctionReference<'query'>>(
-  query: Query,
-  args: Omit<FunctionArgs<Query>, keyof Transport>
-): Promise<FunctionReturnType<Query>> {
-  return await fetchQuery(
-    query,
-    { ...args, ...(await tenantTransport()) } as FunctionArgs<Query>,
-    convexOptions
-  )
-}
-
-/** Write as the signed-in user of THIS request. */
-export async function tenantMutation<
-  Mutation extends FunctionReference<'mutation'>,
->(
-  mutation: Mutation,
-  args: Omit<FunctionArgs<Mutation>, keyof Transport>
-): Promise<FunctionReturnType<Mutation>> {
-  return await fetchMutation(
-    mutation,
-    { ...args, ...(await tenantTransport()) } as FunctionArgs<Mutation>,
-    convexOptions
-  )
 }
 
 /** Read as a machine principal. No person is acting. */
@@ -98,7 +67,7 @@ export async function systemQuery<Query extends FunctionReference<'query'>>(
   )
 }
 
-/** Write as a machine principal: a webhook, a cron, a queue drain. */
+/** Write as a machine principal: a cron, a queue drain, a webhook. */
 export async function systemMutation<
   Mutation extends FunctionReference<'mutation'>,
 >(

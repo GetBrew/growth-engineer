@@ -91,6 +91,21 @@ export async function loadWorkflowsByCompany(companyKey: string) {
   return await publicQuery(api.workflows.listByCompany, { companyKey })
 }
 
+/**
+ * The relationship map for one node. Cached under the node's own ref, so
+ * `revalidateTag(ref)` purges the map alongside the page and the `.md` file —
+ * the graph can never show an edge the page has already forgotten.
+ */
+export async function loadNeighborhood(
+  type: 'company' | 'tool' | 'workflow',
+  key: string
+) {
+  'use cache: remote'
+  cacheTag(formatRef(type, key))
+  cacheLife(PER_KEY_LIFE)
+  return await publicQuery(api.map.neighborhood, { type, key })
+}
+
 /** An old key → its current one, or null. Rare; not cached. */
 export async function resolveAlias(entityType: EntityType, key: string) {
   return await publicQuery(api.aliases.resolve, { entityType, key })
@@ -98,6 +113,11 @@ export async function resolveAlias(entityType: EntityType, key: string) {
 
 /* ─────────────────────────────────── lists ───────────────────────────────── */
 /* Call these only after `await connection()` in the Suspense child.          */
+
+/** The whole graph's shape plus every focusable node. A list read. */
+export async function loadMapOverview() {
+  return await publicQuery(api.map.overview, {})
+}
 
 export async function loadCompanies(limit = 200) {
   return await publicQuery(api.companies.list, { limit })
@@ -109,14 +129,9 @@ export async function loadNewTools(limit = 12) {
 
 export async function loadWorkflows(
   sort: 'trending' | 'top' | 'new',
-  format: 'hack' | 'workflow' | undefined,
   limit = 30
 ) {
-  return await publicQuery(api.workflows.list, {
-    sort,
-    ...(format ? { format } : {}),
-    limit,
-  })
+  return await publicQuery(api.workflows.list, { sort, limit })
 }
 
 export async function loadActiveTags() {
@@ -133,15 +148,8 @@ export async function searchTools(q: string, chips: ReadonlyArray<string>) {
   })
 }
 
-export async function searchWorkflows(
-  q: string,
-  format: 'hack' | 'workflow' | undefined
-) {
-  return await publicQuery(api.workflows.search, {
-    q,
-    ...(format ? { format } : {}),
-    limit: 30,
-  })
+export async function searchWorkflows(q: string) {
+  return await publicQuery(api.workflows.search, { q, limit: 30 })
 }
 
 export async function searchCompanies(q: string) {

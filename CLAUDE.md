@@ -9,7 +9,7 @@ Quick orientation (full rules in `AGENTS.md`):
 - **The markdown file is the product.** Every tool and workflow renders to one
   file through `convex/model/render_markdown.ts`; files are generated, never
   hand-edited; the format is golden-tested against the design doc's examples.
-- **Keys are permanent** (`clay`, `clay/clay`, `brew/intent-to-meeting`);
+- **Keys are permanent** (`clay`, `clay/enrich-contacts`, `brew/intent-to-meeting`);
   stored references are internal ids; a rename adds a `keyAliases` row.
 - **Validation is proportional**: `pnpm exec biome check --write <touched
   files>` + the exact test files while editing; `pnpm check` once per unit;

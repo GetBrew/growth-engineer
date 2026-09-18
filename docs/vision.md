@@ -42,9 +42,9 @@ That single decision shapes everything else:
 | Entity | Key | What it is |
 | --- | --- | --- |
 | **Company** | `clay` | A vendor, open-source project or person that makes tools. |
-| **Tool** | `clay/clay` | One product, with its ways in (MCP, CLI, API) and its agent level. What it does lives in capability tags. A company's only tool uses its product name. |
+| **Tool** | `clay/enrich-contacts` | ONE function an agent can call, tied to a specific public API endpoint, MCP tool or CLI subcommand of a company's product. Every way in names its `operation`. A company with three functions has three tools. |
 | **Workflow** | `brew/intent-to-meeting` | Steps across tools that reach a result. Frozen versions (`@3`); the current one renders the file. |
-| **Growth hack** | `brew/clay-waterfall-order` | A workflow with exactly one tool — a specific way to use it. Same format. |
+| **Growth hack** | `brew/clay-waterfall-order` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
 
 Each company has many tools. Each workflow combines tools from different
 companies. Each tool is reachable over MCP, CLI or API — a tool with no way in

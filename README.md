@@ -3,9 +3,9 @@
 The agent-friendly marketplace for go-to-market tools and workflows.
 
 People come here to find three things: **companies**, the **tools** those
-companies make, and **workflows** that put tools to work. A **growth hack** is
-a workflow that uses a single tool. Every tool and workflow is **one markdown
-file any agent can run** — copying that file is the whole setup.
+companies make, and **workflows** that put tools to work. Every tool and
+workflow is **one markdown file any agent can run** — copying that file is the
+whole setup.
 
 Powered by [Brew](https://brew.new). Built on
 [`GetBrew/next-convex-clerk-starter`](https://github.com/GetBrew/next-convex-clerk-starter).
@@ -20,10 +20,11 @@ readable by people and runnable by agents: the same page is a markdown file
 with the setup, the inputs, the steps and the rules inline.
 
 - **Companies** make tools. `clay`
-- **Tools** are one product each, with every way in — MCP, CLI, API — and an
-  agent-readiness level from checked facts. `clay/clay`
-- **Workflows** are steps across tools that reach a result; a hack is one
-  tool. `brew/intent-to-meeting`
+- **Tools** are ONE FUNCTION each — one thing an agent calls, tied to a
+  specific API endpoint, MCP tool or CLI subcommand, with an agent-readiness
+  level from checked facts. `clay/enrich-contacts`
+- **Workflows** are steps across tools that reach a result. A growth hack IS
+  a workflow — there is no second kind. `brew/intent-to-meeting`
 
 Full vision: [`docs/vision.md`](docs/vision.md).
 
@@ -31,16 +32,15 @@ Full vision: [`docs/vision.md`](docs/vision.md).
 
 ```bash
 pnpm install
-cp .env.example .env.local     # then fill in Convex + Clerk (docs/setup.md)
+cp .env.example .env.local     # then fill in Convex (docs/setup.md)
 npx convex dev                  # one terminal: pushes schema + functions, watches convex/
 pnpm seed                       # 25 companies, 25 tools, 12 workflows, every file rendered
 pnpm dev                        # http://localhost:3000
 ```
 
-Convex is required. Clerk is optional until you need the signed-in surface;
-without it every public page, file and search still works.
-[`docs/setup.md`](docs/setup.md) has the whole first run, including the Clerk
-JWT template everything authenticated depends on.
+Convex is the only requirement. There is no auth provider yet — every page,
+file and search is public, and nobody signs in.
+[`docs/setup.md`](docs/setup.md) has the whole first run.
 
 ## The routes
 
@@ -51,9 +51,9 @@ JWT template everything authenticated depends on.
 | `/tools`, `/tools/[handle]/[name]` | Search (words + chips); THE tool file + workflows using it |
 | `/tools/[handle]` | A shortcut (route handler): 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[owner]/[name]` | Trending / Top / New; THE workflow file + versions |
-| `/hacks` | Workflows with one tool |
+| `/map` | The relationship map: what is connected to what |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt` | The raw files, for agents |
-| `/submit` | Signed in. The publish flow, arriving with the pipeline |
+| `/submit` | Public. The publish flow, arriving with the pipeline |
 
 ## For agents
 
@@ -79,7 +79,7 @@ IP with a free key for more.
 
 ```
 app/
-  (site)/                  every page, with the site chrome: /, companies, tools, workflows, hacks, submit
+  (site)/                  every page, with the site chrome: /, companies, tools, workflows, map, submit
   api/markdown/[...path]   the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
   api/revalidate           purge a ref's cache, service-token gated
   llms.txt                 the file index

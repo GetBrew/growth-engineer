@@ -1,15 +1,14 @@
 ---
 ref: workflow:jdoe/clay-waterfall-order@1
 title: Find more work emails by ordering providers by hit rate
-type: hack
-tools: [tool:clay/clay]
+tools: [tool:clay/find-work-emails]
 tags: [capability:find-work-emails]
 updated: 2026-09-16
 ---
 
 # Find more work emails by ordering providers by hit rate
 
-Set up Clay, then run the steps in order for the user.
+Set up Find work emails, then run the steps in order for the user.
 
 ## Inputs
 
@@ -19,13 +18,15 @@ Ask the user for this before you start.
 
 ## Set up
 
-### Clay (tool:clay/clay)
+### Find work emails (tool:clay/find-work-emails)
 
 Use the MCP server. Add it to your agent's MCP settings, then sign in when asked.
 
 ```json
 { "mcpServers": { "clay": { "url": "https://mcp.clay.example/mcp" } } }
 ```
+
+Call the MCP tool `clay_find_work_emails`.
 
 Make one read-only call to confirm access.
 

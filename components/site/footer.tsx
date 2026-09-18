@@ -7,7 +7,6 @@ const COLUMNS = [
     heading: 'Catalog',
     links: [
       ['Workflows', '/workflows'],
-      ['Growth hacks', '/hacks'],
       ['Tools', '/tools'],
       ['Companies', '/companies'],
     ],
@@ -18,7 +17,10 @@ const COLUMNS = [
       ['llms.txt', '/llms.txt'],
       ['Tool files', '/tools'],
       ['Workflow files', '/workflows'],
-      ['Agent readiness', '/tools?agent=native'],
+      // Not `?agent=native`: agent level comes from CHECKED facts, and every
+      // tool is `unverified` until someone checks, so that filter is empty
+      // until verification starts. Linking to it advertises an empty page.
+      ['Agent readiness', '/tools'],
     ],
   },
   {

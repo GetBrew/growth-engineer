@@ -17,8 +17,8 @@ index. A **ref** is `${type}:${key}` and is what agents pass around.
 | Entity | Key | Points to |
 | --- | --- | --- |
 | Company | `clay` | the team that claimed it |
-| Tool | `clay/clay` — a company's only tool uses its product name | company |
-| Workflow | `brew/intent-to-meeting`; `@3` pins a version; hacks use the same format | owning team or user, current version |
+| Tool | `clay/enrich-contacts` — ONE function of one company's product | company |
+| Workflow | `brew/intent-to-meeting`; `@3` pins a version | owning team or user, current version |
 | Team / user | `brew`, `jdoe` — one shared handle namespace with companies | — |
 | Tag | `capability:enrich-contacts` | parent tag, merged-into tag |
 
@@ -41,13 +41,13 @@ only with at least one way in.
 | --- | --- |
 | `companies` | vendor, open-source org or individual; `domain`, `links`, `logo`, `claimedByTeamId`, `searchText` (projection) |
 | `identifiers` | every domain, npm package, repo and MCP URL we match on — duplicate checks and vendor claims |
-| `tools` | one product: `access[]` (the ways in), `agent` (level, score, reason, checkedAt), projections `agentLevel` + `searchText` |
-| `workflows` | title phrased as the result; `visibility`, `moderation`, `currentVersionId`, `forkedFromId`; projections `format` (hack iff one tool), `listed`, `toolCount`, `trendScore`, `topScore`, `searchText` |
+| `tools` | ONE FUNCTION: `access[]` (the ways in, each naming its `operation` — the endpoint, MCP tool or subcommand), `agent` (level, score, reason, checkedAt), projections `agentLevel` + `searchText` |
+| `workflows` | title phrased as the result; `visibility`, `moderation`, `currentVersionId`, `forkedFromId`; projections `listed`, `toolCount`, `trendScore`, `topScore`, `searchText`. There is no `format`: a growth hack is a workflow |
 | `workflowVersions` | frozen once saved: `inputs`, `steps` (≤ 10, each with `toolId` + `toolKey` + optional `via`), `doneWhen`, `notes`, `scan` |
 | `workflowTools` | projection of the current version's tools, with `listed` + `trendScore` copied so tool and company pages read straight from the index |
 | `documents` | the rendered file per ref: `markdown`, `hash`, `lineCount`, `stale`, `renderedAt` |
 | `tags` / `taggings` | the managed list (with synonyms, parents, aliases, counts) and the attachments, with sort values copied onto each row |
-| `handles`, `users`, `teams`, `teamStack`, `reviews` | people: Clerk owns accounts and membership; teams form around a verified domain; stacks public by default; one review per person per tool |
+| `handles`, `users`, `teams`, `teamStack`, `reviews` | people: an auth provider will own accounts and membership (none is wired yet); teams form around a verified domain; stacks public by default; one review per person per tool |
 | `submissions`, `agentRuns`, `revisions` | the pipeline: proposals from the community and scheduled jobs, job runs, and a hidden edit history |
 | `events`, `entityStats`, `embeddings`, `keyAliases`, `apiKeys` | raw activity (90-day retention), rolled-up counts, vectors, redirects, free read keys |
 
