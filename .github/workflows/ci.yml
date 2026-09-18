@@ -83,13 +83,10 @@ jobs:
     env:
       # PLACEHOLDER ENV, NOT SECRETS. A pull-request run must never see a
       # credential, so the build gets exactly what module-scope code reads at
-      # build time and nothing more: a Convex URL, a syntactically valid Clerk
-      # publishable key (`pk_test_` + base64("clerk.example.com$") — Clerk
-      # decodes the frontend-API host out of it at import), and the service
-      # token the server gateway validates the shape of.
+      # build time and nothing more: a Convex URL, and the service token the
+      # server gateway validates the shape of. Both are what lib/env.ts
+      # parses at import; a third variable here means lib/env.ts grew one.
       NEXT_PUBLIC_CONVEX_URL: https://ci-placeholder.convex.cloud
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
-      CLERK_SECRET_KEY: sk_test_ci_placeholder
       CONVEX_SERVICE_TOKEN: ci-placeholder-service-token
     steps:
       - uses: actions/checkout@v7

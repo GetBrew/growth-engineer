@@ -1,4 +1,3 @@
-import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
 import { Geist_Mono } from 'next/font/google'
 import localFont from 'next/font/local'
@@ -11,8 +10,8 @@ import './globals.css'
 /**
  * The root layout is a SHELL. Under `cacheComponents: true` it is prerendered
  * once and reused by every route, so nothing here reads request-time data.
- * Both providers only set up context; anything that READS the session lives
- * further down, behind its own Suspense boundary.
+ * The Convex provider only sets up context; anything that READS request-time
+ * data lives further down, behind its own Suspense boundary.
  */
 
 // Season (variable). TRIAL license — see README before this repo goes public.
@@ -45,9 +44,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       lang="en"
     >
       <body className="min-h-full">
-        <ClerkProvider afterSignOutUrl="/">
-          <ConvexClientProvider>{children}</ConvexClientProvider>
-        </ClerkProvider>
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   )

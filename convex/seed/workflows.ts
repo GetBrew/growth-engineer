@@ -3,8 +3,11 @@ import type { Doc } from '../_generated/dataModel'
 /**
  * Seed workflows, owned by Brew (`brew/<name>`), phrased as the result they
  * reach. ILLUSTRATIVE: they show the file format end to end and give the
- * catalog something to list; they are not field-tested playbooks. The two
- * single-tool entries at the end are growth hacks — same format, one tool.
+ * catalog something to list; they are not field-tested playbooks.
+ *
+ * A growth hack IS a workflow. Every step names ONE FUNCTION of one product
+ * (`clay/enrich-contacts`, not `clay/clay`), so a workflow that stays inside
+ * one company still has several steps and several tools.
  *
  * Trending and Top are seeded from this order (first = highest) until the
  * ranking job has real copies and agent fetches to count.
@@ -57,22 +60,22 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Find funded companies',
-        'clay/clay',
+        'clay/build-audience',
         'List companies matching `target_segment` that announced a round in the last 30 days. Keep name, domain, round and amount.'
       ),
       step(
         'Find the buyer',
-        'apollo/apollo',
+        'apollo/find-work-emails',
         'For each company, find the head of growth or marketing. Keep their name, title and work email; skip companies with no match.'
       ),
       step(
         'Write emails',
-        'brew/brew',
+        'brew/write-copy',
         'Draft a three-sentence email per contact: congratulate the round, name one thing they will now have budget for, ask one question. Show the drafts to the user.'
       ),
       step(
         'Send',
-        'brew/brew',
+        'brew/send-email',
         'After the user approves, send each email from `sender_email`.'
       ),
     ],
@@ -108,17 +111,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Find new leaders',
-        'apollo/apollo',
+        'apollo/find-work-emails',
         'Across `target_accounts`, find people with `target_titles` who started in the last 90 days. Keep name, title, start date and work email.'
       ),
       step(
         'Draft a note',
-        'anthropic/claude',
+        'anthropic/write-copy',
         'For each person, draft three lines about what a leader in that role usually fixes first. No pitch. Show the drafts to the user.'
       ),
       step(
         'Log it',
-        'hubspot/hubspot',
+        'hubspot/manage-crm',
         'Create or update each contact and attach the approved draft as a note on the record.'
       ),
     ],
@@ -150,17 +153,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Read what changed',
-        'firecrawl/firecrawl',
+        'firecrawl/scrape-web',
         'Fetch the pricing and changelog pages on `competitor_domain` and summarise what changed in the last month in five bullets.'
       ),
       step(
         'Match open deals',
-        'attio/attio',
+        'attio/manage-crm',
         'Find records in `watch_list` with an open deal. Keep the deal owner and stage.'
       ),
       step(
         'Write the comparison',
-        'brew/brew',
+        'brew/write-copy',
         'Draft one email per account that names a single concrete difference relevant to its stage. Show the drafts to the user; send only after approval.'
       ),
     ],
@@ -197,17 +200,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Find repeat visitors',
-        'posthog/posthog',
+        'posthog/track-intent',
         'List identified accounts that viewed `pricing_path` at least twice in the last 7 days.'
       ),
       step(
         'Enrich',
-        'clay/clay',
+        'clay/enrich-contacts',
         'For each account domain, add company size, industry and any open hiring for sales or marketing.'
       ),
       step(
         'Alert',
-        'slack/slack',
+        'slack/route-alerts',
         'Post one message per account to `alerts_channel` with the enrichment and a suggested owner. Ask the user before posting the first one.'
       ),
     ],
@@ -243,17 +246,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Pull downloads',
-        'hubspot/hubspot',
+        'hubspot/manage-crm',
         'List contacts who downloaded `content_asset` within `follow_up_window`. Keep name, company and email.'
       ),
       step(
         'Write follow-ups',
-        'brew/brew',
+        'brew/write-copy',
         'Draft one email per contact that references a specific section of the asset. Show the drafts to the user; send only after approval.'
       ),
       step(
         'Log the send',
-        'notion/notion',
+        'notion/manage-docs',
         'Append one row per sent email to the nurture log database with contact, asset and date.'
       ),
     ],
@@ -278,17 +281,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Split the audience',
-        'zoom/zoom',
+        'zoom/host-meetings',
         'From `webinar_id`, build three lists: attended, did not attend, and attended for 40 minutes or more.'
       ),
       step(
         'Write three emails',
-        'brew/brew',
+        'brew/write-copy',
         'Draft one email per list: the recording for no-shows, the next step for attendees, a call offer for the engaged. Show the drafts to the user.'
       ),
       step(
         'Tag contacts',
-        'hubspot/hubspot',
+        'hubspot/manage-crm',
         'Set a contact property with the list each person landed in, then send the approved emails.'
       ),
     ],
@@ -325,17 +328,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Find accounts near the line',
-        'amplitude/amplitude',
+        'amplitude/track-product-usage',
         'List accounts whose weekly active users crossed `usage_threshold` or reached 80% of `plan_limit` in the last 14 days.'
       ),
       step(
         'Mark them',
-        'attio/attio',
+        'attio/manage-crm',
         'Set each company record to expansion-ready with the metric and the date.'
       ),
       step(
         'Brief the owner',
-        'brew/brew',
+        'brew/send-email',
         'Send each account owner one email listing their expansion-ready accounts with the numbers. Ask the user before sending.'
       ),
     ],
@@ -371,17 +374,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Find activated free users',
-        'posthog/posthog',
+        'posthog/track-product-usage',
         'List users on the free plan who fired `activation_event` three or more times in the last 14 days.'
       ),
       step(
         'Skip paying customers',
-        'stripe/stripe',
+        'stripe/track-revenue',
         'Remove anyone with an active subscription.'
       ),
       step(
         'Send the sequence',
-        'brew/brew',
+        'brew/send-email',
         'Draft a two-email sequence explaining `trial_plan` around what they already did. Show it to the user; send after approval.'
       ),
     ],
@@ -418,17 +421,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Detect drops',
-        'mixpanel/mixpanel',
+        'mixpanel/track-product-usage',
         'List accounts whose usage fell more than `drop_threshold` versus the prior 30 days and renew within `renewal_window`.'
       ),
       step(
         'Escalate',
-        'slack/slack',
+        'slack/route-alerts',
         'Post one message per account to the customer success channel with the usage chart numbers and renewal date.'
       ),
       step(
         'Draft the check-in',
-        'brew/brew',
+        'brew/write-copy',
         'Draft a short check-in email from the account manager for each account. Show the drafts to the user.'
       ),
     ],
@@ -459,17 +462,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Detect the move',
-        'apollo/apollo',
+        'apollo/enrich-contacts',
         'For each person in `champion_list`, find their current company and title. Keep only people who moved in the last 6 months.'
       ),
       step(
         'Size the new company',
-        'clay/clay',
+        'clay/enrich-contacts',
         'For each new company, add size, industry and funding stage.'
       ),
       step(
         'Open a deal',
-        'attio/attio',
+        'attio/manage-crm',
         'Create a deal on the new company with the champion as the contact and the previous relationship in the notes.'
       ),
     ],
@@ -495,17 +498,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Sample',
-        'clay/clay',
+        'clay/find-work-emails',
         "50 rows from `contacts_table` and run each email provider on them. Record each provider's hit rate."
       ),
       step(
         'Reorder',
-        'clay/clay',
+        'clay/find-work-emails',
         'the providers from highest to lowest hit rate, stopping at the first verified email.'
       ),
       step(
         'Run',
-        'clay/clay',
+        'clay/find-work-emails',
         'the reordered sequence on the full table, after the user confirms.'
       ),
     ],
@@ -531,17 +534,17 @@ export const SEED_WORKFLOWS: ReadonlyArray<SeedWorkflow> = [
     steps: [
       step(
         'Segment',
-        'brew/brew',
+        'brew/build-audience',
         'the contacts in `campaign_id` who have not opened after `wait_days`.'
       ),
       step(
         'Rewrite',
-        'brew/brew',
+        'brew/write-copy',
         'two alternative subject lines that make a different promise from the original. Show them to the user.'
       ),
       step(
         'Resend',
-        'brew/brew',
+        'brew/send-email',
         'the campaign with the chosen subject line to the unopened segment, after the user approves.'
       ),
     ],

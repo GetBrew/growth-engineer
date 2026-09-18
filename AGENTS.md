@@ -8,16 +8,24 @@ pointer-style: one canonical statement per policy, no history, no changelog.
 ## What this is
 
 A catalog of **companies**, the **tools** they make, and **workflows** that
-put tools to work (a growth hack is a one-tool workflow). **Every tool and
+put tools to work. A COMPANY makes many TOOLS; a tool is ONE function an
+agent can call (`clay/enrich-contacts`), tied to a specific public API
+endpoint, MCP tool or CLI subcommand — not the product. A WORKFLOW is several
+tools in order with the instructions that reach a result, and a growth hack
+IS a workflow, not a second kind. **Every tool and
 workflow is ONE generated markdown file any agent can run; copying it is the
 product action.** Reads are public; agents fetch files with no sign-in.
 Vision: [`docs/vision.md`](docs/vision.md). Model: [`docs/data-model.md`](docs/data-model.md).
 
 ## Stack
 
-Next.js 16 (App Router, Cache Components, Turbopack) · Convex · Clerk ·
+Next.js 16 (App Router, Cache Components, Turbopack) · Convex ·
 Tailwind v4 · Biome · Vitest · pnpm. Generated from
 `GetBrew/next-convex-clerk-starter`.
+
+**There is no auth provider.** Every route is public, nobody signs in, and
+the only server secret is `CONVEX_SERVICE_TOKEN`. The authorization tiers
+below are intact and fail closed — they are what auth plugs back into.
 
 ## Validation — proportional, not ceremonial
 
@@ -65,7 +73,7 @@ freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
 
 ### Keys and refs
 
-- Public identity is the `key` (`clay`, `clay/clay`, `brew/intent-to-meeting`,
+- Public identity is the `key` (`clay`, `clay/enrich-contacts`, `brew/intent-to-meeting`,
   `@3` pins a version); stored references are ALWAYS internal ids; a key is
   resolved once at the edge via `by_key`. Grammar and reserved handles live in
   [`convex/model/keys.ts`](convex/model/keys.ts); every top-level route must
@@ -85,10 +93,11 @@ freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
   the handler reads `ctx.actor`, never a caller-supplied id.
 - `internalMutation` appears ONLY in `convex/seed/run.ts` and
   `convex/documents.ts` (`tests/convex-internal-builders.test.ts`).
-- **A route's authority lives in the route**, never in the proxy's matcher
-  alone: every `/api/*` handler authenticates itself and `/submit` calls
-  `auth.protect()`. `proxy.ts` is the fast 307, and Clerk has deprecated
-  matcher-only gating.
+- **A route's authority lives in the route**, never in a proxy matcher:
+  every `/api/*` handler authenticates itself (`/api/revalidate` on the
+  service token). `proxy.ts` only rewrites markdown requests — path matching
+  can diverge from how Next routes a request, so a gate there is not a gate.
+  When auth returns, the check goes in the page or handler, not the proxy.
 - **Server callers go through the gateway**
   ([`lib/convex/gateway.ts`](lib/convex/gateway.ts)): `publicQuery` for the
   catalog (no identity), `tenant*` when a verified human acts, `system*` for

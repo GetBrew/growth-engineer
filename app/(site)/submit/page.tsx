@@ -1,4 +1,3 @@
-import { auth } from '@clerk/nextjs/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -30,11 +29,11 @@ const STEPS = [
 ] as const
 
 /**
- * The only page whose protection is not enforced inside the thing it
- * protects, so it enforces it here too. `proxy.ts` gives a signed-out
- * visitor the real 307; this `auth.protect()` is what still holds if path
- * matching ever diverges from routing — the reason Clerk deprecated
- * matcher-only gating. Every `/api/*` route already authenticates itself.
+ * PUBLIC while there is no auth provider. This page describes the publish
+ * flow; it does not publish anything, so nothing here needs a session yet.
+ * The form that ships with the submissions pipeline WILL, and the check
+ * belongs in this page — not in `proxy.ts` — because path matching can
+ * diverge from how Next routes a request.
  *
  * The publish flow ships with the submissions pipeline; until then this page
  * is the contract it will meet, so nobody builds a form that renders a
@@ -48,8 +47,7 @@ export default function SubmitPage() {
   )
 }
 
-async function SubmitContent() {
-  await auth.protect()
+function SubmitContent() {
   return (
     <Page className="flex max-w-3xl flex-col gap-10">
       <SectionHeading

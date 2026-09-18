@@ -12,6 +12,7 @@ import type * as aliases from "../aliases.js";
 import type * as companies from "../companies.js";
 import type * as documents from "../documents.js";
 import type * as documents_render from "../documents_render.js";
+import type * as map from "../map.js";
 import type * as model_agent_level from "../model/agent_level.js";
 import type * as model_hash from "../model/hash.js";
 import type * as model_keys from "../model/keys.js";
@@ -30,7 +31,6 @@ import type * as shared_validators from "../shared/validators.js";
 import type * as tags from "../tags.js";
 import type * as tools from "../tools.js";
 import type * as tools_search from "../tools_search.js";
-import type * as users from "../users.js";
 import type * as workflows from "../workflows.js";
 
 import type {
@@ -44,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   companies: typeof companies;
   documents: typeof documents;
   documents_render: typeof documents_render;
+  map: typeof map;
   "model/agent_level": typeof model_agent_level;
   "model/hash": typeof model_hash;
   "model/keys": typeof model_keys;
@@ -62,7 +63,6 @@ declare const fullApi: ApiFromModules<{
   tags: typeof tags;
   tools: typeof tools;
   tools_search: typeof tools_search;
-  users: typeof users;
   workflows: typeof workflows;
 }>;
 

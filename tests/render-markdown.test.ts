@@ -38,6 +38,7 @@ const clayMcp: Access = {
   official: true,
   transport: 'remote',
   url: 'https://mcp.clay.example/mcp',
+  operation: 'clay_enrich_contacts',
   auth: { method: 'oauth', selfServe: true },
 }
 
@@ -45,6 +46,7 @@ const clayApi: Access = {
   type: 'api',
   official: true,
   baseUrl: 'https://api.clay.example/v1',
+  operation: 'POST /enrich-contacts',
   docsUrl: 'https://docs.clay.example',
   auth: {
     method: 'api_key',
@@ -54,23 +56,20 @@ const clayApi: Access = {
   },
 }
 
+// A tool is ONE function of one product — `clay/enrich-contacts`, never
+// `clay/clay` — and every way in names the call that performs it.
 const clay: ToolFileInput = {
-  key: 'clay/clay',
-  name: 'Clay',
+  key: 'clay/enrich-contacts',
+  name: 'Enrich contacts',
   companyKey: 'clay',
   summary:
-    'Enriches people and companies with data from many providers and builds lead lists from the results.',
-  // Community first on purpose: the renderer must reorder to official-first.
+    'Adds firmographic and person data to a contact or account. Clay does this.',
+  // API first on purpose: the renderer must reorder to MCP-first.
   access: [clayApi, clayMcp],
   agent: {
     level: 'native',
     reason: 'Native: official remote MCP with self-serve OAuth.',
   },
-  capabilities: [
-    { slug: 'enrich-contacts', label: 'Enrich contacts' },
-    { slug: 'find-work-emails', label: 'Find work emails' },
-    { slug: 'build-audience', label: 'Build audiences' },
-  ],
   updatedAt: UPDATED_AT,
 }
 
@@ -78,6 +77,7 @@ const apolloApi: Access = {
   type: 'api',
   official: true,
   baseUrl: 'https://api.apollo.example/v1',
+  operation: 'POST /find-work-emails',
   auth: {
     method: 'api_key',
     envVar: 'APOLLO_API_KEY',
@@ -92,6 +92,7 @@ const brewMcp: Access = {
   official: true,
   transport: 'remote',
   url: 'https://mcp.brew.example/mcp',
+  operation: 'brew_send_email',
   auth: { method: 'none', selfServe: true },
 }
 
@@ -99,10 +100,13 @@ const intentToMeeting: WorkflowFileInput = {
   key: 'brew/intent-to-meeting',
   version: 3,
   title: 'Turn high-intent accounts into booked meetings',
-  format: 'workflow',
   tools: [
-    { key: 'apollo/apollo', name: 'Apollo', access: [apolloApi] },
-    { key: 'brew/brew', name: 'Brew', access: [brewMcp] },
+    {
+      key: 'apollo/find-work-emails',
+      name: 'Find work emails',
+      access: [apolloApi],
+    },
+    { key: 'brew/send-email', name: 'Send email', access: [brewMcp] },
   ],
   tags: ['motion:outbound', 'channel:email'],
   inputs: [
@@ -116,19 +120,19 @@ const intentToMeeting: WorkflowFileInput = {
   steps: [
     {
       title: 'Find contacts',
-      toolKey: 'apollo/apollo',
+      toolKey: 'apollo/find-work-emails',
       instruction:
         'For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.',
     },
     {
       title: 'Write emails',
-      toolKey: 'brew/brew',
+      toolKey: 'brew/send-email',
       instruction:
         'Draft a short, specific email to each contact from step 1. Show the drafts to the user.',
     },
     {
       title: 'Send',
-      toolKey: 'brew/brew',
+      toolKey: 'brew/send-email',
       instruction:
         'After the user approves, send each email from `sender_email`.',
     },
@@ -140,12 +144,20 @@ const intentToMeeting: WorkflowFileInput = {
   updatedAt: UPDATED_AT,
 }
 
+// One tool is not a second kind of document — it is a rendering choice about
+// THESE steps: name the tool once up front instead of on every line.
 const waterfall: WorkflowFileInput = {
   key: 'jdoe/clay-waterfall-order',
   version: 1,
   title: 'Find more work emails by ordering providers by hit rate',
-  format: 'hack',
-  tools: [{ key: 'clay/clay', name: 'Clay', access: [clayMcp] }],
+  tools: [
+    {
+      key: 'clay/find-work-emails',
+      name: 'Find work emails',
+      // The same Clay MCP server, a different tool on it.
+      access: [{ ...clayMcp, operation: 'clay_find_work_emails' }],
+    },
+  ],
   tags: ['capability:find-work-emails'],
   inputs: [
     {
@@ -156,19 +168,19 @@ const waterfall: WorkflowFileInput = {
   steps: [
     {
       title: 'Sample',
-      toolKey: 'clay/clay',
+      toolKey: 'clay/find-work-emails',
       instruction:
         "50 rows from `contacts_table` and run each email provider on them. Record each provider's hit rate.",
     },
     {
       title: 'Reorder',
-      toolKey: 'clay/clay',
+      toolKey: 'clay/find-work-emails',
       instruction:
         'the providers from highest to lowest hit rate, stopping at the first verified email.',
     },
     {
       title: 'Run',
-      toolKey: 'clay/clay',
+      toolKey: 'clay/find-work-emails',
       instruction:
         'the reordered sequence on the full table, after the user confirms.',
     },
@@ -193,9 +205,9 @@ describe('markdown files — goldens from the design doc', () => {
     expect(rendered.lineCount).toBeLessThanOrEqual(WORKFLOW_FILE_MAX_LINES)
   })
 
-  test('a growth hack is the same format with one tool', () => {
+  test('a workflow that uses one tool names it once, not per step', () => {
     const rendered = renderWorkflowDocument(waterfall)
-    expect(rendered.markdown).toBe(golden('hack'))
+    expect(rendered.markdown).toBe(golden('single-tool-workflow'))
   })
 
   test('the hash changes when the file changes, and only then', () => {
@@ -214,6 +226,7 @@ describe('setup picks the best way in', () => {
     maintainer: 'jdoe',
     installCommand: 'npm install -g clay-cli',
     binary: 'clay',
+    operation: 'clay enrich-contacts',
     auth: { method: 'api_key', envVar: 'CLAY_API_KEY', selfServe: true },
   }
 
@@ -238,7 +251,13 @@ describe('setup picks the best way in', () => {
   test('two options render under sub-headings with the first-supported line', () => {
     const rendered = renderWorkflowDocument({
       ...waterfall,
-      tools: [{ key: 'clay/clay', name: 'Clay', access: [clayMcp, clayApi] }],
+      tools: [
+        {
+          key: 'clay/find-work-emails',
+          name: 'Find work emails',
+          access: [clayMcp, clayApi],
+        },
+      ],
     })
     expect(rendered.markdown).toContain(
       'Use the first option your agent supports.'
@@ -262,7 +281,7 @@ describe('file limits', () => {
       { length: MAX_WORKFLOW_STEPS + 1 },
       (_, index) => ({
         title: `Step ${index + 1}`,
-        toolKey: 'clay/clay',
+        toolKey: 'clay/find-work-emails',
         instruction: 'do the thing.',
       })
     )

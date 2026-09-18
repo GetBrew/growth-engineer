@@ -1,8 +1,7 @@
 ---
 ref: workflow:brew/intent-to-meeting@3
 title: Turn high-intent accounts into booked meetings
-type: workflow
-tools: [tool:apollo/apollo, tool:brew/brew]
+tools: [tool:apollo/find-work-emails, tool:brew/send-email]
 tags: [motion:outbound, channel:email]
 updated: 2026-09-16
 ---
@@ -20,15 +19,16 @@ Ask the user for these before you start.
 
 ## Set up
 
-### Apollo (tool:apollo/apollo)
+### Find work emails (tool:apollo/find-work-emails)
 
 Use the API.
 
 - Base URL: https://api.apollo.example/v1
+- Endpoint: `POST /find-work-emails`
 - Auth: send the header `X-Api-Key: $APOLLO_API_KEY`
 - Get a key: https://app.apollo.example/settings/api
 
-### Brew (tool:brew/brew)
+### Send email (tool:brew/send-email)
 
 Use the MCP server. Add it to your agent's MCP settings.
 
@@ -36,13 +36,15 @@ Use the MCP server. Add it to your agent's MCP settings.
 { "mcpServers": { "brew": { "url": "https://mcp.brew.example/mcp" } } }
 ```
 
+Call the MCP tool `brew_send_email`.
+
 Make one read-only call to each tool to confirm access.
 
 ## Steps
 
-1. **Find contacts** with Apollo. For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
-2. **Write emails** with Brew. Draft a short, specific email to each contact from step 1. Show the drafts to the user.
-3. **Send** with Brew. After the user approves, send each email from `sender_email`.
+1. **Find contacts** with Find work emails. For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
+2. **Write emails** with Send email. Draft a short, specific email to each contact from step 1. Show the drafts to the user.
+3. **Send** with Send email. After the user approves, send each email from `sender_email`.
 
 ## Done when
 

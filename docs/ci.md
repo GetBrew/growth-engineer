@@ -31,8 +31,9 @@ discovered by whoever merged next. This job runs on the pull request.
 
 It builds with PLACEHOLDER environment values, never secrets: a pull request
 from a fork must not see a credential, and the build only needs enough for
-module-scope code to parse (a Convex URL, a syntactically valid Clerk
-publishable key, a service token of the right shape).
+module-scope code to parse, which is exactly what `lib/env.ts` reads at
+import: a Convex URL and a service token of the right shape. A third variable
+appearing there means `lib/env.ts` grew one.
 
 The bundle budget step reads THIS build's manifests, so it has to live in this
 job. See [`performance.md`](performance.md).

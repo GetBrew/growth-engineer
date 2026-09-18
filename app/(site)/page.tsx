@@ -80,9 +80,9 @@ export default function HomePage() {
               buttonVariants({ variant: 'outline' }),
               'rounded-full'
             )}
-            href="/hacks"
+            href="/workflows"
           >
-            Growth hacks
+            Browse workflows
           </Link>
           <Link
             className={cn(buttonVariants({ variant: 'ghost' }), 'rounded-full')}
@@ -139,7 +139,7 @@ export default function HomePage() {
 
 async function TrendingWorkflows() {
   await connection()
-  const rows = await loadWorkflows('trending', undefined, 5)
+  const rows = await loadWorkflows('trending', 5)
   if (rows.length === 0) {
     return (
       <EmptyState

@@ -12,8 +12,12 @@ import {
 } from './shared/validators'
 
 /**
- * Workflow reads. A growth hack is a one-tool workflow and uses every read
- * here with `format: 'hack'`. Every read is indexed and bounded.
+ * Workflow reads. Every read is indexed and bounded.
+ *
+ * THERE IS ONE KIND OF WORKFLOW. A growth hack is a workflow — it is not a
+ * second format, and nothing here branches on how many tools a workflow uses.
+ * That distinction used to live in a `format` projection with three extra
+ * listing indexes behind it; removing it removed the indexes too.
  */
 
 const MAX_LIST = 100
@@ -23,17 +27,11 @@ const sortValidator = v.union(
   v.literal('top'),
   v.literal('new')
 )
-const formatValidator = v.union(v.literal('hack'), v.literal('workflow'))
-/** The listing index behind each sort, with and without a format. */
+/** The listing index behind each sort. */
 const SORT_INDEX = {
   trending: 'by_trending',
   top: 'by_top',
   new: 'by_new',
-} as const
-const FORMAT_SORT_INDEX = {
-  trending: 'by_format_trending',
-  top: 'by_format_top',
-  new: 'by_format_new',
 } as const
 
 type Row = {
@@ -90,30 +88,20 @@ async function toRows(
   }))
 }
 
-/** Trending, Top or New, optionally one format. Every combination reads its own index. */
+/** Trending, Top or New. Each sort reads its own index. */
 export const list = publicQuery({
   args: {
     sort: sortValidator,
-    format: v.optional(formatValidator),
     limit: v.optional(v.number()),
   },
   returns: v.array(workflowRow),
   handler: async (ctx, args) => {
     const limit = Math.min(args.limit ?? 30, MAX_LIST)
-    const format = args.format
-    const workflows = format
-      ? await ctx.db
-          .query('workflows')
-          .withIndex(FORMAT_SORT_INDEX[args.sort], (q) =>
-            q.eq('listed', true).eq('format', format)
-          )
-          .order('desc')
-          .take(limit)
-      : await ctx.db
-          .query('workflows')
-          .withIndex(SORT_INDEX[args.sort], (q) => q.eq('listed', true))
-          .order('desc')
-          .take(limit)
+    const workflows = await ctx.db
+      .query('workflows')
+      .withIndex(SORT_INDEX[args.sort], (q) => q.eq('listed', true))
+      .order('desc')
+      .take(limit)
     return await toRows(ctx, workflows)
   },
 })
@@ -268,11 +256,10 @@ export const listByCompany = publicQuery({
   },
 })
 
-/** Full-text search over listed workflows, optionally one format. */
+/** Full-text search over listed workflows. */
 export const search = publicQuery({
   args: {
     q: v.string(),
-    format: v.optional(formatValidator),
     limit: v.optional(v.number()),
   },
   returns: v.array(workflowRow),
@@ -281,13 +268,11 @@ export const search = publicQuery({
     if (!query) {
       return []
     }
-    const format = args.format
     const workflows = await ctx.db
       .query('workflows')
-      .withSearchIndex('search_workflows', (q) => {
-        const base = q.search('searchText', query).eq('listed', true)
-        return format ? base.eq('format', format) : base
-      })
+      .withSearchIndex('search_workflows', (q) =>
+        q.search('searchText', query).eq('listed', true)
+      )
       .take(Math.min(args.limit ?? 30, MAX_LIST))
     return await toRows(ctx, workflows)
   },

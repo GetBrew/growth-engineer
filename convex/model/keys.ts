@@ -57,6 +57,7 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'hacks',
   'llms.txt',
   'login',
+  'map',
   'me',
   'new',
   'robots.txt',

@@ -1,17 +1,16 @@
 ---
-ref: tool:clay/clay
-name: Clay
+ref: tool:clay/enrich-contacts
+name: Enrich contacts
 company: company:clay
-does: [enrich-contacts, find-work-emails, build-audience]
 access: [mcp, api]
 agent: native
 agent_note: Official remote MCP with self-serve OAuth.
 updated: 2026-09-16
 ---
 
-# Clay
+# Enrich contacts
 
-Enriches people and companies with data from many providers and builds lead lists from the results.
+Adds firmographic and person data to a contact or account. Clay does this.
 
 ## Set up
 
@@ -25,22 +24,19 @@ Add this server to your agent's MCP settings, then sign in when asked.
 { "mcpServers": { "clay": { "url": "https://mcp.clay.example/mcp" } } }
 ```
 
+Call the MCP tool `clay_enrich_contacts`.
+
 Server URL: https://mcp.clay.example/mcp
 
 ### API (official)
 
 - Base URL: https://api.clay.example/v1
+- Endpoint: `POST /enrich-contacts`
 - Auth: send the header `Authorization: Bearer $CLAY_API_KEY`
 - Get a key: https://app.clay.example/settings/api
 - Docs: https://docs.clay.example
 
 Before doing anything else, make one read-only call to confirm access.
-
-## What it can do
-
-- Enrich contacts
-- Find work emails
-- Build audiences
 
 ## Rules
 

@@ -1,18 +1,43 @@
 import type { Doc } from '../_generated/dataModel'
+import { SEED_TAGS } from './tags'
 
 /**
- * Seed tools: one per company, keyed `<company>/<product>`.
+ * Seed tools: ONE FUNCTION EACH, keyed `<company>/<function>`.
  *
- * ILLUSTRATIVE AND UNVERIFIED. Every access entry below is a widely
- * documented public endpoint or install command, but nobody has run a check
- * against it, so the run seeds every tool as `agent: unverified` (`checkedAt`
- * undefined). A tool with no way in we would put our name to has an empty
- * `access` list and is seeded `in_review`: it cannot be published until one
- * is verified, but its company still lists.
+ * A tool is a single thing an agent calls — `clay/enrich-contacts`, not
+ * `clay/clay`. What is curated below is the PRODUCT (its ways in and the
+ * functions it exposes); `SEED_TOOLS` expands each product into one tool per
+ * function, because that is the grain people search and workflows step
+ * through. A product with three functions is three listings.
+ *
+ * ILLUSTRATIVE AND UNVERIFIED. The base URLs, install commands and MCP
+ * servers are widely documented public entry points, but nobody has run a
+ * check against them, so every tool seeds as `agent: unverified`
+ * (`checkedAt` undefined). THE OPERATIONS ARE DERIVED, not documented: a real
+ * listing names the vendor's actual endpoint or MCP tool name, and that fact
+ * arrives with verification. A product with no way in we would put our name
+ * to has an empty `access` list and seeds `in_review`.
  */
+
+/** The capability vocabulary, by slug — one description of each function. */
+const CAPABILITY = new Map(
+  SEED_TAGS.filter((seedTag) => seedTag.namespace === 'capability').map(
+    (seedTag) => [seedTag.slug, seedTag]
+  )
+)
 
 export type Access = Doc<'tools'>['access'][number]
 type Auth = Access['auth']
+
+/**
+ * A way in before it knows which function it reaches. The operation is added
+ * per tool during expansion, so one curated endpoint serves every function
+ * the product exposes.
+ */
+type AccessTemplate =
+  | Omit<Extract<Access, { type: 'mcp' }>, 'operation'>
+  | Omit<Extract<Access, { type: 'cli' }>, 'operation'>
+  | Omit<Extract<Access, { type: 'api' }>, 'operation'>
 
 export type SeedTool = {
   key: string
@@ -21,8 +46,15 @@ export type SeedTool = {
   summary: string
   description?: string
   access: ReadonlyArray<Access>
-  /** `capability:<slug>` tags. */
-  capabilities: ReadonlyArray<string>
+}
+
+type SeedProduct = {
+  companyKey: string
+  /** The product's name, used to phrase each function's summary. */
+  productName: string
+  access: ReadonlyArray<AccessTemplate>
+  /** `capability:<slug>` slugs — one tool each. */
+  functions: ReadonlyArray<string>
 }
 
 const apiKey = (
@@ -38,7 +70,11 @@ const apiKey = (
 
 const oauth = (): Auth => ({ method: 'oauth', selfServe: true })
 
-const api = (baseUrl: string, auth: Auth, docsUrl?: string): Access => ({
+const api = (
+  baseUrl: string,
+  auth: Auth,
+  docsUrl?: string
+): AccessTemplate => ({
   type: 'api',
   official: true,
   auth,
@@ -46,7 +82,11 @@ const api = (baseUrl: string, auth: Auth, docsUrl?: string): Access => ({
   ...(docsUrl ? { docsUrl } : {}),
 })
 
-const mcpRemote = (url: string, auth: Auth, docsUrl?: string): Access => ({
+const mcpRemote = (
+  url: string,
+  auth: Auth,
+  docsUrl?: string
+): AccessTemplate => ({
   type: 'mcp',
   official: true,
   transport: 'remote',
@@ -55,7 +95,11 @@ const mcpRemote = (url: string, auth: Auth, docsUrl?: string): Access => ({
   ...(docsUrl ? { docsUrl } : {}),
 })
 
-const mcpLocal = (command: string, auth: Auth, repoUrl?: string): Access => ({
+const mcpLocal = (
+  command: string,
+  auth: Auth,
+  repoUrl?: string
+): AccessTemplate => ({
   type: 'mcp',
   official: true,
   transport: 'local',
@@ -69,7 +113,7 @@ const cli = (
   binary: string,
   auth: Auth,
   docsUrl?: string
-): Access => ({
+): AccessTemplate => ({
   type: 'cli',
   official: true,
   installCommand,
@@ -78,25 +122,21 @@ const cli = (
   ...(docsUrl ? { docsUrl } : {}),
 })
 
-const tool = (
+const product = (
   key: string,
-  name: string,
-  summary: string,
-  access: ReadonlyArray<Access>,
-  capabilities: ReadonlyArray<string>,
-  description?: string
-): SeedTool => ({
-  key,
+  productName: string,
+  _summary: string,
+  access: ReadonlyArray<AccessTemplate>,
+  functions: ReadonlyArray<string>
+): SeedProduct => ({
   companyKey: key.split('/')[0] ?? key,
-  name,
-  summary,
+  productName,
   access,
-  capabilities,
-  ...(description ? { description } : {}),
+  functions,
 })
 
-export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
-  tool(
+const SEED_PRODUCTS: ReadonlyArray<SeedProduct> = [
+  product(
     'brew/brew',
     'Brew',
     'Designs, sends and automates on-brand email for teams and agents.',
@@ -115,7 +155,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['send-email', 'build-audience', 'write-copy']
   ),
 
-  tool(
+  product(
     'clay/clay',
     'Clay',
     'Enriches people and companies with data from many providers and builds lead lists from the results.',
@@ -123,7 +163,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['enrich-contacts', 'find-work-emails', 'build-audience']
   ),
 
-  tool(
+  product(
     'apollo/apollo',
     'Apollo',
     'Finds contacts and work emails, enriches them, and runs outbound sequences.',
@@ -137,7 +177,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['find-work-emails', 'enrich-contacts', 'build-audience', 'send-email']
   ),
 
-  tool(
+  product(
     'attio/attio',
     'Attio',
     'A flexible CRM with a clean API for records, lists and deals.',
@@ -151,7 +191,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['manage-crm', 'enrich-contacts']
   ),
 
-  tool(
+  product(
     'hubspot/hubspot',
     'HubSpot',
     'CRM records, marketing email and sales sequences behind one API.',
@@ -165,7 +205,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['manage-crm', 'send-email', 'track-intent']
   ),
 
-  tool(
+  product(
     'salesforce/salesforce',
     'Salesforce',
     'The system-of-record CRM for enterprise sales teams.',
@@ -173,7 +213,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['manage-crm']
   ),
 
-  tool(
+  product(
     'slack/slack',
     'Slack',
     'Posts messages and routes alerts to the channel where the team already is.',
@@ -187,7 +227,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['route-alerts']
   ),
 
-  tool(
+  product(
     'notion/notion',
     'Notion',
     'Reads and writes pages and databases that hold the playbook.',
@@ -206,7 +246,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['manage-docs']
   ),
 
-  tool(
+  product(
     'posthog/posthog',
     'PostHog',
     'Queries product events, sessions and feature flags.',
@@ -220,7 +260,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['track-product-usage', 'track-intent']
   ),
 
-  tool(
+  product(
     'amplitude/amplitude',
     'Amplitude',
     'Queries behavioral analytics across the funnel.',
@@ -234,7 +274,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['track-product-usage']
   ),
 
-  tool(
+  product(
     'mixpanel/mixpanel',
     'Mixpanel',
     'Queries conversion and retention on product events.',
@@ -248,7 +288,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['track-product-usage']
   ),
 
-  tool(
+  product(
     'metabase/metabase',
     'Metabase',
     'Runs saved questions and dashboards on your own database (self-hosted; the base URL is yours).',
@@ -256,7 +296,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['track-revenue']
   ),
 
-  tool(
+  product(
     'crustdata/crustdata',
     'Crustdata',
     'Live company, headcount and hiring data.',
@@ -264,7 +304,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['research-accounts', 'enrich-contacts']
   ),
 
-  tool(
+  product(
     'firecrawl/firecrawl',
     'Firecrawl',
     'Turns any URL into clean, LLM-ready markdown or structured data.',
@@ -283,7 +323,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['scrape-web', 'research-accounts']
   ),
 
-  tool(
+  product(
     'zoom/zoom',
     'Zoom',
     'Schedules meetings and webinars and reports who attended.',
@@ -291,7 +331,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['host-meetings']
   ),
 
-  tool(
+  product(
     'anthropic/claude',
     'Claude',
     'Drafts, reasons over context and classifies at scale; Claude Code runs it from the terminal.',
@@ -311,7 +351,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['write-copy', 'classify-signals']
   ),
 
-  tool(
+  product(
     'openai/openai',
     'OpenAI',
     'Generates and classifies text at scale.',
@@ -325,7 +365,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['write-copy', 'classify-signals']
   ),
 
-  tool(
+  product(
     'figma/figma',
     'Figma',
     'Reads files, components and comments from design projects.',
@@ -344,7 +384,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['design-assets']
   ),
 
-  tool(
+  product(
     'canva/canva',
     'Canva',
     'Creates and exports designs from templates.',
@@ -358,7 +398,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['design-assets']
   ),
 
-  tool(
+  product(
     'dropbox/dropbox',
     'Dropbox',
     'Stores, finds and shares files.',
@@ -372,7 +412,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['store-files']
   ),
 
-  tool(
+  product(
     'github/github',
     'GitHub',
     'Repositories, issues, pull requests and CI, reachable three ways.',
@@ -392,7 +432,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['manage-code', 'route-alerts']
   ),
 
-  tool(
+  product(
     'asana/asana',
     'Asana',
     'Creates and updates tasks and projects.',
@@ -406,7 +446,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['manage-tasks']
   ),
 
-  tool(
+  product(
     'trello/trello',
     'Trello',
     'Boards, lists and cards for tracking follow-up.',
@@ -414,7 +454,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['manage-tasks']
   ),
 
-  tool(
+  product(
     'stripe/stripe',
     'Stripe',
     'Payments, subscriptions and invoices, with revenue events you can act on.',
@@ -435,7 +475,7 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['collect-payments', 'track-revenue']
   ),
 
-  tool(
+  product(
     'clerk/clerk',
     'Clerk',
     'Users, organizations and sessions, with sign-up events you can act on.',
@@ -449,3 +489,62 @@ export const SEED_TOOLS: ReadonlyArray<SeedTool> = [
     ['authenticate-users']
   ),
 ]
+
+/* ──────────────────────── products → one tool per function ───────────────── */
+
+/** `enrich-contacts` → `enrich_contacts`, for MCP tool names. */
+function underscored(slug: string): string {
+  return slug.replace(/-/g, '_')
+}
+
+/**
+ * The exact call, per way in. DERIVED, and the seed says so: a verified
+ * listing carries the vendor's real endpoint or MCP tool name. What matters
+ * here is that the shape is right — every way in names one operation, so a
+ * file can never tell an agent "you have Clay" and stop.
+ */
+function withOperation(
+  access: AccessTemplate,
+  companyKey: string,
+  slug: string
+): Access {
+  switch (access.type) {
+    case 'mcp':
+      return {
+        ...access,
+        operation: `${underscored(companyKey)}_${underscored(slug)}`,
+      }
+    case 'cli':
+      return { ...access, operation: `${access.binary} ${slug}` }
+    default:
+      return { ...access, operation: `POST /${slug}` }
+  }
+}
+
+/**
+ * One tool per (product, function). The name and summary come from the
+ * capability vocabulary in ./tags.ts, so a function is described once and the
+ * tool listing, the tag and the search text cannot disagree.
+ */
+export const SEED_TOOLS: ReadonlyArray<SeedTool> = SEED_PRODUCTS.flatMap(
+  (entry) =>
+    entry.functions.flatMap((slug) => {
+      const capability = CAPABILITY.get(slug)
+      if (!capability) {
+        throw new Error(
+          `seed: ${entry.companyKey} declares the function "${slug}", which is not a capability tag in ./tags.ts`
+        )
+      }
+      return [
+        {
+          key: `${entry.companyKey}/${slug}`,
+          companyKey: entry.companyKey,
+          name: capability.label,
+          summary: `${capability.description} ${entry.productName} does this.`,
+          access: entry.access.map((template) =>
+            withOperation(template, entry.companyKey, slug)
+          ),
+        },
+      ]
+    })
+)

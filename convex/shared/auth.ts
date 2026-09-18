@@ -14,7 +14,7 @@ import { notAuthenticated, notAuthorized } from './errors'
  */
 type AuthCtx = { auth: Auth }
 
-/** Clerk's org claims ride the named JWT template; Convex types them loosely. */
+/** Org claims ride the auth provider's JWT; Convex types them loosely. */
 type Identity = Awaited<ReturnType<Auth['getUserIdentity']>> & {
   orgId?: unknown
   orgRole?: unknown
@@ -31,8 +31,8 @@ export type CallerTransport = {
 /**
  * The verified caller. Deliberately minimal: the JWT carries AUTHORIZATION
  * claims, and display data (name, email, avatar) comes from the `users` mirror
- * the Clerk webhook writes. Every field here is one more thing each guard has
- * to keep true on BOTH the browser and the service path.
+ * the provider's webhook writes. Every field here is one more thing each guard
+ * has to keep true on BOTH the browser and the service path.
  */
 export type UserActor = {
   userId: string
@@ -77,12 +77,16 @@ export function requireServiceToken(token: string | undefined): void {
 /**
  * Any verified human identity.
  *
- * TWO TRANSPORTS, ONE RULE. The browser presents a Clerk JWT, so the identity
- * is read from the token and the caller cannot name anyone but themselves. A
- * server caller presents the service token, which proves only that the CALL
- * came from our deployment — it is never authority to act as a person, so the
- * person it names (`actingUserId`) is carried separately and a token without
- * one is refused for anything user-scoped.
+ * TWO TRANSPORTS, ONE RULE. The browser presents the auth provider's JWT, so
+ * the identity is read from the token and the caller cannot name anyone but
+ * themselves. A server caller presents the service token, which proves only
+ * that the CALL came from our deployment — it is never authority to act as a
+ * person, so the person it names (`actingUserId`) is carried separately and a
+ * token without one is refused for anything user-scoped.
+ *
+ * THERE IS NO PROVIDER RIGHT NOW, so `getUserIdentity()` is always null and the
+ * browser path always refuses. That is the fail-closed direction and the reason
+ * these guards can outlive the provider that used to feed them.
  */
 export async function requireUserActor(
   ctx: AuthCtx,
@@ -111,9 +115,9 @@ export async function requireUserActor(
  * whole point: a handler that reads `args.orgId` is one missing check away
  * from cross-tenant reads, and the tier builders make that arg unreachable.
  *
- * If the JWT has no `orgId`, the `convex` Clerk template is missing
- * `"orgId": "{{org.id}}"` or the user has no active organization — the error
- * says so, because the silent version of this costs an afternoon.
+ * If the JWT has no `orgId`, the provider's Convex JWT template is missing its
+ * org claim or the user has no active organization — the error says so, because
+ * the silent version of this costs an afternoon.
  */
 export async function requireOrgActor(
   ctx: AuthCtx,
@@ -137,7 +141,7 @@ export async function requireOrgActor(
   const orgId = claimString(identity.orgId)
   if (!orgId) {
     notAuthorized(
-      'No active organization. Check that the "convex" Clerk JWT template includes orgId: {{org.id}}.'
+      'No active organization. Check that the "convex" JWT template includes the orgId claim.'
     )
   }
   const orgRole = claimString(identity.orgRole)

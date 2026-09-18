@@ -3,6 +3,7 @@ import { AlertTriangle, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
+import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { AccessBadges, AgentLevelBadge } from '@/components/catalog/badges'
 import { WorkflowRow } from '@/components/catalog/cards'
@@ -76,6 +77,12 @@ async function ToolDetail({ params }: { params: Params }) {
     loadWorkflowsByTool(key),
   ])
   if (!result) {
+    // `resolveAlias` is an UNCACHED read, and Next's prospective prerender
+    // walks this branch speculatively — where it reaches the Convex client and
+    // reports its `Math.random()` as an unstable value, dropping the route out
+    // of prerendering entirely. Saying plainly that the miss path is
+    // request-time keeps the hit path (the normal case) prerenderable.
+    await connection()
     const alias = await resolveAlias('tool', key)
     if (alias) {
       permanentRedirect(`/tools/${alias.key}`)

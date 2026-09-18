@@ -20,13 +20,13 @@ goldens in `tests/fixtures/markdown/` pin.
 
 ## Layout
 
-| Section | Tool file | Workflow or hack file |
+| Section | Tool file | Workflow file |
 | --- | --- | --- |
 | Header | `ref`, `name`, `company`, `does`, `access`, `agent`, `agent_note`, `updated` | `ref` (with `@N`), `title`, `type`, `tools`, `tags`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
-| Steps | — | Numbered steps, each naming its tool (a hack omits "with X": there is one tool) |
+| Steps | — | Numbered steps, each naming its tool (a workflow using a single tool names it once up front instead) |
 | What it can do | Capabilities, from tags | — |
 | Done when | — | Checks that mean the job is finished |
 | Notes | — | Optional, written by the author |
@@ -41,7 +41,7 @@ the ways in, in setup order.
 | Where | Example |
 | --- | --- |
 | Copy prompt button | On every tool and workflow page |
-| `.md` URL | `/tools/clay/clay.md`, `/workflows/brew/intent-to-meeting.md`, `/workflows/brew/intent-to-meeting@3.md`, `/companies/clay.md` |
+| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/brew/intent-to-meeting.md`, `/workflows/brew/intent-to-meeting@3.md`, `/companies/clay.md` |
 | Any page, when asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file |
 | MCP (later) | `get` with a ref returns the file |

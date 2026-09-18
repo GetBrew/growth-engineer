@@ -9,6 +9,11 @@ import type { Doc } from '../_generated/dataModel'
  * community options in the same order. Tool files list every option;
  * workflow files show at most two per tool, or the one a step asks for.
  *
+ * EVERY WAY IN NAMES ITS OPERATION. A tool is one function, so setup is not
+ * finished when the agent can reach the product — it is finished when the
+ * agent knows the exact call. The operation line is what turns "you have Clay
+ * connected" into "call `clay_enrich_person`".
+ *
  * PURE MODULE: type-only Convex imports.
  */
 
@@ -42,9 +47,17 @@ export function selectWorkflowAccess(
   return ordered.slice(0, 2)
 }
 
-/** The server name in the `mcpServers` block: the tool's own name part. */
+/**
+ * The server name in the `mcpServers` block: the COMPANY, not the function.
+ *
+ * A tool is one function, but an MCP server is the whole product — you add
+ * Clay's server once and then call `clay_enrich_contacts` or
+ * `clay_find_work_emails` on it. Keying the block by the function would tell
+ * a user to register the same server several times under different names,
+ * and a second workflow step would silently overwrite the first.
+ */
 function serverSlug(toolKey: string): string {
-  return toolKey.split('/')[1] ?? toolKey
+  return toolKey.split('/')[0] ?? toolKey
 }
 
 /**
@@ -104,6 +117,18 @@ function envVarLine(access: Access): string | null {
   return `Set \`$${access.auth.envVar}\` in your environment first${suffix}.`
 }
 
+/** The exact call this way in names — the reason a tool is one function. */
+function operationLine(access: Access): string {
+  switch (access.type) {
+    case 'mcp':
+      return `Call the MCP tool \`${access.operation}\`.`
+    case 'cli':
+      return `Run \`${access.operation}\`.`
+    default:
+      return `- Endpoint: \`${access.operation}\``
+  }
+}
+
 function maintainerLine(access: Access): string | null {
   return access.official || !access.maintainer
     ? null
@@ -121,7 +146,15 @@ function mcpBody(
   sentence: string
 ): Array<string> {
   return withEnvVar(
-    [sentence, '', '```json', mcpConfig(access, toolKey), '```'],
+    [
+      sentence,
+      '',
+      '```json',
+      mcpConfig(access, toolKey),
+      '```',
+      '',
+      operationLine(access),
+    ],
     access
   )
 }
@@ -138,6 +171,8 @@ function cliBody(
       access.installCommand,
       `${access.binary} --version`,
       '```',
+      '',
+      operationLine(access),
     ],
     access
   )
@@ -147,7 +182,7 @@ function apiBody(
   access: Extract<Access, { type: 'api' }>,
   options: { includeDocs: boolean }
 ): Array<string> {
-  const lines = [`- Base URL: ${access.baseUrl}`]
+  const lines = [`- Base URL: ${access.baseUrl}`, operationLine(access)]
   const auth = authHeaderLine(access)
   if (auth) {
     lines.push(auth)

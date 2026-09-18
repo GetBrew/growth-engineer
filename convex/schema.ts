@@ -1,16 +1,25 @@
 /**
- * Growth.Engineer — convex/schema.ts   (v0.3.1: v0.3 grilling decisions + auth.header + by_format_top/new)
+ * Growth.Engineer — convex/schema.ts   (v0.4: tool = one function; no hack/workflow split)
  *
- * What people see: companies, the tools they make, and workflows (growth hacks
- * are one-tool workflows). Every tool and workflow renders to ONE markdown
- * file that any agent can run. Copying that file is the whole product action.
+ * What people see: companies, the tools they make, and workflows.
+ *
+ *   A COMPANY makes many tools.
+ *   A TOOL is ONE function an agent can call — "enrich contacts", "scrape
+ *     page" — tied to a specific public API endpoint, MCP tool or CLI
+ *     subcommand of that company's product. Not the product itself.
+ *   A WORKFLOW is several tools in a given order, with the instructions that
+ *     turn them into a result. A growth hack IS a workflow; there is no
+ *     second kind, and nothing is keyed off how many tools it uses.
+ *
+ * Every tool and workflow renders to ONE markdown file that any agent can
+ * run. Copying that file is the whole product action.
  *
  * Identity
  *   _id   Internal pointer. The only thing stored in reference fields.
  *   key   Public, permanent pointer, resolved once at the edge via `by_key`.
  *           company    clay
- *           tool       clay/clay                 (a company's only tool uses its product name)
- *           workflow   brew/intent-to-meeting    (@3 pins a version; hacks use the same format)
+ *           tool       clay/enrich-contacts      (ONE function of one company's product)
+ *           workflow   brew/intent-to-meeting    (@3 pins a version)
  *           team/user  brew | jdoe               (one shared handle namespace)
  *           tag        capability:enrich-contacts
  *   ref   `${type}:${key}`, e.g. tool:clay/clay
@@ -97,6 +106,11 @@ const health = v.optional(
 const accessCommon = {
   official: v.boolean(), // false = community-maintained
   maintainer: v.optional(v.string()), // handle or name when not official
+  // THE OPERATION. A tool is one function, so every way in names the exact
+  // thing you call: the MCP tool name, the CLI subcommand, the API endpoint.
+  // Required, because "which call does this listing mean" is the question the
+  // whole catalog exists to answer — a way in that cannot say is not a way in.
+  operation: v.string(),
   auth,
   docsUrl: v.optional(v.string()),
   health,
@@ -264,7 +278,6 @@ export default defineSchema({
     publishedAt: v.optional(v.number()),
     provenance,
     // PROJECTIONS
-    format: v.union(v.literal('hack'), v.literal('workflow')), // hack = one distinct tool
     listed: v.boolean(), // published && public && approved
     toolCount: v.number(),
     trendScore: v.number(), // 7-day half-life, ranking job
@@ -275,15 +288,12 @@ export default defineSchema({
     .index('by_trending', ['listed', 'trendScore'])
     .index('by_top', ['listed', 'topScore'])
     .index('by_new', ['listed', 'publishedAt'])
-    .index('by_format_trending', ['listed', 'format', 'trendScore'])
-    .index('by_format_top', ['listed', 'format', 'topScore'])
-    .index('by_format_new', ['listed', 'format', 'publishedAt'])
     .index('by_team', ['teamId', 'status'])
     .index('by_author', ['authorId', 'status'])
     .index('by_moderation', ['moderation', 'status'])
     .searchIndex('search_workflows', {
       searchField: 'searchText',
-      filterFields: ['listed', 'format'],
+      filterFields: ['listed'],
     }),
 
   // Frozen once saved. Edits create version N+1; a flagged version never replaces
@@ -439,7 +449,9 @@ export default defineSchema({
 
   users: defineTable({
     handle: v.optional(v.string()),
-    clerkUserId: v.optional(v.string()),
+    // The auth provider's subject claim, once there is a provider. Optional
+    // because an admin may create a row before its person ever signs in.
+    authSubject: v.optional(v.string()),
     email: v.string(),
     name: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
@@ -448,22 +460,23 @@ export default defineSchema({
       v.literal('moderator'),
       v.literal('member')
     ),
-    teamId: v.optional(v.id('teams')), // PROJECTION from Clerk; empty for personal email
+    teamId: v.optional(v.id('teams')), // PROJECTION from the org provider; empty for personal email
   })
     .index('by_handle', ['handle'])
-    .index('by_clerk_id', ['clerkUserId'])
+    .index('by_auth_subject', ['authSubject'])
     .index('by_email', ['email'])
     .index('by_team', ['teamId']),
 
   teams: defineTable({
     key: v.string(), // handle; uses the company's handle when the domain matches
     name: v.string(),
-    clerkOrgId: v.string(),
+    // The auth provider's organization id, once there is a provider.
+    authOrgId: v.optional(v.string()),
     companyId: v.optional(v.id('companies')),
     stackVisibility: v.union(v.literal('public'), v.literal('private')), // default public
   })
     .index('by_key', ['key'])
-    .index('by_clerk_org', ['clerkOrgId']),
+    .index('by_auth_org', ['authOrgId']),
 
   teamStack: defineTable({
     teamId: v.id('teams'),

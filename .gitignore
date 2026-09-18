@@ -31,9 +31,6 @@ coverage/
 # Vercel
 .vercel
 
-# Clerk (can contain secrets)
-/.clerk/
-
 # Editors / OS
 .DS_Store
 .idea/

@@ -28,7 +28,7 @@ matcher and its asset prefixing all have to know the child exists.
 
 **Its own subdomain** (`admin.example.com`) is independent in every way, and
 the cost is that it is a different origin: you now own a cookie-domain and CORS
-story, and Clerk has to be configured for both.
+story, and the auth provider — once there is one — has to be configured for both.
 
 Pick deliberately. Moving from one to the other later means a redirect layer
 for every URL anyone bookmarked.

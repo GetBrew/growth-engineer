@@ -39,8 +39,6 @@ export type ToolFileInput = {
   description?: string
   access: ReadonlyArray<Access>
   agent: { level: AgentLevel; reason: string }
-  /** Capability tags, as `{ slug, label }`, in display order. */
-  capabilities: ReadonlyArray<{ slug: string; label: string }>
   updatedAt: number
 }
 
@@ -61,7 +59,6 @@ export type WorkflowFileInput = {
   key: string
   version: number
   title: string
-  format: 'hack' | 'workflow'
   tools: ReadonlyArray<WorkflowFileTool>
   /** Tag keys, e.g. `motion:outbound`. */
   tags: ReadonlyArray<string>
@@ -137,7 +134,6 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     `ref: ${formatRef('tool', tool.key)}`,
     `name: ${tool.name}`,
     `company: ${formatRef('company', tool.companyKey)}`,
-    `does: ${list(tool.capabilities.map((capability) => capability.slug))}`,
     `access: ${list(accessTypes)}`,
     `agent: ${tool.agent.level}`,
     `agent_note: ${agentNote(tool.agent.reason)}`,
@@ -166,13 +162,6 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
       '',
       'Before doing anything else, make one read-only call to confirm access.'
     )
-  }
-
-  if (tool.capabilities.length > 0) {
-    lines.push('', '## What it can do', '')
-    for (const capability of tool.capabilities) {
-      lines.push(`- ${capability.label}`)
-    }
   }
 
   lines.push(...rulesSection(TOOL_RULES))
@@ -247,7 +236,7 @@ function setupSection(
 function stepsSection(
   steps: ReadonlyArray<WorkflowFileStep>,
   toolNames: ReadonlyMap<string, string>,
-  isHack: boolean
+  hasSoleTool: boolean
 ): Array<string> {
   return [
     '',
@@ -255,7 +244,7 @@ function stepsSection(
     '',
     ...steps.map((step, index) => {
       const toolName = toolNames.get(step.toolKey) ?? step.toolKey
-      const lead = isHack
+      const lead = hasSoleTool
         ? `**${step.title}**`
         : `**${step.title}** with ${toolName}.`
       return `${index + 1}. ${lead} ${step.instruction}`
@@ -280,14 +269,15 @@ export function renderWorkflowDocument(
     const tool = toolsByKey.get(key)
     return tool ? [tool] : []
   })
-  const isHack = workflow.format === 'hack'
-  const soleTool = isHack ? usedTools[0] : undefined
+  // A workflow that happens to use one tool reads better naming it once up
+  // front than repeating it on every step. That is a rendering choice about
+  // THESE steps, not a second kind of document.
+  const soleTool = usedTools.length === 1 ? usedTools[0] : undefined
 
   const lines: Array<string> = [
     '---',
     `ref: ${formatRef('workflow', workflow.key, workflow.version)}`,
     `title: ${workflow.title}`,
-    `type: ${workflow.format}`,
     `tools: ${list(usedTools.map((tool) => formatRef('tool', tool.key)))}`,
     `tags: ${list(workflow.tags)}`,
     `updated: ${isoDate(workflow.updatedAt)}`,
@@ -300,7 +290,7 @@ export function renderWorkflowDocument(
       : 'Set up the tools below, then run the steps in order for the user.',
     ...inputsSection(workflow.inputs),
     ...setupSection(usedTools, workflow.steps),
-    ...stepsSection(workflow.steps, toolNames, isHack),
+    ...stepsSection(workflow.steps, toolNames, soleTool !== undefined),
   ]
 
   if (workflow.doneWhen.length > 0) {

@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import type { Doc } from '@/convex/_generated/dataModel'
-import { AccessBadges, AgentLevelBadge, FormatBadge } from './badges'
+import { AccessBadges, AgentLevelBadge } from './badges'
 import { EntityLogo } from './entity-logo'
 
 /**
@@ -84,7 +84,6 @@ export function WorkflowRow({ workflow, tools }: WorkflowRowData) {
               {workflow.title}
             </Link>
           </h3>
-          <FormatBadge format={workflow.format} />
         </div>
         {workflow.summary ? (
           <p className="mt-2 line-clamp-2 max-w-3xl text-foreground/70 text-sm leading-5">

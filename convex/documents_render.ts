@@ -59,12 +59,6 @@ async function renderTool(
   if (!company) {
     return null
   }
-  const capabilities = (
-    await activeTagsOf(ctx, tool._id, { includeDerived: false })
-  )
-    .filter((tag) => tag.namespace === 'capability')
-    .sort((a, b) => a.label.localeCompare(b.label))
-    .map((tag) => ({ slug: tag.slug, label: tag.label }))
   return renderToolDocument({
     key: tool.key,
     name: tool.name,
@@ -73,7 +67,6 @@ async function renderTool(
     description: tool.description,
     access: tool.access,
     agent: { level: tool.agent.level, reason: tool.agent.reason },
-    capabilities,
     updatedAt: now,
   })
 }
@@ -104,7 +97,6 @@ async function renderWorkflow(
     key: workflow.key,
     version: version.version,
     title: workflow.title,
-    format: workflow.format,
     tools,
     tags,
     inputs: version.inputs,

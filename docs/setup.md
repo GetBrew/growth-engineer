@@ -1,7 +1,7 @@
 # First run
 
-About ten minutes. Convex is required; Clerk is optional until you need the
-signed-in surface.
+About five minutes. Convex is the only requirement — there is no auth
+provider, so every page, file and search is public and nobody signs in.
 
 ## 1. Clone and install
 
@@ -23,14 +23,6 @@ functions, regenerates `convex/_generated`, and watches `convex/`.
 **Headless (agents, CI):** a `dev:` deploy key in `.env.local` as
 `CONVEX_DEPLOY_KEY` lets `npx convex dev --once`, `convex run` and `convex env`
 work without a login. Never commit one.
-
-`auth.config.ts` reads `CLERK_JWT_ISSUER_DOMAIN` from the deployment and the
-CLI insists it exists. Until Clerk is set up, set it EMPTY — the provider
-list is then empty, human auth is off, and every public read works:
-
-```bash
-npx convex env set CLERK_JWT_ISSUER_DOMAIN ""
-```
 
 ## 3. The service token
 
@@ -62,35 +54,25 @@ pnpm dev
 
 Then `pnpm validate` once, to see every gate green before changing anything.
 
-## 6. Clerk (when you need sign-in)
+## 6. Auth
 
-Create an application at clerk.com and put the keys in `.env.local`:
+There is none, on purpose. `convex/shared/builders.ts` still ships the
+identity tiers (`authenticatedQuery`, `orgMemberQuery`, `orgAdminMutation`)
+and they fail closed: with no provider configured,
+`ctx.auth.getUserIdentity()` is always null and every guarded function
+refuses. Adding a provider back is three things, in this order:
 
-```
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_…
-CLERK_SECRET_KEY=sk_test_…
-```
+1. Its keys in `lib/env.ts` as REQUIRED — an optional provider key is a
+   provider that is silently off in production.
+2. A `convex/auth.config.ts` naming the issuer and the `convex` JWT template,
+   whose claims must include `orgId` for the org tiers to authorize anyone.
+3. The human transport in `lib/convex/gateway.ts` (`tenantQuery` /
+   `tenantMutation`), which reads the session on the request and sends
+   `actingUserId` alongside the service token. Convex already enforces the
+   pairing — a service token that names nobody is refused.
 
-**The JWT template — do not skip this.** Clerk → JWT Templates → New
-template, named exactly `convex`:
-
-```json
-{ "aud": "convex", "orgId": "{{org.id}}", "orgRole": "{{org.role}}" }
-```
-
-Authorization claims only; display data (name, email, avatar) comes from the
-`users` mirror the webhook writes. Then tell Convex which issuer to trust —
-your Clerk frontend API URL (base64-decode the publishable key after its
-prefix and drop the trailing `$`):
-
-```bash
-npx convex env set CLERK_JWT_ISSUER_DOMAIN https://<your>.clerk.accounts.dev
-```
-
-Without it, `ctx.auth.getUserIdentity()` is null forever and every guarded
-function refuses, silently. Optional: a Clerk webhook at
-`/api/webhooks/clerk` (`user.created|updated|deleted`) with its signing
-secret in `CLERK_WEBHOOK_SECRET` keeps the `users` mirror current.
+The gate belongs in the page or route handler that owns the data, never in
+`proxy.ts`: path matching there can diverge from how Next routes a request.
 
 ## 7. Logos
 
