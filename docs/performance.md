@@ -27,8 +27,8 @@ export default function Page() {
 
 async function Loader() {
   await connection() // a list read: the build stops here, never at Convex
-  const tools = await loadNewTools()
-  return <ToolGrid tools={tools} />
+  const companies = await loadCompanies()
+  return <CompanyGrid companies={companies} />
 }
 
 // ❌ nothing prerenders — the whole route waits

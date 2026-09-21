@@ -149,7 +149,7 @@ freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
 - File size target ~200 lines, cap 400 (data tables and the schema exempt).
 - One concern per file; name files by what they render; `Array<T>`; booleans
   take `is/has/should/can`; environment through `lib/env.ts`.
-- Icons from `lucide-react`; the vendored orb stays byte-identical.
+- Icons from `@hugeicons/react` + `@hugeicons/core-free-icons`.
 
 ## Documentation hygiene
 

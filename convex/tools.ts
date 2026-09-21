@@ -1,4 +1,4 @@
-import { v } from 'convex/values'
+import { type Infer, v } from 'convex/values'
 import type { Doc, Id } from './_generated/dataModel'
 import type { QueryCtx } from './_generated/server'
 import { publicQuery } from './shared/builders'
@@ -13,9 +13,54 @@ import { CANDIDATE_CAP, runToolSearch } from './tools_search'
 
 const MAX_LIST = 200
 
-type ToolCard = {
-  tool: Doc<'tools'>
-  company: { key: string; name: string; logoUrl?: string }
+type ToolCard = Infer<typeof toolCard>
+type Category = NonNullable<ToolCard['category']>
+
+function listSummary(tool: Doc<'tools'>): ToolCard['tool'] {
+  return {
+    _id: tool._id,
+    key: tool.key,
+    name: tool.name,
+    summary: tool.summary,
+    agentLevel: tool.agentLevel,
+    access: [...new Set(tool.access.map((entry) => entry.type))],
+  }
+}
+
+/** Resolve the active company category for every company on the page. */
+async function categoriesOf(
+  ctx: QueryCtx,
+  companyIds: ReadonlyArray<Id<'companies'>>
+): Promise<Map<Id<'companies'>, Category>> {
+  const ids = [...new Set(companyIds)]
+  const taggings = await Promise.all(
+    ids.map((companyId) =>
+      ctx.db
+        .query('taggings')
+        .withIndex('by_entity_tag', (q) => q.eq('entityId', companyId))
+        .take(16)
+    )
+  )
+  const categoryTagIds = taggings.flatMap((rows) =>
+    rows.flatMap((row) => (row.namespace === 'category' ? [row.tagId] : []))
+  )
+  const tags = await getMany(ctx, categoryTagIds)
+  const categories = new Map<Id<'companies'>, Category>()
+  ids.forEach((companyId, index) => {
+    const categoryTagging = taggings[index]?.find(
+      (row) => row.namespace === 'category'
+    )
+    const category = categoryTagging
+      ? tags.get(categoryTagging.tagId)
+      : undefined
+    if (category?.status === 'active') {
+      categories.set(companyId, {
+        slug: category.slug,
+        label: category.label,
+      })
+    }
+  })
+  return categories
 }
 
 /** Join each tool to its company: one point read per distinct company. */
@@ -27,17 +72,23 @@ async function toCards(
     ctx,
     tools.map((tool) => tool.companyId)
   )
+  const categories = await categoriesOf(
+    ctx,
+    tools.map((tool) => tool.companyId)
+  )
   const cards: Array<ToolCard> = []
   for (const tool of tools) {
     const company = companies.get(tool.companyId)
     if (company) {
+      const category = categories.get(tool.companyId)
       cards.push({
-        tool,
+        tool: listSummary(tool),
         company: {
           key: company.key,
           name: company.name,
           ...(company.logo ? { logoUrl: company.logo.url } : {}),
         },
+        ...(category ? { category } : {}),
       })
     }
   }

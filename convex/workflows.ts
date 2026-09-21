@@ -1,4 +1,4 @@
-import { v } from 'convex/values'
+import { type Infer, v } from 'convex/values'
 import type { Doc } from './_generated/dataModel'
 import type { QueryCtx } from './_generated/server'
 import { publicQuery } from './shared/builders'
@@ -24,6 +24,8 @@ const sortValidator = v.union(
   v.literal('new')
 )
 const formatValidator = v.union(v.literal('hack'), v.literal('workflow'))
+type Sort = Infer<typeof sortValidator>
+type Format = Infer<typeof formatValidator>
 /** The listing index behind each sort, with and without a format. */
 const SORT_INDEX = {
   trending: 'by_trending',
@@ -36,14 +38,87 @@ const FORMAT_SORT_INDEX = {
   new: 'by_format_new',
 } as const
 
-type Row = {
-  workflow: Doc<'workflows'>
-  tools: Array<{
-    key: string
-    name: string
-    companyKey: string
-    logoUrl?: string
-  }>
+type Row = Infer<typeof workflowRow>
+
+function sortScore(workflow: Doc<'workflows'>, sort: Sort): number {
+  if (sort === 'new') {
+    return workflow.publishedAt ?? 0
+  }
+  return sort === 'top' ? workflow.topScore : workflow.trendScore
+}
+
+async function activeTag(ctx: QueryCtx, key: string) {
+  const tag = await ctx.db
+    .query('tags')
+    .withIndex('by_key', (q) => q.eq('key', key))
+    .unique()
+  return tag?.status === 'active' ? tag : null
+}
+
+/** Bounded candidates for one workflow tag, then exact list ordering in memory. */
+async function listByTag(
+  ctx: QueryCtx,
+  tagKey: string,
+  sort: Sort,
+  format: Format | undefined,
+  limit: number
+): Promise<Array<Doc<'workflows'>>> {
+  const tag = await activeTag(ctx, tagKey)
+  if (!tag) {
+    return []
+  }
+  const taggings =
+    sort === 'new'
+      ? await ctx.db
+          .query('taggings')
+          .withIndex('by_tag_new', (q) =>
+            q
+              .eq('tagId', tag._id)
+              .eq('entityType', 'workflow')
+              .eq('listed', true)
+          )
+          .order('desc')
+          .take(MAX_LIST)
+      : await ctx.db
+          .query('taggings')
+          .withIndex('by_tag_popular', (q) =>
+            q
+              .eq('tagId', tag._id)
+              .eq('entityType', 'workflow')
+              .eq('listed', true)
+          )
+          .order('desc')
+          .take(MAX_LIST)
+  const workflowIds = taggings.flatMap((tagging) =>
+    tagging.entityType === 'workflow' ? [tagging.entityId] : []
+  )
+  const workflows = [...(await getMany(ctx, workflowIds)).values()]
+    .filter((workflow) => !format || workflow.format === format)
+    .sort((a, b) => sortScore(b, sort) - sortScore(a, sort))
+  return workflows.slice(0, limit)
+}
+
+/** Keep search relevance while checking one tag with bounded point reads. */
+async function filterByTag(
+  ctx: QueryCtx,
+  workflows: ReadonlyArray<Doc<'workflows'>>,
+  tagKey: string
+): Promise<Array<Doc<'workflows'>>> {
+  const tag = await activeTag(ctx, tagKey)
+  if (!tag) {
+    return []
+  }
+  const matches = await Promise.all(
+    workflows.map((workflow) =>
+      ctx.db
+        .query('taggings')
+        .withIndex('by_entity_tag', (q) =>
+          q.eq('entityId', workflow._id).eq('tagId', tag._id)
+        )
+        .unique()
+    )
+  )
+  return workflows.filter((_, index) => matches[index] !== null)
 }
 
 /**
@@ -71,18 +146,27 @@ async function toRows(
     [...tools.values()].map((tool) => tool.companyId)
   )
   return workflows.map((workflow, index) => ({
-    workflow,
+    workflow: {
+      _id: workflow._id,
+      key: workflow.key,
+      title: workflow.title,
+      format: workflow.format,
+      toolCount: workflow.toolCount,
+      ...(workflow.summary === undefined ? {} : { summary: workflow.summary }),
+    },
     tools: (linksPerWorkflow[index] ?? []).flatMap((link) => {
       const tool = tools.get(link.toolId)
       const company = tool ? companies.get(tool.companyId) : undefined
+
       if (!(tool && company)) {
         return []
       }
+
       return [
         {
-          key: tool.key,
-          name: tool.name,
           companyKey: company.key,
+          companyName: company.name,
+          access: tool.access.map((entry) => entry.type),
           ...(company.logo ? { logoUrl: company.logo.url } : {}),
         },
       ]
@@ -95,12 +179,19 @@ export const list = publicQuery({
   args: {
     sort: sortValidator,
     format: v.optional(formatValidator),
+    tag: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   returns: v.array(workflowRow),
   handler: async (ctx, args) => {
     const limit = Math.min(args.limit ?? 30, MAX_LIST)
     const format = args.format
+    if (args.tag) {
+      return await toRows(
+        ctx,
+        await listByTag(ctx, args.tag, args.sort, format, limit)
+      )
+    }
     const workflows = format
       ? await ctx.db
           .query('workflows')
@@ -272,7 +363,9 @@ export const listByCompany = publicQuery({
 export const search = publicQuery({
   args: {
     q: v.string(),
+    sort: v.optional(sortValidator),
     format: v.optional(formatValidator),
+    tag: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   returns: v.array(workflowRow),
@@ -282,13 +375,22 @@ export const search = publicQuery({
       return []
     }
     const format = args.format
+    const limit = Math.min(args.limit ?? 30, MAX_LIST)
     const workflows = await ctx.db
       .query('workflows')
       .withSearchIndex('search_workflows', (q) => {
         const base = q.search('searchText', query).eq('listed', true)
         return format ? base.eq('format', format) : base
       })
-      .take(Math.min(args.limit ?? 30, MAX_LIST))
-    return await toRows(ctx, workflows)
+      .take(args.tag ? MAX_LIST : limit)
+    const filtered = args.tag
+      ? await filterByTag(ctx, workflows, args.tag)
+      : workflows
+    const sort = args.sort
+    const ordered =
+      sort && sort !== 'trending'
+        ? [...filtered].sort((a, b) => sortScore(b, sort) - sortScore(a, sort))
+        : filtered
+    return await toRows(ctx, ordered.slice(0, limit))
   },
 })

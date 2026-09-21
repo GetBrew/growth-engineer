@@ -10,11 +10,6 @@ type VideoWithFrameCallback = HTMLVideoElement & {
   requestVideoFrameCallback?: (callback: () => void) => number
 }
 
-/**
- * The workflows hero: one short loop, crossfaded against a second copy of
- * itself so the seam never shows. Decorative, muted, and skipped by assistive
- * tech.
- */
 export function GradientVideo() {
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([])
   const activeIndexRef = useRef(0)
@@ -27,7 +22,7 @@ export function GradientVideo() {
       return
     }
 
-    let disposed = false
+    let isDisposed = false
     let fadeTimer: ReturnType<typeof setTimeout> | undefined
 
     for (const video of videos) {
@@ -46,10 +41,12 @@ export function GradientVideo() {
       if (!(outgoing && incoming)) {
         return
       }
+
       incoming.currentTime = 0
       incoming.playbackRate = PLAYBACK_RATE
+
       const swap = () => {
-        if (disposed) {
+        if (isDisposed) {
           return
         }
         activeIndexRef.current = incomingIndex
@@ -59,6 +56,7 @@ export function GradientVideo() {
           outgoing.currentTime = 0
         }, CROSSFADE_MS)
       }
+
       incoming
         .play()
         .then(() => {
@@ -73,7 +71,7 @@ export function GradientVideo() {
 
     const interval = setInterval(showNext, TRANSITION_INTERVAL_MS)
     return () => {
-      disposed = true
+      isDisposed = true
       clearInterval(interval)
       if (fadeTimer) {
         clearTimeout(fadeTimer)
@@ -85,11 +83,11 @@ export function GradientVideo() {
   }, [])
 
   return (
-    <div aria-hidden="true" className="absolute inset-0 z-0">
+    <div aria-hidden="true" className="absolute inset-0">
       {[0, 1].map((index) => (
         <video
           autoPlay={index === 0}
-          className={`absolute inset-0 size-full object-cover transition-opacity duration-[750ms] ease-linear ${
+          className={`absolute inset-0 size-full object-cover transition-opacity duration-750 ease-linear ${
             activeIndex === index ? 'opacity-100' : 'opacity-0'
           }`}
           key={index}

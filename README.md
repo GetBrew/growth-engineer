@@ -7,7 +7,7 @@ companies make, and **workflows** that put tools to work. A **growth hack** is
 a workflow that uses a single tool. Every tool and workflow is **one markdown
 file any agent can run** — copying that file is the whole setup.
 
-Powered by [Brew](https://brew.new). Built on
+Brought to you by [Brew](https://brew.new). Built on
 [`GetBrew/next-convex-clerk-starter`](https://github.com/GetBrew/next-convex-clerk-starter).
 
 ## Why

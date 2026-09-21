@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { Page } from '@/components/catalog/primitives'
-import { WorkflowRowsSkeleton } from '@/components/catalog/skeletons'
+import { WorkflowsSkeleton } from '@/components/skeletons/workflows-skeleton'
 import {
   WorkflowsIndex,
   type WorkflowsSearchParams,
-} from '@/components/catalog/workflows-index'
+} from '@/components/workflows/workflows-index'
 
 export const metadata: Metadata = {
   title: 'Growth hacks',
@@ -20,7 +20,7 @@ export default function HacksPage({
 }) {
   return (
     <Page>
-      <Suspense fallback={<WorkflowRowsSkeleton />}>
+      <Suspense fallback={<WorkflowsSkeleton />}>
         <WorkflowsIndex
           base="/hacks"
           fixedFormat="hack"

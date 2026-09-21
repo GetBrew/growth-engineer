@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { Footer } from '@/components/site/footer'
-import { Navbar } from '@/components/site/navbar'
+import { Navbar } from '@/components/site/navigation/navbar'
 import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils/cn'
 
 /**
  * The root not-found renders outside every route group, so it mounts the site
@@ -14,27 +13,21 @@ export default function NotFound() {
     <div className="flex min-h-svh flex-col">
       <Navbar />
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
-        <h1 className="font-semibold text-2xl tracking-[-0.03em]">Not found</h1>
-        <p className="max-w-md text-foreground/62 text-sm leading-6">
+        <h1 className="type-page-title">Not found</h1>
+        <p className="type-body max-w-md">
           No company, tool or workflow lives at this address. Keys are
           permanent, so if a link once worked it has an alias — or it never
           existed.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           <Link
-            className={cn(
-              buttonVariants({ variant: 'outline' }),
-              'rounded-full'
-            )}
+            className={buttonVariants({ variant: 'outline', size: 'pill' })}
             href="/tools"
           >
             Browse tools
           </Link>
           <Link
-            className={cn(
-              buttonVariants({ variant: 'outline' }),
-              'rounded-full'
-            )}
+            className={buttonVariants({ variant: 'outline', size: 'pill' })}
             href="/workflows"
           >
             Browse workflows

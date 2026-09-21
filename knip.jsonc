@@ -35,6 +35,17 @@
   ],
   "project": ["**/*.{ts,tsx}"],
   // Loaded by Tailwind's own pipeline (app/globals.css), not by any module,
-  // so knip cannot see the import.
-  "ignoreDependencies": ["tailwindcss"]
+  // so knip cannot see the import. `shadcn` and `tw-animate-css` are the
+  // stylesheets globals.css @imports.
+  // gsap/@gsap/react: installed for animation work, not imported yet.
+  "ignoreDependencies": [
+    "tailwindcss",
+    "shadcn",
+    "tw-animate-css",
+    "gsap",
+    "@gsap/react"
+  ],
+  // Vendored agent skills (installed with `npx skills add`): docs and example
+  // files for agents, not app code. Biome skips them for the same reason.
+  "ignore": [".agents/**"]
 }

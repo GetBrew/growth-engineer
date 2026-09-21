@@ -36,10 +36,6 @@
       "!!**/_generated",
       "!!**/*.gen.*",
       "!!**/pnpm-lock.yaml",
-      // Vendored (MIT): components/marketing/thinking-orb/thinking-orbs.js is
-      // upstream code, kept byte-identical so it can be diffed against the
-      // source on upgrade.
-      "!!components/marketing/thinking-orb/thinking-orbs.js",
       // Vendored agent skill: the same source also lives in
       // GetBrew/growth-engineer-proxy, and the two copies are kept BYTE-IDENTICAL
       // so a drift check is a plain `diff -r`. Formatting it here would fork them

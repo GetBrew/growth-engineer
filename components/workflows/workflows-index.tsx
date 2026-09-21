@@ -1,21 +1,28 @@
-import { Search } from 'lucide-react'
 import { connection } from 'next/server'
-import { loadWorkflows, searchWorkflows } from '@/lib/catalog/loaders'
-import { WorkflowRow } from './cards'
-import { EmptyState, PillLink, SectionHeading } from './primitives'
+import { CatalogSearch } from '@/components/catalog/catalog-search'
+import { ListingToolbar } from '@/components/catalog/listing-toolbar'
+import { NoResults } from '@/components/catalog/no-results'
+import { SectionHeading } from '@/components/catalog/primitives'
+import type { FilterOption } from '@/components/filters/types'
+import { MaskIcon } from '@/components/site/mask-icon'
+import {
+  loadActiveTags,
+  loadWorkflows,
+  searchWorkflows,
+} from '@/lib/catalog/loaders'
+import { firstParam } from '@/lib/catalog/query'
+import { WorkflowRow } from './workflow-row'
 
 type Sort = 'trending' | 'top' | 'new'
 type Format = 'hack' | 'workflow'
+type Tag = { key: string; label: string; counts: { workflows: number } }
 
 export type WorkflowsSearchParams = Promise<{
   sort?: string | Array<string>
   format?: string | Array<string>
+  tag?: string | Array<string>
   q?: string | Array<string>
 }>
-
-function first(value: string | Array<string> | undefined): string {
-  return (Array.isArray(value) ? value[0] : value) ?? ''
-}
 
 function parseSort(value: string): Sort {
   return value === 'top' || value === 'new' ? value : 'trending'
@@ -25,7 +32,8 @@ function href(
   base: string,
   sort: Sort,
   format: Format | undefined,
-  q: string
+  q: string,
+  tag?: string
 ): string {
   const params = new URLSearchParams()
   if (sort !== 'trending') {
@@ -34,6 +42,9 @@ function href(
   if (format && base === '/workflows') {
     params.set('format', format)
   }
+  if (tag) {
+    params.set('tag', tag)
+  }
   if (q) {
     params.set('q', q)
   }
@@ -41,12 +52,95 @@ function href(
   return query ? `${base}?${query}` : base
 }
 
-/**
- * The workflows list and its controls, shared by /workflows and /hacks. One
- * async Server Component: it reads the URL (request-time), so it lives inside
- * the page's Suspense boundary, and every control is a link — the URL is the
- * state, and an agent can use the same URL.
- */
+function viewFilters(
+  base: '/workflows' | '/hacks',
+  tags: ReadonlyArray<Tag>,
+  sort: Sort,
+  format: Format | undefined,
+  q: string,
+  tag: string
+): { all: { href: string; active: boolean }; options: Array<FilterOption> } {
+  const orders: Array<FilterOption> = (['top', 'new'] as const).map(
+    (value) => ({
+      key: value,
+      label: value === 'top' ? 'Top' : 'New',
+      href: href(base, value, format, q, tag),
+      active: sort === value,
+    })
+  )
+
+  const hacks: FilterOption = {
+    key: 'hack',
+    label: 'Growth hacks',
+    href: href(base, sort, 'hack', q, tag),
+    active: format === 'hack',
+  }
+  const tagOptions: Array<FilterOption> = tags
+    .filter((entry) => entry.counts.workflows > 0)
+    .map((entry) => ({
+      key: entry.key,
+      label: entry.label,
+      count: entry.counts.workflows,
+      href: href(base, sort, format, q, entry.key),
+      active: tag === entry.key,
+    }))
+  return {
+    all: {
+      href: base,
+      active:
+        sort === 'trending' &&
+        !q &&
+        !tag &&
+        (base === '/hacks' || format === undefined),
+    },
+    options: [
+      ...orders,
+      ...(base === '/workflows' ? [hacks] : []),
+      ...tagOptions,
+    ],
+  }
+}
+
+function workflowRows(
+  q: string,
+  sort: Sort,
+  format: Format | undefined,
+  tag: string
+) {
+  return q
+    ? searchWorkflows(q, sort, format, tag || undefined)
+    : loadWorkflows(sort, format, 30, tag || undefined)
+}
+
+function heading(fixedFormat: Format | undefined, q: string): string {
+  if (fixedFormat === 'hack') {
+    return 'Discover growth hacks'
+  }
+  return q ? `Results for “${q}”` : 'Discover workflows'
+}
+
+function emptyCopy(
+  q: string,
+  hasFilters: boolean
+): { title: string; description: string } {
+  if (q) {
+    return {
+      title: 'No workflows match',
+      description: `Nothing matches “${q}”. Try fewer words, or browse all workflows.`,
+    }
+  }
+  if (hasFilters) {
+    return {
+      title: 'No workflows match',
+      description: 'No workflows match these filters. Try another combination.',
+    }
+  }
+  return {
+    title: 'No workflows yet',
+    description: 'Run the seed, or publish the first one.',
+  }
+}
+
 export async function WorkflowsIndex({
   base,
   fixedFormat,
@@ -57,30 +151,21 @@ export async function WorkflowsIndex({
   searchParams: WorkflowsSearchParams
 }) {
   const params = await searchParams
-  const sort = parseSort(first(params.sort))
+  const sort = parseSort(firstParam(params.sort))
   const format =
-    fixedFormat ?? (first(params.format) === 'hack' ? 'hack' : undefined)
-  const q = first(params.q).trim()
+    fixedFormat ?? (firstParam(params.format) === 'hack' ? 'hack' : undefined)
+  const tag = firstParam(params.tag).trim()
+  const q = firstParam(params.q).trim()
 
-  if (!q) {
-    await connection()
-  }
-  const rows = q
-    ? await searchWorkflows(q, format)
-    : await loadWorkflows(sort, format, 30)
-
-  let title = 'Workflows'
-  if (fixedFormat === 'hack') {
-    title = 'Growth hacks'
-  } else if (q) {
-    title = `Results for “${q}”`
-  }
-
-  const sorts: Array<{ value: Sort; label: string }> = [
-    { value: 'trending', label: 'Trending' },
-    { value: 'top', label: 'Top' },
-    { value: 'new', label: 'New' },
-  ]
+  await connection()
+  const [rows, tags] = await Promise.all([
+    workflowRows(q, sort, format, tag),
+    loadActiveTags(),
+  ])
+  const hasFilters = Boolean(
+    q || tag || (!fixedFormat && format) || sort !== 'trending'
+  )
+  const empty = emptyCopy(q, hasFilters)
 
   return (
     <div className="flex flex-col gap-6">
@@ -90,66 +175,43 @@ export async function WorkflowsIndex({
             ? 'A growth hack is a workflow with one tool: the same file, one setup.'
             : 'Steps across tools that reach a result. Copy the file; run it with any agent.'
         }
-        title={title}
+        title={heading(fixedFormat, q)}
       />
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-2">
-          {sorts.map((entry) => (
-            <PillLink
-              active={!q && sort === entry.value}
-              href={href(base, entry.value, format, '')}
-              key={entry.value}
-            >
-              {entry.label}
-            </PillLink>
-          ))}
-          {fixedFormat ? null : (
-            <PillLink
-              active={format === 'hack'}
-              href={href(base, sort, format === 'hack' ? undefined : 'hack', q)}
-            >
-              Hacks only
-            </PillLink>
-          )}
-        </div>
-        <form
-          action={base}
-          className="relative block w-full lg:w-72"
-          method="get"
-        >
-          {sort === 'trending' ? null : (
-            <input name="sort" type="hidden" value={sort} />
-          )}
-          {format && !fixedFormat ? (
-            <input name="format" type="hidden" value={format} />
-          ) : null}
-          <span className="sr-only">Search workflows</span>
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-foreground/55"
-          />
-          <input
-            className="focus-ring h-10 w-full rounded-full border border-border bg-white pr-4 pl-10 text-sm placeholder:text-foreground/55"
+      <ListingToolbar
+        groups={[
+          {
+            key: 'view',
+            label: 'Filter workflows',
+            moreTitle: 'More filters',
+            top: 3,
+            ...viewFilters(base, tags, sort, format, q, tag),
+          },
+        ]}
+        search={
+          <CatalogSearch
+            action={base}
             defaultValue={q}
-            name="q"
+            label="Search workflows"
+            params={{
+              sort: sort === 'trending' ? undefined : sort,
+              format: format && !fixedFormat ? format : undefined,
+              tag: tag || undefined,
+            }}
             placeholder="Search workflows…"
-            type="search"
           />
-        </form>
-      </div>
+        }
+      />
 
       {rows.length === 0 ? (
-        <EmptyState
-          hint={
-            q
-              ? 'Try fewer words, or browse Trending.'
-              : 'Run the seed, or publish the first one.'
-          }
-          title={q ? 'No workflows match' : 'No workflows yet'}
+        <NoResults
+          clearHref={hasFilters ? base : undefined}
+          description={empty.description}
+          icon={<MaskIcon size={20} src="/workflow.svg" />}
+          title={empty.title}
         />
       ) : (
-        <div className="flex flex-col border-border border-t">
+        <div className="flex flex-col border-t">
           {rows.map((row) => (
             <WorkflowRow key={row.workflow._id} {...row} />
           ))}

@@ -1,11 +1,11 @@
-/**
- * The primary navigation, in a plain module: a Server Component (the navbar)
- * and a Client Component (the active-link marker) both read it. A value
- * exported from a `'use client'` module reaches the server as a client
- * REFERENCE, not the array — `NAV_ITEMS.map is not a function` at build.
- */
+import {
+  Building03Icon,
+  WorkflowSquare01Icon,
+  Wrench01Icon,
+} from '@hugeicons/core-free-icons'
+
 export const NAV_ITEMS = [
-  { href: '/workflows', label: 'Workflows' },
-  { href: '/tools', label: 'Tools' },
-  { href: '/companies', label: 'Companies' },
+  { href: '/workflows', label: 'Workflows', icon: WorkflowSquare01Icon },
+  { href: '/tools', label: 'Tools', icon: Wrench01Icon },
+  { href: '/companies', label: 'Companies', icon: Building03Icon },
 ] as const

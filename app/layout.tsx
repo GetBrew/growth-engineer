@@ -1,6 +1,5 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
-import { Geist_Mono } from 'next/font/google'
 import localFont from 'next/font/local'
 import type { ReactNode } from 'react'
 import { ConvexClientProvider } from '@/components/convex-client-provider'
@@ -23,11 +22,6 @@ const season = localFont({
   weight: '100 900',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
-
 export const metadata: Metadata = {
   metadataBase: new URL(clientEnv.NEXT_PUBLIC_SITE_URL),
   title: {
@@ -40,10 +34,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      className={`${season.variable} ${geistMono.variable} h-full antialiased`}
-      lang="en"
-    >
+    <html className={`${season.variable} h-full antialiased`} lang="en">
       <body className="min-h-full">
         <ClerkProvider afterSignOutUrl="/">
           <ConvexClientProvider>{children}</ConvexClientProvider>

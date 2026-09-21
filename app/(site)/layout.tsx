@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Footer } from '@/components/site/footer'
-import { Navbar } from '@/components/site/navbar'
+import { Navbar } from '@/components/site/navigation/navbar'
 
 /**
  * The public site: every page, including the home page and the signed-in

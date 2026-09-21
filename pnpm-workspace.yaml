@@ -21,3 +21,5 @@ overrides:
 # platform binary, and the Convex bundler depends on esbuild.
 allowBuilds:
   esbuild: true
+
+ignoreWorkspaceRootCheck: true

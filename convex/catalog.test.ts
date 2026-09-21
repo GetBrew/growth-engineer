@@ -36,6 +36,45 @@ describe('catalog', () => {
     const companies = await t.query(api.companies.list, {})
     expect(companies.length).toBe(25)
     expect(companies.every((row) => row.category !== undefined)).toBe(true)
+    const clayRow = companies.find((row) => row.company.key === 'clay')
+    expect(clayRow?.company.name).toBe('Clay')
+    expect(clayRow?.company.logoUrl).toBe('/logos/clay.png')
+    expect('links' in (clayRow?.company ?? {})).toBe(false)
+    expect('searchText' in (clayRow?.company ?? {})).toBe(false)
+    expect('provenance' in (clayRow?.company ?? {})).toBe(false)
+
+    const category = clayRow?.category
+    expect(category).toBeDefined()
+    if (!category) {
+      throw new Error('seeded Clay company must have a category')
+    }
+    const inCategory = await t.query(api.companies.list, {
+      category: category.slug,
+    })
+    expect(inCategory.length).toBeGreaterThan(0)
+    expect(
+      inCategory.every((row) => row.category?.slug === category.slug)
+    ).toBe(true)
+    expect(
+      await t.query(api.companies.search, {
+        q: 'Clay',
+        category: category.slug,
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ company: clayRow?.company }),
+      ])
+    )
+    expect(await t.query(api.companies.list, { category: 'not-real' })).toEqual(
+      []
+    )
+    const homeCompanies = await t.query(api.companies.list, {
+      includeCategory: false,
+      limit: 5,
+    })
+    expect(homeCompanies).toHaveLength(5)
+    expect(homeCompanies.every((row) => row.category === undefined)).toBe(true)
+
     const clay = await t.query(api.companies.getByKey, { key: 'clay' })
     expect(clay?.name).toBe('Clay')
     expect(await t.query(api.companies.getByKey, { key: 'nobody' })).toBeNull()
@@ -61,6 +100,34 @@ describe('catalog', () => {
     const trending = await t.query(api.workflows.list, { sort: 'trending' })
     expect(trending.length).toBe(12)
     expect(trending[0]?.workflow.key).toBe('brew/funding-signal-outbound')
+    expect(Object.keys(trending[0]?.workflow ?? {}).sort()).toEqual([
+      '_id',
+      'format',
+      'key',
+      'summary',
+      'title',
+      'toolCount',
+    ])
+    const firstWorkflowTools = trending[0]?.tools ?? []
+    const firstWorkflowAccess = Object.fromEntries(
+      firstWorkflowTools.map((tool) => [tool.companyKey, tool.access])
+    )
+    expect(firstWorkflowAccess).toMatchObject({
+      apollo: ['api'],
+      brew: ['mcp', 'api'],
+      clay: ['api'],
+    })
+    expect(
+      Object.fromEntries(
+        firstWorkflowTools.map((tool) => [tool.companyKey, tool.companyName])
+      )
+    ).toMatchObject({
+      apollo: 'Apollo',
+      brew: 'Brew',
+      clay: 'Clay',
+    })
+    expect(firstWorkflowTools.every((tool) => !('key' in tool))).toBe(true)
+    expect(firstWorkflowTools.every((tool) => !('name' in tool))).toBe(true)
     const hacks = await t.query(api.workflows.list, {
       sort: 'trending',
       format: 'hack',
@@ -85,6 +152,49 @@ describe('catalog', () => {
       limit: 3,
     })
     expect(newHacks).toHaveLength(2)
+
+    const email = await t.query(api.workflows.list, {
+      sort: 'trending',
+      tag: 'channel:email',
+    })
+    expect(email.map((row) => row.workflow.key)).toContain(
+      'brew/funding-signal-outbound'
+    )
+    expect(email.map((row) => row.workflow.key)).not.toContain(
+      'brew/high-intent-visitors'
+    )
+    const emailHacks = await t.query(api.workflows.list, {
+      sort: 'new',
+      format: 'hack',
+      tag: 'channel:email',
+    })
+    expect(emailHacks.length).toBeGreaterThan(0)
+    expect(emailHacks.every((row) => row.workflow.format === 'hack')).toBe(true)
+    expect(
+      await t.query(api.workflows.list, {
+        sort: 'trending',
+        tag: 'channel:not-real',
+      })
+    ).toEqual([])
+  })
+
+  test('workflow search composes words, sort, format and tag', async () => {
+    const results = await t.query(api.workflows.search, {
+      q: 'email',
+      sort: 'new',
+      format: 'workflow',
+      tag: 'channel:email',
+    })
+    expect(results.length).toBeGreaterThan(0)
+    expect(results.every((row) => row.workflow.format === 'workflow')).toBe(
+      true
+    )
+    expect(
+      await t.query(api.workflows.search, {
+        q: 'email',
+        tag: 'channel:not-real',
+      })
+    ).toEqual([])
   })
 
   test('a workflow page has its version, tools and history', async () => {
@@ -141,11 +251,17 @@ describe('catalog', () => {
   test('search: derived chips filter from the row, curated chips from taggings', async () => {
     const mcp = await t.query(api.tools.search, { q: '', chips: ['has:mcp'] })
     expect(mcp.results.length).toBeGreaterThan(0)
-    expect(
-      mcp.results.every((card) =>
-        card.tool.access.some((a) => a.type === 'mcp')
-      )
-    ).toBe(true)
+    expect(mcp.results.every((card) => card.tool.access.includes('mcp'))).toBe(
+      true
+    )
+    expect(Object.keys(mcp.results[0]?.tool ?? {}).sort()).toEqual([
+      '_id',
+      'access',
+      'agentLevel',
+      'key',
+      'name',
+      'summary',
+    ])
 
     const enrich = await t.query(api.tools.search, {
       q: '',
@@ -158,12 +274,23 @@ describe('catalog', () => {
       q: '',
       chips: ['capability:enrich-contacts', 'has:mcp'],
     })
+    expect(both.results.every((card) => card.tool.access.includes('mcp'))).toBe(
+      true
+    )
+    expect(both.results.length).toBeLessThanOrEqual(enrich.results.length)
+
+    const dataProviders = await t.query(api.tools.search, {
+      q: '',
+      chips: ['category:data-provider'],
+    })
+    expect(dataProviders.results.map((card) => card.tool.key)).toContain(
+      'clay/clay'
+    )
     expect(
-      both.results.every((card) =>
-        card.tool.access.some((a) => a.type === 'mcp')
+      dataProviders.results.every(
+        (card) => card.category?.slug === 'data-provider'
       )
     ).toBe(true)
-    expect(both.results.length).toBeLessThanOrEqual(enrich.results.length)
 
     const nonsense = await t.query(api.tools.search, {
       q: '',

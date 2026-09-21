@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Garuda">
+  <g stroke="#111111" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M44 44C32 32 20 26 8 30c6 4 10 8 12 14 6-2 12 0 20 6" />
+    <path d="M52 44c12-12 24-18 36-14-6 4-10 8-12 14-6-2-12 0-20 6" />
+    <path d="M42 16c2-4 4-6 6-8 2 2 4 4 6 8" />
+    <circle cx="48" cy="24" r="7" />
+    <path d="M44 30l4 7 4-7" />
+    <path d="M41 46c0 10 3 18 7 24 4-6 7-14 7-24" />
+    <path d="M48 70v12" />
+    <path d="M41 67l-5 11" />
+    <path d="M55 67l5 11" />
+  </g>
+</svg>
