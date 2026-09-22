@@ -11,7 +11,7 @@ exists; running it after every patch is how people stop running it at all.
 | While editing | `pnpm test:run tests/<exact file>` | ~1s |
 | Once per unit of work | `pnpm check` (Biome + `tsgo`) | seconds |
 | Final handoff | `pnpm tsc` then `pnpm lint` | a minute or two |
-| Touched `convex/` | `pnpm test:convex` | seconds |
+| Touched `companies/`, `workflows/` or `tags/` | `pnpm content:check` — every problem with its file path | ~1s |
 | Touched the renderer | `pnpm test:run tests/render-markdown.test.ts` — the goldens, byte for byte | ~1s |
 | Docs only | `pnpm docs:check` | instant |
 | Everything | `pnpm validate` | minutes |
@@ -22,7 +22,7 @@ forty. Calling it per file in a loop is the same work, forty times.
 
 ## The heavy lock
 
-`check`, every `tsc*`, `build`, `test:run`, `test:convex` and `knip` run under
+`check`, every `tsc*`, `build`, `test:run`, `content:check` and `knip` run under
 `scripts/heavy-lock.mjs`: ONE at a time, per repository, across every git
 worktree of it.
 
@@ -75,15 +75,15 @@ agents — at once, and the failure mode is always memory, never git.
 
 ## Tests
 
-- The unit suite (`tests/`) runs in the `node` environment: no DOM, no network,
-  no Convex client. A file opts into a DOM with `// @vitest-environment jsdom`.
-- Convex FUNCTION tests live at `convex/**/*.test.ts` — `convex-test` needs an
-  `import.meta.glob` beside `convex/` — and run via `pnpm test:convex`.
-  `convex/catalog.test.ts` seeds the whole catalog once and asks every
-  question a page asks; extend it when you add a read.
-- `.env.test` is committed and non-secret, which is what makes a fresh clone
-  hermetic: green with no credentials, so CI runners and cloud agents need zero
-  setup.
+- The unit suite (`tests/`) runs in the `node` environment: no DOM, no
+  network. A file opts into a DOM with `// @vitest-environment jsdom`.
+- The content suite (`tests/content.test.ts`) builds the real tree under
+  `companies/`, `workflows/` and `tags/` and asks every question a page asks;
+  extend it when you add a read. `tests/content-schema.test.ts` holds the
+  negatives — one per rule the build enforces — on in-memory fixtures.
+- The suite needs no environment at all, which is what makes a fresh clone
+  hermetic: green with no credentials, so CI runners and cloud agents need
+  zero setup.
 - **A guard is not done until it has failed.** Delete the thing your new test
   protects and watch it go red. A test that passes against the broken code is
   not a test; it is a comment that costs CI minutes.

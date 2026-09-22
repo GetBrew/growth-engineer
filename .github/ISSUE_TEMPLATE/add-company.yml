@@ -1,0 +1,32 @@
+name: Request a company or tool
+description: Ask for a company or tool to be listed when you cannot open the pull request yourself.
+title: "Add <company>: <tool or product>"
+labels: [catalog, company]
+body:
+  - type: input
+    id: company
+    attributes:
+      label: Company
+      description: Name and domain.
+      placeholder: Clay — clay.com
+    validations:
+      required: true
+  - type: textarea
+    id: access
+    attributes:
+      label: Ways in
+      description: Official MCP server URL or install command, CLI install and binary, API base URL — with links to the docs.
+    validations:
+      required: true
+  - type: textarea
+    id: functions
+    attributes:
+      label: Functions an agent can call
+      description: One line per function, with the exact operation per way in (MCP tool name, CLI subcommand, `METHOD /path`).
+    validations:
+      required: true
+  - type: textarea
+    id: verified
+    attributes:
+      label: What you have verified yourself
+      description: Which of these have you actually used? A tool stays `unverified` until a person confirms its access works.

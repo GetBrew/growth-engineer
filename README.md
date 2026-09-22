@@ -1,110 +1,117 @@
 # growth.engineer
 
-The agent-friendly marketplace for go-to-market tools and workflows.
+The open-source, agent-friendly catalog of go-to-market tools and workflows.
 
-People come here to find three things: **companies**, the **tools** those
-companies make, and **workflows** that put tools to work. Every tool and
-workflow is **one markdown file any agent can run** — copying that file is the
-whole setup.
+**Companies** make **tools**; **workflows** put tools to work. Every tool and
+workflow is **one markdown file any agent can run** — the setup, the inputs,
+the steps and the rules, inline. Copying that file is the whole product
+action. The catalog itself is markdown too: every entry is a file in this
+repository, and the site is built from them.
 
-Brought to you by [Brew](https://brew.new). Built on
-[`GetBrew/next-convex-clerk-starter`](https://github.com/GetBrew/next-convex-clerk-starter).
+Brought to you by [Brew](https://brew.new). MIT licensed.
 
-## Why
+## The catalog is the repo
 
-Whether the motion is cold outbound, warm inbound or midbound, finding the
-right tool is hard: what it can do, what it costs to reach, whether an agent
-can drive it, who else runs it. It is harder still to hand the answer to an
-agent. growth.engineer is a result-based catalog where every listing is
-readable by people and runnable by agents: the same page is a markdown file
-with the setup, the inputs, the steps and the rules inline.
+```
+companies/<handle>/company.md        who the company is            → /companies/clay
+companies/<handle>/access/<id>.md    each way in: MCP, CLI, API    (shared by the company's tools)
+companies/<handle>/tools/<slug>.md   each function an agent calls  → /tools/clay/enrich-contacts
+workflows/<owner>/<name>.md          steps that reach a result     → /workflows/brew/funding-signal-outbound
+tags/<namespace>/<slug>.md           the vocabulary                → capability, motion, channel, category, fit
+```
 
-- **Companies** make tools. `clay`
-- **Tools** are ONE FUNCTION each — one thing an agent calls, tied to a
-  specific API endpoint, MCP tool or CLI subcommand, with an agent-readiness
-  level from checked facts. `clay/enrich-contacts`
-- **Workflows** are steps across tools that reach a result. A growth hack IS
-  a workflow — there is no second kind. `brew/intent-to-meeting`
+- A **company** is a folder named by its permanent handle.
+- A **tool is ONE function** — one thing an agent calls, tied to a specific
+  MCP tool, CLI subcommand or API endpoint. A product with three functions is
+  three files. Its slug is a capability from `tags/capability/`.
+- A **workflow** is up to ten steps, each naming one tool, phrased as the
+  result it reaches. A growth hack is a workflow; there is no second kind.
+- A tool's **agent readiness** (unverified, native, friendly, possible) is
+  computed from its ways in and from whether a person has checked them.
+  Unverified means unverified.
 
-Full vision: [`docs/vision.md`](docs/vision.md).
+Adding your company is three files and a pull request:
+[`CONTRIBUTING.md`](CONTRIBUTING.md). Each folder's README has the full
+field reference: [`companies/`](companies/README.md),
+[`workflows/`](workflows/README.md), [`tags/`](tags/README.md).
 
-## Quickstart
+## How a file becomes the product
+
+At build time the compiler under `lib/content/` reads every file, validates
+it (strict schemas, resolved references, at most ten steps, unique keys),
+derives what used to be database columns (readiness level, `has:*` tags,
+counts, search text) and renders each company, tool and workflow through the
+one renderer in `lib/catalog/render-markdown.ts` — the file agents fetch,
+golden-tested byte for byte. Nothing renders at request time; nobody
+hand-edits a rendered file. A deploy is the publish.
+
+```
+companies/ workflows/ tags/  ─▶  lib/content/build-catalog.ts  ─▶  the Catalog (in memory)
+                                        │                              ├▶ pages (prerendered)
+                                        └▶ lib/catalog/render-markdown ├▶ /…/*.md files (prerendered)
+                                                                       └▶ /llms.txt
+```
+
+## For agents
+
+Every page answers `Accept: text/markdown` with its file, or append `.md`:
+`/tools/clay/enrich-contacts.md`, `/workflows/brew/funding-signal-outbound.md`,
+`/companies/clay.md`. `/llms.txt` lists every file. No sign-in, no rate
+limit, no key. Read-only MCP (`search`, `get`) arrives later.
+
+## Running the site
 
 ```bash
 pnpm install
-cp .env.example .env.local     # then fill in Convex (docs/setup.md)
-npx convex dev                  # one terminal: pushes schema + functions, watches convex/
-pnpm seed                       # 25 companies, 25 tools, 12 workflows, every file rendered
-pnpm dev                        # http://localhost:3000
+pnpm dev                 # http://localhost:3000 — edits under companies/ etc. show on refresh
+pnpm content:check       # validate the catalog: every problem with its file path
 ```
 
-Convex is the only requirement. There is no auth provider yet — every page,
-file and search is public, and nobody signs in.
-[`docs/setup.md`](docs/setup.md) has the whole first run.
+There is no backend and no environment to configure. `.env.example` lists
+the two optional public variables (site origin, logo client id).
+
+| Command | What it does |
+| --- | --- |
+| `pnpm content:check` | Parse, validate and render the whole catalog (also part of `pnpm test:run`) |
+| `pnpm check` | Biome + fast typecheck — once per unit of work |
+| `pnpm tsc` / `pnpm lint` | The full gate, at handoff |
+| `pnpm test:run` | The unit suite: goldens, key grammar, search grammar, the content suite |
+| `pnpm build` · `pnpm perf:bundle` | Production build · client bundle ratchet |
+| `pnpm hygiene` | Docs links, content tree, knip, duplicate deps |
 
 ## The routes
 
 | Route | Shows |
 | --- | --- |
-| `/` | New tools, trending workflows |
-| `/companies`, `/companies/[handle]` | The directory; a company, its tools, workflows using them |
-| `/tools`, `/tools/[handle]/[name]` | Search (words + chips); THE tool file + workflows using it |
-| `/tools/[handle]` | A shortcut (route handler): 308 to the single tool, or to the company |
-| `/workflows`, `/workflows/[owner]/[name]` | Trending / Top / New; THE workflow file + versions |
+| `/` | Featured workflows, newest tools, companies |
+| `/companies`, `/companies/[handle]` | The directory by category; a company, its tools, workflows using them |
+| `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
+| `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
+| `/workflows`, `/workflows/[owner]/[name]` | Featured / New, by tag; THE workflow file + how it runs |
 | `/map` | The relationship map: what is connected to what |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt` | The raw files, for agents |
-| `/submit` | Public. The publish flow, arriving with the pipeline |
-
-## For agents
-
-Reads need no sign-in. Fetch any page with `Accept: text/markdown`, or its
-`.md` URL, to get the file; `/llms.txt` lists every file. Read-only MCP
-(`search`, `get`, `resolve`) and a REST mirror arrive later, rate-limited per
-IP with a free key for more.
-
-## Commands
-
-| Command | What it does |
-| --- | --- |
-| `pnpm dev` / `pnpm dev:convex` | Next dev server (cache prune, heap cap, flusher reap) / Convex dev |
-| `pnpm seed` / `pnpm seed:reset` | Load the illustrative catalog, idempotently / remove it |
-| `pnpm check` | Biome + fast typecheck — once per unit of work |
-| `pnpm tsc` / `pnpm lint` | The full gate, at handoff (`pnpm tsc app` for one program) |
-| `pnpm test:run` / `pnpm test:convex` | Unit suite / Convex function suite (the authorization tests) |
-| `pnpm validate` | Everything, in order |
-| `pnpm build` · `pnpm perf:bundle` | Production build · client bundle ratchet |
-| `pnpm hygiene` | Docs links, Convex codegen freshness, knip, duplicate deps |
 
 ## Layout
 
 ```
+companies/ workflows/ tags/   THE DATA — see CONTRIBUTING.md
 app/
-  (site)/                  every page, with the site chrome: /, companies, tools, workflows, map, submit
-  api/markdown/[...path]   the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
-  api/revalidate           purge a ref's cache, service-token gated
-  llms.txt                 the file index
-convex/
-  schema.ts                the data model, v0.3.1 (docs/data-model.md)
-  model/                   PURE: keys + refs, agent-level rules, THE markdown renderer
-  companies.ts tools.ts workflows.ts tags.ts documents.ts aliases.ts   public reads, indexed + bounded
-  tools_search.ts          the search query plan (candidates from one index, then post-filter)
-  documents_render.ts      the one render path: fields → documents row
-  seed/                    the illustrative catalog
-  shared/                  tier builders, guards, validators, `getMany` point reads
+  (site)/                     every page: /, companies, tools, workflows, map, submit
+  api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
+  llms.txt                    the file index
 lib/
-  catalog/loaders.ts       server loaders + the caching contract
-  catalog/query.ts         the search grammar (words, chips, URL)
-  convex/gateway.ts        the only server-side Convex transport
-components/
-  site/ catalog/ document/ marketing/ ui/
-docs/                      vision, data model, file contract, architecture, setup, validation, ci
+  content/                    the compiler: read the tree, validate, resolve, derive, render
+  catalog/                    PURE: keys, agent-level rules, THE renderer, search grammar, types
+  catalog/loaders.ts          what pages read; catalog.ts builds the catalog once per process
+components/                   site chrome, catalog rows and detail pages, the map, ui primitives
+tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives
+docs/                         vision, file schema, architecture, validation, ci, performance
 ```
-
-## Fonts
 
 ## Docs
 
-[`AGENTS.md`](AGENTS.md) holds the invariants and routes to everything else:
-[`docs/vision.md`](docs/vision.md) · [`docs/data-model.md`](docs/data-model.md)
-· [`docs/markdown-files.md`](docs/markdown-files.md) ·
+[`AGENTS.md`](AGENTS.md) holds the engineering invariants and routes to
+everything else: [`docs/vision.md`](docs/vision.md) ·
+[`docs/data-model.md`](docs/data-model.md) ·
+[`docs/markdown-files.md`](docs/markdown-files.md) ·
 [`docs/architecture.md`](docs/architecture.md) · [`docs/setup.md`](docs/setup.md).
