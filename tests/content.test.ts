@@ -31,13 +31,22 @@ describe('the content tree', () => {
     })
   })
 
-  test('builds with every company, tool, workflow and tag accounted for', () => {
-    // 25 companies; 42 tool files of which 5 are drafts with no way in yet;
-    // 12 workflows; 52 curated tags plus the 7 derived ones.
-    expect(catalog.companies.size).toBe(25)
-    expect(catalog.tools.size).toBe(37)
-    expect(catalog.workflows.size).toBe(12)
-    expect(catalog.tags.size).toBe(52 + 7)
+  test('builds with every file accounted for, whatever the tree holds', () => {
+    // Relative to the tree, never absolute: a contributor's first company must
+    // not fail this suite. The seed is the floor.
+    const tree = readContentTree()
+    const files = (kind: string) =>
+      tree.files.filter((file) => file.kind === kind).length
+    const drafts = tree.files.filter(
+      (file) => file.kind === 'tool' && /^status: draft$/m.test(file.source)
+    ).length
+    expect(catalog.companies.size).toBe(files('company'))
+    expect(catalog.tools.size).toBe(files('tool') - drafts)
+    expect(catalog.workflows.size).toBe(files('workflow'))
+    expect(catalog.tags.size).toBe(files('tag') + 7)
+    expect(catalog.companies.size).toBeGreaterThanOrEqual(25)
+    expect(catalog.tools.size).toBeGreaterThanOrEqual(37)
+    expect(catalog.workflows.size).toBeGreaterThanOrEqual(12)
     expect(
       [...catalog.companies.values()].every((company) =>
         catalog.tags.has(`category:${company.category}`)
@@ -75,7 +84,7 @@ describe('the content tree', () => {
     expect(catalog.order.workflowsFeatured[0]).toBe(
       'brew/funding-signal-outbound'
     )
-    expect(catalog.order.workflowsFeatured).toHaveLength(12)
+    expect(catalog.order.workflowsFeatured).toHaveLength(catalog.workflows.size)
     expect([...catalog.order.workflowsNew].sort()).toEqual(
       [...catalog.order.workflowsFeatured].sort()
     )
@@ -99,7 +108,9 @@ describe('the content tree', () => {
   })
 
   test('every file is rendered, within its line cap, and reachable by ref', () => {
-    expect(catalog.documents.size).toBe(25 + 37 + 12)
+    expect(catalog.documents.size).toBe(
+      catalog.companies.size + catalog.tools.size + catalog.workflows.size
+    )
     for (const document of catalog.documents.values()) {
       const cap =
         document.entityType === 'workflow'
@@ -214,7 +225,12 @@ describe('the content tree', () => {
       'unverified',
     ])
     const unverified = catalog.tags.get('agent:unverified')
-    expect(unverified?.counts.tools).toBe(37)
+    expect(unverified?.counts.tools).toBe(
+      [...catalog.tools.values()].filter(
+        (tool) =>
+          tool.status === 'published' && tool.agentLevel === 'unverified'
+      ).length
+    )
     expect(unverified?.derived).toBe(true)
     expect(
       catalog.tags.get('category:data-provider')?.counts.companies

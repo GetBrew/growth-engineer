@@ -32,9 +32,11 @@ export default function CompaniesPage({
         <HeroActions>
           <a
             className={buttonVariants({ size: 'pill' })}
-            href="mailto:founders@brew.new"
+            href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
+            rel="noreferrer"
+            target="_blank"
           >
-            List your company
+            Add your company
           </a>
         </HeroActions>
       </HeroBanner>
