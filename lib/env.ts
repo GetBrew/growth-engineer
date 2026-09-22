@@ -28,9 +28,23 @@ const clientSchema = z.object({
   NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID: present(z.string().optional()),
 })
 
+/**
+ * On Vercel the deployment's hostname is known at build even when nobody set
+ * the site URL — the project's production domain, or a preview's own URL —
+ * so `/llms.txt` and `metadataBase` never print localhost from a deployment.
+ * An explicit `NEXT_PUBLIC_SITE_URL` (a custom domain) still wins.
+ */
+function deployedOrigin(): string | undefined {
+  const host =
+    process.env.VERCEL_ENV === 'preview'
+      ? process.env.VERCEL_URL
+      : process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL
+  return host ? `https://${host}` : undefined
+}
+
 // Next inlines `process.env.NEXT_PUBLIC_*` only where written out literally.
 export const clientEnv = clientSchema.parse({
-  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || deployedOrigin(),
   NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID:
     process.env.NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID,
 })
