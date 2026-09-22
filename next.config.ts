@@ -61,6 +61,13 @@ const nextConfig: NextConfig = {
         destination: '/workflows',
         permanent: true,
       },
+      // Workflows used to live at `/workflows/<owner>/<name>`; the key is one
+      // part now and the author lives in the file. Old links keep working.
+      {
+        source: '/workflows/:owner/:name',
+        destination: '/workflows/:name',
+        permanent: true,
+      },
       { source: '/login', destination: '/sign-in', permanent: true },
       { source: '/submit-a-workflow', destination: '/submit', permanent: true },
     ]

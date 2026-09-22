@@ -1,4 +1,3 @@
-import { clientEnv } from '@/lib/env'
 import { CONTEXT_LOGO_HOST } from '@/lib/logos-host'
 
 /**
@@ -7,8 +6,13 @@ import { CONTEXT_LOGO_HOST } from '@/lib/logos-host'
  * built here. One builder, one client id, instead of the URL pasted around.
  */
 
+/**
+ * Read straight from `process.env` (Next inlines `NEXT_PUBLIC_*` literals),
+ * NOT through lib/env.ts: this module reaches the browser via `EntityLogo`,
+ * and the validated env module would drag zod (~400 KB) into every listing.
+ */
 export function contextLogoUrl(domain: string): string | null {
-  const clientId = clientEnv.NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID
+  const clientId = process.env.NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID
   if (!clientId) {
     return null
   }

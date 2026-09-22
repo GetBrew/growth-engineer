@@ -6,10 +6,8 @@ import { Page } from '@/components/catalog/primitives'
 import { HeroActions } from '@/components/catalog/works-with-agents'
 import { WorkflowsSkeleton } from '@/components/skeletons/workflows-skeleton'
 import { buttonVariants } from '@/components/ui/button'
-import {
-  WorkflowsIndex,
-  type WorkflowsSearchParams,
-} from '@/components/workflows/workflows-index'
+import { WorkflowsIndex } from '@/components/workflows/workflows-index'
+import { loadTagChips, loadWorkflowSearchItems } from '@/lib/catalog/loaders'
 
 export const metadata: Metadata = {
   title: 'Workflows',
@@ -17,11 +15,8 @@ export const metadata: Metadata = {
     'Growth workflows across tools, each one a markdown file any agent can run.',
 }
 
-export default function WorkflowsPage({
-  searchParams,
-}: {
-  searchParams: WorkflowsSearchParams
-}) {
+/** Prerendered in full; the index narrows itself in the browser. */
+export default function WorkflowsPage() {
   return (
     <>
       <HeroBanner
@@ -38,9 +33,22 @@ export default function WorkflowsPage({
       </HeroBanner>
       <Page>
         <Suspense fallback={<WorkflowsSkeleton />}>
-          <WorkflowsIndex searchParams={searchParams} />
+          <Index />
         </Suspense>
       </Page>
     </>
+  )
+}
+
+async function Index() {
+  const [workflows, tags] = await Promise.all([
+    loadWorkflowSearchItems(),
+    loadTagChips(),
+  ])
+  return (
+    <WorkflowsIndex
+      tags={tags.filter((tag) => tag.counts.workflows > 0)}
+      workflows={workflows}
+    />
   )
 }

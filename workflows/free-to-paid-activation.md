@@ -1,6 +1,7 @@
 ---
 title: Guide active free users toward their first paid moment
 summary: Combine behavioural milestones with timely education so promising users find the value before momentum fades.
+author: thedogwiththedataonit
 version: 1
 tags:
   - motion:plg

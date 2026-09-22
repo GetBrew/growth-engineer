@@ -16,7 +16,7 @@ Brought to you by [Brew](https://brew.new). MIT licensed.
 companies/<handle>/company.md        who the company is            → /companies/clay
 companies/<handle>/access/<id>.md    each way in: MCP, CLI, API    (shared by the company's tools)
 companies/<handle>/tools/<slug>.md   each function an agent calls  → /tools/clay/enrich-contacts
-workflows/<owner>/<name>.md          steps that reach a result     → /workflows/brew/funding-signal-outbound
+workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
 tags/<namespace>/<slug>.md           the vocabulary                → capability, motion, channel, category, fit
 ```
 
@@ -25,7 +25,9 @@ tags/<namespace>/<slug>.md           the vocabulary                → capabilit
   MCP tool, CLI subcommand or API endpoint. A product with three functions is
   three files. Its slug is a capability from `tags/capability/`.
 - A **workflow** is up to ten steps, each naming one tool, phrased as the
-  result it reaches. A growth hack is a workflow; there is no second kind.
+  result it reaches, written by a person (`author:` is a GitHub login). A
+  growth hack is a workflow; there is no second kind. The build links every
+  workflow to its tools and every tool to the workflows that use it.
 - A tool's **agent readiness** (unverified, native, friendly, possible) is
   computed from its ways in and from whether a person has checked them.
   Unverified means unverified.
@@ -55,7 +57,7 @@ companies/ workflows/ tags/  ─▶  lib/content/build-catalog.ts  ─▶  the C
 ## For agents
 
 Every page answers `Accept: text/markdown` with its file, or append `.md`:
-`/tools/clay/enrich-contacts.md`, `/workflows/brew/funding-signal-outbound.md`,
+`/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`,
 `/companies/clay.md`. `/llms.txt` lists every file. No sign-in, no rate
 limit, no key. Read-only MCP (`search`, `get`) arrives later.
 
@@ -87,8 +89,8 @@ the two optional public variables (site origin, logo client id).
 | `/companies`, `/companies/[handle]` | The directory by category; a company, its tools, workflows using them |
 | `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
-| `/workflows`, `/workflows/[owner]/[name]` | Featured / New, by tag; THE workflow file + how it runs |
-| `/map` | The relationship map: what is connected to what |
+| `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
+| `/map`, `/map/[type]/[key]` | The relationship map: what is connected to what, one prerendered page per node |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt` | The raw files, for agents |
 
 ## Layout

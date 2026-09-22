@@ -16,7 +16,7 @@ function file(path: string, source: string): ContentFile {
     return { kind: 'tag', path, namespace: parts[1] ?? '', slug: name, source }
   }
   if (parts[0] === 'workflows') {
-    return { kind: 'workflow', path, owner: parts[1] ?? '', name, source }
+    return { kind: 'workflow', path, name, source }
   }
   const handle = parts[1] ?? ''
   if (parts[2] === 'access') {
@@ -48,8 +48,8 @@ const VALID: Array<ContentFile> = [
     '---\nname: Manage a CRM\nsummary: Creates records. Acme does this.\naccess:\n  api: POST /records\nupdated: 2026-09-16\n---\n'
   ),
   file(
-    'workflows/jdoe/keep-crm-clean.md',
-    '---\ntitle: Keep the CRM clean\nsummary: Dedupe records weekly.\ntags: [channel:email]\nsteps:\n  - title: Dedupe\n    tool: acme/manage-crm\n    instruction: Merge duplicates.\ndoneWhen:\n  - No duplicates remain.\nupdated: 2026-09-16\n---\n'
+    'workflows/keep-crm-clean.md',
+    '---\ntitle: Keep the CRM clean\nsummary: Dedupe records weekly.\nauthor: jdoe\ntags: [channel:email]\nsteps:\n  - title: Dedupe\n    tool: acme/manage-crm\n    instruction: Merge duplicates.\ndoneWhen:\n  - No duplicates remain.\nupdated: 2026-09-16\n---\n'
   ),
 ]
 
@@ -85,10 +85,10 @@ describe('content rules', () => {
       'a step naming an unknown tool',
       () =>
         replace(
-          'workflows/jdoe/keep-crm-clean.md',
+          'workflows/keep-crm-clean.md',
           VALID[6]?.source.replace('acme/manage-crm', 'acme/nope') ?? ''
         ),
-      /workflows\/jdoe\/keep-crm-clean\.md: steps\.0\.tool: "acme\/nope" is not a published tool/,
+      /workflows\/keep-crm-clean\.md: steps\.0\.tool: "acme\/nope" is not a published tool/,
     ],
     [
       'an alias that shadows a live key',
@@ -105,8 +105,8 @@ describe('content rules', () => {
       'eleven steps',
       () =>
         replace(
-          'workflows/jdoe/keep-crm-clean.md',
-          `---\ntitle: Too long\nsummary: Too many steps.\ntags: [channel:email]\nsteps:\n${'  - title: Step\n    tool: acme/manage-crm\n    instruction: Do it.\n'.repeat(11)}doneWhen:\n  - Done.\nupdated: 2026-09-16\n---\n`
+          'workflows/keep-crm-clean.md',
+          `---\ntitle: Too long\nsummary: Too many steps.\nauthor: jdoe\ntags: [channel:email]\nsteps:\n${'  - title: Step\n    tool: acme/manage-crm\n    instruction: Do it.\n'.repeat(11)}doneWhen:\n  - Done.\nupdated: 2026-09-16\n---\n`
         ),
       /steps: a workflow has at most 10 steps/,
     ],
@@ -160,7 +160,7 @@ describe('content rules', () => {
       'an unknown tag and an unknown category',
       () => [
         ...replace(
-          'workflows/jdoe/keep-crm-clean.md',
+          'workflows/keep-crm-clean.md',
           VALID[6]?.source.replace('channel:email', 'channel:carrier-pigeon') ??
             ''
         ).map((entry) =>
@@ -207,13 +207,44 @@ describe('content rules', () => {
       'a `via` the tool does not offer',
       () =>
         replace(
-          'workflows/jdoe/keep-crm-clean.md',
+          'workflows/keep-crm-clean.md',
           VALID[6]?.source.replace(
             '    instruction:',
             '    via: mcp\n    instruction:'
           ) ?? ''
         ),
       /steps\.0\.via: acme\/manage-crm has no mcp way in/,
+    ],
+    [
+      'a workflow with no author',
+      () =>
+        replace(
+          'workflows/keep-crm-clean.md',
+          VALID[6]?.source.replace('author: jdoe\n', '') ?? ''
+        ),
+      /workflows\/keep-crm-clean\.md: author:/,
+    ],
+    [
+      'an author that is not a GitHub login',
+      () =>
+        replace(
+          'workflows/keep-crm-clean.md',
+          VALID[6]?.source.replace('author: jdoe', 'author: jane doe') ?? ''
+        ),
+      /author: must be a GitHub login/,
+    ],
+    [
+      'a workflow name with an owner segment',
+      () => [
+        ...VALID,
+        {
+          kind: 'workflow',
+          path: 'workflows/jdoe/other.md',
+          name: 'jdoe/other',
+          source: VALID[6]?.source ?? '',
+        },
+      ],
+      /"jdoe\/other" is not a valid workflow name|not a valid workflow name/,
     ],
     [
       'a file with no header',
@@ -241,15 +272,15 @@ describe('content rules', () => {
       'two workflows claiming the same featured rank',
       () => [
         ...replace(
-          'workflows/jdoe/keep-crm-clean.md',
+          'workflows/keep-crm-clean.md',
           VALID[6]?.source.replace('updated:', 'featured: 1\nupdated:') ?? ''
         ),
         file(
-          'workflows/jdoe/second.md',
+          'workflows/second.md',
           VALID[6]?.source.replace('updated:', 'featured: 1\nupdated:') ?? ''
         ),
       ],
-      /featured: rank 1 is already taken by jdoe\/keep-crm-clean/,
+      /featured: rank 1 is already taken by keep-crm-clean/,
     ],
   ]
 

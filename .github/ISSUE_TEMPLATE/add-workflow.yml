@@ -10,6 +10,13 @@ body:
       placeholder: Turn fresh funding news into qualified outbound
     validations:
       required: true
+  - type: input
+    id: author
+    attributes:
+      label: Your GitHub login
+      description: Workflows are by people; the page credits `@you`.
+    validations:
+      required: true
   - type: textarea
     id: steps
     attributes:

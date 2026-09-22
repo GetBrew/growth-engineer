@@ -2,7 +2,6 @@ import { computeAgentLevel } from '@/lib/catalog/agent-level'
 import { derivedTagKeys } from '@/lib/catalog/derived-tags'
 import {
   DERIVED_TAG_NAMESPACES,
-  isValidHandle,
   isValidKeyPart,
   isValidOwnedKey,
 } from '@/lib/catalog/keys'
@@ -289,8 +288,8 @@ function toWorkflow(
   }))
   const toolKeys = distinctToolKeys(steps)
   return {
-    key: `${file.owner}/${file.name}`,
-    ownerKey: file.owner,
+    key: file.name,
+    author: data.author,
     title: data.title,
     summary: data.summary,
     version: data.version,
@@ -311,17 +310,9 @@ function toWorkflow(
 
 /** Why a workflow file cannot be placed, or null when its path is fine. */
 function workflowPathProblem(file: WorkflowFile): string | null {
-  if (!isValidHandle(file.owner)) {
-    return `"${file.owner}" is not a usable owner handle: lowercase letters, digits and hyphens, and not a reserved word`
-  }
-  if (
-    !(
-      isValidKeyPart(file.name) && isValidOwnedKey(`${file.owner}/${file.name}`)
-    )
-  ) {
-    return `"${file.name}" is not a valid workflow name`
-  }
-  return null
+  return isValidKeyPart(file.name)
+    ? null
+    : `"${file.name}" is not a valid workflow name: lowercase letters, digits and hyphens`
 }
 
 export function buildWorkflows(

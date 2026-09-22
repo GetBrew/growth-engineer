@@ -6,8 +6,8 @@ import {
 } from '@/components/catalog/catalog-list'
 import {
   loadCompanies,
+  loadNewTools,
   loadWorkflows,
-  searchTools,
 } from '@/lib/catalog/loaders'
 
 import { CatalogShell } from './catalog-shell'
@@ -19,13 +19,13 @@ const PREVIEW = 5
 export async function HomeCatalog() {
   const [workflows, tools, companies] = await Promise.all([
     loadWorkflows('new', PREVIEW),
-    searchTools('', [], PREVIEW),
+    loadNewTools(PREVIEW),
     loadCompanies(PREVIEW, undefined, false),
   ])
 
   const workflowItems = workflows.map(workflowListItem)
 
-  const toolItems = tools.results.map(toolListItem)
+  const toolItems = tools.map(toolListItem)
 
   const companyItems: Array<CatalogListItem> = companies.map(
     ({ company, access }) => ({

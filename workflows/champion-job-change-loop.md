@@ -1,6 +1,7 @@
 ---
 title: Reconnect when a product champion changes jobs
 summary: Track past champions, identify their new company, and reopen the relationship with the context you already earned.
+author: thedogwiththedataonit
 version: 1
 tags:
   - motion:outbound

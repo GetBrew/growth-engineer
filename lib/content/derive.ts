@@ -49,12 +49,18 @@ export function toolSearchText(
 
 /** What the search box can find a workflow by. */
 export function workflowSearchText(
-  workflow: { title: string; summary: string; toolKeys: ReadonlyArray<string> },
+  workflow: {
+    title: string
+    summary: string
+    author: string
+    toolKeys: ReadonlyArray<string>
+  },
   tags: ReadonlyArray<Tag>
 ): string {
   return [
     workflow.title,
     workflow.summary,
+    workflow.author,
     ...workflow.toolKeys.map((key) => key.split('/')[1] ?? key),
     ...tags.flatMap((tag) => [tag.label, ...tag.synonyms]),
   ].join(' ')

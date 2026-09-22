@@ -46,8 +46,8 @@ That single decision shapes everything else:
 | --- | --- | --- |
 | **Company** | `clay` | A vendor, open-source project or person that makes tools. |
 | **Tool** | `clay/enrich-contacts` | ONE function an agent can call, tied to a specific public API endpoint, MCP tool or CLI subcommand of a company's product. Every way in names its `operation`. A company with three functions has three tools. |
-| **Workflow** | `brew/intent-to-meeting` | Steps across tools that reach a result. Frozen versions (`@3`); the current one renders the file. |
-| **Growth hack** | `brew/clay-waterfall-order` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
+| **Workflow** | `intent-to-meeting` | Steps across tools that reach a result, written by a person (a GitHub login). Frozen versions (`@3`); the current one renders the file. |
+| **Growth hack** | `clay-waterfall-order` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
 
 Each company has many tools. Each workflow combines tools from different
 companies. Each tool is reachable over MCP, CLI or API — a tool with no way in

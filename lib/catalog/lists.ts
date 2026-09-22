@@ -1,9 +1,15 @@
 import type { Catalog } from '@/lib/content/build-catalog'
 import type {
+  CompanySearchItem,
+  ToolSearchItem,
+  WorkflowSearchItem,
+} from './search'
+import type {
   AccessType,
   Category,
   Company,
   CompanyListItem,
+  TagChip,
   Tool,
   ToolListItem,
   Workflow,
@@ -90,6 +96,7 @@ export function workflowListItem(
       key: workflow.key,
       title: workflow.title,
       summary: workflow.summary,
+      author: workflow.author,
       toolCount: workflow.toolCount,
     },
     tools: workflow.toolKeys.flatMap((key) => {
@@ -107,5 +114,54 @@ export function workflowListItem(
         },
       ]
     }),
+  }
+}
+
+/* ─────────────────────────── search items ─────────────────────────── */
+/* The list row plus what search needs; a listing ships these prerendered. */
+
+export function toolSearchItem(catalog: Catalog, tool: Tool): ToolSearchItem {
+  return {
+    ...toolListItem(catalog, tool),
+    capability: tool.capability,
+    searchText: tool.searchText,
+    updatedAt: tool.updatedAt,
+  }
+}
+
+export function workflowSearchItem(
+  catalog: Catalog,
+  workflow: Workflow,
+  featuredIndex: number
+): WorkflowSearchItem {
+  return {
+    ...workflowListItem(catalog, workflow),
+    tags: workflow.tags,
+    searchText: workflow.searchText,
+    updatedAt: workflow.updatedAt,
+    featuredIndex,
+  }
+}
+
+export function companySearchItem(
+  catalog: Catalog,
+  company: Company
+): CompanySearchItem {
+  return {
+    ...companyListItem(catalog, company),
+    searchText: company.searchText,
+    updatedAt: company.updatedAt,
+  }
+}
+
+export function tagChip(
+  tag: Catalog['tags'] extends ReadonlyMap<string, infer T> ? T : never
+): TagChip {
+  return {
+    key: tag.key,
+    namespace: tag.namespace,
+    slug: tag.slug,
+    label: tag.label,
+    counts: tag.counts,
   }
 }

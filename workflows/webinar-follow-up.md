@@ -1,6 +1,7 @@
 ---
 title: Create a webinar follow-up that reflects attendance
 summary: Send different next steps to attendees, no-shows and highly engaged viewers without manual list work.
+author: thedogwiththedataonit
 version: 1
 tags:
   - motion:inbound

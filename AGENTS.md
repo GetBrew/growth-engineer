@@ -81,9 +81,11 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 ### Keys and refs
 
 - Public identity is the `key` (`clay`, `clay/enrich-contacts`,
-  `brew/intent-to-meeting`, `@3` pins a version), and the key IS the path:
+  `intent-to-meeting`, `@3` pins a version), and the key IS the path:
   `companies/clay/`, `companies/clay/tools/enrich-contacts.md`,
-  `workflows/brew/intent-to-meeting.md`. Keys are never authored in a header.
+  `workflows/intent-to-meeting.md` (FLAT — no folders; the workflow's
+  `author` is a GitHub login in its header, never a company). Keys are never
+  authored in a header.
   Grammar and reserved handles live in [`lib/catalog/keys.ts`](lib/catalog/keys.ts);
   every top-level route must be reserved (pinned by `tests/keys.test.ts`).
 - Keys never change after publishing. A rename lists the old key under
@@ -105,7 +107,9 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   not done until it has FAILED.
 - PROJECTIONS (`agentLevel`, `has:*`/`agent:*` tags, tag counts, `searchText`,
   `toolCount`, the edges) are computed in `lib/content/derive.ts` and
-  `build-catalog.ts` — one writer each, never authored in a file.
+  `build-catalog.ts` — one writer each, never authored in a file. The
+  workflow ↔ tool relationship is written into BOTH rendered files (`tools:`
+  in a workflow file, `workflows:` in a tool file) and shown on both pages.
 - The pure half of `lib/catalog/*` (keys, agent-level, renderer, search
   grammar, types) imports nothing from `node:`, `server-only` or
   `lib/content` — it runs in the proxy and the browser too
@@ -120,11 +124,17 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   routes list their params with `generateStaticParams`
   (`lib/catalog/static-params.ts`). Never `export const dynamic`,
   `revalidate` or `dynamicParams` — Cache Components rejects them.
-- A page's default export is SYNCHRONOUS and returns a `<Suspense>`; the only
-  request-time reads are `searchParams` (`/tools`, `/companies`, `/workflows`,
-  `/map`), inside the async child. Those routes read the tree at request
-  time, which is why `next.config.ts` traces `companies/`, `workflows/` and
-  `tags/` into every function bundle.
+- EVERY page and permutation is generated at build. Listings (`/tools`,
+  `/companies`, `/workflows`) prerender every item and narrow themselves in
+  the browser from the URL (`useSearchParams` in a client component under
+  `<Suspense>`, with the pure search in `lib/catalog/search.ts`); the map is
+  one prerendered page per node (`/map/<type>/<key>`). No page reads
+  `searchParams` on the server. A page's default export is SYNCHRONOUS and
+  returns a `<Suspense>`. Unknown keys render on demand from the traced tree
+  (`outputFileTracingIncludes`).
+- Internal navigation is ALWAYS `next/link` (never a raw `<a href="/…">`):
+  Link prefetches on viewport and on hover, and every target is static, so a
+  navigation is a cached fetch. Raw anchors are for external URLs only.
 - Route handlers never read `request.url`: a redirect is a relative
   `Location` on a 308, or the route silently goes dynamic.
 - A redirect is never a page: decided in a Suspense child it becomes a

@@ -1,26 +1,19 @@
-import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import {
   EmptyState,
   Page,
   SectionHeading,
 } from '@/components/catalog/primitives'
-import { NeighborhoodGraph } from '@/components/map/graph'
-import { catalogHref, NodePill } from '@/components/map/node'
-import { RelationGroups } from '@/components/map/relations'
-import { parseRef } from '@/lib/catalog/keys'
-import { loadMapOverview, loadNeighborhood } from '@/lib/catalog/loaders'
+import { MapSkeleton } from '@/components/map/focused'
+import { NodePill } from '@/components/map/node'
+import { loadMapOverview } from '@/lib/catalog/loaders'
 
 export const metadata: Metadata = {
   title: 'Relationship map',
   description:
     'How the catalog connects: which company makes a tool, which workflows use it, and what every entity is tagged.',
 }
-
-type SearchParams = Promise<{ focus?: string | Array<string> }>
 
 const SECTION_TITLE = {
   company: 'Companies',
@@ -30,19 +23,11 @@ const SECTION_TITLE = {
 
 /**
  * The relationship map. READ-ONLY by construction — it reads the built
- * catalog and nothing else, so it exposes nothing that is not already on a
- * catalog page.
- *
- * The URL is the state (`?focus=tool:clay/clay`), so a view is shareable, an
- * agent can drive it, and there is no client-side graph state to get out of
- * sync with the address bar. The shell is synchronous and the reads live in
- * the Suspense child, per the rendering contract in AGENTS.md.
+ * catalog and nothing else. The overview is prerendered here; every node has
+ * its own prerendered page under `/map/<type>/<key>`, so exploring the graph
+ * is a static navigation from one file to the next.
  */
-export default function MapPage({
-  searchParams,
-}: {
-  searchParams: SearchParams
-}) {
+export default function MapPage() {
   return (
     <Page className="flex flex-col gap-8">
       <SectionHeading
@@ -51,90 +36,9 @@ export default function MapPage({
         title="Relationship map"
       />
       <Suspense fallback={<MapSkeleton />}>
-        <MapView searchParams={searchParams} />
+        <Overview />
       </Suspense>
     </Page>
-  )
-}
-
-function MapSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="h-[520px] w-full animate-pulse rounded-2xl bg-muted"
-    />
-  )
-}
-
-async function MapView({ searchParams }: { searchParams: SearchParams }) {
-  const params = await searchParams
-  const raw = Array.isArray(params.focus) ? params.focus[0] : params.focus
-  const ref = raw ? parseRef(raw) : null
-
-  if (!ref) {
-    return <Overview />
-  }
-  return <Focused refKey={ref.key} refType={ref.type} />
-}
-
-async function Focused({
-  refType,
-  refKey,
-}: {
-  refType: 'company' | 'tool' | 'workflow'
-  refKey: string
-}) {
-  const result = await loadNeighborhood(refType, refKey)
-  if (!result) {
-    return (
-      <EmptyState
-        hint="The key may have been renamed. Clear the focus to see the whole map."
-        title={`Nothing in the map for ${refType}:${refKey}`}
-      />
-    )
-  }
-  const { node, groups } = result
-  const edges = groups.reduce((total, group) => total + group.nodes.length, 0)
-
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-foreground/55 text-sm">
-            {node.type} · {edges} {edges === 1 ? 'edge' : 'edges'}
-          </p>
-          <h2 className="truncate font-semibold text-2xl tracking-[-0.02em]">
-            {node.name}
-          </h2>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="focus-ring flex h-10 items-center gap-2 rounded-full border border-border bg-white px-4 text-foreground/62 text-sm transition-colors hover:border-foreground/20 hover:text-foreground"
-            href={catalogHref(node)}
-          >
-            Open page
-            <HugeiconsIcon
-              aria-hidden="true"
-              icon={ArrowUpRight01Icon}
-              size={16}
-              strokeWidth={1.8}
-            />
-          </Link>
-          <Link
-            className="focus-ring flex h-10 items-center rounded-full border border-border bg-white px-4 text-foreground/62 text-sm transition-colors hover:border-foreground/20 hover:text-foreground"
-            href="/map"
-          >
-            Whole map
-          </Link>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-white p-2 sm:p-4">
-        <NeighborhoodGraph groups={groups} node={node} />
-      </div>
-
-      <RelationGroups groups={groups} />
-    </div>
   )
 }
 

@@ -1,23 +1,40 @@
-import type { Catalog } from '@/lib/content/build-catalog'
 import { TAG_NAMESPACES, type TagNamespace } from './keys'
-import { companyListItem, toolListItem, workflowListItem } from './lists'
 import { MAX_CHIPS } from './query'
-import type {
-  Company,
-  CompanyListItem,
-  Tool,
-  ToolListItem,
-  WorkflowListItem,
-} from './types'
+import type { CompanyListItem, ToolListItem, WorkflowListItem } from './types'
 
 /**
- * Search v1, in memory over the built catalog. The GRAMMAR is lib/catalog/
- * query.ts (words + `namespace:slug` chips, OR within a namespace, AND across
- * them); this file is the execution: every word must start a token of the
- * entity's search text, hits in the name count double, and chips filter on
- * the facts each entity carries — `agent:` and `has:` from a tool's access,
- * `capability:` from its slug, `category:` from its company.
+ * Search v1, PURE and browser-safe: the same functions run in the build's
+ * tests and in the client components that filter a prerendered listing. The
+ * GRAMMAR is lib/catalog/query.ts (words + `namespace:slug` chips; OR within
+ * a namespace, AND across; partial completion; the canonical URL). This file
+ * is the execution: every word must start a token of the item's search text
+ * (a hit in the name counts double), and chips filter on the facts each item
+ * carries — `agent:` and `has:` from a tool's access, `capability:` from its
+ * slug, `category:` from its company.
+ *
+ * Items are the list rows plus the few fields search needs, so a page can
+ * ship every item once, prerendered, and answer any filter permutation in
+ * the browser without a server round trip.
  */
+
+export type ToolSearchItem = ToolListItem & {
+  capability: string
+  searchText: string
+  updatedAt: number
+}
+
+export type WorkflowSearchItem = WorkflowListItem & {
+  tags: ReadonlyArray<string>
+  searchText: string
+  updatedAt: number
+  /** Position on the featured list (editorial rank first, then newest). */
+  featuredIndex: number
+}
+
+export type CompanySearchItem = CompanyListItem & {
+  searchText: string
+  updatedAt: number
+}
 
 type Chip = { namespace: TagNamespace; slug: string; key: string }
 
@@ -79,40 +96,44 @@ function score(
   return total
 }
 
-function rank<T extends { key: string; updatedAt: number }>(
-  scored: Array<{ entity: T; score: number }>
+type Scored<T> = { item: T; score: number; index: number; key: string }
+
+/** With words: score desc, newest, key. Without: the order given. */
+function rank<T extends { updatedAt: number }>(
+  scored: Array<Scored<T>>,
+  hasWords: boolean
 ): Array<T> {
   return scored
     .filter((entry) => entry.score > 0)
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        b.entity.updatedAt - a.entity.updatedAt ||
-        a.entity.key.localeCompare(b.entity.key)
+    .sort((a, b) =>
+      hasWords
+        ? b.score - a.score ||
+          b.item.updatedAt - a.item.updatedAt ||
+          a.key.localeCompare(b.key)
+        : a.index - b.index
     )
-    .map((entry) => entry.entity)
+    .map((entry) => entry.item)
 }
 
 /** Does the tool satisfy every chip group? OR within a group, AND across. */
 function toolMatchesChips(
-  catalog: Catalog,
-  tool: Tool,
+  item: ToolSearchItem,
   groups: ReadonlyMap<TagNamespace, ReadonlyArray<string>>
 ): boolean {
   for (const [namespace, slugs] of groups) {
     let hits: ReadonlyArray<string>
     switch (namespace) {
       case 'agent':
-        hits = [tool.agentLevel]
+        hits = [item.tool.agentLevel]
         break
       case 'has':
-        hits = tool.access.map((entry) => entry.type)
+        hits = item.tool.access
         break
       case 'capability':
-        hits = [tool.capability]
+        hits = [item.capability]
         break
       case 'category':
-        hits = [catalog.companies.get(tool.companyKey)?.category ?? '']
+        hits = item.category ? [item.category.slug] : []
         break
       default:
         // motion, channel, fit describe workflows; no tool carries them.
@@ -125,89 +146,75 @@ function toolMatchesChips(
   return true
 }
 
-export function searchTools(
-  catalog: Catalog,
-  input: { q: string; chips: ReadonlyArray<string>; limit: number }
-): { results: Array<ToolListItem>; chips: Array<string> } {
+/** Tools in the order given (newest first), narrowed by chips and words. */
+export function searchToolItems(
+  items: ReadonlyArray<ToolSearchItem>,
+  input: { q: string; chips: ReadonlyArray<string>; limit?: number }
+): { results: Array<ToolSearchItem>; chips: Array<string> } {
   const chips = parseChips(input.chips)
   const groups = groupByNamespace(chips)
   const words = tokens(input.q)
-  const published = catalog.order.toolsNew.flatMap((key) => {
-    const tool = catalog.tools.get(key)
-    return tool ? [tool] : []
-  })
   const ranked = rank(
-    published
-      .filter((tool) => toolMatchesChips(catalog, tool, groups))
-      .map((tool) => ({
-        entity: tool,
-        score: score(words, tool.name, tool.searchText),
-      }))
+    items
+      .filter((item) => toolMatchesChips(item, groups))
+      .map((item, index) => ({
+        item,
+        index,
+        key: item.tool.key,
+        score: score(words, item.tool.name, item.searchText),
+      })),
+    words.length > 0
   )
   return {
-    results: ranked
-      .slice(0, input.limit)
-      .map((tool) => toolListItem(catalog, tool)),
+    results: ranked.slice(0, input.limit ?? ranked.length),
     chips: chips.map((chip) => chip.key),
   }
 }
 
-export function searchWorkflows(
-  catalog: Catalog,
-  input: { q: string; sort: 'featured' | 'new'; tag?: string; limit: number }
-): Array<WorkflowListItem> {
+/** Workflows: featured order or newest, within one tag, narrowed by words. */
+export function searchWorkflowItems(
+  items: ReadonlyArray<WorkflowSearchItem>,
+  input: { q: string; sort: 'featured' | 'new'; tag?: string; limit?: number }
+): Array<WorkflowSearchItem> {
   const words = tokens(input.q)
-  if (words.length === 0) {
-    return []
-  }
-  if (input.tag && !catalog.tags.has(input.tag)) {
-    return []
-  }
-  const order =
-    input.sort === 'new'
-      ? catalog.order.workflowsNew
-      : catalog.order.workflowsFeatured
-  const candidates = order.flatMap((key) => {
-    const workflow = catalog.workflows.get(key)
-    return workflow && (!input.tag || workflow.tags.includes(input.tag))
-      ? [workflow]
-      : []
-  })
-  const scored = candidates.map((workflow, index) => ({
-    entity: workflow,
-    score: score(words, workflow.title, workflow.searchText),
-    index,
-  }))
-  return scored
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || a.index - b.index)
-    .slice(0, input.limit)
-    .map((entry) => workflowListItem(catalog, entry.entity))
+  const ordered = items
+    .filter((item) => !input.tag || item.tags.includes(input.tag))
+    .sort((a, b) =>
+      input.sort === 'new'
+        ? b.updatedAt - a.updatedAt ||
+          a.workflow.key.localeCompare(b.workflow.key)
+        : a.featuredIndex - b.featuredIndex
+    )
+  const ranked = rank(
+    ordered.map((item, index) => ({
+      item,
+      index,
+      key: item.workflow.key,
+      score: score(words, item.workflow.title, item.searchText),
+    })),
+    words.length > 0
+  )
+  return ranked.slice(0, input.limit ?? ranked.length)
 }
 
-export function searchCompanies(
-  catalog: Catalog,
-  input: { q: string; category?: string; limit: number }
-): Array<CompanyListItem> {
+/** Companies in the order given (by name), within one category, by words. */
+export function searchCompanyItems(
+  items: ReadonlyArray<CompanySearchItem>,
+  input: { q: string; category?: string; limit?: number }
+): Array<CompanySearchItem> {
   const words = tokens(input.q)
-  if (words.length === 0) {
-    return []
-  }
-  if (input.category && !catalog.tags.has(`category:${input.category}`)) {
-    return []
-  }
-  const candidates: Array<Company> = catalog.order.companies.flatMap((key) => {
-    const company = catalog.companies.get(key)
-    return company && (!input.category || company.category === input.category)
-      ? [company]
-      : []
-  })
-  return rank(
-    candidates.map((company) => ({
-      entity: company,
-      score: score(words, company.name, company.searchText),
-    }))
+  const ranked = rank(
+    items
+      .filter(
+        (item) => !input.category || item.category?.slug === input.category
+      )
+      .map((item, index) => ({
+        item,
+        index,
+        key: item.company.key,
+        score: score(words, item.company.name, item.searchText),
+      })),
+    words.length > 0
   )
-    .slice(0, input.limit)
-    .map((company) => companyListItem(catalog, company))
+  return ranked.slice(0, input.limit ?? ranked.length)
 }

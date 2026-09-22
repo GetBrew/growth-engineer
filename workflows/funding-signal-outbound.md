@@ -1,6 +1,7 @@
 ---
 title: Turn fresh funding news into qualified outbound
 summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
+author: thedogwiththedataonit
 version: 1
 tags:
   - motion:outbound

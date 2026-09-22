@@ -22,14 +22,27 @@ export function toolParams(): Array<{ handle: string; name: string }> {
 }
 
 /** Every workflow, plus its current version pin (`name@1`). */
-export function workflowParams(): Array<{ owner: string; name: string }> {
-  return [...getCatalog().workflows.values()].flatMap((workflow) => {
-    const [owner = '', name = ''] = workflow.key.split('/')
-    return [
-      { owner, name },
-      { owner, name: `${name}@${workflow.version}` },
-    ]
-  })
+export function workflowParams(): Array<{ name: string }> {
+  return [...getCatalog().workflows.values()].flatMap((workflow) => [
+    { name: workflow.key },
+    { name: `${workflow.key}@${workflow.version}` },
+  ])
+}
+
+/** `/map/<type>/<key>`: every node the map can focus. */
+export function mapFocusParams(): Array<{ focus: Array<string> }> {
+  const catalog = getCatalog()
+  return [
+    ...[...catalog.companies.keys()].map((key) => ({
+      focus: ['company', key],
+    })),
+    ...[...catalog.tools.keys()].map((key) => ({
+      focus: ['tool', ...key.split('/')],
+    })),
+    ...[...catalog.workflows.keys()].map((key) => ({
+      focus: ['workflow', key],
+    })),
+  ]
 }
 
 /** `/tools/<handle>` shortcuts: every company and every old company key. */

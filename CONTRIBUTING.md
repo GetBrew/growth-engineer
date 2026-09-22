@@ -9,7 +9,7 @@ that adds files. The site is built from them.
 companies/<handle>/company.md        who the company is
 companies/<handle>/access/<id>.md    each way in: MCP server, CLI, API
 companies/<handle>/tools/<slug>.md   each function an agent can call
-workflows/<owner>/<name>.md          steps across tools that reach a result
+workflows/<name>.md                  steps across tools that reach a result (flat; the author is your GitHub login)
 tags/<namespace>/<slug>.md           the vocabulary (capability, motion, channel, category, fit)
 ```
 
@@ -38,11 +38,12 @@ pnpm dev                # http://localhost:3000/companies/<handle>
 
 ## Add a workflow
 
-One file, `workflows/<owner>/<name>.md`: a title phrased as the result, the
-inputs to ask the user for, up to ten steps that each name a published tool,
-and the checks that mean the job is done. The rendered file is what an agent
-runs, so write for the agent. Publish under your company's handle or your
-own.
+One file, `workflows/<name>.md` — the folder is flat, no subfolders. A title
+phrased as the result, your GitHub login as `author`, the inputs to ask the
+user for, up to ten steps that each name a published tool, and the checks
+that mean the job is done. Workflows are by people, not companies: the page
+credits `@you` and links to your GitHub profile. The build links every step
+to its tool and every tool back to the workflows that use it.
 
 ## The rules the build enforces
 

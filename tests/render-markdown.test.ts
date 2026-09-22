@@ -59,6 +59,7 @@ const clay: ToolFileInput = {
   key: 'clay/enrich-contacts',
   name: 'Enrich contacts',
   companyKey: 'clay',
+  workflows: [],
   summary:
     'Adds firmographic and person data to a contact or account. Clay does this.',
   // API first on purpose: the renderer must reorder to MCP-first.
@@ -94,9 +95,10 @@ const brewMcp: Access = {
 }
 
 const intentToMeeting: WorkflowFileInput = {
-  key: 'brew/intent-to-meeting',
+  key: 'intent-to-meeting',
   version: 3,
   title: 'Turn high-intent accounts into booked meetings',
+  author: 'jdoe',
   tools: [
     {
       key: 'apollo/find-work-emails',
@@ -144,9 +146,10 @@ const intentToMeeting: WorkflowFileInput = {
 // One tool is not a second kind of document — it is a rendering choice about
 // THESE steps: name the tool once up front instead of on every line.
 const waterfall: WorkflowFileInput = {
-  key: 'jdoe/clay-waterfall-order',
+  key: 'clay-waterfall-order',
   version: 1,
   title: 'Find more work emails by ordering providers by hit rate',
+  author: 'jdoe',
   tools: [
     {
       key: 'clay/find-work-emails',

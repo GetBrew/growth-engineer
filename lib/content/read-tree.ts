@@ -10,7 +10,7 @@ import type { ContentProblem } from './errors'
  *   companies/<handle>/company.md
  *   companies/<handle>/access/<id>.md
  *   companies/<handle>/tools/<slug>.md
- *   workflows/<owner>/<name>.md
+ *   workflows/<name>.md              (flat: the author is in the file)
  *   tags/<namespace>/<slug>.md
  *
  * A README.md at the top of each tree documents it and is skipped. Any other
@@ -21,13 +21,7 @@ export type ContentFile =
   | { kind: 'company'; path: string; handle: string; source: string }
   | { kind: 'access'; path: string; handle: string; id: string; source: string }
   | { kind: 'tool'; path: string; handle: string; slug: string; source: string }
-  | {
-      kind: 'workflow'
-      path: string
-      owner: string
-      name: string
-      source: string
-    }
+  | { kind: 'workflow'; path: string; name: string; source: string }
   | {
       kind: 'tag'
       path: string
@@ -159,14 +153,29 @@ function walkCompany(walk: Walk, handle: string): void {
   }
 }
 
-function walkWorkflows(walk: Walk, owner: string): void {
-  for (const file of walk.markdownFiles(path.join('workflows', owner))) {
+/** workflows/ is FLAT: one .md per workflow, its author in the header. */
+function walkWorkflows(walk: Walk): void {
+  for (const entry of walk.entries('workflows')) {
+    const relative = path.join('workflows', entry)
+    if (entry === 'README.md') {
+      continue
+    }
+    if (walk.isDirectory(relative)) {
+      walk.reject(
+        relative,
+        'a workflow is one file, workflows/<name>.md — no folders; the author goes in the header'
+      )
+      continue
+    }
+    if (!MARKDOWN.test(entry)) {
+      walk.reject(relative, 'only .md files belong here')
+      continue
+    }
     walk.files.push({
       kind: 'workflow',
-      path: file.relative,
-      owner,
-      name: file.name,
-      source: walk.read(file.relative),
+      path: relative,
+      name: entry.replace(MARKDOWN, ''),
+      source: walk.read(relative),
     })
   }
 }
@@ -191,12 +200,7 @@ export function readContentTree(root = process.cwd()): ContentTree {
   )) {
     walkCompany(walk, handle)
   }
-  for (const owner of walk.folders(
-    'workflows',
-    'workflows/ holds one folder per owner handle'
-  )) {
-    walkWorkflows(walk, owner)
-  }
+  walkWorkflows(walk)
   for (const namespace of walk.folders(
     'tags',
     'tags/ holds one folder per namespace'

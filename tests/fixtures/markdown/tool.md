@@ -2,6 +2,7 @@
 ref: tool:clay/enrich-contacts
 name: Enrich contacts
 company: company:clay
+workflows: []
 access: [mcp, api]
 agent: native
 agent_note: Official remote MCP with self-serve OAuth.

@@ -37,9 +37,9 @@ export const NODE_FILL = {
   tag: 'fill-tag',
 } as const
 
-/** `/map?focus=tool:clay/clay` — the URL is the state, so this is shareable. */
+/** `/map/tool/clay/enrich-contacts` — a prerendered page per node. */
 function focusHref(type: 'company' | 'tool' | 'workflow', key: string) {
-  return `/map?focus=${encodeURIComponent(`${type}:${key}`)}`
+  return `/map/${type}/${key}`
 }
 
 /**

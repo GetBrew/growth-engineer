@@ -1,6 +1,7 @@
 ---
-ref: workflow:jdoe/clay-waterfall-order@1
+ref: workflow:clay-waterfall-order@1
 title: Find more work emails by ordering providers by hit rate
+author: jdoe
 tools: [tool:clay/find-work-emails]
 tags: [capability:find-work-emails]
 updated: 2026-09-16

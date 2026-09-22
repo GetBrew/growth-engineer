@@ -1,6 +1,7 @@
 ---
 title: Surface product-qualified expansion opportunities
 summary: Watch account usage, flag teams approaching meaningful limits, and give sales a clear reason to engage.
+author: thedogwiththedataonit
 version: 1
 tags:
   - motion:midbound
