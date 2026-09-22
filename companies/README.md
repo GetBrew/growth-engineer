@@ -26,9 +26,9 @@ category: data-provider          # a slug from tags/category/
 tagline: Enrich people and companies with data from many providers.
 website: https://www.clay.com    # optional; defaults to https://<domain>
 docs: https://docs.clay.com      # optional
-github: https://github.com/…     # optional
-linkedin: https://…              # optional
-x: https://x.com/…               # optional
+github: https://github.com/clay  # optional
+linkedin: https://www.linkedin.com/company/clay-hq   # optional
+x: https://x.com/clay            # optional
 logo: clay.png                   # a file you add under public/logos/
 founded: 2017                    # optional
 headquarters: New York, NY       # optional
