@@ -17,9 +17,10 @@ import { DetailTabs } from '@/components/catalog/detail-tabs'
 import { EntityLogo } from '@/components/catalog/entity-logo'
 import { NoResults } from '@/components/catalog/no-results'
 import { Page } from '@/components/catalog/primitives'
+import { JsonLd } from '@/components/seo/json-ld'
 import { MaskIcon } from '@/components/site/mask-icon'
 import { CompanyDetailSkeleton } from '@/components/skeletons/company-detail-skeleton'
-import { isValidHandle } from '@/lib/catalog/keys'
+import { isValidHandle, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadCompany,
   loadToolsByCompany,
@@ -27,6 +28,9 @@ import {
   resolveAlias,
 } from '@/lib/catalog/loaders'
 import { companyParams } from '@/lib/catalog/static-params'
+import { SITE_ORIGIN } from '@/lib/env'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { companyJsonLd } from '@/lib/seo/structured-data'
 
 type Params = Promise<{ handle: string }>
 
@@ -46,7 +50,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle } = await params
   const company = isValidHandle(handle) ? await loadCompany(handle) : null
-  return company ? { title: company.name, description: company.tagline } : {}
+  if (!company) {
+    return {}
+  }
+  const ref = { type: 'company' as const, key: company.key, version: undefined }
+  return pageMetadata({
+    title: company.name,
+    description:
+      company.tagline ??
+      company.description ??
+      `${company.name}: the tools it makes and the workflows that use them.`,
+    path: refToPath(ref),
+    file: refToFilePath(ref),
+  })
 }
 
 /** A company, its tools, and the workflows that use them. */
@@ -81,6 +97,7 @@ async function CompanyDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col">
+      <JsonLd data={companyJsonLd(SITE_ORIGIN, company)} />
       <Link
         className="type-control w-fit text-subtle transition-colors hover:text-foreground"
         href="/companies"

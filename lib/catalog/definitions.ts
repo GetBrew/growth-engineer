@@ -1,0 +1,104 @@
+import type { AgentLevel } from './types'
+
+/**
+ * THE definitions, written once. Everything that explains the catalog to a
+ * person or a machine reads from here — the home page, `/llms.txt`,
+ * `/llms-full.txt`, the structured data — so the site, the files and the
+ * docs never describe the same thing three different ways.
+ *
+ * PURE MODULE: constants only; imported by pages and route handlers alike.
+ */
+
+export const SITE = {
+  name: 'growth.engineer',
+  tagline:
+    'The open-source, agent-friendly catalog of go-to-market tools and workflows.',
+  description:
+    'Companies, the tools they make, and workflows that put tools to work. Every tool and workflow is one markdown file any agent can run: the setup, the inputs, the steps and the rules, inline. The catalog itself is markdown in a public repository, built into a static site.',
+  repository: 'https://github.com/GetBrew/growth-engineer',
+  publisher: { name: 'Brew', url: 'https://brew.new' },
+} as const
+
+export type Definition = {
+  /** The word, as the site uses it. */
+  term: 'Company' | 'Tool' | 'Workflow' | 'Tag'
+  /** An example key, in the grammar the URLs use. */
+  example: string
+  /** One sentence that could stand alone in a glossary. */
+  definition: string
+  /** The detail that keeps people from misusing the word. */
+  detail: string
+  /** Where the source file lives in the repository. */
+  path: string
+}
+
+export const DEFINITIONS: ReadonlyArray<Definition> = [
+  {
+    term: 'Company',
+    example: 'clay',
+    definition: 'A vendor, open-source project or person that makes tools.',
+    detail:
+      'Named by a permanent handle that is its URL and the first half of every tool key. A company lists the ways in it offers — MCP server, CLI, API — once, and its tools point at them.',
+    path: 'companies/<handle>/company.md',
+  },
+  {
+    term: 'Tool',
+    example: 'clay/enrich-contacts',
+    definition:
+      'ONE function an agent can call, tied to a specific MCP tool, CLI subcommand or API endpoint.',
+    detail:
+      'Not the product: a product with three functions is three tools. Every way in names the exact operation, and the tool carries an agent-readiness level computed from checked facts.',
+    path: 'companies/<handle>/tools/<slug>.md',
+  },
+  {
+    term: 'Workflow',
+    example: 'intent-to-meeting',
+    definition:
+      'Several tools in order, with the instructions that reach a result, written by a person.',
+    detail:
+      'Up to ten steps, each naming one tool; inputs the agent asks the user for; the checks that mean it is done. A growth hack is a workflow — there is no second kind. The author is a GitHub login.',
+    path: 'workflows/<name>.md',
+  },
+  {
+    term: 'Tag',
+    example: 'capability:enrich-contacts',
+    definition:
+      'A word from the managed vocabulary that companies, tools and workflows are filtered by.',
+    detail:
+      'Five curated namespaces — capability, motion, channel, category, fit — plus two derived from each tool’s access: agent (its readiness) and has (its ways in).',
+    path: 'tags/<namespace>/<slug>.md',
+  },
+]
+
+export const AGENT_LEVELS: ReadonlyArray<{
+  level: AgentLevel
+  definition: string
+}> = [
+  {
+    level: 'unverified',
+    definition:
+      'Nobody has checked the access facts yet. The default, and honest.',
+  },
+  {
+    level: 'native',
+    definition:
+      'An official MCP server or CLI with self-serve credentials: an agent can drive it without a person in the loop.',
+  },
+  {
+    level: 'friendly',
+    definition:
+      'An official API with self-serve credentials: an agent can call it once it has a key.',
+  },
+  {
+    level: 'possible',
+    definition:
+      'Community-maintained access only, or official access that needs a sales call or approval.',
+  },
+]
+
+/** How an agent gets a file: the three doors, stated once. */
+export const AGENT_ACCESS = [
+  'Append `.md` to any company, tool or workflow URL to get its file.',
+  'Or request any page with `Accept: text/markdown`.',
+  '`/llms.txt` lists every file; `/llms-full.txt` is every file in one document.',
+] as const

@@ -34,7 +34,13 @@ const nextConfig: NextConfig = {
    * beside them, and the tracer cannot see a directory walk.
    */
   outputFileTracingIncludes: {
-    '/': ['./companies/**/*', './workflows/**/*', './tags/**/*'],
+    '/': [
+      './companies/**/*',
+      './workflows/**/*',
+      './tags/**/*',
+      // The social cards' type (lib/seo/og-font.ts).
+      './assets/**/*',
+    ],
   },
 
   images: {
@@ -68,8 +74,22 @@ const nextConfig: NextConfig = {
         destination: '/workflows/:name',
         permanent: true,
       },
-      { source: '/login', destination: '/sign-in', permanent: true },
-      { source: '/submit-a-workflow', destination: '/submit', permanent: true },
+      // A growth hack IS a workflow; the concept went, the URL keeps its promise.
+      { source: '/hacks', destination: '/workflows', permanent: true },
+      { source: '/hacks/:path*', destination: '/workflows', permanent: true },
+      // Submissions are pull requests: the form and the sign-in are gone.
+      {
+        source: '/submit',
+        destination:
+          'https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md',
+        permanent: true,
+      },
+      {
+        source: '/submit-a-workflow',
+        destination:
+          'https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md',
+        permanent: true,
+      },
     ]
   },
 

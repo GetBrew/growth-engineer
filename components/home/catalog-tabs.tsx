@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { type ReactNode, useState } from 'react'
 
 import { MaskIcon } from '@/components/site/mask-icon'
@@ -38,9 +37,14 @@ export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
           ))}
         </TabsList>
 
-        <Link className={buttonVariants({ size: 'pill' })} href="/submit">
-          Submit a workflow
-        </Link>
+        <a
+          className={buttonVariants({ size: 'pill' })}
+          href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Add a workflow
+        </a>
       </div>
 
       {/* Tab content */}

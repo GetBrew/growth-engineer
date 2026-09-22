@@ -20,9 +20,10 @@ import type {
 } from './types'
 
 /**
- * The catalog's server-side loaders. Every page, route handler and the
- * `/llms.txt` index reads through here and nothing else; the bodies read the
- * catalog built once per process from the markdown tree (./catalog.ts).
+ * The catalog's server-side loaders. Every page and route handler reads
+ * through here (the discovery surfaces — sitemap, `/llms.txt` — through
+ * ./discovery.ts); the bodies read the catalog built once per process from
+ * the markdown tree (./catalog.ts).
  *
  * They stay `async` so call sites never change, and they resolve in a
  * microtask, which is what keeps every catalog route prerenderable under
@@ -370,11 +371,4 @@ export async function loadNewTools(limit = 12) {
     const tool = catalog.tools.get(key)
     return tool ? [toolListItem(catalog, tool)] : []
   })
-}
-
-/** Every file, for `/llms.txt`. */
-export async function loadDocumentRefs() {
-  return [...getCatalog().documents.values()].map(
-    ({ ref, entityType, updatedAt }) => ({ ref, entityType, updatedAt })
-  )
 }

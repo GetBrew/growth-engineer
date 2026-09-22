@@ -1,44 +1,45 @@
-import { parseRef, refToFilePath } from '@/lib/catalog/keys'
-import { loadDocumentRefs } from '@/lib/catalog/loaders'
-import { clientEnv } from '@/lib/env'
+import { SITE } from '@/lib/catalog/definitions'
+import { loadLlmsIndex } from '@/lib/catalog/discovery'
+import { SITE_ORIGIN } from '@/lib/env'
+import { llmsPreamble } from '@/lib/seo/llms'
 
 /**
- * The index every file: one absolute URL per company, tool and workflow, so
- * an agent can discover the catalog from a single fetch. Served straight from
- * the route handler (the proxy's matcher skips `.txt`), bounded at 1,000.
+ * `/llms.txt` (llmstxt.org): what the catalog is, the words it uses, and a
+ * link to every file with a one-line summary — so an agent can discover the
+ * whole catalog from one fetch and pick a file without opening it. Served by
+ * the route handler (the proxy's matcher skips `.txt`), prerendered at build.
  */
-const TRAILING_SLASH = /\/$/
-
-export async function GET() {
-  const documents = await loadDocumentRefs()
-  const origin = clientEnv.NEXT_PUBLIC_SITE_URL.replace(TRAILING_SLASH, '')
-  const lines = [
-    '# growth.engineer',
+function section(
+  heading: string,
+  entries: ReadonlyArray<{ title: string; file: string; summary: string }>
+): Array<string> {
+  return [
+    `## ${heading}`,
     '',
-    '> Companies, the tools they make, and workflows that put tools to work.',
-    '> Every tool and workflow is one markdown file any agent can run.',
-    '',
-    `Site: ${origin}`,
-    'Format: each file has a flat YAML header, setup, steps and rules.',
-    'Fetch any page with `Accept: text/markdown` to receive its file.',
+    ...entries.map(
+      (entry) =>
+        `- [${entry.title}](${SITE_ORIGIN}${entry.file}): ${entry.summary}`
+    ),
     '',
   ]
-  const groups: Record<'company' | 'tool' | 'workflow', Array<string>> = {
-    tool: [],
-    workflow: [],
-    company: [],
-  }
-  for (const document of documents) {
-    const ref = parseRef(document.ref)
-    if (ref) {
-      groups[ref.type].push(`- ${origin}${refToFilePath(ref)}`)
-    }
-  }
-  lines.push('## Tools', '', ...groups.tool, '')
-  lines.push('## Workflows', '', ...groups.workflow, '')
-  lines.push('## Companies', '', ...groups.company, '')
+}
 
-  return new Response(`${lines.join('\n')}\n`, {
+export async function GET() {
+  const index = await loadLlmsIndex()
+  const lines = [
+    ...llmsPreamble(SITE_ORIGIN, SITE.name),
+    ...section('Tools', index.tool),
+    ...section('Workflows', index.workflow),
+    ...section('Companies', index.company),
+    '## Optional',
+    '',
+    `- [Every file in one document](${SITE_ORIGIN}/llms-full.txt): the whole catalog, for one read.`,
+    `- [Sitemap](${SITE_ORIGIN}/sitemap.xml): every page.`,
+    `- [Relationship map](${SITE_ORIGIN}/map): what is connected to what.`,
+    `- [Repository](${SITE.repository}): the files themselves, and how to contribute.`,
+    '',
+  ]
+  return new Response(lines.join('\n'), {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=300, s-maxage=600',

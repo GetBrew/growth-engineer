@@ -16,6 +16,7 @@ const COLUMNS = [
     heading: 'For agents',
     links: [
       ['llms.txt', '/llms.txt'],
+      ['llms-full.txt', '/llms-full.txt'],
       ['Tool files', '/tools'],
       ['Workflow files', '/workflows'],
       // Not `?agent=native`: agent level comes from CHECKED facts, and every
@@ -27,7 +28,10 @@ const COLUMNS = [
   {
     heading: 'Company',
     links: [
-      ['Submit a workflow', '/submit'],
+      [
+        'Add a workflow',
+        'https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md',
+      ],
       [
         'Add your company',
         'https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md',

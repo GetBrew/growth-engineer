@@ -19,9 +19,10 @@ import { ToolAccessPanel } from '@/components/catalog/tool-access-panel'
 import { MarkdownFile } from '@/components/document/markdown-file'
 import { OpenInAgentMenu } from '@/components/document/open-in-agent-menu'
 import { ShareButton } from '@/components/document/share-button'
+import { JsonLd } from '@/components/seo/json-ld'
 import { MaskIcon } from '@/components/site/mask-icon'
 import { ToolDetailSkeleton } from '@/components/skeletons/tool-detail-skeleton'
-import { isValidOwnedKey, refToFilePath } from '@/lib/catalog/keys'
+import { isValidOwnedKey, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadDocument,
   loadTool,
@@ -29,6 +30,9 @@ import {
   resolveAlias,
 } from '@/lib/catalog/loaders'
 import { toolParams } from '@/lib/catalog/static-params'
+import { SITE_ORIGIN } from '@/lib/env'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { toolJsonLd } from '@/lib/seo/structured-data'
 
 type Params = Promise<{ handle: string; name: string }>
 
@@ -49,12 +53,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const key = await keyFrom(params)
   const result = key ? await loadTool(key) : null
-  return result
-    ? {
-        title: `${result.tool.name} by ${result.company.name}`,
-        description: result.tool.summary,
-      }
-    : {}
+  if (!result) {
+    return {}
+  }
+  const ref = {
+    type: 'tool' as const,
+    key: result.tool.key,
+    version: undefined,
+  }
+  return pageMetadata({
+    title: `${result.tool.name} by ${result.company.name}`,
+    description: result.tool.summary,
+    path: refToPath(ref),
+    file: refToFilePath(ref),
+  })
 }
 
 /**
@@ -110,6 +122,7 @@ async function ToolDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-10">
+      <JsonLd data={toolJsonLd(SITE_ORIGIN, tool, company)} />
       <DetailHeader
         actions={
           <>

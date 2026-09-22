@@ -119,8 +119,11 @@ export function SiteMenu() {
                   </MenuGroup>
 
                   <MenuGroup label="Company">
-                    <MenuLink href="/submit" onSelect={() => setIsOpen(false)}>
-                      Submit a workflow
+                    <MenuLink
+                      href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
+                      onSelect={() => setIsOpen(false)}
+                    >
+                      Add a workflow
                     </MenuLink>
                     <MenuLink
                       href="https://brew.new"
