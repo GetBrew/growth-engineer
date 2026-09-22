@@ -36,6 +36,33 @@ describe('catalog', () => {
     const companies = await t.query(api.companies.list, {})
     expect(companies.length).toBe(25)
     expect(companies.every((row) => row.category !== undefined)).toBe(true)
+    // Lists carry a projection, never the document: no links, no search text.
+    const clayRow = companies.find((row) => row.company.key === 'clay')
+    expect(clayRow?.company.name).toBe('Clay')
+    expect(clayRow?.company.logoUrl).toBe('/logos/clay.png')
+    expect('links' in (clayRow?.company ?? {})).toBe(false)
+    expect('searchText' in (clayRow?.company ?? {})).toBe(false)
+    const category = clayRow?.category
+    if (!category) {
+      throw new Error('seeded Clay company must have a category')
+    }
+    const inCategory = await t.query(api.companies.list, {
+      category: category.slug,
+    })
+    expect(inCategory.length).toBeGreaterThan(0)
+    expect(
+      inCategory.every((row) => row.category?.slug === category.slug)
+    ).toBe(true)
+    expect(await t.query(api.companies.list, { category: 'not-real' })).toEqual(
+      []
+    )
+    const homeCompanies = await t.query(api.companies.list, {
+      includeCategory: false,
+      limit: 5,
+    })
+    expect(homeCompanies).toHaveLength(5)
+    expect(homeCompanies.every((row) => row.category === undefined)).toBe(true)
+
     const clay = await t.query(api.companies.getByKey, { key: 'clay' })
     expect(clay?.name).toBe('Clay')
     expect(await t.query(api.companies.getByKey, { key: 'nobody' })).toBeNull()
@@ -78,6 +105,21 @@ describe('catalog', () => {
     const trending = await t.query(api.workflows.list, { sort: 'trending' })
     expect(trending.length).toBe(12)
     expect(trending[0]?.workflow.key).toBe('brew/funding-signal-outbound')
+    // A row is a summary plus each tool's company and ways in — no `format`.
+    expect(Object.keys(trending[0]?.workflow ?? {}).sort()).toEqual([
+      '_id',
+      'key',
+      'summary',
+      'title',
+      'toolCount',
+    ])
+    const firstTools = trending[0]?.tools ?? []
+    expect(
+      Object.fromEntries(
+        firstTools.map((tool) => [tool.companyKey, tool.access])
+      )
+    ).toMatchObject({ apollo: ['api'], brew: ['mcp', 'api'], clay: ['api'] })
+    expect(firstTools.every((tool) => !('key' in tool))).toBe(true)
     // Each sort reads its own index and returns the same set in a different
     // order — a growth hack is a workflow, so nothing filters them apart.
     const top = await t.query(api.workflows.list, { sort: 'top' })
@@ -87,6 +129,38 @@ describe('catalog', () => {
     expect(top.map((row) => row.workflow.key).sort()).toEqual(
       trending.map((row) => row.workflow.key).sort()
     )
+
+    const email = await t.query(api.workflows.list, {
+      sort: 'trending',
+      tag: 'channel:email',
+    })
+    expect(email.map((row) => row.workflow.key)).toContain(
+      'brew/funding-signal-outbound'
+    )
+    expect(email.map((row) => row.workflow.key)).not.toContain(
+      'brew/high-intent-visitors'
+    )
+    expect(
+      await t.query(api.workflows.list, {
+        sort: 'trending',
+        tag: 'channel:not-real',
+      })
+    ).toEqual([])
+  })
+
+  test('workflow search composes words, sort and tag', async () => {
+    const results = await t.query(api.workflows.search, {
+      q: 'email',
+      sort: 'new',
+      tag: 'channel:email',
+    })
+    expect(results.length).toBeGreaterThan(0)
+    expect(
+      await t.query(api.workflows.search, {
+        q: 'email',
+        tag: 'channel:not-real',
+      })
+    ).toEqual([])
   })
 
   test('a workflow page has its version, tools and history', async () => {
@@ -146,9 +220,29 @@ describe('catalog', () => {
   test('search: derived chips filter from the row, curated chips from taggings', async () => {
     const mcp = await t.query(api.tools.search, { q: '', chips: ['has:mcp'] })
     expect(mcp.results.length).toBeGreaterThan(0)
+    expect(mcp.results.every((card) => card.tool.access.includes('mcp'))).toBe(
+      true
+    )
+    expect(Object.keys(mcp.results[0]?.tool ?? {}).sort()).toEqual([
+      '_id',
+      'access',
+      'agentLevel',
+      'key',
+      'name',
+      'summary',
+    ])
+
+    // Category chips browse from the company: every data provider's tools.
+    const dataProviders = await t.query(api.tools.search, {
+      q: '',
+      chips: ['category:data-provider'],
+    })
+    expect(dataProviders.results.map((card) => card.tool.key)).toContain(
+      'clay/enrich-contacts'
+    )
     expect(
-      mcp.results.every((card) =>
-        card.tool.access.some((a) => a.type === 'mcp')
+      dataProviders.results.every(
+        (card) => card.category?.slug === 'data-provider'
       )
     ).toBe(true)
 

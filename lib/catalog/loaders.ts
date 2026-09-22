@@ -119,19 +119,28 @@ export async function loadMapOverview() {
   return await publicQuery(api.map.overview, {})
 }
 
-export async function loadCompanies(limit = 200) {
-  return await publicQuery(api.companies.list, { limit })
-}
-
-export async function loadNewTools(limit = 12) {
-  return await publicQuery(api.tools.listNew, { limit })
+export async function loadCompanies(
+  limit = 200,
+  category?: string,
+  includeCategory = true
+) {
+  return await publicQuery(api.companies.list, {
+    limit,
+    ...(category ? { category } : {}),
+    ...(includeCategory ? {} : { includeCategory: false }),
+  })
 }
 
 export async function loadWorkflows(
   sort: 'trending' | 'top' | 'new',
-  limit = 30
+  limit = 30,
+  tag?: string
 ) {
-  return await publicQuery(api.workflows.list, { sort, limit })
+  return await publicQuery(api.workflows.list, {
+    sort,
+    ...(tag ? { tag } : {}),
+    limit,
+  })
 }
 
 export async function loadActiveTags() {
@@ -140,20 +149,37 @@ export async function loadActiveTags() {
 
 /* ─────────────────────────────────── search ──────────────────────────────── */
 
-export async function searchTools(q: string, chips: ReadonlyArray<string>) {
+export async function searchTools(
+  q: string,
+  chips: ReadonlyArray<string>,
+  limit = 60
+) {
   return await publicQuery(api.tools.search, {
     q,
     chips: [...chips],
-    limit: 24,
+    limit,
   })
 }
 
-export async function searchWorkflows(q: string) {
-  return await publicQuery(api.workflows.search, { q, limit: 30 })
+export async function searchWorkflows(
+  q: string,
+  sort: 'trending' | 'top' | 'new',
+  tag?: string
+) {
+  return await publicQuery(api.workflows.search, {
+    q,
+    sort,
+    ...(tag ? { tag } : {}),
+    limit: 30,
+  })
 }
 
-export async function searchCompanies(q: string) {
-  return await publicQuery(api.companies.search, { q, limit: 50 })
+export async function searchCompanies(q: string, category?: string) {
+  return await publicQuery(api.companies.search, {
+    q,
+    ...(category ? { category } : {}),
+    limit: 50,
+  })
 }
 
 /** Every file, for `/llms.txt`. */

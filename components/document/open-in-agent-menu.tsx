@@ -1,12 +1,13 @@
 'use client'
 
 import {
-  ChevronDown,
-  Copy,
-  Download,
-  ExternalLink,
-  Sparkles,
-} from 'lucide-react'
+  ArrowDown01Icon,
+  Copy01Icon,
+  Download01Icon,
+  LinkSquare02Icon,
+  SparklesIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { useEffect, useRef, useState } from 'react'
 
 /**
@@ -56,7 +57,7 @@ export function OpenInAgentMenu({
     { label: 'Open in Claude', href: `https://claude.ai/new?q=${prompt}` },
   ]
   const itemClass =
-    'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-foreground/70 text-sm hover:bg-black/[0.04] hover:text-foreground'
+    'type-control flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-soft hover:bg-hover hover:text-foreground'
 
   function copyForAgent() {
     navigator.clipboard.writeText(markdown).catch(() => undefined)
@@ -68,21 +69,26 @@ export function OpenInAgentMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`ai-metallic-trigger focus-ring flex h-10 items-center gap-2 rounded-full px-4 text-sm ${open ? 'text-white' : 'text-foreground/70'}`}
+        className={`ai-metallic-trigger focus-ring type-control flex h-11 items-center gap-2 rounded-full px-5 ${open ? 'text-white' : 'text-soft'}`}
         data-popup-open={open ? '' : undefined}
         onClick={() => setOpen((value) => !value)}
         type="button"
       >
-        <Sparkles aria-hidden="true" className="size-4" />
+        <HugeiconsIcon
+          icon={SparklesIcon}
+          aria-hidden="true"
+          className="size-4"
+        />
         Explore with AI
-        <ChevronDown
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
           aria-hidden="true"
           className={`size-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open ? (
         <div
-          className="absolute top-12 right-0 z-30 w-64 rounded-2xl border border-border bg-white p-2 shadow-[0_18px_48px_rgba(0,0,0,0.12)]"
+          className="floating-panel absolute top-13 right-0 z-30 w-72 rounded-2xl p-2.5"
           role="menu"
         >
           {agents.map((agent) => (
@@ -94,7 +100,11 @@ export function OpenInAgentMenu({
               role="menuitem"
               target="_blank"
             >
-              <ExternalLink aria-hidden="true" className="size-4" />
+              <HugeiconsIcon
+                icon={LinkSquare02Icon}
+                aria-hidden="true"
+                className="size-4"
+              />
               {agent.label}
             </a>
           ))}
@@ -104,7 +114,11 @@ export function OpenInAgentMenu({
             role="menuitem"
             type="button"
           >
-            <Copy aria-hidden="true" className="size-4" />
+            <HugeiconsIcon
+              icon={Copy01Icon}
+              aria-hidden="true"
+              className="size-4"
+            />
             Copy for any agent
           </button>
           <a
@@ -113,7 +127,11 @@ export function OpenInAgentMenu({
             href={filePath}
             role="menuitem"
           >
-            <Download aria-hidden="true" className="size-4" />
+            <HugeiconsIcon
+              icon={Download01Icon}
+              aria-hidden="true"
+              className="size-4"
+            />
             Download .md
           </a>
         </div>

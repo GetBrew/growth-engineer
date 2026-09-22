@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-09-18T16:52:04.516Z",
+  "generatedAt": "2026-09-22T17:45:57.837Z",
   "policy": {
     "maxPercentGrowth": 0.05,
     "maxAbsoluteGrowthBytes": 15360,
     "allowedGrowth": "minimum of percentage and absolute thresholds"
   },
   "routes": {
-    "/": 1095553,
-    "/_global-error": 567531,
-    "/_not-found": 1088286,
-    "/companies": 1091023,
-    "/companies/[handle]": 1091023,
-    "/map": 1091023,
-    "/submit": 1091023,
-    "/tools": 1091023,
-    "/tools/[handle]/[name]": 1097446,
-    "/workflows": 1092598,
-    "/workflows/[owner]/[name]": 1097446
+    "/": 1461630,
+    "/_global-error": 567607,
+    "/_not-found": 1317327,
+    "/companies": 1413927,
+    "/companies/[handle]": 1343926,
+    "/map": 1318128,
+    "/submit": 1349433,
+    "/tools": 1413927,
+    "/tools/[handle]/[name]": 1855775,
+    "/workflows": 1435089,
+    "/workflows/[owner]/[name]": 1850956
   }
 }

@@ -41,6 +41,7 @@ type Plan = {
   words: string
   agentChips: ReadonlyArray<Chip>
   hasChips: ReadonlyArray<Chip>
+  categoryChips: ReadonlyArray<Chip>
   curated: ReadonlyArray<ChipGroup>
   limit: number
 }
@@ -179,6 +180,54 @@ async function newestTools(
     .take(take)
 }
 
+/** Company ids carrying any requested category (OR within the namespace). */
+async function companyIdsByCategory(
+  ctx: QueryCtx,
+  categoryChips: ReadonlyArray<Chip>
+): Promise<Set<Id<'companies'>>> {
+  const tags = await tagsByKey(ctx, categoryChips)
+  const taggings = await Promise.all(
+    tags.map((tag) =>
+      ctx.db
+        .query('taggings')
+        .withIndex('by_tag_new', (q) =>
+          q.eq('tagId', tag._id).eq('entityType', 'company').eq('listed', true)
+        )
+        .order('desc')
+        .take(CANDIDATE_CAP)
+    )
+  )
+  return new Set(
+    taggings.flatMap((rows) =>
+      rows.flatMap((row) =>
+        row.entityType === 'company' ? [row.entityId] : []
+      )
+    )
+  )
+}
+
+/** Category-only browsing starts from matching companies, then their tools. */
+async function candidatesByCategory(
+  ctx: QueryCtx,
+  categoryChips: ReadonlyArray<Chip>
+): Promise<Array<Doc<'tools'>>> {
+  const companyIds = [...(await companyIdsByCategory(ctx, categoryChips))]
+  const tools = await Promise.all(
+    companyIds.map((companyId) =>
+      ctx.db
+        .query('tools')
+        .withIndex('by_company', (q) =>
+          q.eq('companyId', companyId).eq('status', 'published')
+        )
+        .take(CANDIDATE_CAP)
+    )
+  )
+  return tools
+    .flat()
+    .sort((a, b) => (b.publishedAt ?? 0) - (a.publishedAt ?? 0))
+    .slice(0, CANDIDATE_CAP)
+}
+
 /** Step 1: candidates, ≤ 60, from exactly one index. */
 async function findCandidates(ctx: QueryCtx, plan: Plan): Promise<Candidates> {
   if (plan.words) {
@@ -189,6 +238,12 @@ async function findCandidates(ctx: QueryCtx, plan: Plan): Promise<Candidates> {
   }
   if (plan.curated.length > 0) {
     return await candidatesByTags(ctx, plan.curated)
+  }
+  if (plan.categoryChips.length > 0) {
+    return {
+      candidates: await candidatesByCategory(ctx, plan.categoryChips),
+      consumedGroup: 'category',
+    }
   }
   const level =
     plan.agentChips.length === 1 ? plan.agentChips[0]?.slug : undefined
@@ -273,21 +328,31 @@ export async function runToolSearch(
   const groups = groupByNamespace(chips)
   const agentChips = groups.get('agent') ?? []
   const hasChips = groups.get('has') ?? []
+  const categoryChips = groups.get('category') ?? []
   const curated = [...groups.entries()].filter(
-    ([namespace]) => !DERIVED_TAG_NAMESPACES.has(namespace)
+    ([namespace]) =>
+      namespace !== 'category' && !DERIVED_TAG_NAMESPACES.has(namespace)
   )
   const { candidates, consumedGroup } = await findCandidates(ctx, {
     words: input.q.trim(),
     agentChips,
     hasChips,
+    categoryChips,
     curated,
     limit: input.limit,
   })
-  const results = await keepTagged(
+  const tagged = await keepTagged(
     ctx,
     keepByRow(candidates, agentChips, hasChips),
     curated.filter(([namespace]) => namespace !== consumedGroup)
   )
+  const categoryCompanyIds =
+    categoryChips.length > 0 && consumedGroup !== 'category'
+      ? await companyIdsByCategory(ctx, categoryChips)
+      : null
+  const results = categoryCompanyIds
+    ? tagged.filter((tool) => categoryCompanyIds.has(tool.companyId))
+    : tagged
   return {
     tools: results.slice(0, input.limit),
     chips: chips.map((chip) => chip.key),

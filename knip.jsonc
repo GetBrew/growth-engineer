@@ -37,6 +37,7 @@
   ],
   "project": ["**/*.{ts,tsx}"],
   // Loaded by Tailwind's own pipeline (app/globals.css), not by any module,
-  // so knip cannot see the import.
-  "ignoreDependencies": ["tailwindcss"]
+  // so knip cannot see the import. `shadcn` and `tw-animate-css` are the
+  // stylesheets globals.css @imports.
+  "ignoreDependencies": ["tailwindcss", "shadcn", "tw-animate-css"]
 }

@@ -23,8 +23,9 @@ const season = localFont({
 })
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
   subsets: ['latin'],
+  variable: '--font-geist-mono',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {

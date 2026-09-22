@@ -1,8 +1,9 @@
-import { v } from 'convex/values'
+import { type Infer, v } from 'convex/values'
 import type { Doc } from './_generated/dataModel'
 import type { QueryCtx } from './_generated/server'
 import { publicQuery } from './shared/builders'
-import { companyDoc, nullableCompanyDoc } from './shared/validators'
+import { getMany } from './shared/reads'
+import { companyRow, nullableCompanyDoc } from './shared/validators'
 
 /**
  * Company reads. Every read is indexed and bounded; a key is resolved once
@@ -12,15 +13,35 @@ import { companyDoc, nullableCompanyDoc } from './shared/validators'
 const MAX_LIST = 200
 
 const ACCESS_ORDER = ['mcp', 'cli', 'api'] as const
+type Row = Infer<typeof companyRow>
+type Category = NonNullable<Row['category']>
 
-const categorised = v.object({
-  company: companyDoc,
-  category: v.optional(v.object({ slug: v.string(), label: v.string() })),
-  /** How agents reach this company's published tools: MCP, CLI, API. */
-  access: v.array(
-    v.union(v.literal('mcp'), v.literal('cli'), v.literal('api'))
-  ),
-})
+function listSummary(company: Doc<'companies'>): Row['company'] {
+  return {
+    _id: company._id,
+    key: company.key,
+    name: company.name,
+    ...(company.tagline === undefined ? {} : { tagline: company.tagline }),
+    ...(company.description === undefined
+      ? {}
+      : { description: company.description }),
+    ...(company.domain === undefined ? {} : { domain: company.domain }),
+    ...(company.logo ? { logoUrl: company.logo.url } : {}),
+  }
+}
+
+async function activeCategory(
+  ctx: QueryCtx,
+  slug: string
+): Promise<(Doc<'tags'> & { namespace: 'category' }) | null> {
+  const tag = await ctx.db
+    .query('tags')
+    .withIndex('by_key', (q) => q.eq('key', `category:${slug}`))
+    .unique()
+  return tag?.status === 'active' && tag.namespace === 'category'
+    ? (tag as Doc<'tags'> & { namespace: 'category' })
+    : null
+}
 
 /** The company's `category:*` tag, if it has an active one. */
 async function categoryOf(
@@ -62,38 +83,100 @@ async function accessOf(
 }
 
 /** Attach each company's category and ways in — what the directory shows. */
-async function withCategory(
+async function toRows(
   ctx: QueryCtx,
-  companies: ReadonlyArray<Doc<'companies'>>
-): Promise<
-  Array<{
-    company: Doc<'companies'>
-    category?: { slug: string; label: string }
-    access: Array<'mcp' | 'cli' | 'api'>
-  }>
-> {
+  companies: ReadonlyArray<Doc<'companies'>>,
+  options: { category?: Category; shouldIncludeCategory?: boolean } = {}
+): Promise<Array<Row>> {
   return await Promise.all(
     companies.map(async (company) => {
+      let categoryPromise: Promise<Category | undefined>
+      if (options.category) {
+        categoryPromise = Promise.resolve(options.category)
+      } else if (options.shouldIncludeCategory === false) {
+        categoryPromise = Promise.resolve(undefined)
+      } else {
+        categoryPromise = categoryOf(ctx, company)
+      }
       const [category, access] = await Promise.all([
-        categoryOf(ctx, company),
+        categoryPromise,
         accessOf(ctx, company),
       ])
-      return category ? { company, category, access } : { company, access }
+      const summary = listSummary(company)
+      return category
+        ? { company: summary, category, access }
+        : { company: summary, access }
     })
   )
 }
 
+async function listInCategory(
+  ctx: QueryCtx,
+  category: Doc<'tags'>,
+  limit: number
+): Promise<Array<Doc<'companies'>>> {
+  const taggings = await ctx.db
+    .query('taggings')
+    .withIndex('by_tag_new', (q) =>
+      q.eq('tagId', category._id).eq('entityType', 'company').eq('listed', true)
+    )
+    .order('desc')
+    .take(limit)
+  const ids = taggings.flatMap((tagging) =>
+    tagging.entityType === 'company' ? [tagging.entityId] : []
+  )
+  const companies = await getMany(ctx, ids)
+  return ids.flatMap((id) => {
+    const company = companies.get(id)
+    return company ? [company] : []
+  })
+}
+
+async function filterByCategory(
+  ctx: QueryCtx,
+  companies: ReadonlyArray<Doc<'companies'>>,
+  category: Doc<'tags'>
+): Promise<Array<Doc<'companies'>>> {
+  const taggings = await Promise.all(
+    companies.map((company) =>
+      ctx.db
+        .query('taggings')
+        .withIndex('by_entity_tag', (q) =>
+          q.eq('entityId', company._id).eq('tagId', category._id)
+        )
+        .unique()
+    )
+  )
+  return companies.filter((_, index) => taggings[index] !== null)
+}
+
 /** Published companies, newest first, with their category. */
 export const list = publicQuery({
-  args: { limit: v.optional(v.number()) },
-  returns: v.array(categorised),
+  args: {
+    category: v.optional(v.string()),
+    includeCategory: v.optional(v.boolean()),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(companyRow),
   handler: async (ctx, args) => {
+    const limit = Math.min(args.limit ?? MAX_LIST, MAX_LIST)
+    if (args.category) {
+      const category = await activeCategory(ctx, args.category)
+      if (!category) {
+        return []
+      }
+      return await toRows(ctx, await listInCategory(ctx, category, limit), {
+        category: { slug: category.slug, label: category.label },
+      })
+    }
     const companies = await ctx.db
       .query('companies')
       .withIndex('by_status_published', (q) => q.eq('status', 'published'))
       .order('desc')
-      .take(Math.min(args.limit ?? MAX_LIST, MAX_LIST))
-    return await withCategory(ctx, companies)
+      .take(limit)
+    return await toRows(ctx, companies, {
+      shouldIncludeCategory: args.includeCategory !== false,
+    })
   },
 })
 
@@ -120,19 +203,39 @@ export const getByKey = publicQuery({
 
 /** Full-text search over name, tagline and category, with the category attached. */
 export const search = publicQuery({
-  args: { q: v.string(), limit: v.optional(v.number()) },
-  returns: v.array(categorised),
+  args: {
+    q: v.string(),
+    category: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(companyRow),
   handler: async (ctx, args) => {
     const query = args.q.trim()
     if (!query) {
       return []
     }
-    const companies = await ctx.db
+    const limit = Math.min(args.limit ?? 50, MAX_LIST)
+    const category = args.category
+      ? await activeCategory(ctx, args.category)
+      : null
+    if (args.category && !category) {
+      return []
+    }
+    const candidates = await ctx.db
       .query('companies')
       .withSearchIndex('search_companies', (q) =>
         q.search('searchText', query).eq('status', 'published')
       )
-      .take(Math.min(args.limit ?? 50, MAX_LIST))
-    return await withCategory(ctx, companies)
+      .take(category ? MAX_LIST : limit)
+    const companies = category
+      ? await filterByCategory(ctx, candidates, category)
+      : candidates
+    return await toRows(
+      ctx,
+      companies.slice(0, limit),
+      category
+        ? { category: { slug: category.slug, label: category.label } }
+        : undefined
+    )
   },
 })

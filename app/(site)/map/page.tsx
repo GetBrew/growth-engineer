@@ -1,5 +1,6 @@
 import { parseRef } from '@convex/model/keys'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { connection } from 'next/server'
@@ -114,7 +115,12 @@ async function Focused({
             href={catalogHref(node)}
           >
             Open page
-            <ArrowUpRight aria-hidden="true" className="size-4" />
+            <HugeiconsIcon
+              aria-hidden="true"
+              icon={ArrowUpRight01Icon}
+              size={16}
+              strokeWidth={1.8}
+            />
           </Link>
           <Link
             className="focus-ring flex h-10 items-center rounded-full border border-border bg-white px-4 text-foreground/62 text-sm transition-colors hover:border-foreground/20 hover:text-foreground"

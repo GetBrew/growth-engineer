@@ -82,16 +82,19 @@ export function completeChips(
 
 type Params = Record<string, string | ReadonlyArray<string> | undefined>
 
-function first(value: string | ReadonlyArray<string> | undefined): string {
+/** A search param's first value, or '' when absent. */
+export function firstParam(
+  value: string | ReadonlyArray<string> | undefined
+): string {
   return (Array.isArray(value) ? value[0] : value) ?? ''
 }
 
 /** `?q=…&capability=a,b&agent=native` → state. */
 export function searchStateFromParams(params: Params): SearchState {
-  const words = first(params.q).trim().split(WHITESPACE).filter(Boolean)
+  const words = firstParam(params.q).trim().split(WHITESPACE).filter(Boolean)
   const chips: Array<string> = []
   for (const namespace of TAG_NAMESPACES) {
-    for (const slug of first(params[namespace]).split(',')) {
+    for (const slug of firstParam(params[namespace]).split(',')) {
       const clean = slug.trim().toLowerCase()
       if (clean && SLUG.test(clean)) {
         chips.push(`${namespace}:${clean}`)

@@ -1,108 +1,85 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { FunctionReturnType } from 'convex/server'
 import Link from 'next/link'
-import type { Doc } from '@/convex/_generated/dataModel'
-import { AccessBadges, AgentLevelBadge } from './badges'
+import type { ReactNode } from 'react'
+import { Badge } from '@/components/ui/badge'
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from '@/components/ui/item'
+import type { api } from '@/convex/_generated/api'
+import { accessTypeLabels, agentLevelLabel } from './badges'
 import { EntityLogo } from './entity-logo'
 
+type ToolSearchResult = FunctionReturnType<typeof api.tools.search>
+export type ToolCardData = ToolSearchResult['results'][number]
+
+type CompanyRows = FunctionReturnType<typeof api.companies.list>
+type CompanyRowData = CompanyRows[number]
+
 /**
- * The three list items. Each is a Server Component: no state, no handlers —
- * the whole row is a link (`after:absolute after:inset-0`), which is also what
- * keeps the hit target honest for keyboard users.
+ * One row of a catalog directory: logo tile, name with small pills, one line
+ * of description, and an arrow. The whole row is the link.
  */
-
-export type ToolCardData = {
-  tool: Doc<'tools'>
-  company: { key: string; name: string; logoUrl?: string }
-}
-
-export function ToolCard({ tool, company }: ToolCardData) {
+function CatalogRow({
+  href,
+  logo,
+  title,
+  pills,
+  description,
+}: {
+  href: string
+  logo: { name: string; logoUrl?: string; domain?: string }
+  title: string
+  pills: ReadonlyArray<string>
+  description: ReactNode
+}) {
   return (
-    <article className="group relative flex gap-4 rounded-2xl border border-border p-4 transition-colors hover:border-foreground/20">
-      <EntityLogo logoUrl={company.logoUrl} name={company.name} size={44} />
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-0.5">
-          <h3 className="font-semibold text-[15px] tracking-[-0.01em]">
-            <Link
-              className="after:absolute after:inset-0"
-              href={`/tools/${tool.key}`}
+    <Item
+      className="-mx-3 w-auto flex-nowrap gap-4 border-0 px-3 py-3 [a]:hover:bg-hover"
+      render={<Link href={href} />}
+    >
+      <ItemMedia className="group-has-data-[slot=item-description]/item:translate-y-0 group-has-data-[slot=item-description]/item:self-center">
+        <EntityLogo
+          className="entity-shadow group-hover/item:entity-shadow-raised transition-shadow duration-300"
+          domain={logo.domain}
+          logoUrl={logo.logoUrl}
+          name={logo.name}
+          size={44}
+        />
+      </ItemMedia>
+      <ItemContent className="min-w-0 gap-0.5">
+        <ItemTitle className="type-item line-clamp-none flex w-full flex-wrap gap-x-2 gap-y-1">
+          <span className="min-w-0 max-w-full truncate">{title}</span>
+          {pills.map((pill) => (
+            <Badge
+              className="h-auto shrink-0 bg-background px-2 py-0.5"
+              key={pill}
             >
-              {tool.name}
-            </Link>
-          </h3>
-          <p className="text-foreground/55 text-xs">by {company.name}</p>
-        </div>
-        <p className="line-clamp-2 text-foreground/70 text-sm leading-5">
-          {tool.summary}
-        </p>
-        <div className="mt-auto flex flex-wrap items-center gap-1.5">
-          <AgentLevelBadge
-            level={tool.agent.level}
-            reason={tool.agent.reason}
+              {pill}
+            </Badge>
+          ))}
+        </ItemTitle>
+        <ItemDescription className="type-body sm:line-clamp-1">
+          {description}
+        </ItemDescription>
+      </ItemContent>
+      <ItemActions>
+        <span className="grid size-7 shrink-0 place-items-center rounded-full border bg-background text-soft transition-colors duration-300 group-hover/item:border-foreground/20 group-hover/item:bg-transparent group-hover/item:text-foreground">
+          <HugeiconsIcon
+            aria-hidden="true"
+            icon={ArrowRight02Icon}
+            size={14}
+            strokeWidth={2}
           />
-          <AccessBadges access={tool.access} />
-        </div>
-      </div>
-    </article>
-  )
-}
-
-export type WorkflowRowData = {
-  workflow: Doc<'workflows'>
-  tools: Array<{
-    key: string
-    name: string
-    companyKey: string
-    logoUrl?: string
-  }>
-}
-
-export function WorkflowRow({ workflow, tools }: WorkflowRowData) {
-  return (
-    <article className="group relative flex min-h-[120px] gap-5 border-border border-b py-5 sm:gap-6 sm:py-6">
-      <div
-        aria-hidden="true"
-        className="hidden shrink-0 items-start -space-x-3 pt-1 sm:flex"
-      >
-        {tools.slice(0, 3).map((tool) => (
-          <EntityLogo
-            className="rounded-full ring-2 ring-white"
-            key={tool.key}
-            logoUrl={tool.logoUrl}
-            name={tool.name}
-            size={44}
-          />
-        ))}
-      </div>
-
-      <div className="min-w-0 flex-1 pr-10 sm:pr-8">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-semibold text-base tracking-[-0.02em] sm:text-lg">
-            <Link
-              className="after:absolute after:inset-0"
-              href={`/workflows/${workflow.key}`}
-            >
-              {workflow.title}
-            </Link>
-          </h3>
-        </div>
-        {workflow.summary ? (
-          <p className="mt-2 line-clamp-2 max-w-3xl text-foreground/70 text-sm leading-5">
-            {workflow.summary}
-          </p>
-        ) : null}
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-foreground/55 text-xs">
-          <span>{tools.map((tool) => tool.name).join(' + ')}</span>
-          <span className="rounded-full border border-border px-2 py-0.5">
-            {workflow.toolCount} {workflow.toolCount === 1 ? 'tool' : 'tools'}
-          </span>
-        </div>
-      </div>
-
-      <ArrowRight
-        aria-hidden="true"
-        className="absolute top-6 right-0 size-5 text-foreground/55 transition-all duration-300 group-hover:translate-x-1 group-hover:text-foreground sm:static sm:ml-auto sm:self-center"
-      />
-    </article>
+        </span>
+      </ItemActions>
+    </Item>
   )
 }
 
@@ -110,44 +87,43 @@ export function CompanyRow({
   company,
   access = [],
 }: {
-  company: Doc<'companies'>
+  company: CompanyRowData['company']
   /** How agents reach this company's tools: MCP, CLI, API. Real, not decorative. */
   access?: ReadonlyArray<string>
 }) {
   return (
-    <Link
-      className="group/row focus-ring -mx-3 flex items-center gap-4 rounded-2xl px-3 py-3 transition-colors hover:bg-black/[0.04]"
+    <CatalogRow
+      // The description is the fact; the tagline is ours. Prefer the fact.
+      description={company.description ?? company.tagline}
       href={`/companies/${company.key}`}
-    >
-      <EntityLogo
-        className="shadow-[0_4px_14px_rgba(23,23,23,0.06)] transition-shadow duration-300 group-hover/row:shadow-[0_7px_20px_rgba(23,23,23,0.10)]"
-        domain={company.domain}
-        logoUrl={company.logo?.url}
-        name={company.name}
-        size={44}
-      />
-      <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-1.5">
-          <span className="truncate font-medium text-[15px] tracking-[-0.01em]">
-            {company.name}
-          </span>
-          {access.map((label) => (
-            <span
-              className="rounded-full border border-border bg-white px-2 py-0.5 font-medium text-[10px] text-foreground/55"
-              key={label}
-            >
-              {label}
-            </span>
-          ))}
-        </span>
-        {/* The description is the fact; the tagline is ours. Prefer the fact. */}
-        <span className="mt-0.5 line-clamp-2 text-foreground/62 text-sm sm:line-clamp-1">
-          {company.description ?? company.tagline}
-        </span>
-      </span>
-      <span className="grid size-7 shrink-0 place-items-center rounded-full border border-border bg-white text-foreground/70 transition-colors duration-300 group-hover/row:border-foreground/20 group-hover/row:text-foreground">
-        <ArrowRight aria-hidden="true" className="size-3.5" />
-      </span>
-    </Link>
+      logo={{
+        name: company.name,
+        logoUrl: company.logoUrl,
+        domain: company.domain,
+      }}
+      pills={access}
+      title={company.name}
+    />
+  )
+}
+
+/** A tool in the directory, in the same row as a company. */
+export function ToolRow({ tool, company }: ToolCardData) {
+  const level = tool.agentLevel
+  return (
+    <CatalogRow
+      description={
+        <>
+          <span className="text-soft">{company.name}</span> · {tool.summary}
+        </>
+      }
+      href={`/tools/${tool.key}`}
+      logo={{ name: company.name, logoUrl: company.logoUrl }}
+      pills={[
+        ...(level === 'unverified' ? [] : [agentLevelLabel(level)]),
+        ...accessTypeLabels(tool.access),
+      ]}
+      title={tool.name}
+    />
   )
 }

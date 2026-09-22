@@ -1,0 +1,41 @@
+/* Streamdown renders the workflow file; Tailwind must see its classes. */
+@source "../node_modules/streamdown/dist/*.js";
+
+/* The rendered markdown file: the same tint scheme as the data-model doc. */
+.md-file {
+  color: var(--muted-foreground);
+}
+.md-file .fm {
+  color: var(--faint);
+}
+.md-file .fm .k {
+  color: var(--muted-foreground);
+}
+.md-file .h {
+  font-weight: 500;
+  color: var(--foreground);
+}
+.md-file .h .mark {
+  color: var(--faint);
+}
+.md-file .h1 {
+  font-size: 1.12em;
+}
+.md-file .fence {
+  color: var(--faint);
+}
+.md-file .code {
+  color: var(--doc);
+}
+.md-file .ic {
+  background: var(--muted);
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.md-file .li {
+  color: var(--faint);
+}
+.md-file .b {
+  font-weight: 500;
+  color: var(--foreground);
+}
