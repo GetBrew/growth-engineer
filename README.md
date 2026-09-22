@@ -102,11 +102,6 @@ docs/                      vision, data model, file contract, architecture, setu
 
 ## Fonts
 
-The UI uses the Season variable font under a **trial license**
-(`public/fonts/season/LicenseAgreement.pdf`). Buy the license before this
-repository or the site goes public; the font is one `--font-sans` token, so
-swapping it is a one-line change in `app/layout.tsx`.
-
 ## Docs
 
 [`AGENTS.md`](AGENTS.md) holds the invariants and routes to everything else:

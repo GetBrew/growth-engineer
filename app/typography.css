@@ -1,7 +1,7 @@
 /*
- * Season type system
+ * Type system
  *
- * Season is a variable face, so use its intentional intermediate weights
+ * Geist is a variable face, so use its intentional intermediate weights
  * instead of rounding everything to 400/500/600. Product typography uses a
  * compact set of roles; components choose a role and never invent a size.
  *
@@ -68,7 +68,7 @@
   font-weight: 560;
 }
 
-/* Forms use the compact Season scale from the product input convention. */
+/* Forms use the compact scale from the product input convention. */
 @utility type-form-title {
   font-size: 22px;
   line-height: 26.4px;

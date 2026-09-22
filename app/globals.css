@@ -88,7 +88,7 @@
   /* Expo-out: fast off the mark, long soft settle. Motion code mirrors it as
      EXPO_OUT in lib/motion.ts — change both together. */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --font-sans: var(--font-season), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   /* One family everywhere, code included (the design system rule). */
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius-lg: var(--radius);
