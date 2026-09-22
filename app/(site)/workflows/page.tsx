@@ -1,19 +1,29 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { HeroBanner } from '@/components/catalog/hero-banner'
 import { Page } from '@/components/catalog/primitives'
 import { HeroActions } from '@/components/catalog/works-with-agents'
+import { JsonLd } from '@/components/seo/json-ld'
 import { WorkflowsSkeleton } from '@/components/skeletons/workflows-skeleton'
 import { buttonVariants } from '@/components/ui/button'
 import { WorkflowsIndex } from '@/components/workflows/workflows-index'
 import { loadTagChips, loadWorkflowSearchItems } from '@/lib/catalog/loaders'
+import { SITE_ORIGIN } from '@/lib/env'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { collectionJsonLd, listingItems } from '@/lib/seo/structured-data'
 
-export const metadata: Metadata = {
-  title: 'Workflows',
+const PAGE = {
+  path: '/workflows',
+  name: 'Workflows',
   description:
     'Growth workflows across tools, each one a markdown file any agent can run.',
 }
+
+export const metadata: Metadata = pageMetadata({
+  title: PAGE.name,
+  description: PAGE.description,
+  path: PAGE.path,
+})
 
 /** Prerendered in full; the index narrows itself in the browser. */
 export default function WorkflowsPage() {
@@ -26,9 +36,14 @@ export default function WorkflowsPage() {
         title="Workflows that grow revenue"
       >
         <HeroActions>
-          <Link className={buttonVariants({ size: 'pill' })} href="/submit">
-            Submit a workflow
-          </Link>
+          <a
+            className={buttonVariants({ size: 'pill' })}
+            href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Add a workflow
+          </a>
         </HeroActions>
       </HeroBanner>
       <Page>
@@ -46,9 +61,14 @@ async function Index() {
     loadTagChips(),
   ])
   return (
-    <WorkflowsIndex
-      tags={tags.filter((tag) => tag.counts.workflows > 0)}
-      workflows={workflows}
-    />
+    <>
+      <JsonLd
+        data={collectionJsonLd(SITE_ORIGIN, PAGE, listingItems(workflows))}
+      />
+      <WorkflowsIndex
+        tags={tags.filter((tag) => tag.counts.workflows > 0)}
+        workflows={workflows}
+      />
+    </>
   )
 }

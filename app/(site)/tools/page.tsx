@@ -1,19 +1,29 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { HeroBanner } from '@/components/catalog/hero-banner'
 import { Page, SectionHeading } from '@/components/catalog/primitives'
 import { ToolsExplorer } from '@/components/catalog/tools-explorer'
 import { HeroActions } from '@/components/catalog/works-with-agents'
+import { JsonLd } from '@/components/seo/json-ld'
 import { ToolsSkeleton } from '@/components/skeletons/tools-skeleton'
 import { buttonVariants } from '@/components/ui/button'
 import { loadTagChips, loadToolSearchItems } from '@/lib/catalog/loaders'
+import { SITE_ORIGIN } from '@/lib/env'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { collectionJsonLd, listingItems } from '@/lib/seo/structured-data'
 
-export const metadata: Metadata = {
-  title: 'Tools',
+const PAGE = {
+  path: '/tools',
+  name: 'Tools',
   description:
     'Every tool an agent can reach over MCP, CLI or API, with the file to set it up.',
 }
+
+export const metadata: Metadata = pageMetadata({
+  title: PAGE.name,
+  description: PAGE.description,
+  path: PAGE.path,
+})
 
 /**
  * One box searches everything: words go to the search text, chips like
@@ -31,9 +41,14 @@ export default function ToolsPage() {
         title="Tools your agent can run"
       >
         <HeroActions>
-          <Link className={buttonVariants({ size: 'pill' })} href="/submit">
-            Submit a tool
-          </Link>
+          <a
+            className={buttonVariants({ size: 'pill' })}
+            href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Add a tool
+          </a>
         </HeroActions>
       </HeroBanner>
       <Page className="flex flex-col gap-8">
@@ -54,5 +69,10 @@ async function ToolsCatalog() {
     loadToolSearchItems(),
     loadTagChips(),
   ])
-  return <ToolsExplorer tags={tags} tools={tools} />
+  return (
+    <>
+      <JsonLd data={collectionJsonLd(SITE_ORIGIN, PAGE, listingItems(tools))} />
+      <ToolsExplorer tags={tags} tools={tools} />
+    </>
+  )
 }

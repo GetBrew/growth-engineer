@@ -48,3 +48,6 @@ export const clientEnv = clientSchema.parse({
   NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID:
     process.env.NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID,
 })
+
+/** The origin without a trailing slash: what absolute URLs are built from. */
+export const SITE_ORIGIN = clientEnv.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')

@@ -65,12 +65,32 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | --- | --- | --- |
 | `/companies/[handle]`, `/tools/[handle]/[name]`, `/workflows/[name]` (+ `@N`), `/map/[...focus]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
 | `/api/markdown/[...path]` — every file, every current pin, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
-| `/tools/[handle]` shortcuts, `/llms.txt`, `/`, `/submit` | static | no request-time input |
+| `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/` | static | no request-time input |
+| `…/opengraph-image` — one card per company, tool and workflow (+ `@N`) | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows`, `/map` | fully static (`○`) | every item is prerendered into the page; a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
 answers with a real 308 or a 404. `dynamicParams`, `dynamic` and
 `revalidate` are not allowed under Cache Components and are not used.
+
+## Discovery: SEO, GEO and agents
+
+Three audiences read the same facts through three doors, and the facts are
+stated once:
+
+| Audience | Reads | Source |
+| --- | --- | --- |
+| Search engines | canonical URL, Open Graph, the social card, schema.org JSON-LD (`Organization`, `SoftwareApplication`, `HowTo`, `CollectionPage`, `BreadcrumbList`), `/sitemap.xml` with per-page `lastmod`, `/robots.txt` | `lib/seo/metadata.ts`, `lib/seo/structured-data.ts`, `app/sitemap.ts`, `app/robots.ts` |
+| Answer engines and AI crawlers | the same, plus `/llms.txt` (llmstxt.org: definitions, then every file with a summary) and `/llms-full.txt` (every file in one document); every AI crawler is named in `/robots.txt` | `lib/seo/llms.ts`, `lib/catalog/discovery.ts` |
+| Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt` | `proxy.ts`, `app/api/markdown` |
+
+The definitions (company, tool, workflow, tag, the agent levels, how to read
+a file) live in `lib/catalog/definitions.ts` and nowhere else; the home
+page's Definitions section, the llms preamble and the structured data import
+them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
+catalog exactly: every page, every file, nothing invented. Map focus pages
+(`/map/<type>/<key>`) are `noindex, follow` — one thin page per node, for
+navigation — and stay out of the sitemap.
 
 ## Search v1 (`lib/catalog/search.ts`)
 

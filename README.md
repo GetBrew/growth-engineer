@@ -58,8 +58,15 @@ companies/ workflows/ tags/  ─▶  lib/content/build-catalog.ts  ─▶  the C
 
 Every page answers `Accept: text/markdown` with its file, or append `.md`:
 `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`,
-`/companies/clay.md`. `/llms.txt` lists every file. No sign-in, no rate
-limit, no key. Read-only MCP (`search`, `get`) arrives later.
+`/companies/clay.md`. `/llms.txt` defines the four words the catalog uses and
+links every file with a one-line summary; `/llms-full.txt` is every file in
+one document. Every HTML page declares its file as a `text/markdown`
+alternate and carries schema.org data (a company is an `Organization`, a tool
+a `SoftwareApplication`, a workflow a `HowTo` with one step per step). No
+sign-in, no rate limit, no key. Read-only MCP (`search`, `get`) arrives later.
+
+The definitions themselves live in ONE place, `lib/catalog/definitions.ts`,
+and feed the home page, `/llms.txt` and the structured data.
 
 ## Running the site
 
@@ -91,20 +98,26 @@ the two optional public variables (site origin, logo client id).
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
 | `/map`, `/map/[type]/[key]` | The relationship map: what is connected to what, one prerendered page per node |
-| `…/*.md`, `Accept: text/markdown`, `/llms.txt` | The raw files, for agents |
+| `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
+| `/robots.txt`, `/sitemap.xml`, `…/opengraph-image` | Every crawler allowed (AI crawlers named); every page with its `updated` date; one social card per page, drawn at build |
 
 ## Layout
 
 ```
 companies/ workflows/ tags/   THE DATA — see CONTRIBUTING.md
 app/
-  (site)/                     every page: /, companies, tools, workflows, map, submit
+  (site)/                     every page: /, companies, tools, workflows, map
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
-  llms.txt                    the file index
+  llms.txt, llms-full.txt     the file index with definitions; the whole corpus
+  robots.ts, sitemap.ts       every crawler allowed; every page, with its date
+  **/opengraph-image.tsx      the social cards, one per page, drawn at build
 lib/
   content/                    the compiler: read the tree, validate, resolve, derive, render
   catalog/                    PURE: keys, agent-level rules, THE renderer, search grammar, types
+  catalog/definitions.ts      THE definitions (company, tool, workflow, tag, agent levels), stated once
   catalog/loaders.ts          what pages read; catalog.ts builds the catalog once per process
+  catalog/discovery.ts        what the sitemap and llms.txt read
+  seo/                        per-page metadata, schema.org builders, the llms preamble
 components/                   site chrome, catalog rows and detail pages, the map, ui primitives
 tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives
 docs/                         vision, file schema, architecture, validation, ci, performance

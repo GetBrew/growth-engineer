@@ -1,11 +1,25 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { AgentMarquee } from '@/components/home/agent-marquee'
+import { Definitions } from '@/components/home/definitions'
 import { FounderProof } from '@/components/home/founder-proof'
 import { HeroVisual } from '@/components/home/hero-visual'
 import { HomeCatalog } from '@/components/home/home-catalog'
 import { HomeSkeleton } from '@/components/skeletons/home-skeleton'
 import { buttonVariants } from '@/components/ui/button'
+import { SITE } from '@/lib/catalog/definitions'
+import { pageMetadata } from '@/lib/seo/metadata'
+
+export const metadata: Metadata = {
+  ...pageMetadata({
+    title: SITE.name,
+    description: SITE.tagline,
+    path: '/',
+  }),
+  // The root template would print the name twice.
+  title: { absolute: `${SITE.name} — ${SITE.tagline}` },
+}
 
 export default function HomePage() {
   return (
@@ -51,6 +65,7 @@ export default function HomePage() {
       <Suspense fallback={<HomeSkeleton />}>
         <HomeCatalog />
       </Suspense>
+      <Definitions />
       <FounderProof />
     </>
   )

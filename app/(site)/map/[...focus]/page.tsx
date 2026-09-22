@@ -6,6 +6,7 @@ import { FocusedNode, MapSkeleton } from '@/components/map/focused'
 import { parseRef } from '@/lib/catalog/keys'
 import { loadNeighborhood } from '@/lib/catalog/loaders'
 import { mapFocusParams } from '@/lib/catalog/static-params'
+import { pageMetadata } from '@/lib/seo/metadata'
 
 type Params = Promise<{ focus: Array<string> }>
 
@@ -34,12 +35,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const ref = await resolveRef(params)
   const result = ref ? await loadNeighborhood(ref.type, ref.key) : null
-  return result
-    ? {
-        title: `${result.node.name} · Relationship map`,
-        description: `What ${result.node.name} is connected to in the catalog.`,
-      }
-    : {}
+  if (!(ref && result)) {
+    return {}
+  }
+  // One thin page per node, for navigation: linked, not indexed.
+  return pageMetadata({
+    title: `${result.node.name} · Relationship map`,
+    description: `What ${result.node.name} is connected to in the catalog.`,
+    path: `/map/${ref.type}/${ref.key}`,
+    noindex: true,
+  })
 }
 
 export default function MapFocusPage({ params }: { params: Params }) {

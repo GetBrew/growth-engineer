@@ -8,12 +8,14 @@ import {
 import { MapSkeleton } from '@/components/map/focused'
 import { NodePill } from '@/components/map/node'
 import { loadMapOverview } from '@/lib/catalog/loaders'
+import { pageMetadata } from '@/lib/seo/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Relationship map',
   description:
     'How the catalog connects: which company makes a tool, which workflows use it, and what every entity is tagged.',
-}
+  path: '/map',
+})
 
 const SECTION_TITLE = {
   company: 'Companies',
