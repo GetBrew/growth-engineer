@@ -14,8 +14,9 @@ Quick orientation (full rules in `AGENTS.md`):
   renders through `lib/catalog/render-markdown.ts` at build time; rendered
   files are never hand-edited; the format is golden-tested.
 - **Keys are permanent** and they ARE the paths (`clay`,
-  `clay/enrich-contacts`, `brew/intent-to-meeting`); a rename adds the old
-  key under `aliases:`.
+  `clay/enrich-contacts`, `intent-to-meeting`); `workflows/` is flat and a
+  workflow's `author` is a GitHub login; a rename adds the old key under
+  `aliases:`.
 - **Validation is proportional**: `pnpm exec biome check --write <touched
   files>` + the exact test files while editing; `pnpm content:check` for
   catalog data; `pnpm check` once per unit; `pnpm tsc` then `pnpm lint` once
@@ -23,5 +24,5 @@ Quick orientation (full rules in `AGENTS.md`):
 - **Heavy commands are serialized** through `scripts/heavy-lock.mjs` — never
   call `tsc`, `vitest`, `next build` or `knip` directly.
 - **Everything prerenders**: the catalog is built once per process from sync
-  reads; a page's default export is synchronous and returns a `<Suspense>`;
-  only `searchParams` routes read at request time.
+  reads; every page and filter permutation is static (listings narrow in the
+  browser; the map is a page per node); internal links are `next/link`.

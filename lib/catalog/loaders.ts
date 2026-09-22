@@ -2,12 +2,15 @@ import 'server-only'
 
 import { getCatalog } from './catalog'
 import { type EntityType, formatRef } from './keys'
-import { companyListItem, workflowListItem } from './lists'
 import {
-  searchCompanies as runCompanySearch,
-  searchTools as runToolSearch,
-  searchWorkflows as runWorkflowSearch,
-} from './search'
+  companyListItem,
+  companySearchItem,
+  tagChip,
+  toolListItem,
+  toolSearchItem,
+  workflowListItem,
+  workflowSearchItem,
+} from './lists'
 import type {
   Company,
   EdgeGroup,
@@ -75,6 +78,8 @@ export async function loadWorkflow(key: string, version: number | undefined) {
     workflow,
     version: { version: workflow.version, steps: workflow.steps, updatedAt },
     tools,
+    /** The same tools as list rows, for the "Built from" section. */
+    toolItems: tools.map(({ tool }) => toolListItem(catalog, tool)),
     tags: workflow.tags.flatMap((tagKey) => {
       const tag = catalog.tags.get(tagKey)
       return tag ? [{ key: tag.key, label: tag.label }] : []
@@ -323,39 +328,47 @@ export async function loadWorkflows(
   ).slice(0, Math.min(limit, MAX_LIST))
 }
 
-/** Every tag with its counts — the filter chips and chip completion. */
-export async function loadActiveTags() {
-  return [...getCatalog().tags.values()]
-}
+/* ──────────────────────────── listing payloads ───────────────────────────── */
+/* Every item of a kind, prerendered into the page; the browser filters them. */
 
-/* ─────────────────────────────────── search ──────────────────────────────── */
-
-export async function searchTools(
-  q: string,
-  chips: ReadonlyArray<string>,
-  limit = 60
-) {
-  return runToolSearch(getCatalog(), { q, chips, limit })
-}
-
-export async function searchWorkflows(
-  q: string,
-  sort: 'featured' | 'new',
-  tag?: string
-) {
-  return runWorkflowSearch(getCatalog(), {
-    q,
-    sort,
-    ...(tag ? { tag } : {}),
-    limit: 30,
+/** Every published tool, newest first, with what search needs. */
+export async function loadToolSearchItems() {
+  const catalog = getCatalog()
+  return catalog.order.toolsNew.flatMap((key) => {
+    const tool = catalog.tools.get(key)
+    return tool ? [toolSearchItem(catalog, tool)] : []
   })
 }
 
-export async function searchCompanies(q: string, category?: string) {
-  return runCompanySearch(getCatalog(), {
-    q,
-    ...(category ? { category } : {}),
-    limit: 50,
+/** Every published workflow in featured order, with what search needs. */
+export async function loadWorkflowSearchItems() {
+  const catalog = getCatalog()
+  return catalog.order.workflowsFeatured.flatMap((key, index) => {
+    const workflow = catalog.workflows.get(key)
+    return workflow ? [workflowSearchItem(catalog, workflow, index)] : []
+  })
+}
+
+/** Every published company in name order, with what search needs. */
+export async function loadCompanySearchItems() {
+  const catalog = getCatalog()
+  return catalog.order.companies.flatMap((key) => {
+    const company = catalog.companies.get(key)
+    return company ? [companySearchItem(catalog, company)] : []
+  })
+}
+
+/** Every tag as a filter chip, with its counts. */
+export async function loadTagChips() {
+  return [...getCatalog().tags.values()].map(tagChip)
+}
+
+/** The newest published tools, as list rows. */
+export async function loadNewTools(limit = 12) {
+  const catalog = getCatalog()
+  return catalog.order.toolsNew.slice(0, limit).flatMap((key) => {
+    const tool = catalog.tools.get(key)
+    return tool ? [toolListItem(catalog, tool)] : []
   })
 }
 

@@ -32,9 +32,11 @@ describe('markdown file rewrite', () => {
 
   test('a .md URL for a valid ref goes to the file handler', () => {
     expect(get('/tools/clay/clay.md')).toBe('/api/markdown/tools/clay/clay.md')
-    expect(get('/workflows/brew/intent-to-meeting@3.md')).toBe(
-      '/api/markdown/workflows/brew/intent-to-meeting@3.md'
+    expect(get('/workflows/intent-to-meeting@3.md')).toBe(
+      '/api/markdown/workflows/intent-to-meeting@3.md'
     )
+    // A workflow key is one part; an owner segment is not a file.
+    expect(get('/workflows/brew/intent-to-meeting.md')).toBeNull()
     expect(get('/companies/clay.md')).toBe('/api/markdown/companies/clay.md')
   })
 

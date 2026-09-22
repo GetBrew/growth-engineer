@@ -1,6 +1,7 @@
 ---
-ref: workflow:brew/intent-to-meeting@3
+ref: workflow:intent-to-meeting@3
 title: Turn high-intent accounts into booked meetings
+author: jdoe
 tools: [tool:apollo/find-work-emails, tool:brew/send-email]
 tags: [motion:outbound, channel:email]
 updated: 2026-09-16

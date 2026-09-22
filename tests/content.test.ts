@@ -1,13 +1,18 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 import { parseRef } from '@/lib/catalog/keys'
 import {
+  companySearchItem,
+  toolSearchItem,
+  workflowSearchItem,
+} from '@/lib/catalog/lists'
+import {
   TOOL_FILE_MAX_LINES,
   WORKFLOW_FILE_MAX_LINES,
 } from '@/lib/catalog/render-markdown'
 import {
-  searchCompanies,
-  searchTools,
-  searchWorkflows,
+  searchCompanyItems,
+  searchToolItems,
+  searchWorkflowItems,
 } from '@/lib/catalog/search'
 import { buildCatalog, type Catalog } from '@/lib/content/build-catalog'
 import { readContentTree } from '@/lib/content/read-tree'
@@ -81,21 +86,61 @@ describe('the content tree', () => {
   })
 
   test('workflow orders: featured is editorial, new is by date, same set', () => {
-    expect(catalog.order.workflowsFeatured[0]).toBe(
-      'brew/funding-signal-outbound'
-    )
+    expect(catalog.order.workflowsFeatured[0]).toBe('funding-signal-outbound')
     expect(catalog.order.workflowsFeatured).toHaveLength(catalog.workflows.size)
     expect([...catalog.order.workflowsNew].sort()).toEqual(
       [...catalog.order.workflowsFeatured].sort()
     )
   })
 
-  test('a single-tool workflow names its one tool and its version', () => {
-    const workflow = catalog.workflows.get('brew/clay-waterfall-order')
+  test('a single-tool workflow names its one tool, its author and its version', () => {
+    const workflow = catalog.workflows.get('clay-waterfall-order')
     expect(workflow?.version).toBe(1)
     expect(workflow?.toolKeys).toEqual(['clay/find-work-emails'])
     expect(workflow?.toolCount).toBe(1)
-    expect(workflow?.ownerKey).toBe('brew')
+    // Workflows are by people: a GitHub login, never a company handle.
+    expect(workflow?.author).toBe('thedogwiththedataonit')
+  })
+
+  test('every workflow is built from tools, and the links run both ways', () => {
+    for (const workflow of catalog.workflows.values()) {
+      expect(workflow.toolKeys.length, workflow.key).toBeGreaterThan(0)
+      for (const toolKey of workflow.toolKeys) {
+        expect(catalog.tools.has(toolKey), `${workflow.key} → ${toolKey}`).toBe(
+          true
+        )
+        expect(
+          catalog.workflowsByTool.get(toolKey),
+          `${toolKey} ← ${workflow.key}`
+        ).toContain(workflow.key)
+      }
+      // The rendered files carry the relationship in both directions.
+      const file =
+        catalog.documents.get(`workflow:${workflow.key}`)?.markdown ?? ''
+      expect(file).toContain(`author: ${workflow.author}`)
+      for (const toolKey of workflow.toolKeys) {
+        expect(file, workflow.key).toContain(`tool:${toolKey}`)
+        const toolFile =
+          catalog.documents.get(`tool:${toolKey}`)?.markdown ?? ''
+        expect(toolFile, toolKey).toContain(`workflow:${workflow.key}`)
+      }
+    }
+    for (const [toolKey, workflowKeys] of catalog.workflowsByTool) {
+      for (const workflowKey of workflowKeys) {
+        expect(
+          catalog.workflows.get(workflowKey)?.toolKeys,
+          `${toolKey} ← ${workflowKey}`
+        ).toContain(toolKey)
+      }
+    }
+    // A tool no workflow uses says so, in the same header line.
+    const unused = [...catalog.tools.keys()].find(
+      (key) => !catalog.workflowsByTool.has(key)
+    )
+    expect(unused).toBeDefined()
+    expect(catalog.documents.get(`tool:${unused}`)?.markdown).toContain(
+      'workflows: []'
+    )
   })
 
   test('workflows are reachable from the tools and companies they use', () => {
@@ -103,7 +148,7 @@ describe('the content tree', () => {
       (catalog.workflowsByTool.get('brew/write-copy') ?? []).length
     ).toBeGreaterThan(3)
     expect(catalog.workflowsByCompany.get('clay')).toContain(
-      'brew/clay-waterfall-order'
+      'clay-waterfall-order'
     )
   })
 
@@ -137,27 +182,26 @@ describe('the content tree', () => {
   })
 
   test('search: chips filter on facts, words on the search text', () => {
-    const mcp = searchTools(catalog, { q: '', chips: ['has:mcp'], limit: 60 })
+    const tools = catalog.order.toolsNew.flatMap((key) => {
+      const tool = catalog.tools.get(key)
+      return tool ? [toolSearchItem(catalog, tool)] : []
+    })
+    const mcp = searchToolItems(tools, { q: '', chips: ['has:mcp'] })
     expect(mcp.results.length).toBeGreaterThan(0)
     expect(mcp.results.every((card) => card.tool.access.includes('mcp'))).toBe(
       true
     )
     expect(mcp.chips).toEqual(['has:mcp'])
 
-    const enrich = searchTools(catalog, {
-      q: 'enrichment',
-      chips: [],
-      limit: 60,
-    })
+    const enrich = searchToolItems(tools, { q: 'enrichment', chips: [] })
     expect(enrich.results.map((card) => card.tool.key)).toContain(
       'clay/enrich-contacts'
     )
 
     // A tool IS its capability, so the capability chip finds every provider.
-    const capability = searchTools(catalog, {
+    const capability = searchToolItems(tools, {
       q: '',
       chips: ['capability:enrich-contacts'],
-      limit: 60,
     })
     expect(capability.results.map((card) => card.tool.key).sort()).toEqual([
       'apollo/enrich-contacts',
@@ -166,10 +210,9 @@ describe('the content tree', () => {
     ])
 
     // Category chips browse from the company: every data provider's tools.
-    const dataProviders = searchTools(catalog, {
+    const dataProviders = searchToolItems(tools, {
       q: '',
       chips: ['category:data-provider'],
-      limit: 60,
     })
     expect(dataProviders.results.map((card) => card.tool.key)).toContain(
       'clay/enrich-contacts'
@@ -181,37 +224,53 @@ describe('the content tree', () => {
     ).toBe(true)
 
     expect(
-      searchTools(catalog, {
-        q: '',
-        chips: ['category:nonexistent'],
-        limit: 60,
-      }).results
+      searchToolItems(tools, { q: '', chips: ['category:nonexistent'] }).results
     ).toEqual([])
   })
 
-  test('search: workflows by words and tag, companies by words and category', () => {
-    const email = searchWorkflows(catalog, {
+  test('search: workflows by words, author and tag; companies by words and category', () => {
+    const workflows = catalog.order.workflowsFeatured.flatMap((key, index) => {
+      const workflow = catalog.workflows.get(key)
+      return workflow ? [workflowSearchItem(catalog, workflow, index)] : []
+    })
+    expect(
+      searchWorkflowItems(workflows, { q: '', sort: 'featured' }).map(
+        (row) => row.workflow.key
+      )
+    ).toEqual(catalog.order.workflowsFeatured)
+    const email = searchWorkflowItems(workflows, {
       q: 'email',
       sort: 'featured',
       tag: 'channel:email',
-      limit: 30,
     })
     expect(email.length).toBeGreaterThan(0)
     expect(
-      searchWorkflows(catalog, {
+      searchWorkflowItems(workflows, {
         q: 'email',
         sort: 'new',
         tag: 'channel:not-real',
-        limit: 30,
       })
     ).toEqual([])
-    const clay = searchCompanies(catalog, {
+    // The author is searchable: a person's workflows, by login.
+    expect(
+      searchWorkflowItems(workflows, {
+        q: 'thedogwiththedataonit',
+        sort: 'new',
+      }).length
+    ).toBe(catalog.workflows.size)
+
+    const companies = catalog.order.companies.flatMap((key) => {
+      const company = catalog.companies.get(key)
+      return company ? [companySearchItem(catalog, company)] : []
+    })
+    const clay = searchCompanyItems(companies, {
       q: 'Clay',
       category: 'data-provider',
-      limit: 50,
     })
     expect(clay.map((row) => row.company.key)).toContain('clay')
-    expect(searchCompanies(catalog, { q: '', limit: 50 })).toEqual([])
+    expect(searchCompanyItems(companies, { q: '' })).toHaveLength(
+      catalog.order.companies.length
+    )
   })
 
   test('tags: the derived namespaces exist and counts are projections', () => {

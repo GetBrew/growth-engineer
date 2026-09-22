@@ -143,9 +143,10 @@ export type WorkflowStep = {
 }
 
 export type Workflow = {
+  /** The file name under workflows/: `intent-to-meeting`. */
   key: string
-  /** The handle before the slash: a company, or a person. */
-  ownerKey: string
+  /** The GitHub login of whoever wrote it. Workflows are by people. */
+  author: string
   title: string
   summary: string
   version: number
@@ -177,6 +178,15 @@ export type Tag = {
   /** `agent:*` and `has:*` are computed from tools, never authored. */
   derived: boolean
   counts: { companies: number; tools: number; workflows: number }
+}
+
+/** A tag as a filter chip: what a listing needs to draw and count it. */
+export type TagChip = {
+  key: string
+  namespace: TagNamespace
+  slug: string
+  label: string
+  counts: Tag['counts']
 }
 
 /** One rendered file: what `.md` URLs, the Copy button and `/llms.txt` serve. */
@@ -223,7 +233,13 @@ export type CompanyListItem = {
 
 /** What a list row needs from a workflow: the workflow plus its tools' companies. */
 export type WorkflowListItem = {
-  workflow: { key: string; title: string; summary?: string; toolCount: number }
+  workflow: {
+    key: string
+    title: string
+    author: string
+    summary?: string
+    toolCount: number
+  }
   tools: ReadonlyArray<{
     companyKey: string
     companyName: string

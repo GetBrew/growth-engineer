@@ -57,6 +57,7 @@ export function WorkflowRow({ workflow, tools }: WorkflowRowData) {
             {workflow.summary}
           </p>
         ) : null}
+        <p className="type-meta mt-2 text-subtle">by @{workflow.author}</p>
       </div>
 
       <HugeiconsIcon

@@ -18,7 +18,7 @@ agent / browser ─▶ proxy.ts ──────────▶ app/(site)/…
 ## Layers
 
 **The source tree** — `companies/<handle>/{company.md, access/*.md,
-tools/*.md}`, `workflows/<owner>/<name>.md`, `tags/<namespace>/<slug>.md`.
+tools/*.md}`, `workflows/<name>.md` (flat; the author is a GitHub login in the header), `tags/<namespace>/<slug>.md`.
 Keys are paths; headers are strict YAML; bodies are prose. The community
 edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
@@ -45,9 +45,15 @@ public.
 **Pages** (`app/(site)/`) — Server Components. A page's default export is
 synchronous and returns a `<Suspense>`; the async child does the reads. Detail
 routes declare `generateStaticParams` from `lib/catalog/static-params.ts`
-and prerender in full. A URL whose only job is to redirect is a route
-handler (`/tools/[handle]`), with a relative `Location` so it prerenders too.
-Filters and search are links and GET forms: the URL is the state.
+and prerender in full; so does every map focus (`/map/<type>/<key>`). The
+listings prerender EVERY item and hand them to a client component
+(`ToolsExplorer`, `CompanyDirectory`, `WorkflowsIndex`) that reads the URL
+with `useSearchParams` and narrows the list in the browser — so no page reads
+`searchParams` on the server and every filter permutation is instant.
+Filters and search are still links and GET forms: the URL is the state. A
+URL whose only job is to redirect is a route handler (`/tools/[handle]`),
+with a relative `Location` so it prerenders too. Internal navigation is
+always `next/link`, which prefetches on viewport and on hover.
 
 **Loaders** (`lib/catalog/loaders.ts`) — every server-side read. Async by
 signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
@@ -57,10 +63,10 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 
 | Route | At build | Why |
 | --- | --- | --- |
-| `/companies/[handle]`, `/tools/[handle]/[name]`, `/workflows/[owner]/[name]` (+ `@N`) | fully static (`○`) | `generateStaticParams` + in-memory reads |
+| `/companies/[handle]`, `/tools/[handle]/[name]`, `/workflows/[name]` (+ `@N`), `/map/[...focus]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
 | `/api/markdown/[...path]` — every file, every current pin, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/`, `/submit` | static | no request-time input |
-| `/tools`, `/companies`, `/workflows`, `/map` | partial (`◐`) | they read `searchParams`; the list streams from the in-memory catalog |
+| `/tools`, `/companies`, `/workflows`, `/map` | fully static (`○`) | every item is prerendered into the page; a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
 answers with a real 308 or a 404. `dynamicParams`, `dynamic` and
@@ -68,7 +74,9 @@ answers with a real 308 or a 404. `dynamicParams`, `dynamic` and
 
 ## Search v1 (`lib/catalog/search.ts`)
 
-In memory over the built catalog. The GRAMMAR is `lib/catalog/query.ts`
+Pure and browser-safe, over the items a listing prerenders (the list rows
+plus `searchText`); the same functions run in the tests and in the client
+components. The GRAMMAR is `lib/catalog/query.ts`
 (words + `namespace:slug` chips; OR within a namespace, AND across; partial
 chip completion; the canonical URL) and is shared with the search box. The
 EXECUTION: every word must start a token of the entity's search text (a hit

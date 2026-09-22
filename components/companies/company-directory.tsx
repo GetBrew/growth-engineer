@@ -1,19 +1,16 @@
+'use client'
+
+import { useSearchParams } from 'next/navigation'
 import { CompanyRow } from '@/components/catalog/cards'
 import { CatalogSearch } from '@/components/catalog/catalog-search'
 import { CategorySection } from '@/components/catalog/category-section'
 import { ListingToolbar } from '@/components/catalog/listing-toolbar'
 import { NoResults } from '@/components/catalog/no-results'
 import {
-  loadActiveTags,
-  loadCompanies,
-  searchCompanies,
-} from '@/lib/catalog/loaders'
-import { firstParam } from '@/lib/catalog/query'
-
-export type CompaniesSearchParams = Promise<{
-  q?: string | Array<string>
-  category?: string | Array<string>
-}>
+  type CompanySearchItem,
+  searchCompanyItems,
+} from '@/lib/catalog/search'
+import type { TagChip } from '@/lib/catalog/types'
 
 /** `/companies`, `/companies?category=crm&q=clay`: the URL is the filter. */
 function companiesHref(q: string, category: string): string {
@@ -30,26 +27,24 @@ function companiesHref(q: string, category: string): string {
 
 /**
  * The companies directory: category pills and search, then companies grouped
- * by category. Reads the URL, so it renders inside the page's Suspense.
+ * by category. The page prerenders every company; this reads the URL and
+ * narrows the list in the browser, so the page stays static.
  */
-export async function CompanyDirectory({
-  searchParams,
+export function CompanyDirectory({
+  companies,
+  categories,
 }: {
-  searchParams: CompaniesSearchParams
+  companies: ReadonlyArray<CompanySearchItem>
+  categories: ReadonlyArray<TagChip>
 }) {
-  const params = await searchParams
-  const q = firstParam(params.q).trim()
-  const category = firstParam(params.category).trim()
-  const [rows, tags] = await Promise.all([
-    q
-      ? searchCompanies(q, category || undefined)
-      : loadCompanies(200, category || undefined),
-    loadActiveTags(),
-  ])
-  const categories = tags.filter(
-    (tag) => tag.namespace === 'category' && tag.counts.companies > 0
-  )
-  const sections = new Map<string, Array<(typeof rows)[number]>>()
+  const searchParams = useSearchParams()
+  const q = (searchParams.get('q') ?? '').trim()
+  const category = (searchParams.get('category') ?? '').trim()
+  const rows = searchCompanyItems(companies, {
+    q,
+    ...(category ? { category } : {}),
+  })
+  const sections = new Map<string, Array<CompanySearchItem>>()
   for (const row of rows) {
     const label = row.category?.label ?? 'Other'
     sections.set(label, [...(sections.get(label) ?? []), row])

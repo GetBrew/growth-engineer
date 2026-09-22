@@ -1,3 +1,6 @@
+'use client'
+
+import { useSearchParams } from 'next/navigation'
 import { CatalogSearch } from '@/components/catalog/catalog-search'
 import { ListingToolbar } from '@/components/catalog/listing-toolbar'
 import { NoResults } from '@/components/catalog/no-results'
@@ -5,32 +8,25 @@ import { SectionHeading } from '@/components/catalog/primitives'
 import type { FilterOption } from '@/components/filters/types'
 import { MaskIcon } from '@/components/site/mask-icon'
 import {
-  loadActiveTags,
-  loadWorkflows,
-  searchWorkflows,
-} from '@/lib/catalog/loaders'
-import { firstParam } from '@/lib/catalog/query'
+  searchWorkflowItems,
+  type WorkflowSearchItem,
+} from '@/lib/catalog/search'
+import type { TagChip } from '@/lib/catalog/types'
 import { WorkflowRow } from './workflow-row'
 
 /**
  * The workflows index. THERE IS ONE KIND OF WORKFLOW: a growth hack is a
  * workflow with one tool, same file, same list — so the only axes here are
- * the sort, a tag and the search text, and every combination is a URL.
+ * the sort, a tag and the search text, and every combination is a URL. The
+ * page prerenders every workflow; this narrows them in the browser.
  */
 
 type Sort = 'featured' | 'new'
-type Tag = { key: string; label: string; counts: { workflows: number } }
 
 const BASE = '/workflows'
 
-export type WorkflowsSearchParams = Promise<{
-  sort?: string | Array<string>
-  tag?: string | Array<string>
-  q?: string | Array<string>
-}>
-
 /** `new`, or featured — which is also where the old `top`/`trending` URLs land. */
-function parseSort(value: string): Sort {
+function parseSort(value: string | null): Sort {
   return value === 'new' ? 'new' : 'featured'
 }
 
@@ -50,7 +46,7 @@ function href(sort: Sort, q: string, tag?: string): string {
 }
 
 function viewFilters(
-  tags: ReadonlyArray<Tag>,
+  tags: ReadonlyArray<TagChip>,
   sort: Sort,
   q: string,
   tag: string
@@ -63,25 +59,17 @@ function viewFilters(
       active: sort === 'new',
     },
   ]
-  const tagOptions: Array<FilterOption> = tags
-    .filter((entry) => entry.counts.workflows > 0)
-    .map((entry) => ({
-      key: entry.key,
-      label: entry.label,
-      count: entry.counts.workflows,
-      href: href(sort, q, entry.key),
-      active: tag === entry.key,
-    }))
+  const tagOptions: Array<FilterOption> = tags.map((entry) => ({
+    key: entry.key,
+    label: entry.label,
+    count: entry.counts.workflows,
+    href: href(sort, q, entry.key),
+    active: tag === entry.key,
+  }))
   return {
     all: { href: BASE, active: sort === 'featured' && !q && !tag },
     options: [...orders, ...tagOptions],
   }
-}
-
-function workflowRows(q: string, sort: Sort, tag: string) {
-  return q
-    ? searchWorkflows(q, sort, tag || undefined)
-    : loadWorkflows(sort, 30, tag || undefined)
 }
 
 function emptyCopy(
@@ -106,20 +94,23 @@ function emptyCopy(
   }
 }
 
-export async function WorkflowsIndex({
-  searchParams,
+export function WorkflowsIndex({
+  workflows,
+  tags,
 }: {
-  searchParams: WorkflowsSearchParams
+  workflows: ReadonlyArray<WorkflowSearchItem>
+  /** The curated tags with at least one workflow. */
+  tags: ReadonlyArray<TagChip>
 }) {
-  const params = await searchParams
-  const sort = parseSort(firstParam(params.sort))
-  const tag = firstParam(params.tag).trim()
-  const q = firstParam(params.q).trim()
-
-  const [rows, tags] = await Promise.all([
-    workflowRows(q, sort, tag),
-    loadActiveTags(),
-  ])
+  const searchParams = useSearchParams()
+  const sort = parseSort(searchParams.get('sort'))
+  const tag = (searchParams.get('tag') ?? '').trim()
+  const q = (searchParams.get('q') ?? '').trim()
+  const rows = searchWorkflowItems(workflows, {
+    q,
+    sort,
+    ...(tag ? { tag } : {}),
+  })
   const hasFilters = Boolean(q || tag || sort !== 'featured')
   const empty = emptyCopy(q, hasFilters)
 

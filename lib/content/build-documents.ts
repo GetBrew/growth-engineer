@@ -23,6 +23,7 @@ export type DocumentInputs = {
   tools: ReadonlyMap<string, Tool>
   workflows: ReadonlyMap<string, Workflow>
   toolsByCompany: ReadonlyMap<string, ReadonlyArray<string>>
+  workflowsByTool: ReadonlyMap<string, ReadonlyArray<string>>
 }
 
 export function buildDocuments(
@@ -48,6 +49,7 @@ export function buildDocuments(
         key: tool.key,
         name: tool.name,
         companyKey: tool.companyKey,
+        workflows: inputs.workflowsByTool.get(tool.key) ?? [],
         summary: tool.summary,
         ...(tool.description === undefined
           ? {}
@@ -76,6 +78,7 @@ export function buildDocuments(
         key: workflow.key,
         version: workflow.version,
         title: workflow.title,
+        author: workflow.author,
         tools: tools.map((tool) => ({
           key: tool.key,
           name: tool.name,

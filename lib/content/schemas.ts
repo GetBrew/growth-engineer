@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import {
+  isValidGithubLogin,
   isValidHandle,
   isValidKeyPart,
   isValidOwnedKey,
@@ -31,6 +32,10 @@ const handle = text.refine(isValidHandle, {
 })
 const ownedKey = text.refine(isValidOwnedKey, {
   message: 'must be `<handle>/<slug>`, like `clay/enrich-contacts`',
+})
+const githubLogin = text.refine(isValidGithubLogin, {
+  message:
+    'must be a GitHub login: letters, digits and single hyphens, up to 39 characters',
 })
 const tagKey = text.refine(isValidTagKey, {
   message: 'must be `<namespace>:<slug>`, like `motion:outbound`',
@@ -165,6 +170,8 @@ export const toolSchema = z.strictObject({
 export const workflowSchema = z.strictObject({
   title: text,
   summary: text,
+  /** The GitHub login of the person who wrote it. */
+  author: githubLogin,
   version: z.int().min(1).default(1),
   tags: z.array(tagKey).min(1, 'give the workflow at least one tag'),
   inputs: z
@@ -198,7 +205,7 @@ export const workflowSchema = z.strictObject({
     ),
   doneWhen: z.array(text).min(1, 'say when the job is done'),
   featured: z.int().min(1).optional(),
-  aliases: z.array(ownedKey).default([]),
+  aliases: z.array(keyPart).default([]),
   status: status.default('published'),
   updated: isoDate,
 })

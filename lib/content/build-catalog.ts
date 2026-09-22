@@ -291,16 +291,23 @@ function assemble(entities: {
   const toolsByCompany = groupKeys([...tools.values()].sort(byKey), (tool) => [
     tool.companyKey,
   ])
+  const workflowsByTool = groupKeys(featured, (workflow) => workflow.toolKeys)
   tagCounts(tags, companies.values(), tools.values(), workflows.values())
   return {
     companies,
     tools,
     workflows,
     tags,
-    documents: buildDocuments({ companies, tools, workflows, toolsByCompany }),
+    documents: buildDocuments({
+      companies,
+      tools,
+      workflows,
+      toolsByCompany,
+      workflowsByTool,
+    }),
     aliases,
     toolsByCompany,
-    workflowsByTool: groupKeys(featured, (workflow) => workflow.toolKeys),
+    workflowsByTool,
     workflowsByCompany: groupKeys(featured, (workflow) => [
       ...new Set(
         workflow.toolKeys.map((key) => tools.get(key)?.companyKey ?? '')

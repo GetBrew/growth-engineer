@@ -54,12 +54,19 @@ layout shift and feels like a bug.
 
 ## 2. Instant Navigations — the prefetch
 
-`partialPrefetching: true` makes `<Link>` prefetch one reusable App Shell per
-route rather than a full payload per visible link. On a page with twenty links
-that is one request instead of twenty.
+Every internal link is `next/link`, never a raw `<a href="/…">`. In
+production a `<Link>` prefetches when it enters the viewport and again on
+hover (`onMouseEnter`) or touch, and because every page here is prerendered
+the prefetch IS the whole page — a click swaps in cached HTML/RSC with no
+server work. `partialPrefetching: true` makes the viewport prefetch one
+reusable App Shell per route rather than a full payload per visible link, so
+twenty links cost one request.
 
-Per-link `prefetch={true}` still opts a specific destination into
-URL-specific prefetch — use it for the one link you know they will click.
+Listings never read the URL on the server: they prerender every item and a
+client component narrows the list from `useSearchParams`, so `/tools?has=mcp`
+is the same static page as `/tools` with a different filter applied in the
+browser. The map is one prerendered page per node. `pnpm build` prints `○`
+for every route except the not-found and the on-demand fallbacks.
 
 ## 3. The bundle budget — the ratchet
 

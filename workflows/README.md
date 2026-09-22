@@ -1,17 +1,19 @@
 # workflows/
 
-One file per workflow, at `workflows/<owner>/<name>.md`. The path is the key
-and the URL: `workflows/brew/funding-signal-outbound.md` is
-`brew/funding-signal-outbound` at `/workflows/brew/funding-signal-outbound`.
+One file per workflow, flat: `workflows/<name>.md`. **No folders.** The file
+name is the key and the URL: `workflows/funding-signal-outbound.md` is
+`funding-signal-outbound` at `/workflows/funding-signal-outbound`.
 
-- **owner** is a handle: a company from `companies/`, or your own handle if
-  you are publishing as a person. Lowercase letters, digits and hyphens.
-- **name** describes the result, in slug form. Keys never change once
-  published; to rename, add the old name under `aliases`.
+**Workflows are by people, not companies.** The `author` in the header is
+your GitHub login; the page links to your profile and shows your avatar.
+Keys never change once published; to rename, add the old name under
+`aliases`.
 
 A workflow is **several tools in order with the instructions that reach a
-result**. A growth hack is a workflow — there is no second kind. A workflow
-that stays inside one company still names one function per step.
+result**. A growth hack is a workflow — there is no second kind. Every step
+names one published tool (`companies/<handle>/tools/<slug>.md`), so every
+workflow is built from defined tools, and every tool page lists the
+workflows that use it — the build links both directions.
 
 ## The file
 
@@ -19,6 +21,7 @@ that stays inside one company still names one function per step.
 ---
 title: Turn fresh funding news into qualified outbound
 summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
+author: jdoe                                # your GitHub login
 version: 1
 tags: [motion:outbound, channel:email, capability:enrich-contacts]
 inputs:
@@ -49,6 +52,7 @@ Optional notes for the agent, rendered as a "Notes" section in the file.
 | --- | --- | --- |
 | `title` | yes | Phrased as the result. |
 | `summary` | yes | One sentence. |
+| `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
 | `tags` | yes | At least one `namespace:slug` from `tags/` (motion, channel, capability, category, fit). `agent:*` and `has:*` are computed, never listed. |
 | `steps` | yes | 1–10. Each names a `tool` that exists and is published; `via` must be a way in that tool has. |
 | `doneWhen` | yes | At least one check. |
@@ -56,7 +60,7 @@ Optional notes for the agent, rendered as a "Notes" section in the file.
 | `inputs` | no | Named, never templated: the file tells the agent to ask for `target_segment`. |
 | `version` | no | Integer, default 1. Bump it when the steps change materially. |
 | `featured` | no | Editorial rank on `/workflows`; unranked workflows follow by date. |
-| `aliases`, `status` | no | Old keys to redirect; `published` (default) or `deprecated`. |
+| `aliases`, `status` | no | Old names to redirect; `published` (default) or `deprecated`. |
 
 ## Writing good steps
 
@@ -71,5 +75,5 @@ Optional notes for the agent, rendered as a "Notes" section in the file.
 
 ```bash
 pnpm content:check   # every step resolves, every tag exists, the file renders within its caps
-pnpm dev             # then open /workflows/<owner>/<name>
+pnpm dev             # then open /workflows/<name>
 ```

@@ -7,7 +7,7 @@
  *
  *   company    clay
  *   tool       clay/clay                  a company's only tool uses its product name
- *   workflow   brew/intent-to-meeting     @3 pins a version; hacks use the same format
+ *   workflow   intent-to-meeting          @3 pins a version; the author (a GitHub login) is in the file
  *   tag        capability:enrich-contacts
  *
  * Keys never change after publishing. A rename lists the old key under
@@ -43,6 +43,7 @@ export const DERIVED_TAG_NAMESPACES: ReadonlySet<TagNamespace> = new Set([
  * never starting or ending with a hyphen. Readable in a prompt, safe in a URL.
  */
 const KEY_PART = /^[a-z0-9][a-z0-9-]{0,37}[a-z0-9]$/
+const GITHUB_LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/
 
 /**
  * Handles companies, teams and users may never take: every top-level route
@@ -102,9 +103,29 @@ export function isValidTagKey(value: string): boolean {
   )
 }
 
-/** A key of the given type: a handle for a company, `owner/name` otherwise. */
+/**
+ * A GitHub login, as GitHub defines it: alphanumerics and single hyphens,
+ * up to 39 characters, never starting or ending with a hyphen. A workflow's
+ * author; not a path, so case is kept as written.
+ */
+export function isValidGithubLogin(value: string): boolean {
+  return GITHUB_LOGIN.test(value)
+}
+
+/**
+ * A key of the given type: a handle for a company, `company/slug` for a tool,
+ * one part for a workflow (`intent-to-meeting` — the file name under
+ * workflows/; who wrote it lives in the file, not the key).
+ */
 function isValidKey(type: EntityType, value: string): boolean {
-  return type === 'company' ? isValidHandle(value) : isValidOwnedKey(value)
+  switch (type) {
+    case 'company':
+      return isValidHandle(value)
+    case 'tool':
+      return isValidOwnedKey(value)
+    default:
+      return isValidKeyPart(value)
+  }
 }
 
 const VERSION_SUFFIX = /^(.+)@(\d+)$/

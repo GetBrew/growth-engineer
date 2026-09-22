@@ -34,6 +34,8 @@ export type ToolFileInput = {
   key: string
   name: string
   companyKey: string
+  /** Keys of the workflows whose steps use this tool — the file links back. */
+  workflows: ReadonlyArray<string>
   summary: string
   description?: string
   access: ReadonlyArray<Access>
@@ -58,6 +60,8 @@ export type WorkflowFileInput = {
   key: string
   version: number
   title: string
+  /** The GitHub login of whoever wrote it. */
+  author: string
   tools: ReadonlyArray<WorkflowFileTool>
   /** Tag keys, e.g. `motion:outbound`. */
   tags: ReadonlyArray<string>
@@ -133,6 +137,7 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     `ref: ${formatRef('tool', tool.key)}`,
     `name: ${tool.name}`,
     `company: ${formatRef('company', tool.companyKey)}`,
+    `workflows: ${list(tool.workflows.map((key) => formatRef('workflow', key)))}`,
     `access: ${list(accessTypes)}`,
     `agent: ${tool.agent.level}`,
     `agent_note: ${agentNote(tool.agent.reason)}`,
@@ -277,6 +282,7 @@ export function renderWorkflowDocument(
     '---',
     `ref: ${formatRef('workflow', workflow.key, workflow.version)}`,
     `title: ${workflow.title}`,
+    `author: ${workflow.author}`,
     `tools: ${list(usedTools.map((tool) => formatRef('tool', tool.key)))}`,
     `tags: ${list(workflow.tags)}`,
     `updated: ${isoDate(workflow.updatedAt)}`,

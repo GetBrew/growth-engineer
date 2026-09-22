@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest'
 import {
   filePathToRef,
   formatRef,
+  isValidGithubLogin,
   isValidHandle,
   isValidOwnedKey,
   isValidTagKey,
@@ -42,6 +43,23 @@ describe('key grammar', () => {
     expect(isValidOwnedKey('clay')).toBe(false)
     expect(isValidOwnedKey('clay/a/b')).toBe(false)
     expect(isValidOwnedKey('tools/clay')).toBe(false) // reserved owner
+  })
+
+  test('a workflow author is a GitHub login', () => {
+    for (const login of ['jdoe', 'a', 'thedogwiththedataonit', 'Jane-Doe1']) {
+      expect(isValidGithubLogin(login), login).toBe(true)
+    }
+    for (const login of [
+      '',
+      '-jdoe',
+      'jdoe-',
+      'j--doe',
+      'j doe',
+      'j_doe',
+      'x'.repeat(40),
+    ]) {
+      expect(isValidGithubLogin(login), login).toBe(false)
+    }
   })
 
   test('tag keys are namespace:slug within the managed namespaces', () => {
@@ -90,13 +108,13 @@ describe('refs', () => {
       key: 'clay/clay',
       version: undefined,
     })
-    expect(parseRef('workflow:brew/intent-to-meeting@3')).toEqual({
+    expect(parseRef('workflow:intent-to-meeting@3')).toEqual({
       type: 'workflow',
-      key: 'brew/intent-to-meeting',
+      key: 'intent-to-meeting',
       version: 3,
     })
-    expect(formatRef('workflow', 'brew/intent-to-meeting', 3)).toBe(
-      'workflow:brew/intent-to-meeting@3'
+    expect(formatRef('workflow', 'intent-to-meeting', 3)).toBe(
+      'workflow:intent-to-meeting@3'
     )
     expect(formatRef('company', 'clay')).toBe('company:clay')
   })
@@ -125,11 +143,9 @@ describe('refs', () => {
   })
 
   test('paths and files', () => {
-    const ref = parseRef('workflow:brew/intent-to-meeting@3')
-    expect(ref && refToPath(ref)).toBe('/workflows/brew/intent-to-meeting@3')
-    expect(ref && refToFilePath(ref)).toBe(
-      '/workflows/brew/intent-to-meeting@3.md'
-    )
+    const ref = parseRef('workflow:intent-to-meeting@3')
+    expect(ref && refToPath(ref)).toBe('/workflows/intent-to-meeting@3')
+    expect(ref && refToFilePath(ref)).toBe('/workflows/intent-to-meeting@3.md')
     expect(filePathToRef('/tools/clay/clay.md')).toEqual({
       type: 'tool',
       key: 'clay/clay',
@@ -140,9 +156,12 @@ describe('refs', () => {
       key: 'clay',
       version: undefined,
     })
-    expect(filePathToRef('/workflows/brew/xy@2.md')).toEqual({
+    // A workflow key is ONE part: the author lives in the file, not the path.
+    expect(filePathToRef('/workflows/brew/xy@2.md')).toBeNull()
+    expect(parseRef('workflow:brew/xy')).toBeNull()
+    expect(filePathToRef('/workflows/xy@2.md')).toEqual({
       type: 'workflow',
-      key: 'brew/xy',
+      key: 'xy',
       version: 2,
     })
     expect(filePathToRef('/tools/clay/clay')).toBeNull()

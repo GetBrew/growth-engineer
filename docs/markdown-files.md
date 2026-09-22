@@ -24,7 +24,7 @@ not the product and they do not look like it.
 
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
-| Header | `ref`, `name`, `company`, `access`, `agent`, `agent_note`, `updated` | `ref` (with `@N`), `title`, `tools`, `tags`, `updated` |
+| Header | `ref`, `name`, `company`, `workflows`, `access`, `agent`, `agent_note`, `updated` | `ref` (with `@N`), `title`, `author`, `tools`, `tags`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
@@ -34,15 +34,17 @@ not the product and they do not look like it.
 | Rules | Always | Always |
 
 `agent_note` is the tool's level reason without its prefix ("Official remote
-MCP with self-serve OAuth."). `does` lists capability slugs. `access` lists
-the ways in, in setup order.
+MCP with self-serve OAuth."). `access` lists the ways in, in setup order.
+`workflows` lists every workflow whose steps use the tool, and `tools` in a
+workflow file lists the tools it uses: the relationship is in both files.
+`author` is the workflow author's GitHub login.
 
 ## Where files are served
 
 | Where | Example |
 | --- | --- |
 | Copy prompt button | On every tool and workflow page |
-| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/brew/intent-to-meeting.md`, `/workflows/brew/intent-to-meeting@3.md`, `/companies/clay.md` |
+| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/intent-to-meeting.md`, `/workflows/intent-to-meeting@3.md`, `/companies/clay.md` |
 | Any page, when asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file |
 | MCP (later) | `get` with a ref returns the file |
@@ -69,9 +71,10 @@ byte-identical files (`tests/content.test.ts` pins this).
 
 ## Publishing a workflow
 
-1. Write `workflows/<owner>/<name>.md`: a title phrased as the result, the
-   inputs, the steps (pick a tool, write what to do), the checks that mean it
-   is done ([`workflows/README.md`](../workflows/README.md)).
+1. Write `workflows/<name>.md` with your GitHub login as `author`: a title
+   phrased as the result, the inputs, the steps (pick a tool, write what to
+   do), the checks that mean it is done
+   ([`workflows/README.md`](../workflows/README.md)).
 2. `pnpm content:check` renders the exact file and lists every problem with
    its path; `pnpm dev` shows the page.
 3. Open a pull request. CI runs the same checks; a maintainer reviews the

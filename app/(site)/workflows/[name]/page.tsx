@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { accessTypeLabels } from '@/components/catalog/badges'
+import { CatalogList, toolListItem } from '@/components/catalog/catalog-list'
 import {
   DETAIL_DATE,
   DetailByline,
@@ -17,30 +18,23 @@ import { ShareButton } from '@/components/document/share-button'
 import { WorkflowDetailSkeleton } from '@/components/skeletons/workflow-detail-skeleton'
 import { HowItRuns } from '@/components/workflows/how-it-runs'
 import {
-  isValidOwnedKey,
+  isValidKeyPart,
   refToFilePath,
   refToPath,
   splitVersionedKey,
 } from '@/lib/catalog/keys'
-import {
-  loadCompany,
-  loadDocument,
-  loadWorkflow,
-  resolveAlias,
-} from '@/lib/catalog/loaders'
+import { loadDocument, loadWorkflow, resolveAlias } from '@/lib/catalog/loaders'
 import { workflowParams } from '@/lib/catalog/static-params'
 
-type Params = Promise<{ owner: string; name: string }>
+type Params = Promise<{ name: string }>
 
 const PANEL_HEADING = 'type-section'
 
+/** `/workflows/<name>` or `/workflows/<name>@<version>`: one part, no owner. */
 async function resolveParams(params: Params) {
-  const { owner, name } = await params
-  const { key: unversioned, version } = splitVersionedKey(
-    decodeURIComponent(name)
-  )
-  const key = `${owner}/${unversioned}`
-  return isValidOwnedKey(key) ? { key, version } : null
+  const { name } = await params
+  const { key, version } = splitVersionedKey(decodeURIComponent(name))
+  return isValidKeyPart(key) ? { key, version } : null
 }
 
 export function generateStaticParams() {
@@ -84,11 +78,9 @@ async function WorkflowDetail({ params }: { params: Params }) {
   if (!resolved) {
     notFound()
   }
-  const owner = resolved.key.split('/')[0] ?? ''
-  const [result, document, ownerCompany] = await Promise.all([
+  const [result, document] = await Promise.all([
     loadWorkflow(resolved.key, resolved.version),
     loadDocument('workflow', resolved.key),
-    loadCompany(owner),
   ])
   if (!result) {
     // An old key answers with a real redirect; an unknown one is a 404.
@@ -104,7 +96,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
     notFound()
   }
 
-  const { workflow, version, tools, tags } = result
+  const { workflow, version, tools, toolItems, tags } = result
   const ref = {
     type: 'workflow' as const,
     key: workflow.key,
@@ -113,14 +105,13 @@ async function WorkflowDetail({ params }: { params: Params }) {
   const filePath = refToFilePath(ref)
   // The file's date: the newest of the workflow and the tools it uses.
   const dates = [`Updated ${DETAIL_DATE.format(version.updatedAt)}`]
-  // The owner is the handle in the key; a company handle links to its page.
-  const author = ownerCompany
-    ? {
-        name: ownerCompany.name,
-        logo: ownerCompany.logo?.url,
-        href: `/companies/${owner}`,
-      }
-    : { name: owner, logo: undefined, href: undefined }
+  // Workflows are by people: the author is a GitHub login, and GitHub serves
+  // the avatar for it, so nothing here is invented.
+  const author = {
+    name: workflow.author,
+    avatar: `https://github.com/${encodeURIComponent(workflow.author)}.png?size=96`,
+    href: `https://github.com/${encodeURIComponent(workflow.author)}`,
+  }
   const available = accessTypeLabels(
     tools.flatMap(({ tool }) => tool.access.map((entry) => entry.type))
   )
@@ -142,20 +133,16 @@ async function WorkflowDetail({ params }: { params: Params }) {
         }
         available={available}
         byline={
-          <DetailByline
-            avatars={[{ name: author.name, src: author.logo, logo: true }]}
-          >
+          <DetailByline avatars={[{ name: author.name, src: author.avatar }]}>
             by{' '}
-            {author.href ? (
-              <Link
-                className="text-foreground hover:underline"
-                href={author.href}
-              >
-                {author.name}
-              </Link>
-            ) : (
-              <span className="text-foreground">{author.name}</span>
-            )}
+            <a
+              className="text-foreground hover:underline"
+              href={author.href}
+              rel="noreferrer"
+              target="_blank"
+            >
+              @{author.name}
+            </a>
           </DetailByline>
         }
         dates={dates}
@@ -184,6 +171,17 @@ async function WorkflowDetail({ params }: { params: Params }) {
                 The file for this workflow has not been rendered yet.
               </p>
             )}
+          </section>
+          <section className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+              <h2 className={PANEL_HEADING}>Built from</h2>
+              <p className="type-body">
+                {toolItems.length} {toolItems.length === 1 ? 'tool' : 'tools'},
+                each one function of one company. Every tool page lists the
+                workflows that use it.
+              </p>
+            </div>
+            <CatalogList items={toolItems.map(toolListItem)} />
           </section>
         </div>
         <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
