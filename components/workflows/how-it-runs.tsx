@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { EntityLogo } from '@/components/catalog/entity-logo'
-import type { Doc } from '@/convex/_generated/dataModel'
+import type { WorkflowStep as Step } from '@/lib/catalog/types'
 
-type Step = Doc<'workflowVersions'>['steps'][number]
 type StepTool = { key: string; name: string; logoUrl?: string }
 
 const VIA_LABEL = { mcp: 'MCP', cli: 'CLI', api: 'API' } as const

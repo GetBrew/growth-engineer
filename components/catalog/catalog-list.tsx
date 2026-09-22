@@ -106,7 +106,7 @@ export function workflowListItem({
 }: WorkflowRowData): CatalogListItem {
   const lead = tools[0]
   return {
-    id: workflow._id,
+    id: workflow.key,
     href: `/workflows/${workflow.key}`,
     title: workflow.title,
     logo: {
@@ -122,7 +122,7 @@ export function workflowListItem({
 
 export function toolListItem({ tool, company }: ToolCardData): CatalogListItem {
   return {
-    id: tool._id,
+    id: tool.key,
     href: `/tools/${tool.key}`,
     title: tool.name,
     logo: { name: company.name, logoUrl: company.logoUrl },

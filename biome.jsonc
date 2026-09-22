@@ -30,10 +30,7 @@
   "files": {
     "ignoreUnknown": true,
     "includes": [
-      // Generated code: never lint, never format. The freshness gate
-      // (`pnpm convex:codegen:check`) diffs it, so one formatter touch is a
-      // red CI run on a file nobody edited.
-      "!!**/_generated",
+      // Generated code: never lint, never format.
       "!!**/*.gen.*",
       "!!**/pnpm-lock.yaml",
       // Vendored agent skill: the same source also lives in
@@ -69,7 +66,7 @@
     "actions": {
       "source": {
         "organizeImports": "on",
-        // Key/property order is OBSERVABLE here: Convex validator definitions,
+        // Key/property order is OBSERVABLE here: rendered file headers,
         // JSON.stringify snapshots, anything content-hashed. Alphabetical
         // re-sorting is a behavior risk, not a style preference.
         "useSortedKeys": "off",
@@ -86,18 +83,6 @@
   "linter": {
     "rules": {
       "style": {
-        "noRestrictedImports": {
-          "level": "error",
-          "options": {
-            "paths": {
-              // Server-side Convex calls go through the gateway, which injects
-              // the service token and the acting user by construction. A raw
-              // client is how a call ends up unauthenticated at runtime with a
-              // green typecheck. The gateway itself is exempt via an override.
-              "convex/nextjs": "Server-side Convex calls go through lib/convex/gateway.ts (tenantQuery / tenantMutation / systemQuery / systemMutation) — it injects the caller identity the Convex guards verify."
-            }
-          }
-        },
         // `Array<T>` over `T[]`, one spelling, decided once.
         "useConsistentArrayType": {
           "level": "error",
@@ -105,9 +90,8 @@
         },
         // `interface` and `type` are both used deliberately.
         "useConsistentTypeDefinitions": "off",
-        // convex/ REQUIRES underscore filenames (the CLI rejects hyphens in
-        // function paths) while app/ and components/ are kebab-case — no
-        // single convention can hold repo-wide.
+        // Next's bracketed route segments (`[handle]`, `[...path]`) and the
+        // kebab-case components share one tree; no single convention holds.
         "useFilenamingConvention": "off",
         // THE LOAD-BEARING LINE CAP. A file at 400 lines is a file with more
         // than one reason to change. Biome's count excludes comment-only
@@ -133,7 +117,8 @@
         // is the gate that keeps them out, and it is why every program mirrors
         // the path map (Biome reads the nearest tsconfig.json only).
         "noImportCycles": "error",
-        // Handler signatures across Next and Convex are async by interface.
+        // Next's handler and loader signatures are async by interface; the
+        // catalog loaders resolve in memory on purpose (lib/catalog/loaders.ts).
         "useAwait": "off",
         // `== null` is the deliberate null|undefined check.
         "noEqualsToNull": "off"
@@ -153,51 +138,13 @@
 
   "overrides": [
     {
-      // The schema is the ONE table registry the design doc reads top to
-      // bottom (docs/data-model.md). The line cap exists to catch a module
-      // with more than one reason to change; this one has exactly one.
-      "includes": ["convex/schema.ts"],
-      "linter": {
-        "rules": {
-          "style": { "noExcessiveLinesPerFile": "off" }
-        }
-      }
-    },
-    {
-      // The seed: data tables plus one long, deliberately sequential mutation.
-      // Inside a Convex transaction parallel awaits buy nothing, and the ORDER
-      // of the writes (tags before taggings, tools before workflows) is the
-      // logic — so the loop rules and the complexity budget measure the wrong
-      // thing here.
-      "includes": ["convex/seed/**"],
-      "linter": {
-        "rules": {
-          "style": { "noExcessiveLinesPerFile": "off" },
-          "performance": { "noAwaitInLoops": "off" },
-          "complexity": { "noExcessiveCognitiveComplexity": "off" }
-        }
-      }
-    },
-    {
-      // The gateway is the one module allowed to construct a raw Convex
-      // client — that is what makes the ban above enforceable everywhere else.
-      "includes": ["lib/convex/gateway.ts"],
-      "linter": {
-        "rules": {
-          "style": { "noRestrictedImports": "off" }
-        }
-      }
-    },
-    {
-      // Tests and scripts import the raw client on purpose (no request context
-      // to derive an identity from) and routinely run long. They are also cold
-      // paths by definition, so two performance rules that are worth enforcing
-      // in the app are pure noise here.
-      "includes": ["tests/**", "scripts/**", "convex/**/*.test.ts"],
+      // Tests and scripts routinely run long and are cold paths by definition,
+      // so two performance rules that are worth enforcing in the app are pure
+      // noise here.
+      "includes": ["tests/**", "scripts/**"],
       "linter": {
         "rules": {
           "style": {
-            "noRestrictedImports": "off",
             "noExcessiveLinesPerFile": "off"
           },
           "performance": {

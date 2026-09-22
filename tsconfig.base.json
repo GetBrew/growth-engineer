@@ -1,9 +1,8 @@
 {
   // THE ONE compiler-options + path-alias source for every TypeScript program
-  // in the repo. `tsconfig.json` (app + Next), `tests/tsconfig.json`,
-  // `scripts/tsconfig.json`, `convex/tsconfig.json` and
-  // `convex/tsconfig.test.json` all extend this file, and the Vitest configs
-  // load this `paths` map through `vite-tsconfig-paths` — so an alias is added
+  // in the repo. `tsconfig.json` (app + Next), `tests/tsconfig.json` and
+  // `scripts/tsconfig.json` all extend this file, and the Vitest config loads
+  // this `paths` map through `vite-tsconfig-paths` — so an alias is added
   // HERE, once.
   //
   // Two tools force the map to be MIRRORED into each program rather than
@@ -36,8 +35,7 @@
     // change; turning it on after 50k lines is a migration.
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@/*": ["./*"],
-      "@convex/*": ["./convex/*"]
+      "@/*": ["./*"]
     }
   }
 }

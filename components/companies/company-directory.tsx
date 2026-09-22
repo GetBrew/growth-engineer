@@ -1,4 +1,3 @@
-import { connection } from 'next/server'
 import { CompanyRow } from '@/components/catalog/cards'
 import { CatalogSearch } from '@/components/catalog/catalog-search'
 import { CategorySection } from '@/components/catalog/category-section'
@@ -41,7 +40,6 @@ export async function CompanyDirectory({
   const params = await searchParams
   const q = firstParam(params.q).trim()
   const category = firstParam(params.category).trim()
-  await connection()
   const [rows, tags] = await Promise.all([
     q
       ? searchCompanies(q, category || undefined)
@@ -106,7 +104,7 @@ export async function CompanyDirectory({
                   <CompanyRow
                     access={access.map((type) => type.toUpperCase())}
                     company={company}
-                    key={company._id}
+                    key={company.key}
                   />
                 ))}
               </CategorySection>

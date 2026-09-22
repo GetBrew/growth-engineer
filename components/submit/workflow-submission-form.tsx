@@ -69,6 +69,19 @@ export function WorkflowSubmissionForm() {
           width={32}
         />
         <h1 className="type-form-title mt-6">Submit a workflow or tool</h1>
+        <p className="type-body mt-3 text-subtle">
+          The catalog is open source: the fastest path is a pull request that
+          adds the file —{' '}
+          <a
+            className="text-foreground underline-offset-4 hover:underline"
+            href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
+            rel="noreferrer"
+            target="_blank"
+          >
+            how to contribute
+          </a>
+          . Or email it to us and we will open one for you.
+        </p>
       </header>
 
       <FieldGroup className="gap-4">

@@ -1,4 +1,3 @@
-import { isValidHandle } from '@convex/model/keys'
 import {
   Globe02Icon,
   Linkedin01Icon,
@@ -8,7 +7,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { connection } from 'next/server'
 import { Suspense } from 'react'
 import {
   CatalogList,
@@ -21,12 +19,14 @@ import { NoResults } from '@/components/catalog/no-results'
 import { Page } from '@/components/catalog/primitives'
 import { MaskIcon } from '@/components/site/mask-icon'
 import { CompanyDetailSkeleton } from '@/components/skeletons/company-detail-skeleton'
+import { isValidHandle } from '@/lib/catalog/keys'
 import {
   loadCompany,
   loadToolsByCompany,
   loadWorkflowsByCompany,
   resolveAlias,
 } from '@/lib/catalog/loaders'
+import { companyParams } from '@/lib/catalog/static-params'
 
 type Params = Promise<{ handle: string }>
 
@@ -34,6 +34,10 @@ const PANEL_HEADING = 'type-section'
 
 const SOCIAL =
   'focus-ring grid size-8 place-items-center rounded-full text-subtle transition-colors hover:bg-hover hover:text-foreground'
+
+export function generateStaticParams() {
+  return companyParams()
+}
 
 export async function generateMetadata({
   params,
@@ -67,12 +71,7 @@ async function CompanyDetail({ params }: { params: Params }) {
     loadWorkflowsByCompany(handle),
   ])
   if (!company) {
-    // `resolveAlias` is an UNCACHED read, and Next's prospective prerender
-    // walks this branch speculatively — where it reaches the Convex client and
-    // reports its `Math.random()` as an unstable value, dropping the route out
-    // of prerendering entirely. Saying plainly that the miss path is
-    // request-time keeps the hit path (the normal case) prerenderable.
-    await connection()
+    // An old key answers with a real redirect; an unknown one is a 404.
     const alias = await resolveAlias('company', handle)
     if (alias) {
       permanentRedirect(`/companies/${alias.key}`)
@@ -102,9 +101,19 @@ async function CompanyDetail({ params }: { params: Params }) {
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex flex-wrap items-center gap-1.5">
-            {company.tagline ? (
-              <p className="type-body max-w-xl">{company.tagline}</p>
-            ) : null}
+            {[
+              company.headquarters,
+              company.founded ? `Founded ${company.founded}` : undefined,
+            ]
+              .filter((fact): fact is string => Boolean(fact))
+              .map((fact) => (
+                <span
+                  className="type-meta flex h-6 items-center rounded-full border px-2.5"
+                  key={fact}
+                >
+                  {fact}
+                </span>
+              ))}
             {company.status === 'deprecated' ? (
               <span className="type-meta flex h-6 items-center rounded-full border border-foreground/20 bg-hover px-2.5 text-soft">
                 Deprecated
@@ -235,7 +244,6 @@ async function CompanyDetail({ params }: { params: Params }) {
                       items={tools.map((tool) =>
                         toolListItem({
                           tool: {
-                            _id: tool._id,
                             key: tool.key,
                             name: tool.name,
                             summary: tool.summary,

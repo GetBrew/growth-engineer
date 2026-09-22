@@ -1,4 +1,4 @@
-import { TAG_NAMESPACES, type TagNamespace } from '@convex/model/keys'
+import { TAG_NAMESPACES, type TagNamespace } from '@/lib/catalog/keys'
 
 /**
  * The search grammar, shared by the search box, the URL and (later) MCP

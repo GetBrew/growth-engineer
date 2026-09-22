@@ -1,4 +1,3 @@
-import { connection } from 'next/server'
 import {
   CatalogList,
   type CatalogListItem,
@@ -16,9 +15,8 @@ import { CatalogTabs } from './catalog-tabs'
 
 const PREVIEW = 5
 
-// fetches latest 5
+/** The three previews: five newest of each kind. */
 export async function HomeCatalog() {
-  await connection()
   const [workflows, tools, companies] = await Promise.all([
     loadWorkflows('new', PREVIEW),
     searchTools('', [], PREVIEW),
@@ -31,7 +29,7 @@ export async function HomeCatalog() {
 
   const companyItems: Array<CatalogListItem> = companies.map(
     ({ company, access }) => ({
-      id: company._id,
+      id: company.key,
       href: `/companies/${company.key}`,
       title: company.name,
       logo: {

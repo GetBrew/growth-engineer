@@ -4,17 +4,9 @@
   // lints, still gets refactored by hand, and is never run. knip finds the
   // files, exports and dependencies nothing reaches.
   //
-  // `exports` / `types` are WARNINGS on purpose, and the current list is a
-  // CLOSED SET, not noise. `systemQuery` / `systemMutation` lost their only
-  // caller with the auth provider's webhook, and they stay because
-  // lib/convex/gateway.ts is THE server transport: deleting the machine half
-  // means the next cron or webhook hand-rolls `fetchMutation` with a token,
-  // which is the exact mistake that file exists to prevent. `AppErrorCode` is
-  // the public type of the error payload. Everything else was deleted rather
-  // than shipped unused. If this list grows, delete the addition or use it.
-  //
-  // Unused FILES and unused DEPENDENCIES stay errors — those are never
-  // intentional.
+  // `exports` / `types` are WARNINGS on purpose: a shared component library
+  // (components/ui) exports more than the pages use today. Unused FILES and
+  // unused DEPENDENCIES stay errors — those are never intentional.
   "rules": {
     "exports": "warn",
     "types": "warn",
@@ -22,19 +14,9 @@
     "enumMembers": "warn"
   },
   // Entry points knip cannot infer on its own. Next's own files (next.config,
-  // proxy, app/**) and the Vitest configs are auto-detected — listing them
+  // proxy, app/**) and the Vitest config are auto-detected — listing them
   // again just makes the config lie as those conventions change.
-  //
-  // The `!` suffix on the Convex glob marks those modules as entry points whose
-  // EXPORTS are also entry points: a Convex function is called by name over the
-  // wire, so nothing in this repo imports it.
-  // `vitest.convex.config.ts` is listed because knip auto-detects only the
-  // DEFAULT Vitest config; a second runner is invisible to it.
-  "entry": [
-    "convex/**/*.{ts,tsx}!",
-    "scripts/**/*.{ts,mjs}",
-    "vitest.convex.config.ts"
-  ],
+  "entry": ["scripts/**/*.{ts,mjs}"],
   "project": ["**/*.{ts,tsx}"],
   // Loaded by Tailwind's own pipeline (app/globals.css), not by any module,
   // so knip cannot see the import. `shadcn` and `tw-animate-css` are the

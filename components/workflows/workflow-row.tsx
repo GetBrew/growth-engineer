@@ -1,15 +1,12 @@
 import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { FunctionReturnType } from 'convex/server'
 import Link from 'next/link'
 import { accessTypeLabels } from '@/components/catalog/badges'
 import { Badge } from '@/components/ui/badge'
-import type { api } from '@/convex/_generated/api'
+import type { WorkflowListItem } from '@/lib/catalog/types'
 import { CompanyAvatars } from './company-avatars'
 
-type WorkflowRows = FunctionReturnType<typeof api.workflows.list>
-
-export type WorkflowRowData = WorkflowRows[number]
+export type WorkflowRowData = WorkflowListItem
 
 export function WorkflowRow({ workflow, tools }: WorkflowRowData) {
   const companies = [

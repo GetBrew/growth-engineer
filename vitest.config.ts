@@ -13,12 +13,10 @@ const localMaxWorkers =
 
 /**
  * The unit suite: `tests/**` in the cheap `node` environment — no DOM, no
- * network, no Convex client, no React rendering by default. A file that needs
- * a DOM opts in with a `// @vitest-environment jsdom` docblock at the top.
- *
- * Convex FUNCTION tests are the one thing that does not live here:
- * `convex-test` needs an `import.meta.glob` beside `convex/`, so they live at
- * `convex/**\/*.test.ts` and run through `vitest.convex.config.ts`.
+ * network, no React rendering by default. A file that needs a DOM opts in
+ * with a `// @vitest-environment jsdom` docblock at the top. The content
+ * suite (tests/content*.test.ts) builds the catalog from the real markdown
+ * tree, so it is also `pnpm content:check`.
  */
 export default defineConfig({
   plugins: [

@@ -1,9 +1,7 @@
-import { parseRef } from '@convex/model/keys'
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { connection } from 'next/server'
 import { Suspense } from 'react'
 import {
   EmptyState,
@@ -13,6 +11,7 @@ import {
 import { NeighborhoodGraph } from '@/components/map/graph'
 import { catalogHref, NodePill } from '@/components/map/node'
 import { RelationGroups } from '@/components/map/relations'
+import { parseRef } from '@/lib/catalog/keys'
 import { loadMapOverview, loadNeighborhood } from '@/lib/catalog/loaders'
 
 export const metadata: Metadata = {
@@ -30,9 +29,9 @@ const SECTION_TITLE = {
 } as const
 
 /**
- * The relationship map. READ-ONLY by construction — it calls two `publicQuery`
- * functions and there is no mutation on this page, so it needs no session and
- * exposes nothing that is not already on a catalog page.
+ * The relationship map. READ-ONLY by construction — it reads the built
+ * catalog and nothing else, so it exposes nothing that is not already on a
+ * catalog page.
  *
  * The URL is the state (`?focus=tool:clay/clay`), so a view is shareable, an
  * agent can drive it, and there is no client-side graph state to get out of
@@ -68,7 +67,6 @@ function MapSkeleton() {
 }
 
 async function MapView({ searchParams }: { searchParams: SearchParams }) {
-  await connection()
   const params = await searchParams
   const raw = Array.isArray(params.focus) ? params.focus[0] : params.focus
   const ref = raw ? parseRef(raw) : null
@@ -203,7 +201,7 @@ async function Overview() {
 
       {nodes.length === 0 ? (
         <EmptyState
-          hint="Run `pnpm seed` to load the illustrative catalog."
+          hint="Add a company under companies/ and open a pull request."
           title="The catalog is empty"
         />
       ) : null}

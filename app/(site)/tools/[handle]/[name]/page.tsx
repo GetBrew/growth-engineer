@@ -1,8 +1,6 @@
-import { isValidOwnedKey, refToFilePath } from '@convex/model/keys'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { accessLabels } from '@/components/catalog/badges'
 import {
@@ -23,12 +21,14 @@ import { OpenInAgentMenu } from '@/components/document/open-in-agent-menu'
 import { ShareButton } from '@/components/document/share-button'
 import { MaskIcon } from '@/components/site/mask-icon'
 import { ToolDetailSkeleton } from '@/components/skeletons/tool-detail-skeleton'
+import { isValidOwnedKey, refToFilePath } from '@/lib/catalog/keys'
 import {
   loadDocument,
   loadTool,
   loadWorkflowsByTool,
   resolveAlias,
 } from '@/lib/catalog/loaders'
+import { toolParams } from '@/lib/catalog/static-params'
 
 type Params = Promise<{ handle: string; name: string }>
 
@@ -36,6 +36,10 @@ async function keyFrom(params: Params): Promise<string | null> {
   const { handle, name } = await params
   const key = `${handle}/${name}`
   return isValidOwnedKey(key) ? key : null
+}
+
+export function generateStaticParams() {
+  return toolParams()
 }
 
 export async function generateMetadata({
@@ -84,12 +88,7 @@ async function ToolDetail({ params }: { params: Params }) {
     loadWorkflowsByTool(key),
   ])
   if (!result) {
-    // `resolveAlias` is an UNCACHED read, and Next's prospective prerender
-    // walks this branch speculatively — where it reaches the Convex client and
-    // reports its `Math.random()` as an unstable value, dropping the route out
-    // of prerendering entirely. Saying plainly that the miss path is
-    // request-time keeps the hit path (the normal case) prerenderable.
-    await connection()
+    // An old key answers with a real redirect; an unknown one is a 404.
     const alias = await resolveAlias('tool', key)
     if (alias) {
       permanentRedirect(`/tools/${alias.key}`)
@@ -141,11 +140,7 @@ async function ToolDetail({ params }: { params: Params }) {
           </DetailByline>
         }
         links={links.map(([label, href]) => ({ label, href }))}
-        dates={
-          tool.publishedAt
-            ? [`Published ${DETAIL_DATE.format(tool.publishedAt)}`]
-            : []
-        }
+        dates={[`Updated ${DETAIL_DATE.format(tool.updatedAt)}`]}
         description={tool.summary}
         tags={[
           ...(tool.status === 'deprecated'

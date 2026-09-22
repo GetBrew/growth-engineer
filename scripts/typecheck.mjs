@@ -24,11 +24,6 @@ const PROGRAMS = {
   app: { project: 'tsconfig.json', needsTypegen: true },
   tests: { project: 'tests/tsconfig.json', needsTypegen: true },
   scripts: { project: 'scripts/tsconfig.json', needsTypegen: false },
-  convex: { project: 'convex/tsconfig.json', needsTypegen: false },
-  'convex:tests': {
-    project: 'convex/tsconfig.test.json',
-    needsTypegen: false,
-  },
 }
 
 const bin = (name) => path.join(process.cwd(), 'node_modules', '.bin', name)

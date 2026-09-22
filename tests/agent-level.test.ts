@@ -1,10 +1,10 @@
+import { describe, expect, test } from 'vitest'
 import {
-  type Access,
   agentNote,
   computeAgentLevel,
   HEALTH_DEGRADE_AFTER_MS,
-} from '@convex/model/agent_level'
-import { describe, expect, test } from 'vitest'
+} from '@/lib/catalog/agent-level'
+import type { Access } from '@/lib/catalog/types'
 
 /** The rules table from the design doc, one case per row, checked from the top. */
 

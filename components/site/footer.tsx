@@ -28,7 +28,11 @@ const COLUMNS = [
     heading: 'Company',
     links: [
       ['Submit a workflow', '/submit'],
-      ['List your company', 'mailto:founders@brew.new'],
+      [
+        'Add your company',
+        'https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md',
+      ],
+      ['Source on GitHub', 'https://github.com/GetBrew/growth-engineer'],
       ['brew.new', 'https://brew.new'],
       ['LinkedIn', 'https://www.linkedin.com/company/brewdotnew'],
     ],

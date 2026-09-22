@@ -18,6 +18,6 @@ overrides:
 # Dependency install scripts are BLOCKED by default in pnpm 11 — a postinstall
 # is arbitrary code from the internet, running on your machine and in CI. Allow
 # only the ones that genuinely need one, with the reason: esbuild downloads its
-# platform binary, and the Convex bundler depends on esbuild.
+# platform binary, and Vitest's Vite depends on esbuild.
 allowBuilds:
   esbuild: true

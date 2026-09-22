@@ -1,4 +1,3 @@
-import { connection } from 'next/server'
 import { CatalogSearch } from '@/components/catalog/catalog-search'
 import { ListingToolbar } from '@/components/catalog/listing-toolbar'
 import { NoResults } from '@/components/catalog/no-results'
@@ -19,7 +18,7 @@ import { WorkflowRow } from './workflow-row'
  * the sort, a tag and the search text, and every combination is a URL.
  */
 
-type Sort = 'trending' | 'top' | 'new'
+type Sort = 'featured' | 'new'
 type Tag = { key: string; label: string; counts: { workflows: number } }
 
 const BASE = '/workflows'
@@ -30,13 +29,14 @@ export type WorkflowsSearchParams = Promise<{
   q?: string | Array<string>
 }>
 
+/** `new`, or featured — which is also where the old `top`/`trending` URLs land. */
 function parseSort(value: string): Sort {
-  return value === 'top' || value === 'new' ? value : 'trending'
+  return value === 'new' ? 'new' : 'featured'
 }
 
 function href(sort: Sort, q: string, tag?: string): string {
   const params = new URLSearchParams()
-  if (sort !== 'trending') {
+  if (sort !== 'featured') {
     params.set('sort', sort)
   }
   if (tag) {
@@ -55,14 +55,14 @@ function viewFilters(
   q: string,
   tag: string
 ): { all: { href: string; active: boolean }; options: Array<FilterOption> } {
-  const orders: Array<FilterOption> = (['top', 'new'] as const).map(
-    (value) => ({
-      key: value,
-      label: value === 'top' ? 'Top' : 'New',
-      href: href(value, q, tag),
-      active: sort === value,
-    })
-  )
+  const orders: Array<FilterOption> = [
+    {
+      key: 'new',
+      label: 'New',
+      href: href('new', q, tag),
+      active: sort === 'new',
+    },
+  ]
   const tagOptions: Array<FilterOption> = tags
     .filter((entry) => entry.counts.workflows > 0)
     .map((entry) => ({
@@ -73,7 +73,7 @@ function viewFilters(
       active: tag === entry.key,
     }))
   return {
-    all: { href: BASE, active: sort === 'trending' && !q && !tag },
+    all: { href: BASE, active: sort === 'featured' && !q && !tag },
     options: [...orders, ...tagOptions],
   }
 }
@@ -102,7 +102,7 @@ function emptyCopy(
   }
   return {
     title: 'No workflows yet',
-    description: 'Run the seed, or publish the first one.',
+    description: 'Add one under workflows/ and open a pull request.',
   }
 }
 
@@ -116,12 +116,11 @@ export async function WorkflowsIndex({
   const tag = firstParam(params.tag).trim()
   const q = firstParam(params.q).trim()
 
-  await connection()
   const [rows, tags] = await Promise.all([
     workflowRows(q, sort, tag),
     loadActiveTags(),
   ])
-  const hasFilters = Boolean(q || tag || sort !== 'trending')
+  const hasFilters = Boolean(q || tag || sort !== 'featured')
   const empty = emptyCopy(q, hasFilters)
 
   return (
@@ -147,7 +146,7 @@ export async function WorkflowsIndex({
             defaultValue={q}
             label="Search workflows"
             params={{
-              sort: sort === 'trending' ? undefined : sort,
+              sort: sort === 'featured' ? undefined : sort,
               tag: tag || undefined,
             }}
             placeholder="Search workflows…"
@@ -165,7 +164,7 @@ export async function WorkflowsIndex({
       ) : (
         <div className="flex flex-col border-t">
           {rows.map((row) => (
-            <WorkflowRow key={row.workflow._id} {...row} />
+            <WorkflowRow key={row.workflow.key} {...row} />
           ))}
         </div>
       )}

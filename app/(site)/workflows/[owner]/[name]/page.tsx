@@ -1,15 +1,8 @@
-import {
-  isValidOwnedKey,
-  refToFilePath,
-  refToPath,
-  splitVersionedKey,
-} from '@convex/model/keys'
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { accessTypeLabels } from '@/components/catalog/badges'
 import {
@@ -24,11 +17,18 @@ import { ShareButton } from '@/components/document/share-button'
 import { WorkflowDetailSkeleton } from '@/components/skeletons/workflow-detail-skeleton'
 import { HowItRuns } from '@/components/workflows/how-it-runs'
 import {
+  isValidOwnedKey,
+  refToFilePath,
+  refToPath,
+  splitVersionedKey,
+} from '@/lib/catalog/keys'
+import {
   loadCompany,
   loadDocument,
   loadWorkflow,
   resolveAlias,
 } from '@/lib/catalog/loaders'
+import { workflowParams } from '@/lib/catalog/static-params'
 
 type Params = Promise<{ owner: string; name: string }>
 
@@ -41,6 +41,10 @@ async function resolveParams(params: Params) {
   )
   const key = `${owner}/${unversioned}`
   return isValidOwnedKey(key) ? { key, version } : null
+}
+
+export function generateStaticParams() {
+  return workflowParams()
 }
 
 export async function generateMetadata({
@@ -87,9 +91,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
     loadCompany(owner),
   ])
   if (!result) {
-    // The miss path is request-time: `resolveAlias` is an uncached read, and
-    // saying so keeps the hit path prerenderable (see the tool page).
-    await connection()
+    // An old key answers with a real redirect; an unknown one is a 404.
     const alias =
       resolved.version === undefined
         ? await resolveAlias('workflow', resolved.key)
@@ -102,27 +104,15 @@ async function WorkflowDetail({ params }: { params: Params }) {
     notFound()
   }
 
-  const { workflow, version, tools, versions } = result
+  const { workflow, version, tools, tags } = result
   const ref = {
     type: 'workflow' as const,
     key: workflow.key,
     version: resolved.version,
   }
   const filePath = refToFilePath(ref)
-  const isCurrent = version._id === workflow.currentVersionId
-  // "Published" is when the workflow went live; "Updated" is when the version
-  // shown was saved, and is only worth saying when it is a different day.
-  const updatedAt = versions.find(
-    (entry) => entry.version === version.version
-  )?.createdAt
-  const publishedDay = workflow.publishedAt
-    ? DETAIL_DATE.format(workflow.publishedAt)
-    : null
-  const updatedDay = updatedAt ? DETAIL_DATE.format(updatedAt) : null
-  const dates = [
-    publishedDay ? `Published ${publishedDay}` : null,
-    updatedDay && updatedDay !== publishedDay ? `Updated ${updatedDay}` : null,
-  ].filter((date): date is string => date !== null)
+  // The file's date: the newest of the workflow and the tools it uses.
+  const dates = [`Updated ${DETAIL_DATE.format(version.updatedAt)}`]
   // The owner is the handle in the key; a company handle links to its page.
   const author = ownerCompany
     ? {
@@ -171,10 +161,11 @@ async function WorkflowDetail({ params }: { params: Params }) {
         dates={dates}
         description={workflow.summary}
         tags={[
-          {
-            label: `v${version.version}${isCurrent ? '' : ' · not current'}`,
-            emphasis: true,
-          },
+          { label: `v${version.version}`, emphasis: true },
+          ...tags.map((tag) => ({
+            label: tag.label,
+            href: `/workflows?tag=${encodeURIComponent(tag.key)}`,
+          })),
         ]}
         title={workflow.title}
       />
@@ -183,13 +174,6 @@ async function WorkflowDetail({ params }: { params: Params }) {
         <div className="flex min-w-0 flex-col gap-14">
           <section className="flex flex-col gap-5">
             <h2 className={PANEL_HEADING}>Ready-to-use markdown</h2>
-            {isCurrent ? null : (
-              <p className="type-body rounded-2xl border bg-surface px-4 py-3">
-                v{version.version} is not the current version. The file below is
-                the current one; older versions are frozen in history but their
-                files are not stored yet.
-              </p>
-            )}
             {document ? (
               <MarkdownFile
                 fileName={filePath.split('/').pop() ?? 'workflow.md'}

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
-import { ConvexClientProvider } from '@/components/convex-client-provider'
 import { clientEnv } from '@/lib/env'
 
 import './globals.css'
@@ -9,8 +8,6 @@ import './globals.css'
 /**
  * The root layout is a SHELL. Under `cacheComponents: true` it is prerendered
  * once and reused by every route, so nothing here reads request-time data.
- * The Convex provider only sets up context; anything that READS request-time
- * data lives further down, behind its own Suspense boundary.
  */
 
 // Geist (SIL OFL): the one open family for text; Geist Mono for code.
@@ -42,9 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       lang="en"
     >
-      <body className="min-h-full">
-        <ConvexClientProvider>{children}</ConvexClientProvider>
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   )
 }

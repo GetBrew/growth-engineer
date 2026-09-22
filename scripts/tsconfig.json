@@ -13,7 +13,6 @@
     // Component bundle, so tsx CLIs resolve it to an inert shim.
     "paths": {
       "@/*": ["./*"],
-      "@convex/*": ["./convex/*"],
       "server-only": ["./scripts/shims/server-only.ts"]
     }
   },

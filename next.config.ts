@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
 
   productionBrowserSourceMaps: process.env.EMIT_BROWSER_SOURCEMAPS === '1',
 
+  /**
+   * The catalog is read from the markdown tree at build time; the only routes
+   * that read it at request time are the ones with `searchParams` (/tools,
+   * /companies, /workflows, /map). Their serverless bundles need the tree
+   * beside them, and the tracer cannot see a directory walk.
+   */
+  outputFileTracingIncludes: {
+    '/': ['./companies/**/*', './workflows/**/*', './tags/**/*'],
+  },
+
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 1080, 1200, 1920],

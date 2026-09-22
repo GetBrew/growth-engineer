@@ -1,8 +1,8 @@
-import { accessHeading, orderAccess } from '@convex/model/render_access'
-import type { Doc } from '@/convex/_generated/dataModel'
+import { accessHeading, orderAccess } from '@/lib/catalog/render-access'
+import type { Tool as CatalogTool } from '@/lib/catalog/types'
 import { agentLevelLabel } from './badges'
 
-type Tool = Pick<Doc<'tools'>, 'access' | 'agent'>
+type Tool = Pick<CatalogTool, 'access' | 'agent'>
 
 /**
  * The tool page's side panel: how ready the tool is for an agent, then every

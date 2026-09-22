@@ -1,150 +1,331 @@
 import 'server-only'
 
-import { type EntityType, formatRef } from '@convex/model/keys'
-import { cacheLife, cacheTag } from 'next/cache'
-import { api } from '@/convex/_generated/api'
-import { publicQuery } from '@/lib/convex/gateway'
+import { getCatalog } from './catalog'
+import { type EntityType, formatRef } from './keys'
+import { companyListItem, workflowListItem } from './lists'
+import {
+  searchCompanies as runCompanySearch,
+  searchTools as runToolSearch,
+  searchWorkflows as runWorkflowSearch,
+} from './search'
+import type {
+  Company,
+  EdgeGroup,
+  MapNode,
+  Tool,
+  WorkflowListItem,
+} from './types'
 
 /**
- * The catalog's server-side loaders, and the caching contract they implement.
+ * The catalog's server-side loaders. Every page, route handler and the
+ * `/llms.txt` index reads through here and nothing else; the bodies read the
+ * catalog built once per process from the markdown tree (./catalog.ts).
  *
- * `convex/nextjs` fetches are `cache: 'no-store'`. Inside a `'use cache'`
- * scope they run for real — including at BUILD time for a page with no
- * params — and a catch inside that scope would cache the empty result for
- * the whole `cacheLife` window. So:
- *
- *   PER-KEY loaders   `'use cache: remote'` + `cacheTag(ref)` + an explicit
- *                     life. They only ever run with request-time keys, so the
- *                     build never contacts Convex, and `revalidateTag(ref)`
- *                     purges a page and its `.md` file together.
- *   LIST loaders      plain reads. The page's Suspense child awaits
- *                     `connection()` first, so the build stops at the
- *                     boundary; Convex's own query cache is the cache.
- *   SEARCH            plain reads, unique per URL, never cached here.
- *
- * No loader catches. A failure is thrown out of the cached scope and rendered
- * by error.tsx, which is never cached.
+ * They stay `async` so call sites never change, and they resolve in a
+ * microtask, which is what keeps every catalog route prerenderable under
+ * Cache Components: no request-time data, no `connection()`, no cache tags.
+ * There is nothing to revalidate — a deploy is the publish.
  */
 
-/** List tags, for the per-key loaders whose result is a list. */
-const LIST_TAG = {
-  tools: 'catalog:tools',
-  workflows: 'catalog:workflows',
-} as const
-
-/** One hour fresh, a day stale-while-revalidate. */
-const PER_KEY_LIFE = { stale: 300, revalidate: 3600, expire: 86_400 }
+const MAX_LIST = 200
 
 /* ───────────────────────────────── per key ───────────────────────────────── */
 
-export async function loadCompany(key: string) {
-  'use cache: remote'
-  cacheTag(formatRef('company', key))
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.companies.getByKey, { key })
+/** Published or deprecated: reachable by key. Drafts never enter the catalog. */
+export async function loadCompany(key: string): Promise<Company | null> {
+  return getCatalog().companies.get(key) ?? null
 }
 
 export async function loadTool(key: string) {
-  'use cache: remote'
-  cacheTag(formatRef('tool', key))
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.tools.getByKey, { key })
+  const catalog = getCatalog()
+  const tool = catalog.tools.get(key)
+  const company = tool ? catalog.companies.get(tool.companyKey) : undefined
+  if (!(tool && company)) {
+    return null
+  }
+  const capability = catalog.tags.get(`capability:${tool.capability}`)
+  return {
+    tool,
+    company,
+    capabilities: capability
+      ? [{ slug: capability.slug, label: capability.label }]
+      : [],
+  }
 }
 
+/**
+ * One workflow with its tools. v1 keeps the current version only: a pin on
+ * any other version is a miss, and the page turns that into a 404.
+ */
 export async function loadWorkflow(key: string, version: number | undefined) {
-  'use cache: remote'
-  cacheTag(formatRef('workflow', key))
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.workflows.getByKey, {
-    key,
-    ...(version === undefined ? {} : { version }),
+  const catalog = getCatalog()
+  const workflow = catalog.workflows.get(key)
+  if (!workflow || (version !== undefined && version !== workflow.version)) {
+    return null
+  }
+  const tools = workflow.toolKeys.flatMap((toolKey) => {
+    const tool = catalog.tools.get(toolKey)
+    const company = tool ? catalog.companies.get(tool.companyKey) : undefined
+    return tool && company ? [{ tool, company }] : []
   })
+  const updatedAt =
+    catalog.documents.get(formatRef('workflow', key))?.updatedAt ??
+    workflow.updatedAt
+  return {
+    workflow,
+    version: { version: workflow.version, steps: workflow.steps, updatedAt },
+    tools,
+    tags: workflow.tags.flatMap((tagKey) => {
+      const tag = catalog.tags.get(tagKey)
+      return tag ? [{ key: tag.key, label: tag.label }] : []
+    }),
+  }
 }
 
 /** The rendered file for a ref (no version pin — the header carries it). */
 export async function loadDocument(type: EntityType, key: string) {
-  'use cache: remote'
-  const ref = formatRef(type, key)
-  cacheTag(ref)
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.documents.getByRef, { ref })
+  return getCatalog().documents.get(formatRef(type, key)) ?? null
 }
 
-export async function loadToolsByCompany(companyKey: string) {
-  'use cache: remote'
-  cacheTag(formatRef('company', companyKey), LIST_TAG.tools)
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.tools.listByCompany, { companyKey })
+/** A company's published tools, by key. */
+export async function loadToolsByCompany(
+  companyKey: string
+): Promise<Array<Tool>> {
+  const catalog = getCatalog()
+  return (catalog.toolsByCompany.get(companyKey) ?? []).flatMap((key) => {
+    const tool = catalog.tools.get(key)
+    return tool?.status === 'published' ? [tool] : []
+  })
 }
 
+function workflowRows(keys: ReadonlyArray<string>): Array<WorkflowListItem> {
+  const catalog = getCatalog()
+  return keys.flatMap((key) => {
+    const workflow = catalog.workflows.get(key)
+    return workflow ? [workflowListItem(catalog, workflow)] : []
+  })
+}
+
+/** Published workflows using a tool, featured first. */
 export async function loadWorkflowsByTool(toolKey: string) {
-  'use cache: remote'
-  cacheTag(formatRef('tool', toolKey), LIST_TAG.workflows)
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.workflows.listByTool, { toolKey })
+  return workflowRows(getCatalog().workflowsByTool.get(toolKey) ?? [])
 }
 
+/** Published workflows using any of a company's tools, featured first. */
 export async function loadWorkflowsByCompany(companyKey: string) {
-  'use cache: remote'
-  cacheTag(formatRef('company', companyKey), LIST_TAG.workflows)
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.workflows.listByCompany, { companyKey })
+  return workflowRows(getCatalog().workflowsByCompany.get(companyKey) ?? [])
 }
 
-/**
- * The relationship map for one node. Cached under the node's own ref, so
- * `revalidateTag(ref)` purges the map alongside the page and the `.md` file —
- * the graph can never show an edge the page has already forgotten.
- */
+/** An old key → its current one, or null. */
+export async function resolveAlias(entityType: EntityType, key: string) {
+  const current = getCatalog().aliases.get(`${entityType}:${key}`)
+  return current ? { key: current } : null
+}
+
+/* ─────────────────────────────────── the map ─────────────────────────────── */
+
+function edgeGroup(
+  relation: string,
+  direction: 'out' | 'in',
+  nodes: Array<MapNode>
+): EdgeGroup {
+  return { relation, direction, nodes, isTruncated: false }
+}
+
+function companyNode(company: Company): MapNode {
+  return { type: 'company', key: company.key, name: company.name }
+}
+
+function tagNodes(keys: ReadonlyArray<string>): Array<MapNode> {
+  const catalog = getCatalog()
+  return keys.flatMap((key) => {
+    const tag = catalog.tags.get(key)
+    return tag ? [{ type: 'tag', key: tag.key, name: tag.label }] : []
+  })
+}
+
+function toolNodes(keys: ReadonlyArray<string>): Array<MapNode> {
+  const catalog = getCatalog()
+  return keys.flatMap((key) => {
+    const tool = catalog.tools.get(key)
+    return tool ? [{ type: 'tool', key: tool.key, name: tool.name }] : []
+  })
+}
+
+function workflowNodes(keys: ReadonlyArray<string>): Array<MapNode> {
+  const catalog = getCatalog()
+  return keys.flatMap((key) => {
+    const workflow = catalog.workflows.get(key)
+    return workflow
+      ? [{ type: 'workflow', key: workflow.key, name: workflow.title }]
+      : []
+  })
+}
+
+/** The relationship map for one node: what it is, and every edge touching it. */
 export async function loadNeighborhood(
   type: 'company' | 'tool' | 'workflow',
   key: string
-) {
-  'use cache: remote'
-  cacheTag(formatRef(type, key))
-  cacheLife(PER_KEY_LIFE)
-  return await publicQuery(api.map.neighborhood, { type, key })
+): Promise<{ node: MapNode; groups: Array<EdgeGroup> } | null> {
+  const catalog = getCatalog()
+  if (type === 'company') {
+    const company = catalog.companies.get(key)
+    if (!company) {
+      return null
+    }
+    return {
+      node: companyNode(company),
+      groups: [
+        edgeGroup(
+          'makes',
+          'out',
+          toolNodes(catalog.toolsByCompany.get(key) ?? [])
+        ),
+        edgeGroup('tagged', 'out', tagNodes([`category:${company.category}`])),
+        edgeGroup(
+          'its tools appear in',
+          'in',
+          workflowNodes(catalog.workflowsByCompany.get(key) ?? [])
+        ),
+      ],
+    }
+  }
+  if (type === 'tool') {
+    const tool = catalog.tools.get(key)
+    if (!tool) {
+      return null
+    }
+    const company = catalog.companies.get(tool.companyKey)
+    return {
+      node: { type: 'tool', key: tool.key, name: tool.name },
+      groups: [
+        edgeGroup('made by', 'out', company ? [companyNode(company)] : []),
+        edgeGroup(
+          'tagged',
+          'out',
+          tagNodes([`capability:${tool.capability}`, ...tool.tags])
+        ),
+        edgeGroup(
+          'used by',
+          'in',
+          workflowNodes(catalog.workflowsByTool.get(key) ?? [])
+        ),
+      ],
+    }
+  }
+  const workflow = catalog.workflows.get(key)
+  if (!workflow) {
+    return null
+  }
+  const companies = [
+    ...new Set(
+      workflow.toolKeys.flatMap((toolKey) => {
+        const tool = catalog.tools.get(toolKey)
+        return tool ? [tool.companyKey] : []
+      })
+    ),
+  ].flatMap((companyKey) => {
+    const company = catalog.companies.get(companyKey)
+    return company ? [companyNode(company)] : []
+  })
+  return {
+    node: { type: 'workflow', key: workflow.key, name: workflow.title },
+    groups: [
+      edgeGroup('uses', 'out', toolNodes(workflow.toolKeys)),
+      edgeGroup('reaches', 'out', companies),
+      edgeGroup('tagged', 'out', tagNodes(workflow.tags)),
+      edgeGroup('versions', 'out', [
+        {
+          type: 'workflow',
+          key: `${workflow.key}@${workflow.version}`,
+          name: `v${workflow.version}`,
+        },
+      ]),
+    ],
+  }
 }
 
-/** An old key → its current one, or null. Rare; not cached. */
-export async function resolveAlias(entityType: EntityType, key: string) {
-  return await publicQuery(api.aliases.resolve, { entityType, key })
+/** The whole graph's shape plus every focusable node. */
+export async function loadMapOverview() {
+  const catalog = getCatalog()
+  const tools = [...catalog.tools.values()]
+  const workflows = [...catalog.workflows.values()]
+  const nodes: Array<MapNode> = [
+    ...[...catalog.companies.values()].map(companyNode),
+    ...toolNodes(tools.map((tool) => tool.key)),
+    ...workflowNodes(workflows.map((workflow) => workflow.key)),
+  ]
+  return {
+    counts: {
+      companies: catalog.companies.size,
+      tools: tools.length,
+      workflows: workflows.length,
+      tags: catalog.tags.size,
+      // Every tool has exactly one company, so the edge count IS the tool count.
+      toolCompanyEdges: tools.length,
+      workflowToolEdges: workflows.reduce(
+        (sum, workflow) => sum + workflow.toolCount,
+        0
+      ),
+      taggingEdges:
+        catalog.companies.size +
+        tools.reduce((sum, tool) => sum + 1 + tool.tags.length, 0) +
+        workflows.reduce((sum, workflow) => sum + workflow.tags.length, 0),
+      versionEdges: workflows.length,
+      aliasEdges: catalog.aliases.size,
+    },
+    isTruncated: false,
+    nodes,
+  }
 }
 
 /* ─────────────────────────────────── lists ───────────────────────────────── */
-/* Call these only after `await connection()` in the Suspense child.          */
 
-/** The whole graph's shape plus every focusable node. A list read. */
-export async function loadMapOverview() {
-  return await publicQuery(api.map.overview, {})
-}
-
+/** Published companies in name order, optionally one category, with category and ways in. */
 export async function loadCompanies(
-  limit = 200,
+  limit = MAX_LIST,
   category?: string,
   includeCategory = true
 ) {
-  return await publicQuery(api.companies.list, {
-    limit,
-    ...(category ? { category } : {}),
-    ...(includeCategory ? {} : { includeCategory: false }),
-  })
+  const catalog = getCatalog()
+  if (category && !catalog.tags.has(`category:${category}`)) {
+    return []
+  }
+  return catalog.order.companies
+    .flatMap((key) => {
+      const company = catalog.companies.get(key)
+      return company && (!category || company.category === category)
+        ? [company]
+        : []
+    })
+    .slice(0, Math.min(limit, MAX_LIST))
+    .map((company) => companyListItem(catalog, company, includeCategory))
 }
 
+/** Featured (editorial rank, then newest) or New, optionally within one tag. */
 export async function loadWorkflows(
-  sort: 'trending' | 'top' | 'new',
+  sort: 'featured' | 'new',
   limit = 30,
   tag?: string
 ) {
-  return await publicQuery(api.workflows.list, {
-    sort,
-    ...(tag ? { tag } : {}),
-    limit,
-  })
+  const catalog = getCatalog()
+  if (tag && !catalog.tags.has(tag)) {
+    return []
+  }
+  const order =
+    sort === 'new'
+      ? catalog.order.workflowsNew
+      : catalog.order.workflowsFeatured
+  return workflowRows(
+    order.filter(
+      (key) => !tag || catalog.workflows.get(key)?.tags.includes(tag)
+    )
+  ).slice(0, Math.min(limit, MAX_LIST))
 }
 
+/** Every tag with its counts — the filter chips and chip completion. */
 export async function loadActiveTags() {
-  return await publicQuery(api.tags.listActive, {})
+  return [...getCatalog().tags.values()]
 }
 
 /* ─────────────────────────────────── search ──────────────────────────────── */
@@ -154,19 +335,15 @@ export async function searchTools(
   chips: ReadonlyArray<string>,
   limit = 60
 ) {
-  return await publicQuery(api.tools.search, {
-    q,
-    chips: [...chips],
-    limit,
-  })
+  return runToolSearch(getCatalog(), { q, chips, limit })
 }
 
 export async function searchWorkflows(
   q: string,
-  sort: 'trending' | 'top' | 'new',
+  sort: 'featured' | 'new',
   tag?: string
 ) {
-  return await publicQuery(api.workflows.search, {
+  return runWorkflowSearch(getCatalog(), {
     q,
     sort,
     ...(tag ? { tag } : {}),
@@ -175,7 +352,7 @@ export async function searchWorkflows(
 }
 
 export async function searchCompanies(q: string, category?: string) {
-  return await publicQuery(api.companies.search, {
+  return runCompanySearch(getCatalog(), {
     q,
     ...(category ? { category } : {}),
     limit: 50,
@@ -184,5 +361,7 @@ export async function searchCompanies(q: string, category?: string) {
 
 /** Every file, for `/llms.txt`. */
 export async function loadDocumentRefs() {
-  return await publicQuery(api.documents.listRefs, { limit: 1000 })
+  return [...getCatalog().documents.values()].map(
+    ({ ref, entityType, updatedAt }) => ({ ref, entityType, updatedAt })
+  )
 }

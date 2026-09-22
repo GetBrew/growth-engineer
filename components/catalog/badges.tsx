@@ -1,7 +1,6 @@
-import type { Doc } from '@/convex/_generated/dataModel'
+import type { AccessType, AgentLevel } from '@/lib/catalog/types'
 
-type AgentLevel = Doc<'tools'>['agent']['level']
-type Access = Doc<'tools'>['access'][number]
+type Access = { type: AccessType }
 
 const LEVEL_LABEL: Record<AgentLevel, string> = {
   unverified: 'Unverified',

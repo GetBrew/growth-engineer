@@ -1,6 +1,5 @@
 import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { FunctionReturnType } from 'convex/server'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -12,15 +11,12 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item'
-import type { api } from '@/convex/_generated/api'
+import type { CompanyListItem, ToolListItem } from '@/lib/catalog/types'
 import { accessTypeLabels, agentLevelLabel } from './badges'
 import { EntityLogo } from './entity-logo'
 
-type ToolSearchResult = FunctionReturnType<typeof api.tools.search>
-export type ToolCardData = ToolSearchResult['results'][number]
-
-type CompanyRows = FunctionReturnType<typeof api.companies.list>
-type CompanyRowData = CompanyRows[number]
+export type ToolCardData = ToolListItem
+type CompanyRowData = CompanyListItem
 
 /**
  * One row of a catalog directory: logo tile, name with small pills, one line

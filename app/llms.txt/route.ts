@@ -1,4 +1,4 @@
-import { parseRef, refToFilePath } from '@convex/model/keys'
+import { parseRef, refToFilePath } from '@/lib/catalog/keys'
 import { loadDocumentRefs } from '@/lib/catalog/loaders'
 import { clientEnv } from '@/lib/env'
 
