@@ -2,14 +2,16 @@
 
 Every company, tool and workflow has one file. Tool and workflow files are the
 product; company files are a short index of that company's tools. This is the
-contract the renderer (`convex/model/render_markdown.ts`) implements and the
-goldens in `tests/fixtures/markdown/` pin.
+contract the renderer (`lib/catalog/render-markdown.ts`) implements and the
+goldens in `tests/fixtures/markdown/` pin. The SOURCE files under
+`companies/` and `workflows/` are structured input to that renderer; they are
+not the product and they do not look like it.
 
 ## Rules
 
 | Rule | Why |
 | --- | --- |
-| Files are generated, never hand-edited. | One render function builds each file from structured fields. When a tool's MCP URL changes, every workflow file that uses it is marked stale and rebuilt. |
+| Files are generated, never hand-edited. | One render function builds each file from the source files at build time. When a tool's MCP URL changes, every workflow file that uses it is rebuilt on the next deploy. |
 | Files work in any agent. | Plain markdown, a short flat YAML header, no agent-specific syntax. MCP servers appear in the common `mcpServers` JSON shape with the URL spelled out too. |
 | Everything needed to run is in the file. | Setup, inputs, steps and finish checks are inline. Links are only for getting keys or reading more. |
 | Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool, or the one a step asks for (`via`). |
@@ -22,12 +24,11 @@ goldens in `tests/fixtures/markdown/` pin.
 
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
-| Header | `ref`, `name`, `company`, `does`, `access`, `agent`, `agent_note`, `updated` | `ref` (with `@N`), `title`, `type`, `tools`, `tags`, `updated` |
+| Header | `ref`, `name`, `company`, `access`, `agent`, `agent_note`, `updated` | `ref` (with `@N`), `title`, `tools`, `tags`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
 | Steps | — | Numbered steps, each naming its tool (a workflow using a single tool names it once up front instead) |
-| What it can do | Capabilities, from tags | — |
 | Done when | — | Checks that mean the job is finished |
 | Notes | — | Optional, written by the author |
 | Rules | Always | Always |
@@ -46,36 +47,36 @@ the ways in, in setup order.
 | Index | `/llms.txt` lists every file |
 | MCP (later) | `get` with a ref returns the file |
 
-`proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`
-before authentication runs. The handler reads one `documents` row through the
-same tagged loader the page uses, so `POST /api/revalidate` purges both. A
-renamed key answers with a real 308.
+`proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`. The
+handler reads the rendered document from the in-memory catalog — the same
+one the page reads — and every file, every current version pin and every
+alias is prerendered at build. A renamed key answers with a real 308.
 
 ## The render path
 
 ```
-fields (companies, tools, workflowVersions, taggings)
-  → convex/documents_render.ts  renderAndStoreDocument()   the ONE caller
-  → convex/model/render_markdown.ts                        pure; goldens
-  → documents { ref, markdown, hash, lineCount, stale }    read by everything
+companies/ workflows/ tags/  (source files, by pull request)
+  → lib/content/build-catalog.ts                          validate, resolve, derive
+  → lib/content/build-documents.ts                        the ONE caller of the renderer
+  → lib/catalog/render-markdown.ts                        pure; goldens
+  → catalog.documents { ref, markdown, hash, lineCount, updatedAt }   read by everything
 ```
 
-A file whose `hash` did not change is not rewritten — a write re-runs every
-live query that read the row. A tool change calls `markStaleForTool`; the
-scheduled batch (`documents.renderStale`) re-renders stale files a bounded
-number at a time.
+Everything renders at build; nothing renders on the request path. A file's
+`updated` date is the newest of its inputs, so a workflow file changes when a
+tool it uses changes its way in. Two builds of the same tree produce
+byte-identical files (`tests/content.test.ts` pins this).
 
-## Publishing a workflow (the flow the pipeline will implement)
+## Publishing a workflow
 
-1. Fill in a short form: a title phrased as the result, the inputs, the steps
-   (pick a tool, write what to do), the checks that mean it is done.
-2. Watch the file build as you type. The preview is the exact file.
-3. Save. The workflow is live at an unlisted link right away.
-4. An automated scan checks the steps for data sent to unknown places, hidden
-   text, requests for credentials, instructions that override the user.
-5. A moderator approves it into search and feeds. Vendors publishing under
-   their own handle skip this step; the scan still runs.
+1. Write `workflows/<owner>/<name>.md`: a title phrased as the result, the
+   inputs, the steps (pick a tool, write what to do), the checks that mean it
+   is done ([`workflows/README.md`](../workflows/README.md)).
+2. `pnpm content:check` renders the exact file and lists every problem with
+   its path; `pnpm dev` shows the page.
+3. Open a pull request. CI runs the same checks; a maintainer reviews the
+   facts. Merging publishes it on the next deploy.
 
-Versions are frozen once saved. Edits create version N+1; a flagged version
-never replaces the live one. v1 stores the current version's file only; a
-pinned older version shows the current file with a notice.
+`version` is an integer in the header; bump it when the steps change
+materially. v1 serves the current version's file only, so a pin on an older
+version is a 404 and git history is the archive.

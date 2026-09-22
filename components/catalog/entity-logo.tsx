@@ -26,7 +26,7 @@ export function EntityLogo({
   return (
     <span
       className={cn(
-        'grid shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-white',
+        'grid shrink-0 place-items-center overflow-hidden rounded-xl border bg-background',
         className
       )}
       style={{ width: size, height: size }}
@@ -41,9 +41,7 @@ export function EntityLogo({
           width={size}
         />
       ) : (
-        <span className="font-medium text-foreground/70 text-xs">
-          {name.charAt(0)}
-        </span>
+        <span className="type-label text-soft">{name.charAt(0)}</span>
       )}
     </span>
   )

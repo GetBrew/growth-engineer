@@ -5,7 +5,6 @@
 # Lockfiles and generated artifacts: text, but never diff-rendered — GitHub
 # collapses them in review so a real change is not buried under 4,000 lines.
 pnpm-lock.yaml linguist-generated=true -diff
-convex/_generated/** linguist-generated=true -diff
 
 # Binary assets: no EOL normalization, no diff.
 *.png binary

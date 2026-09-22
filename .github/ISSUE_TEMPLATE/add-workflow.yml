@@ -1,0 +1,31 @@
+name: Propose a workflow
+description: Share a result-based workflow across tools when you cannot open the pull request yourself.
+title: "Workflow: <the result it reaches>"
+labels: [catalog, workflow]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Title, phrased as the result
+      placeholder: Turn fresh funding news into qualified outbound
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: Up to ten. Each step names ONE tool (`company/function`) and what to do with it.
+    validations:
+      required: true
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Inputs the agent should ask the user for
+      placeholder: "`target_segment`: the kind of company to watch"
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: The checks that mean the job is finished.
+    validations:
+      required: true

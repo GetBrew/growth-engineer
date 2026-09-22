@@ -52,15 +52,15 @@ jobs:
         run: pnpm lint
 
   typecheck:
-    # `pnpm tsc` chains FIVE TypeScript programs. Here each one is a matrix leg,
-    # so wall time is the SLOWEST program instead of the sum of all five, and a
+    # `pnpm tsc` chains THREE TypeScript programs. Here each one is a matrix
+    # leg, so wall time is the SLOWEST program instead of the sum, and a
     # failure names its program in the job title instead of making you read a
-    # log to find out which of the five went red.
+    # log to find out which one went red.
     name: typecheck (${{ matrix.program }})
     strategy:
       fail-fast: false
       matrix:
-        program: [app, tests, scripts, convex, 'convex:tests']
+        program: [app, tests, scripts]
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
@@ -79,15 +79,9 @@ jobs:
     # one runs on the PULL REQUEST. Without it, a broken build and every client
     # bundle regression reach main first and are discovered after merge.
     runs-on: ${{ vars.CI_RUNNER_LARGE || 'ubuntu-latest' }}
+    # No env block: the catalog is built from the markdown tree in the repo,
+    # and lib/env.ts reads nothing secret. A variable here means it grew one.
     timeout-minutes: 25
-    env:
-      # PLACEHOLDER ENV, NOT SECRETS. A pull-request run must never see a
-      # credential, so the build gets exactly what module-scope code reads at
-      # build time and nothing more: a Convex URL, and the service token the
-      # server gateway validates the shape of. Both are what lib/env.ts
-      # parses at import; a third variable here means lib/env.ts grew one.
-      NEXT_PUBLIC_CONVEX_URL: https://ci-placeholder.convex.cloud
-      CONVEX_SERVICE_TOKEN: ci-placeholder-service-token
     steps:
       - uses: actions/checkout@v7
         with:
@@ -128,33 +122,18 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # No env block: `.env.test` makes the suite hermetic. If a test needs a
-      # credential to pass, that is a test that will be skipped in CI forever —
-      # fix the test, do not add a secret here.
-      - name: Run unit tests
+      # No env block: the suite is hermetic (it reads the markdown tree in the
+      # checkout). If a test needs a credential to pass, that is a test that
+      # will be skipped in CI forever — fix the test, do not add a secret here.
+      - name: Run unit tests (includes the content validation suite)
         run: pnpm test:run
-
-  test-convex:
-    name: test (convex)
-    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      # No env block here either: `.env.test` carries the one non-secret value
-      # the authorization tests need. If CI has to inject something for a test
-      # to pass, the test is not hermetic.
-      - name: Run Convex function tests
-        run: pnpm test:convex
 
   test:
     # The required-check name. `if: always()` so a sibling failure shows as a
     # RED `test` status instead of a skipped required check that a branch
     # protection rule would happily merge past.
     if: always()
-    needs: [test-unit, test-convex]
+    needs: [test-unit]
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
@@ -171,7 +150,7 @@ jobs:
               console.error(`✗ test suites failed: ${failed.join(", ")}`)
               process.exit(1)
             }
-            console.log("✓ unit and convex suites passed")
+            console.log("✓ test suites passed")
           '
 
   hygiene:
@@ -194,10 +173,10 @@ jobs:
         continue-on-error: true
         run: pnpm docs:check
 
-      - name: Convex codegen freshness
-        id: codegen
+      - name: Content tree (companies/, workflows/, tags/)
+        id: content
         continue-on-error: true
-        run: pnpm convex:codegen:check
+        run: pnpm content:check
 
       - name: Unused files, exports and dependencies (knip)
         id: knip

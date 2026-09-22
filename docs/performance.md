@@ -1,8 +1,9 @@
 # Performance
 
-> The catalog's own caching contract — what is cached per ref, what awaits
-> `connection()`, why nothing is caught inside a cached scope — lives in
-> [`architecture.md`](architecture.md). This page is the general mechanics.
+> What prerenders and why — the catalog built once per process from sync
+> reads, `generateStaticParams` on every detail route, only `searchParams`
+> routes streaming — lives in [`architecture.md`](architecture.md). This
+> page is the general mechanics.
 
 Three mechanisms, each guarding a different way an app gets slow.
 
@@ -25,10 +26,10 @@ export default function Page() {
   )
 }
 
-async function Loader() {
-  await connection() // a list read: the build stops here, never at Convex
-  const tools = await loadNewTools()
-  return <ToolGrid tools={tools} />
+async function Loader({ searchParams }: { searchParams: Promise<Params> }) {
+  const params = await searchParams // the one request-time read
+  const companies = await loadCompanies(200, params.category)
+  return <CompanyGrid companies={companies} />
 }
 
 // ❌ nothing prerenders — the whole route waits
@@ -43,9 +44,9 @@ read at the top of an async page has this effect. `next dev` flags it as a
 blocking route (`experimental.instantInsights`), which is why that setting is
 pinned rather than left to the framework default.
 
-**Never `export const dynamic = 'force-dynamic'`.** It opts the route out
-wholesale. Reach for `Cache-Control: no-store` on the response, or the Next 16
-cache model.
+**Never `export const dynamic`, `revalidate` or `dynamicParams`.** Cache
+Components rejects them at build. A route that must not be static reads
+request data in its Suspense child; everything else prerenders.
 
 **Fallbacks must be dimensionally stable** — the same box as the real content.
 A fallback that is shorter makes the page land and then jump, which measures as
@@ -92,22 +93,19 @@ Compiler then runs in Rust inside Turbopack, with no Babel in the pipeline.
 `serverComponentsHmrCache: false` is a dev-only trade: the RSC fetch cache does
 not survive Fast Refresh, which costs a re-fetch of `fetch()` data per refresh
 and buys several hundred MB of peak dev memory and roughly half the HMR
-latency. An app whose reads go through the Convex client barely pays the cost.
+latency. An app whose reads come from an in-memory catalog never pays it.
 
 In CI, `.next/cache` is restored from a key built on the Next version plus the
 lockfile, with the commit SHA last — so every run saves a fresh entry and the
 next run restores the closest one. An older cache is a valid warm start, never
 a wrong one.
 
-## Convex reads
+## Catalog reads
 
-- Index everything you filter or sort on. `.filter(...)` is a table scan
-  wearing a predicate; `.withIndex(...)` is the query.
-- `.take(n)`, never `.collect()`. The table that is small today is the 16 MB
-  read limit that takes the page down next year.
-- `Promise.all` independent reads. Two sequential awaits on unrelated data is
-  two round trips for no reason.
-- Join by point reads: `getMany` in `convex/shared/reads.ts` loads a set of
-  ids in one parallel round; an `await` inside a loop is a Biome error here.
-- Suspense the leaf, not the page: start the promise early, suspend only the
-  component that needs the result.
+- The catalog is built ONCE per process and read from memory. A loader that
+  reaches for the filesystem, the network or `Date.now()` turns the route it
+  serves dynamic — silently, as a `◐` or `ƒ` in the build table.
+- Keep the sync memo in `lib/catalog/catalog.ts` sync. `fs.promises` there
+  would make every catalog page dynamic with no error.
+- Suspense the leaf, not the page: the `searchParams` read is the only thing
+  that belongs in an async child.

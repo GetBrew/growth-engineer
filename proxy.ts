@@ -1,5 +1,5 @@
-import { filePathToRef } from '@convex/model/keys'
 import { type NextRequest, NextResponse } from 'next/server'
+import { filePathToRef } from '@/lib/catalog/keys'
 
 /**
  * `proxy.ts` is what Next 16 calls the file that used to be `middleware.ts`.
@@ -33,8 +33,8 @@ export function hasBackslashInPath(pathname: string): boolean {
 
 /**
  * Where a request for a markdown file is rewritten, or null when it is not
- * one. Only paths that name a valid ref qualify, so the handler never asks
- * Convex about a path that cannot be a file. Exported for the proxy test.
+ * one. Only paths that name a valid ref qualify, so the handler never looks
+ * up a path that cannot be a file. Exported for the proxy test.
  */
 export function markdownRewriteTarget(input: {
   pathname: string

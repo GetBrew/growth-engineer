@@ -3,8 +3,9 @@
 import { Button } from '@/components/ui/button'
 
 /**
- * A failed catalog read lands here, never in a cache: nothing thrown inside a
- * `'use cache'` scope is stored, so the next request tries again.
+ * A failed render lands here. With the catalog built from the repository at
+ * build time this should never fire in production; in development it is how
+ * a content problem surfaces on the page (the terminal has the file paths).
  */
 export default function SiteError({
   reset,
@@ -14,14 +15,12 @@ export default function SiteError({
 }) {
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center gap-4 px-6 py-24 text-center">
-      <h1 className="font-semibold text-2xl tracking-[-0.03em]">
-        The catalog is unavailable
-      </h1>
-      <p className="text-foreground/62 text-sm leading-6">
-        The backend did not answer. The files themselves have not changed; try
-        again in a moment.
+      <h1 className="type-page-title">This page could not be rendered</h1>
+      <p className="type-body">
+        The files themselves have not changed. In development, the terminal
+        lists what went wrong; otherwise try again in a moment.
       </p>
-      <Button onClick={reset} variant="outline">
+      <Button onClick={reset} size="pill" variant="outline">
         Try again
       </Button>
     </div>

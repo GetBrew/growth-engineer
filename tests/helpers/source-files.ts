@@ -7,8 +7,8 @@ export const REPO_ROOT = path.resolve(__dirname, '../..')
  * Every `.ts` / `.tsx` file under `dir`, recursively, as `{ relativePath,
  * source }` relative to the repo root.
  *
- * Shared by the two guards that are source SCANS rather than type checks
- * (convex-builders, convex-client-auth-gating). What they assert — "did
+ * Shared by the guards that are source SCANS rather than type checks
+ * (catalog-purity, the reserved-handle walk in keys.test). What they assert — "did
  * someone reach around the pattern" — is not expressible in the type system,
  * so it is expressible here or nowhere.
  */

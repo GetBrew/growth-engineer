@@ -1,4 +1,10 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./markdown.css";
+@import "./surfaces.css";
+@import "./typography.css";
+@custom-variant dark (&:is(.dark *));
 
 /*
  * growth.engineer is a light, editorial interface: white, near-black ink,
@@ -8,8 +14,6 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #ffffff;
-  --foreground: #171717;
   --muted: #f6f6f4;
   --muted-foreground: #5c5c5c;
   --border: rgb(23 23 23 / 0.1);
@@ -31,6 +35,25 @@
   --workflow: #9a650b;
   --doc: #7245d4;
   --tag: #b82a5b;
+  /* Ink at fixed strengths: icons and secondary text, placeholders, hovers. */
+  --soft: rgb(23 23 23 / 0.7);
+  --subtle: rgb(23 23 23 / 0.62);
+  --faint: rgb(23 23 23 / 0.55);
+  --hover: rgb(0 0 0 / 0.04);
+  /* The off-white behind the footer and quiet panels. */
+  --surface: #fafafa;
+  /* The site header: 64px on phones, 80px from `sm`. */
+  --header-height: 4rem;
+  --background: #ffffff;
+  --foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+}
+
+@media (width >= 40rem) {
+  :root {
+    --header-height: 5rem;
+  }
 }
 
 @theme inline {
@@ -56,11 +79,35 @@
   --color-workflow: var(--workflow);
   --color-doc: var(--doc);
   --color-tag: var(--tag);
-  --font-sans: var(--font-season), ui-sans-serif, system-ui, sans-serif;
+  --color-soft: var(--soft);
+  --color-subtle: var(--subtle);
+  --color-faint: var(--faint);
+  --color-hover: var(--hover);
+  --color-surface: var(--surface);
+  --spacing-header: var(--header-height);
+  /* Expo-out: fast off the mark, long soft settle. Motion code mirrors it as
+     EXPO_OUT in lib/motion.ts — change both together. */
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* One family everywhere, code included (the design system rule). */
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+  --font-heading: var(--font-sans);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  /* A marquee track holds its list twice; -50% lands on the copy's start. */
+  --animate-marquee: marquee 60s linear infinite;
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 @layer base {
@@ -75,6 +122,10 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 450;
+    font-synthesis: none;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -93,12 +144,37 @@
       scroll-behavior: auto !important;
     }
   }
+  html {
+    @apply font-sans;
+  }
 }
 
 @utility focus-ring {
   &:focus-visible {
-    outline: 2px solid #171717;
+    outline: 2px solid var(--foreground);
     outline-offset: 2px;
+  }
+}
+
+/* The site's content column: pages and footer line up on one edge. */
+@utility page-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--container-6xl);
+  padding-inline: 1rem;
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Scrollable without a visible scrollbar (e.g. a sideways tab strip). */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -199,29 +275,34 @@
   }
 }
 
-[data-thinking-orb] {
-  display: block;
+/* Search placeholder: a gentle wave of opacity and a 2px lift, letter by letter. */
+@keyframes placeholder-wave {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateY(-2px);
+  }
+}
+
+.placeholder-wave > span {
+  display: inline-block;
+  opacity: 0.5;
+  animation: placeholder-wave 1.4s ease-in-out infinite both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .placeholder-wave > span {
+    opacity: 0.6;
+    animation: none;
+  }
 }
 
 /* Footer wordmark: a slow light sweep across the giant display type. */
-.footer-wordmark {
-  background-image: linear-gradient(
-    100deg,
-    rgb(0 0 0 / 0.1) 0%,
-    rgb(0 0 0 / 0.1) 32%,
-    rgb(0 0 0 / 0.42) 48%,
-    rgb(0 0 0 / 0.1) 64%,
-    rgb(0 0 0 / 0.1) 100%
-  );
-  background-size: 260% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  animation: footer-wordmark-sweep 9s linear infinite;
-}
-
-@keyframes footer-wordmark-sweep {
+@keyframes wordmark-sweep {
   from {
     background-position: 160% 50%;
   }
@@ -230,87 +311,24 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .footer-wordmark {
+@utility wordmark-sweep {
+  --wordmark-dim: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --wordmark-lit: color-mix(in srgb, var(--foreground) 42%, transparent);
+  background-image: linear-gradient(
+    100deg,
+    var(--wordmark-dim) 0%,
+    var(--wordmark-dim) 32%,
+    var(--wordmark-lit) 48%,
+    var(--wordmark-dim) 64%,
+    var(--wordmark-dim) 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: wordmark-sweep 9s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
-}
-
-/*
- * The mobile menu sheet and its backdrop. The same 220ms and easing the rest
- * of the site uses; `tw-animate-css` is not a dependency here, so the two
- * keyframes live where every other motion rule does.
- */
-.sheet-backdrop {
-  animation: sheet-fade 200ms ease forwards;
-}
-
-.sheet-panel {
-  animation: sheet-drop 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes sheet-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes sheet-drop {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sheet-backdrop,
-  .sheet-panel {
-    animation: none;
-  }
-}
-
-/* The rendered markdown file: the same tint scheme as the data-model doc. */
-.md-file {
-  color: var(--muted-foreground);
-}
-.md-file .fm {
-  color: #8a92a3;
-}
-.md-file .fm .k {
-  color: var(--muted-foreground);
-}
-.md-file .h {
-  font-weight: 500;
-  color: var(--foreground);
-}
-.md-file .h .mark {
-  color: #8a92a3;
-}
-.md-file .h1 {
-  font-size: 1.12em;
-}
-.md-file .fence {
-  color: #8a92a3;
-}
-.md-file .code {
-  color: var(--doc);
-}
-.md-file .ic {
-  background: #e9ecf2;
-  border-radius: 3px;
-  padding: 0 3px;
-}
-.md-file .li {
-  color: #8a92a3;
-}
-.md-file .b {
-  font-weight: 500;
-  color: var(--foreground);
 }

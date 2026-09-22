@@ -1,0 +1,29 @@
+/* The hero search adds artwork-safe glass elevation to the shared input. */
+@utility hero-search-control {
+  background: rgb(255 255 255 / 0.85);
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.08);
+  backdrop-filter: blur(12px);
+}
+
+@utility floating-panel {
+  border: 1px solid rgb(23 23 23 / 0.12);
+  border-radius: 1.75rem;
+  background: var(--background);
+  box-shadow: 0 24px 60px rgb(23 23 23 / 0.1);
+}
+
+/* Translucent labels and partner marks used over editorial artwork. */
+@utility glass-chip {
+  background: rgb(255 255 255 / 0.8);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.06);
+  backdrop-filter: blur(12px);
+}
+
+/* Catalog marks share one quiet resting elevation and one hover elevation. */
+@utility entity-shadow {
+  box-shadow: 0 4px 14px rgb(23 23 23 / 0.06);
+}
+
+@utility entity-shadow-raised {
+  box-shadow: 0 7px 20px rgb(23 23 23 / 0.1);
+}

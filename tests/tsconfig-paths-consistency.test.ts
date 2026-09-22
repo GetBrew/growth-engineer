@@ -44,7 +44,6 @@ const MIRRORS = [
   'tsconfig.json',
   'tests/tsconfig.json',
   'scripts/tsconfig.json',
-  'convex/tsconfig.json',
 ] as const
 
 describe('tsconfig path maps', () => {

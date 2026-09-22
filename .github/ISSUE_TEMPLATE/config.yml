@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Add a company, tool or workflow
+    url: https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md
+    about: Entries are markdown files in this repository — open a pull request and CI checks it.

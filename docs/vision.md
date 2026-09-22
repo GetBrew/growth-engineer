@@ -30,9 +30,12 @@ That single decision shapes everything else:
   reaches ("Turn fresh funding news into qualified outbound"), not by the
   tools inside it.
 - **Agent-readable by construction.** Files are generated from structured
-  fields by one render function, so they are consistent, current, and never
-  hand-edited. Any page answers `Accept: text/markdown` with its file;
+  source files by one render function, so they are consistent, current, and
+  never hand-edited. Any page answers `Accept: text/markdown` with its file;
   `/llms.txt` indexes all of them.
+- **Open source, by pull request.** The catalog IS the repository: every
+  company, tool and workflow is a markdown file anyone can add or correct,
+  and the build checks every rule before it ships.
 - **Honest about agent readiness.** A tool's level (unverified, native,
   friendly, possible) comes from rules over checked facts, with the reason
   shown. Nobody has checked it yet? It says so.
@@ -60,23 +63,24 @@ cannot be published.
 
 ## Phases
 
-1. **Plan the schema.** Done — `convex/schema.ts` and `docs/data-model.md`.
-2. **Seed by hand.** Admins add companies, tools and a first set of workflows;
-   each tool needs at least one way in before it is published. *This repo
-   ships an illustrative seed to make the shape real.*
-3. **Open community submissions.** Signed-in users propose listings and
-   publish workflows; vendors edit their own listings directly; every
-   published version is scanned, then listed after approval.
-4. **Add scheduled discovery.** Jobs find new tools, check that access still
-   works, refresh logos. New listings always wait for a person.
+1. **Plan the schema.** Done — the file schema in `docs/data-model.md`.
+2. **Seed by hand.** Done — 25 companies, 37 published tools and 12
+   workflows under `companies/` and `workflows/`, illustrative and
+   `unverified` until a person checks each one.
+3. **Open community contributions.** Now: anyone adds or corrects a file by
+   pull request; CI checks every rule; a maintainer reviews the facts;
+   vendors maintain their own folder.
+4. **Add scheduled discovery.** Jobs propose new tools, check that access
+   still works, refresh logos — as pull requests. New listings always wait
+   for a person.
 
 ## What v1 leaves out, deliberately
 
 Pricing and cost, standalone connector pages, skills/SDKs/webhooks as ways in,
-write actions through the API, the admin app, teams and reviews UI, the
-submissions pipeline, ranking jobs, vector search, per-IP rate limits. Each is
-designed for (the tables exist) and can arrive without changing a key or a
-file.
+write actions through an API, an admin app, teams and reviews, usage
+counters and ranking, vector search, version history beyond the current
+version. Each can arrive without changing a key or a file — a pull request is
+the submission pipeline and git is the history.
 
 ## Principles
 

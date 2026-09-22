@@ -1,15 +1,24 @@
-import { filePathToRef, refToFilePath } from '@convex/model/keys'
+import { filePathToRef, refToFilePath } from '@/lib/catalog/keys'
 import { loadDocument, resolveAlias } from '@/lib/catalog/loaders'
+import { markdownFileParams } from '@/lib/catalog/static-params'
 
 /**
- * The markdown files. `/tools/clay/clay.md` is rewritten here by proxy.ts;
- * so is any page requested with `Accept: text/markdown`. Agents fetch these
- * with no session, by design.
+ * The markdown files. `/tools/clay/enrich-contacts.md` is rewritten here by
+ * proxy.ts; so is any page requested with `Accept: text/markdown`. Agents
+ * fetch these with no session, by design.
  *
- * One row read per request (`documents.by_ref`, through the same tagged
- * loader the page uses, so a revalidation purges both). A renamed key answers
- * with a REAL 308 — agents follow it, and a streamed meta-refresh would not.
+ * PRERENDERED: every file, every current version pin and every old key is a
+ * static param, and the handler never reads the request, so the build writes
+ * each response once and the CDN serves it. A renamed key answers with a REAL
+ * 308 (a relative `Location`, because reading `request.url` would make the
+ * route dynamic) — agents follow it, and a streamed meta-refresh would not.
+ * Any other path renders on demand from the same in-memory catalog and is a
+ * 404 (Cache Components does not allow `dynamicParams = false`).
  */
+export function generateStaticParams() {
+  return markdownFileParams()
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ path: Array<string> }> }
@@ -24,10 +33,10 @@ export async function GET(
   if (!document) {
     const alias = await resolveAlias(ref.type, ref.key)
     if (alias) {
-      return Response.redirect(
-        new URL(refToFilePath({ ...ref, key: alias.key }), _request.url),
-        308
-      )
+      return new Response(null, {
+        status: 308,
+        headers: { Location: refToFilePath({ ...ref, key: alias.key }) },
+      })
     }
     return new Response('Not found', { status: 404 })
   }

@@ -3,5 +3,5 @@
   "framework": "nextjs",
   "fluid": true,
   "installCommand": "pnpm install",
-  "buildCommand": "bash scripts/vercel-build.sh"
+  "buildCommand": "pnpm build:raw"
 }

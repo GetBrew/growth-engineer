@@ -1,26 +1,34 @@
-import { isValidOwnedKey, refToFilePath } from '@convex/model/keys'
-import { AlertTriangle, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { connection } from 'next/server'
 import { Suspense } from 'react'
-import { AccessBadges, AgentLevelBadge } from '@/components/catalog/badges'
-import { WorkflowRow } from '@/components/catalog/cards'
-import { EntityLogo } from '@/components/catalog/entity-logo'
-import { EmptyState, Page } from '@/components/catalog/primitives'
+import { accessLabels } from '@/components/catalog/badges'
 import {
-  DocumentSkeleton,
-  HeaderSkeleton,
-} from '@/components/catalog/skeletons'
-import { DocumentViewer } from '@/components/document/document-viewer'
-import { Badge } from '@/components/ui/badge'
+  CatalogList,
+  workflowListItem,
+} from '@/components/catalog/catalog-list'
+import { DescriptionSection } from '@/components/catalog/description-section'
+import {
+  DETAIL_DATE,
+  DetailByline,
+  DetailHeader,
+} from '@/components/catalog/detail-header'
+import { NoResults } from '@/components/catalog/no-results'
+import { Page } from '@/components/catalog/primitives'
+import { ToolAccessPanel } from '@/components/catalog/tool-access-panel'
+import { MarkdownFile } from '@/components/document/markdown-file'
+import { OpenInAgentMenu } from '@/components/document/open-in-agent-menu'
+import { ShareButton } from '@/components/document/share-button'
+import { MaskIcon } from '@/components/site/mask-icon'
+import { ToolDetailSkeleton } from '@/components/skeletons/tool-detail-skeleton'
+import { isValidOwnedKey, refToFilePath } from '@/lib/catalog/keys'
 import {
   loadDocument,
   loadTool,
   loadWorkflowsByTool,
   resolveAlias,
 } from '@/lib/catalog/loaders'
+import { toolParams } from '@/lib/catalog/static-params'
 
 type Params = Promise<{ handle: string; name: string }>
 
@@ -28,6 +36,10 @@ async function keyFrom(params: Params): Promise<string | null> {
   const { handle, name } = await params
   const key = `${handle}/${name}`
   return isValidOwnedKey(key) ? key : null
+}
+
+export function generateStaticParams() {
+  return toolParams()
 }
 
 export async function generateMetadata({
@@ -51,15 +63,14 @@ export async function generateMetadata({
  */
 export default function ToolPage({ params }: { params: Params }) {
   return (
-    <Page className="flex flex-col gap-10">
-      <Suspense
-        fallback={
-          <div className="flex flex-col gap-10">
-            <HeaderSkeleton />
-            <DocumentSkeleton />
-          </div>
-        }
+    <Page className="flex flex-col gap-8">
+      <Link
+        className="type-control w-fit text-subtle transition-colors hover:text-foreground"
+        href="/tools"
       >
+        ← All tools
+      </Link>
+      <Suspense fallback={<ToolDetailSkeleton />}>
         <ToolDetail params={params} />
       </Suspense>
     </Page>
@@ -77,12 +88,7 @@ async function ToolDetail({ params }: { params: Params }) {
     loadWorkflowsByTool(key),
   ])
   if (!result) {
-    // `resolveAlias` is an UNCACHED read, and Next's prospective prerender
-    // walks this branch speculatively — where it reaches the Convex client and
-    // reports its `Math.random()` as an unstable value, dropping the route out
-    // of prerendering entirely. Saying plainly that the miss path is
-    // request-time keeps the hit path (the normal case) prerenderable.
-    await connection()
+    // An old key answers with a real redirect; an unknown one is a 404.
     const alias = await resolveAlias('tool', key)
     if (alias) {
       permanentRedirect(`/tools/${alias.key}`)
@@ -96,117 +102,94 @@ async function ToolDetail({ params }: { params: Params }) {
     version: undefined,
   })
 
+  const docsUrl = tool.access.find((access) => access.docsUrl)?.docsUrl
+  const links = [
+    ['Website', company.links.website],
+    ['Docs', docsUrl],
+  ].filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+
   return (
     <div className="flex flex-col gap-10">
-      <header className="flex flex-col gap-6 border-border border-b pb-8 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex gap-4">
-          <EntityLogo
-            logoUrl={company.logo?.url}
-            name={company.name}
-            size={56}
-          />
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <h1 className="font-semibold text-3xl tracking-[-0.04em] sm:text-4xl">
-                {tool.name}
-              </h1>
-              <p className="text-foreground/62 text-sm">
-                by{' '}
-                <Link
-                  className="text-foreground hover:underline"
-                  href={`/companies/${company.key}`}
-                >
-                  {company.name}
-                </Link>
-              </p>
-            </div>
-            <p className="max-w-2xl text-base text-foreground/70 leading-7">
-              {tool.summary}
-            </p>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <AgentLevelBadge
-                level={tool.agent.level}
-                reason={tool.agent.reason}
+      <DetailHeader
+        actions={
+          <>
+            <ShareButton text={tool.summary} title={tool.name} />
+            {document ? (
+              <OpenInAgentMenu
+                filePath={filePath}
+                markdown={document.markdown}
+                title={tool.name}
               />
-              <AccessBadges access={tool.access} />
-              {tool.status === 'deprecated' ? (
-                <Badge variant="workflow">
-                  <AlertTriangle aria-hidden="true" className="size-3" />{' '}
-                  Deprecated
-                </Badge>
-              ) : null}
-            </div>
-            <p className="text-foreground/55 text-xs">{tool.agent.reason}</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {company.links.website ? (
-            <a
-              className="focus-ring inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-white px-4 text-sm transition-colors hover:border-foreground/20"
-              href={company.links.website}
-              rel="noreferrer"
-              target="_blank"
+            ) : null}
+          </>
+        }
+        available={accessLabels(tool.access)}
+        byline={
+          <DetailByline
+            avatars={[
+              { name: company.name, src: company.logo?.url, logo: true },
+            ]}
+          >
+            by{' '}
+            <Link
+              className="text-foreground hover:underline"
+              href={`/companies/${company.key}`}
             >
-              Website <ExternalLink aria-hidden="true" className="size-3.5" />
-            </a>
-          ) : null}
-          {tool.access.find((access) => access.docsUrl)?.docsUrl ? (
-            <a
-              className="focus-ring inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-white px-4 text-sm transition-colors hover:border-foreground/20"
-              href={tool.access.find((access) => access.docsUrl)?.docsUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Docs <ExternalLink aria-hidden="true" className="size-3.5" />
-            </a>
-          ) : null}
+              {company.name}
+            </Link>
+          </DetailByline>
+        }
+        links={links.map(([label, href]) => ({ label, href }))}
+        dates={[`Updated ${DETAIL_DATE.format(tool.updatedAt)}`]}
+        description={tool.summary}
+        tags={[
+          ...(tool.status === 'deprecated'
+            ? [{ label: 'Deprecated', emphasis: true }]
+            : []),
+          ...capabilities.map((capability) => ({
+            label: capability.label,
+            href: `/tools?capability=${capability.slug}`,
+          })),
+        ]}
+        title={tool.name}
+      />
+
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-10">
+        <div className="flex min-w-0 flex-col gap-14">
+          <DescriptionSection icon="/tool.svg" text={tool.description} />
+          <section className="flex flex-col gap-5">
+            <h2 className="type-section">Ready-to-use markdown</h2>
+            {document ? (
+              <MarkdownFile
+                fileName={filePath.split('/').pop() ?? 'tool.md'}
+                markdown={document.markdown}
+              />
+            ) : (
+              <p className="type-body rounded-2xl border border-dashed px-6 py-10 text-center">
+                The file for this tool has not been rendered yet.
+              </p>
+            )}
+          </section>
         </div>
-      </header>
+        <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
+          <ToolAccessPanel tool={tool} />
+        </aside>
+      </div>
 
-      {document ? (
-        <DocumentViewer
-          filePath={filePath}
-          lineCount={document.lineCount}
-          markdown={document.markdown}
-          title={tool.name}
-        />
-      ) : (
-        <EmptyState title="The file for this tool has not been rendered yet." />
-      )}
-
-      {capabilities.length > 0 ? (
-        <section className="flex flex-col gap-3">
-          <h2 className="font-semibold text-xl tracking-[-0.025em]">
-            What it can do
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {capabilities.map((capability) => (
-              <Link
-                className="focus-ring inline-flex h-8 items-center rounded-full border border-tag/40 bg-tag/5 px-3 text-sm text-tag transition-colors hover:border-tag"
-                href={`/tools?capability=${capability.slug}`}
-                key={capability.slug}
-              >
-                {capability.label}
-              </Link>
-            ))}
-          </div>
+      <div className="flex flex-col gap-14">
+        <section className="flex flex-col gap-5">
+          <h2 className="type-section">Workflows using {tool.name}</h2>
+          {workflows.length === 0 ? (
+            <NoResults
+              description={`No published workflow uses ${tool.name} yet.`}
+              icon={<MaskIcon size={20} src="/workflow.svg" />}
+              title="No workflows yet"
+            />
+          ) : (
+            <CatalogList items={workflows.map(workflowListItem)} />
+          )}
         </section>
-      ) : null}
-
-      <section className="flex flex-col gap-4">
-        <h2 className="font-semibold text-xl tracking-[-0.025em]">
-          Workflows using {tool.name}
-        </h2>
-        {workflows.length === 0 ? (
-          <EmptyState title={`No published workflow uses ${tool.name} yet`} />
-        ) : (
-          <div className="flex flex-col border-border border-t">
-            {workflows.map((row) => (
-              <WorkflowRow key={row.workflow._id} {...row} />
-            ))}
-          </div>
-        )}
-      </section>
+      </div>
     </div>
   )
 }

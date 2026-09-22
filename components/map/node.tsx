@@ -1,9 +1,9 @@
+import Link from 'next/link'
 import {
   refToPath,
   splitVersionedKey,
   TAG_NAMESPACES,
-} from '@convex/model/keys'
-import Link from 'next/link'
+} from '@/lib/catalog/keys'
 import { cn } from '@/lib/utils/cn'
 
 /**

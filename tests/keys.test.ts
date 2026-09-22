@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { describe, expect, test } from 'vitest'
 import {
   filePathToRef,
   formatRef,
@@ -11,8 +12,7 @@ import {
   refToFilePath,
   refToPath,
   splitVersionedKey,
-} from '@convex/model/keys'
-import { describe, expect, test } from 'vitest'
+} from '@/lib/catalog/keys'
 import { REPO_ROOT } from './helpers/source-files'
 
 describe('key grammar', () => {

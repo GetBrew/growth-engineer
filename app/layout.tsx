@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
-import { Geist_Mono } from 'next/font/google'
-import localFont from 'next/font/local'
+import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
-import { ConvexClientProvider } from '@/components/convex-client-provider'
 import { clientEnv } from '@/lib/env'
 
 import './globals.css'
@@ -10,21 +8,19 @@ import './globals.css'
 /**
  * The root layout is a SHELL. Under `cacheComponents: true` it is prerendered
  * once and reused by every route, so nothing here reads request-time data.
- * The Convex provider only sets up context; anything that READS request-time
- * data lives further down, behind its own Suspense boundary.
  */
 
-// Season (variable). TRIAL license — see README before this repo goes public.
-const season = localFont({
-  src: '../public/fonts/season/SeasonCollectionVF-TRIAL.woff2',
-  variable: '--font-season',
+// Geist (SIL OFL): the one open family for text; Geist Mono for code.
+const geistSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
   display: 'swap',
-  weight: '100 900',
 })
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
   subsets: ['latin'],
+  variable: '--font-geist-mono',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -40,12 +36,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
-      className={`${season.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       lang="en"
     >
-      <body className="min-h-full">
-        <ConvexClientProvider>{children}</ConvexClientProvider>
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   )
 }

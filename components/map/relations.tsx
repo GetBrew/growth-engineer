@@ -1,4 +1,5 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { type MapNode, NodePill } from './node'
 
 /**
@@ -30,17 +31,15 @@ export function RelationGroups({ groups }: { groups: Array<Group> }) {
       {populated.map((group) => (
         <section className="flex flex-col gap-3" key={group.relation}>
           <div className="flex items-center gap-2">
-            {group.direction === 'in' ? (
-              <ArrowLeft
-                aria-hidden="true"
-                className="size-4 text-foreground/45"
-              />
-            ) : (
-              <ArrowRight
-                aria-hidden="true"
-                className="size-4 text-foreground/45"
-              />
-            )}
+            <HugeiconsIcon
+              aria-hidden="true"
+              className="text-foreground/45"
+              icon={
+                group.direction === 'in' ? ArrowLeft01Icon : ArrowRight01Icon
+              }
+              size={16}
+              strokeWidth={1.8}
+            />
             <h3 className="font-medium text-sm">{group.relation}</h3>
             <span className="font-medium text-foreground/45 text-xs">
               {group.nodes.length}

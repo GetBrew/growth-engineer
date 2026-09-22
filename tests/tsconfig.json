@@ -14,8 +14,7 @@
     "tsBuildInfoFile": "../node_modules/.cache/tsc/tests.tsbuildinfo",
     // MIRROR of the tsconfig.base.json map, relative to `baseUrl`.
     "paths": {
-      "@/*": ["./*"],
-      "@convex/*": ["./convex/*"]
+      "@/*": ["./*"]
     }
   },
   "include": [

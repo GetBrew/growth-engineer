@@ -1,23 +1,22 @@
 # CI
 
-Six jobs, each proving something a human reviewer cannot reliably check by
+Five jobs, each proving something a human reviewer cannot reliably check by
 reading a diff.
 
 | Job | Proves |
 | --- | --- |
 | `lint` | Biome: style, formatting, AND no import cycles |
-| `typecheck (×5)` | each TypeScript program compiles, in parallel |
-| `build` | the production build works — on the PR — and no route's client JS grew past its budget |
-| `test (unit)` | the hermetic unit suite |
-| `test (convex)` | the seed → every catalog read, plus the authorization negatives |
-| `hygiene` | docs links, Convex codegen freshness, dead code, duplicate deps |
+| `typecheck (×3)` | each TypeScript program compiles, in parallel |
+| `build` | the production build works — on the PR — every catalog page and file prerenders, and no route's client JS grew past its budget |
+| `test (unit)` | the hermetic unit suite, including the content suite over the real tree |
+| `hygiene` | docs links, the content tree, dead code, duplicate deps |
 
 ## Why the typecheck is a matrix
 
-`pnpm tsc` chains five programs: app, tests, scripts, convex, convex-tests. Run
-sequentially, wall time is the SUM. As matrix legs it is the slowest one — and
-a failure names its program in the job title instead of making you read a log
-to find out which of the five went red.
+`pnpm tsc` chains three programs: app, tests, scripts. Run sequentially, wall
+time is the SUM. As matrix legs it is the slowest one — and a failure names
+its program in the job title instead of making you read a log to find out
+which one went red.
 
 The split exists for the same reason the programs exist: `next build` and the
 fast check should not compile thousands of test and script files that no
@@ -29,14 +28,19 @@ The hosting platform already builds on deploy — but that is AFTER merge. A
 broken build and every client-bundle regression would reach main first and be
 discovered by whoever merged next. This job runs on the pull request.
 
-It builds with PLACEHOLDER environment values, never secrets: a pull request
-from a fork must not see a credential, and the build only needs enough for
-module-scope code to parse, which is exactly what `lib/env.ts` reads at
-import: a Convex URL and a service token of the right shape. A third variable
-appearing there means `lib/env.ts` grew one.
+It needs no environment at all: the catalog is built from the checkout, and
+`lib/env.ts` reads nothing secret. A variable appearing in that job means
+`lib/env.ts` grew one.
 
 The bundle budget step reads THIS build's manifests, so it has to live in this
 job. See [`performance.md`](performance.md).
+
+## Why the content suite runs twice
+
+`pnpm test:run` includes `tests/content.test.ts`, and `hygiene` runs
+`pnpm content:check` as its own step. The second run is for the contributor:
+a pull request that only adds a company gets a step named after the thing it
+changed, with every problem listed, instead of a failed unit-test job.
 
 ## Why hygiene uses `continue-on-error`
 
@@ -51,10 +55,9 @@ failed. One run, the complete list.
 
 ## Why `test` is a separate aggregator job
 
-`test-unit` and `test-convex` run in parallel, and `test` is the name branch
-protection requires. `if: always()` matters: without it, a sibling failure
-makes `test` *skipped*, and a required check that is skipped is a required
-check that a merge sails past.
+`test` is the name branch protection requires, and `if: always()` matters:
+without it, a sibling failure makes `test` *skipped*, and a required check
+that is skipped is a required check that a merge sails past.
 
 ## Why `runs-on` reads a variable
 

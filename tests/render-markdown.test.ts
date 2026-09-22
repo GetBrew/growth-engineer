@@ -1,10 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import {
-  type Access,
-  orderAccess,
-  selectWorkflowAccess,
-} from '@convex/model/render_access'
+import { describe, expect, test } from 'vitest'
+import { orderAccess, selectWorkflowAccess } from '@/lib/catalog/render-access'
 import {
   MAX_WORKFLOW_STEPS,
   renderCompanyDocument,
@@ -14,8 +11,8 @@ import {
   type ToolFileInput,
   WORKFLOW_FILE_MAX_LINES,
   type WorkflowFileInput,
-} from '@convex/model/render_markdown'
-import { describe, expect, test } from 'vitest'
+} from '@/lib/catalog/render-markdown'
+import type { Access } from '@/lib/catalog/types'
 
 /**
  * The renderer IS the product. These goldens are the design doc's three

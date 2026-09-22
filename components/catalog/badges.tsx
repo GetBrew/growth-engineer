@@ -1,33 +1,12 @@
-import { Badge } from '@/components/ui/badge'
-import type { Doc } from '@/convex/_generated/dataModel'
+import type { AccessType, AgentLevel } from '@/lib/catalog/types'
 
-type AgentLevel = Doc<'tools'>['agent']['level']
-type Access = Doc<'tools'>['access'][number]
+type Access = { type: AccessType }
 
 const LEVEL_LABEL: Record<AgentLevel, string> = {
   unverified: 'Unverified',
   native: 'Native',
   friendly: 'Friendly',
   possible: 'Possible',
-}
-
-/** The agent-readiness level, with its reason as the title. */
-export function AgentLevelBadge({
-  level,
-  reason,
-}: {
-  level: AgentLevel
-  reason?: string
-}) {
-  return (
-    <Badge title={reason} variant={level === 'unverified' ? 'outline' : 'tool'}>
-      <span
-        aria-hidden="true"
-        className="size-1.5 rounded-full bg-current opacity-70"
-      />
-      {LEVEL_LABEL[level]}
-    </Badge>
-  )
 }
 
 const ACCESS_LABEL: Record<Access['type'], string> = {
@@ -37,16 +16,22 @@ const ACCESS_LABEL: Record<Access['type'], string> = {
 }
 const ACCESS_ORDER: Array<Access['type']> = ['mcp', 'cli', 'api']
 
-/** The ways in, deduplicated, in setup order. */
-export function AccessBadges({ access }: { access: ReadonlyArray<Access> }) {
-  const types = new Set(access.map((entry) => entry.type))
-  return (
-    <>
-      {ACCESS_ORDER.filter((type) => types.has(type)).map((type) => (
-        <Badge key={type} variant="soft">
-          {ACCESS_LABEL[type]}
-        </Badge>
-      ))}
-    </>
+/** The ways in as labels ("MCP", "CLI", "API"), deduplicated, in setup order. */
+export function accessLabels(access: ReadonlyArray<Access>): Array<string> {
+  return accessTypeLabels(access.map((entry) => entry.type))
+}
+
+/** Access-type labels when a list projection carries only the compact type. */
+export function accessTypeLabels(
+  access: ReadonlyArray<Access['type']>
+): Array<string> {
+  const types = new Set(access)
+  return ACCESS_ORDER.filter((type) => types.has(type)).map(
+    (type) => ACCESS_LABEL[type]
   )
+}
+
+/** The agent-readiness level as a label: "Native", "Friendly", … */
+export function agentLevelLabel(level: AgentLevel): string {
+  return LEVEL_LABEL[level]
 }

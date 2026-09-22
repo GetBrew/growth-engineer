@@ -14,14 +14,12 @@
     // file's `paths` without following `extends`. Add aliases to the base;
     // tests/tsconfig-paths-consistency.test.ts fails when this copy drifts.
     "paths": {
-      "@/*": ["./*"],
-      "@convex/*": ["./convex/*"]
+      "@/*": ["./*"]
     }
   },
   // Explicit directories, not `**/*.ts`: the broad pattern is what pulls
-  // tests/ and scripts/ into every build. convex/ is not listed — the files it
-  // contributes are reached through imports. Root-level `*.ts` covers
-  // next.config.ts, the Vitest configs and proxy.ts.
+  // tests/ and scripts/ into every build. Root-level `*.ts` covers
+  // next.config.ts, the Vitest config and proxy.ts.
   "include": [
     "next-env.d.ts",
     "*.ts",

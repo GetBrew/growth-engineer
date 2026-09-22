@@ -1,10 +1,9 @@
 # Adding a second app
 
-> For growth.engineer the second app is the **admin app** (review queue, scan
-> flags, tag proposals, job runs, edit history — see `docs/data-model.md`).
-> It reads the same Convex deployment through the admin tier builders
-> (`orgAdminMutation` today; a platform-admin tier arrives with it) and
-> deploys on its own schedule, which is exactly the case below.
+> For growth.engineer a second app is hypothetical: the catalog is a tree of
+> files and a static site, and contributions arrive as pull requests. If a
+> review or curation surface ever needs its own deploy schedule, this is the
+> case below.
 
 Most apps never need this. Read the first section before you decide you do.
 
@@ -88,16 +87,13 @@ for every URL anyone bookmarked.
   reaches into the parent through a relative path or a shared `@/*` alias is
   not independently deployable — that is the whole property you are buying.
 - **Shared code goes in `packages/*`**, imported by a workspace alias that both
-  apps declare in their own path map. `convex/model/*` is the first candidate:
-  it is already pure so both apps can bundle the key grammar and the renderer.
-- **One Convex backend** is usually right: both apps authenticate the same
-  users against the same data, and the tier builders already distinguish an
-  admin caller from a member.
+  apps declare in their own path map. The pure half of `lib/catalog/*` is the
+  first candidate: both apps can bundle the key grammar and the renderer, and
+  `lib/content/` can build the same catalog from the same tree.
 
 ## The invariants to keep
 
 - The parent's proxy matcher excludes every child path prefix. Test it.
-- An admin surface's authority comes from the Convex tier builder
-  (`orgAdminMutation`), never from "it is only reachable at the admin URL".
+- A surface's authority never comes from "it is only reachable at this URL".
   A URL is not an authorization boundary.
 - Each app's client bundle gets its own budget snapshot.

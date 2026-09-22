@@ -1,123 +1,121 @@
-# Data model
+# Data model: the file schema
 
-`convex/schema.ts` is the source of truth (v0.3.1: the design doc's v0.3
-"grilling decisions applied", plus two additive amendments — `auth.header`,
-because the API section of a file renders the header the key is sent in and
-v0.3 had nowhere to store it; and two listing indexes — `by_format_top` /
-`by_format_new` on `workflows`, so Top and New with a format read an index
-instead of over-fetching, and `by_rendered` on `documents`, so the file index
-is every file rather than every unstale one). This page is the map.
+The catalog is a tree of markdown files. This page is the map of that tree —
+every entity, every field, every rule the build enforces, and the values it
+derives. The schemas themselves live in `lib/content/schemas.ts`; the types
+in `lib/catalog/types.ts`.
 
 ## Identity
 
-Every record has an internal `_id` — the only thing stored in reference
-fields — and a public `key`, resolved once at the edge through a `by_key`
-index. A **ref** is `${type}:${key}` and is what agents pass around.
+The public `key` is the path, and the path is the URL:
 
-| Entity | Key | Points to |
-| --- | --- | --- |
-| Company | `clay` | the team that claimed it |
-| Tool | `clay/enrich-contacts` — ONE function of one company's product | company |
-| Workflow | `brew/intent-to-meeting`; `@3` pins a version | owning team or user, current version |
-| Team / user | `brew`, `jdoe` — one shared handle namespace with companies | — |
-| Tag | `capability:enrich-contacts` | parent tag, merged-into tag |
+| Entity | Key | Path | URL |
+| --- | --- | --- | --- |
+| Company | `clay` | `companies/clay/company.md` | `/companies/clay` |
+| Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` | `/tools/clay/enrich-contacts` |
+| Workflow | `brew/intent-to-meeting` | `workflows/brew/intent-to-meeting.md` | `/workflows/brew/intent-to-meeting` (`@3` pins a version) |
+| Tag | `capability:enrich-contacts` | `tags/capability/enrich-contacts.md` | a filter chip |
 
-Rules: stored references are always ids; keys never change after publishing
-(a merge or forced rename adds a `keyAliases` row and the old URL 308s); keys
-use lowercase letters, digits and hyphens, 2–39 characters per part; reserved
-words live in code (`convex/model/keys.ts`); workflow versions snapshot each
-tool's key beside its id so files show readable refs with no lookups.
+A key part is lowercase letters, digits and hyphens, 2–39 characters, never
+starting or ending with a hyphen. A handle (company, workflow owner) is one
+part that is not a reserved route word (`tools`, `workflows`, `map`, …;
+`lib/catalog/keys.ts`). Keys are never written in a header and never change
+after publishing: a rename lists the old key under `aliases:`, and the old
+URL answers with a 308.
 
-## Lifecycle
+## Companies — `companies/<handle>/company.md`
 
-`draft › in_review › published › deprecated › archived`. A listing gets its
-permanent key when first published. Deprecated stays visible with a warning;
-archived is hidden, and its old keys keep redirecting. A tool is published
-only with at least one way in.
+`name`, `domain`, `category` (a `tags/category/` slug), `logo` (a file under
+`public/logos/`), `updated` (ISO date) are required. Optional: `kind`
+(`vendor` default, `open_source`, `individual`), `tagline`, `website`
+(defaults to `https://<domain>`), `docs`, `github`, `linkedin`, `x`,
+`founded` (year), `headquarters`, `aliases`, `status` (`published` default,
+`deprecated`). The body is the description.
 
-## Entities
+## Ways in — `companies/<handle>/access/<id>.md`
 
-| Table | Job |
+One file per way in, shared by every tool of the company that lists it.
+`type` is `mcp`, `cli` or `api`; `official` is a boolean and a community
+option names its `maintainer`; `auth` is `{ method: none | api_key | oauth,
+selfServe, envVar?, header?, keyUrl? }`; `docsUrl` is optional.
+
+| Type | Fields |
 | --- | --- |
-| `companies` | vendor, open-source org or individual; `domain`, `links`, `logo`, `claimedByTeamId`, `searchText` (projection) |
-| `identifiers` | every domain, npm package, repo and MCP URL we match on — duplicate checks and vendor claims |
-| `tools` | ONE FUNCTION: `access[]` (the ways in, each naming its `operation` — the endpoint, MCP tool or subcommand), `agent` (level, score, reason, checkedAt), projections `agentLevel` + `searchText` |
-| `workflows` | title phrased as the result; `visibility`, `moderation`, `currentVersionId`, `forkedFromId`; projections `listed`, `toolCount`, `trendScore`, `topScore`, `searchText`. There is no `format`: a growth hack is a workflow |
-| `workflowVersions` | frozen once saved: `inputs`, `steps` (≤ 10, each with `toolId` + `toolKey` + optional `via`), `doneWhen`, `notes`, `scan` |
-| `workflowTools` | projection of the current version's tools, with `listed` + `trendScore` copied so tool and company pages read straight from the index |
-| `documents` | the rendered file per ref: `markdown`, `hash`, `lineCount`, `stale`, `renderedAt` |
-| `tags` / `taggings` | the managed list (with synonyms, parents, aliases, counts) and the attachments, with sort values copied onto each row |
-| `handles`, `users`, `teams`, `teamStack`, `reviews` | people: an auth provider will own accounts and membership (none is wired yet); teams form around a verified domain; stacks public by default; one review per person per tool |
-| `submissions`, `agentRuns`, `revisions` | the pipeline: proposals from the community and scheduled jobs, job runs, and a hidden edit history |
-| `events`, `entityStats`, `embeddings`, `keyAliases`, `apiKeys` | raw activity (90-day retention), rolled-up counts, vectors, redirects, free read keys |
+| `mcp` | `transport: remote` with `url`, or `local` with `command`; `repoUrl?` |
+| `cli` | `installCommand`, `binary`, `repoUrl?` |
+| `api` | `baseUrl`, `openApiUrl?` |
 
-## Agent access
+## Tools — `companies/<handle>/tools/<slug>.md`
 
-A tool is published only if an agent can reach it over **MCP**, **CLI** or
-**API**; the ways in are stored on the tool. Each carries `official` (or a
-community `maintainer`), `auth` (`none` / `api_key` / `oauth`, the `envVar`,
-the `header`, where to get a key, `selfServe`), `docsUrl` and `health`.
+A tool is ONE function. The slug is a capability (`tags/capability/<slug>.md`
+must exist). `name`, `summary`, `updated` are required. `access` maps an
+access id to the **operation** — the MCP tool name, the CLI subcommand, or
+`METHOD /path` — and a published tool needs at least one. `agent.checked`
+(a date) records that a person verified the access facts;
+`agent.machineReadableDocs` that OpenAPI or llms.txt exists. `status` is
+`published` (default), `deprecated`, or `draft` (no page, no file, not
+listed). `aliases` lists old slugs. The body is the description.
 
-Levels come from rules checked from the top; the first match wins. A 0–100
-score only sorts within a level. `convex/model/agent_level.ts`.
+## Workflows — `workflows/<owner>/<name>.md`
 
-| Level | Rule |
+`title` (phrased as the result), `summary`, `tags` (≥ 1, curated namespaces
+only), `steps` (1–10 of `{ title, tool, via?, instruction }`), `doneWhen`
+(≥ 1), `updated` are required. Optional: `version` (integer, default 1),
+`inputs` (`{ name (snake_case), description, example? }`), `featured`
+(unique rank on the featured list), `aliases`, `status`. The body is the
+notes section. Every step's `tool` must be a published tool; `via` must be a
+way in that tool has.
+
+## Tags — `tags/<namespace>/<slug>.md`
+
+`label` is required; `synonyms` feed search; the body is the required
+description. Namespaces: `capability` (what a tool does), `motion`,
+`channel`, `category` (of a company), `fit`. Two namespaces are DERIVED and
+never files: `agent:<level>` and `has:<type>`, computed from each tool's
+access.
+
+## Agent readiness
+
+Computed at build (`lib/catalog/agent-level.ts`) from a tool's ways in and
+`agent.checked`. Rules top-down, first match wins:
+
+| Level | When |
 | --- | --- |
-| Unverified | Nobody has checked the facts yet — the default for new and discovered tools. |
-| Native | An official MCP server or CLI, and credentials without a sales call. |
-| Friendly | An official API, and self-serve credentials. |
-| Possible | Only community-built access, or official access behind approval. |
+| **unverified** | no `agent.checked` — nobody has verified the facts |
+| **native** | an official MCP server or CLI with self-serve credentials |
+| **friendly** | an official API with self-serve credentials |
+| **possible** | community access only, or official access behind approval |
 
-Every tool shows why ("Native: official remote MCP with self-serve OAuth.");
-it is `agent_note` in the file. Seven days of failing official health checks
-drop a tool one level until it recovers; facts older than 90 days are
-re-checked.
+The level and its reason appear in the file header (`agent`, `agent_note`).
+A score (0–100) orders tools within a level and is never shown.
 
-## Tags and search
+## What the build derives (never authored)
 
-Tags come from a managed list; the community proposes, moderators approve,
-merge as synonyms, or reject. Two namespaces are computed and never proposable.
-
-| Namespace | Answers | Set by |
+| Projection | From | Where |
 | --- | --- | --- |
-| `capability` | what does it do? | curators |
-| `motion` | which go-to-market motion? | curators |
-| `channel` | where does it act? | curators |
-| `category` | what kind of product is it? | curators |
-| `fit` | who is it good for? | curators |
-| `agent` | how well can an agent use it? | computed |
-| `has` | how can an agent reach it? | computed from access |
+| `agentLevel`, `agent.reason`, `agent.score` | access + `agent.checked` | `agent-level.ts` |
+| `has:*` and `agent:*` tags on a tool | access, level | `derived-tags.ts` |
+| tag `counts` | published entities | `derive.ts` |
+| `searchText` | name, summary, company, tag labels and synonyms | `derive.ts` |
+| `toolKeys`, `toolCount`, workflow ↔ tool ↔ company edges | steps | `build-entities.ts`, `build-catalog.ts` |
+| listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
+| the rendered files, their hash and line count | everything above | `build-documents.ts` |
 
-One box searches everything: words match names, summaries, tag labels and
-synonyms; a typed chip like `agent:native` filters; a partial chip completes.
-Chips in the same group mean OR, in different groups AND. A parent tag
-includes its children (two levels at most). **Every search is a URL**
-(`/tools?q=cold+outbound&has=mcp,cli`), and MCP `search` takes the same
-values. The query plan is in `docs/architecture.md`.
+## Rules the build enforces
 
-## Teams and trust
+Every problem is reported at once, with its file path
+(`pnpm content:check`): unknown header fields; malformed dates, URLs and env
+var names; reserved or malformed handles and slugs; a tool slug that is not a
+capability; an access id with no file; a published tool with no way in; a
+step naming an unknown or draft tool; a `via` the tool lacks; an unknown or
+derived tag; an unknown category; a missing logo; an alias that shadows a
+live key or is claimed twice; two workflows with the same `featured` rank;
+more than ten steps. `tests/content-schema.test.ts` proves each one fails.
 
-Teams form around a verified work-email domain and later sign-ins join
-automatically; personal-email users publish under their own handle. Stacks are
-public by default. A team whose domain matches a company's identifier owns
-the listing and edits it directly (history kept, checks still run). Anyone
-signed in writes one review per tool, badged when their team uses it. New
-workflows are shareable at once, scanned, then listed after approval.
+## Not in this model, on purpose
 
-## Ranking and discovery
-
-Trending (7-day half-life) and Top (all-time), written hourly: copies and
-agent fetches weigh most, saves and forks next, views least. Each person
-counts once a day per workflow; verified-team actions count double; the
-author's own team does not count; new workflows get a 48-hour boost.
-Discovered listings match `identifiers` first (a match becomes an update),
-always wait for a person, and expire after 30 days if low-confidence.
-
-## Scaling rules
-
-Files are rendered once and stored. Every read uses an index and every list is
-paged. Counts never write to catalog records (sharded counters → `entityStats`).
-Tag rows store their sort values. Large or rarely read data lives in its own
-table. Anything unbounded is a table, not an array (Convex caps arrays at
-8,192 items and documents at 1 MB). Public pages are cached per ref with
-`cacheTag(ref)`. Raw events expire after 90 days.
+Views, copies and ranking counters; teams, reviews and claims; submissions
+and moderation queues; version history beyond the current version. Each was
+designed for in the original schema and can return without changing a key or
+a file — a pull request is the submission pipeline for now, and git history
+is the version history.

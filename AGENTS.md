@@ -7,158 +7,151 @@ pointer-style: one canonical statement per policy, no history, no changelog.
 
 ## What this is
 
-A catalog of **companies**, the **tools** they make, and **workflows** that
-put tools to work. A COMPANY makes many TOOLS; a tool is ONE function an
-agent can call (`clay/enrich-contacts`), tied to a specific public API
-endpoint, MCP tool or CLI subcommand — not the product. A WORKFLOW is several
-tools in order with the instructions that reach a result, and a growth hack
-IS a workflow, not a second kind. **Every tool and
-workflow is ONE generated markdown file any agent can run; copying it is the
-product action.** Reads are public; agents fetch files with no sign-in.
-Vision: [`docs/vision.md`](docs/vision.md). Model: [`docs/data-model.md`](docs/data-model.md).
+An open-source catalog of **companies**, the **tools** they make, and
+**workflows** that put tools to work. A COMPANY makes many TOOLS; a tool is
+ONE function an agent can call (`clay/enrich-contacts`), tied to a specific
+MCP tool, CLI subcommand or API endpoint — not the product. A WORKFLOW is
+several tools in order with the instructions that reach a result, and a growth
+hack IS a workflow, not a second kind. **Every tool and workflow is ONE
+generated markdown file any agent can run; copying it is the product action.**
+Reads are public; agents fetch files with no sign-in.
+
+**THE CATALOG IS THE REPOSITORY.** Every entry is a markdown file under
+`companies/`, `workflows/` and `tags/`; the site is built from them, and
+the community contributes by pull request. To add or change catalog data,
+read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the folder READMEs
+([`companies/`](companies/README.md), [`workflows/`](workflows/README.md),
+[`tags/`](tags/README.md)); never edit a rendered file or the app to change
+a fact. Vision: [`docs/vision.md`](docs/vision.md). File schema:
+[`docs/data-model.md`](docs/data-model.md).
 
 ## Stack
 
-Next.js 16 (App Router, Cache Components, Turbopack) · Convex ·
-Tailwind v4 · Biome · Vitest · pnpm. Generated from
-`GetBrew/next-convex-clerk-starter`.
-
-**There is no auth provider.** Every route is public, nobody signs in, and
-the only server secret is `CONVEX_SERVICE_TOKEN`. The authorization tiers
-below are intact and fail closed — they are what auth plugs back into.
+Next.js 16 (App Router, Cache Components, Turbopack) · a build-time content
+compiler (`lib/content/`) · Tailwind v4 · shadcn on Base UI · Biome · Vitest
+· pnpm. **There is no backend, no database and no auth provider.** Every
+route is public; the only environment is two optional `NEXT_PUBLIC_*` values.
 
 ## Validation — proportional, not ceremonial
 
 - **While editing**: `pnpm exec biome check --write <all touched files>` once
   per unit of work, in ONE call (every invocation loads the whole project).
   Plus `pnpm test:run tests/<exact file>` for the behavior you touched.
+- **Touched catalog data** (`companies/`, `workflows/`, `tags/`):
+  `pnpm content:check` — every problem, with its file path.
 - **Once per unit of work**: `pnpm check` (Biome + `tsgo`). Not per patch.
-- **Final handoff**: `pnpm tsc` then `pnpm lint`. Touched `convex/`: also
-  `pnpm test:convex`. Touched the renderer: the goldens in
-  `tests/render-markdown.test.ts` must still pass byte for byte.
+- **Final handoff**: `pnpm tsc` then `pnpm lint`. Touched the renderer: the
+  goldens in `tests/render-markdown.test.ts` must still pass byte for byte.
 - **Docs only**: `pnpm docs:check`.
 
 ### Serialized commands
 
-`pnpm check`, `pnpm tsc`, `build`, `test:run`, `test:convex`, `knip` run under
-`scripts/heavy-lock.mjs` — one at a time per repository across all worktrees.
-A lock timeout is a QUEUE timeout, not a check failure. Never call the
-underlying binary (`vitest`, `tsc`, `next build`, `knip`) directly. Dev
+`pnpm check`, `pnpm tsc`, `build`, `test:run`, `content:check`, `knip` run
+under `scripts/heavy-lock.mjs` — one at a time per repository across all
+worktrees. A lock timeout is a QUEUE timeout, not a check failure. Never call
+the underlying binary (`vitest`, `tsc`, `next build`, `knip`) directly. Dev
 servers: `pnpm dev`, never `npx next dev`. `pnpm tsc <program>` runs one of
-`app`, `tests`, `scripts`, `convex`, `convex:tests`.
+`app`, `tests`, `scripts`.
 
 ### What CI blocks on
 
-Lint (Biome — formatting and import cycles too), five typecheck programs in
-parallel, `pnpm build` with placeholder env plus the client bundle ratchet,
-the unit and Convex suites, and hygiene (`docs:check`, Convex codegen
-freshness, `knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
+Lint (Biome — formatting and import cycles too), three typecheck programs in
+parallel, `pnpm build` plus the client bundle ratchet, the unit suite (which
+includes the content suite), and hygiene (`docs:check`, `content:check`,
+`knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
 
 ## Critical invariants
 
 ### The markdown file
 
-- ONE render path: [`convex/model/render_markdown.ts`](convex/model/render_markdown.ts)
-  (pure) called only by [`convex/documents_render.ts`](convex/documents_render.ts),
-  which writes the `documents` table. Nothing else writes `documents.markdown`;
-  nothing renders on the request path; a file is never hand-edited.
+- ONE render path: [`lib/catalog/render-markdown.ts`](lib/catalog/render-markdown.ts)
+  (pure) called only by [`lib/content/build-documents.ts`](lib/content/build-documents.ts)
+  at build time. Nothing renders on the request path; a rendered file is
+  never hand-edited; the SOURCE files under `companies/` and `workflows/`
+  are structured input, not the product.
 - The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
   flat YAML header, setup picks the best way in (official MCP → CLI → API →
   community; tool files list every option, workflow files ≤ 2 per tool or the
   step's `via`), inputs in backticks, ≤ 10 steps, Rules last and immutable,
   tool ≈ 60 lines, workflow ≈ 120. Change the format and the golden fixtures
   in `tests/fixtures/markdown/` in the same commit.
-- An unchanged file is not rewritten (`hash`): a write re-runs every live
-  query that read the row.
+- A file's `updated` date is the newest of its inputs: a workflow file
+  changes when a tool it uses changes its way in.
 
 ### Keys and refs
 
-- Public identity is the `key` (`clay`, `clay/enrich-contacts`, `brew/intent-to-meeting`,
-  `@3` pins a version); stored references are ALWAYS internal ids; a key is
-  resolved once at the edge via `by_key`. Grammar and reserved handles live in
-  [`convex/model/keys.ts`](convex/model/keys.ts); every top-level route must
-  be reserved (pinned by `tests/keys.test.ts`).
-- Keys never change after publishing. A rename adds a `keyAliases` row;
-  every `by_key` miss asks `aliases.resolve` before answering 404, and the
-  `.md` handler turns a hit into a real 308.
-- Deprecated stays visible with a warning; archived is hidden. A
-  `moderation: 'pending'` workflow is live at its link and absent from lists.
+- Public identity is the `key` (`clay`, `clay/enrich-contacts`,
+  `brew/intent-to-meeting`, `@3` pins a version), and the key IS the path:
+  `companies/clay/`, `companies/clay/tools/enrich-contacts.md`,
+  `workflows/brew/intent-to-meeting.md`. Keys are never authored in a header.
+  Grammar and reserved handles live in [`lib/catalog/keys.ts`](lib/catalog/keys.ts);
+  every top-level route must be reserved (pinned by `tests/keys.test.ts`).
+- Keys never change after publishing. A rename lists the old key under
+  `aliases:`; every miss asks the alias map before answering 404, and the
+  `.md` handler and the pages turn a hit into a real 308.
+- Deprecated stays visible with a warning; a `draft` tool (no way in yet) has
+  no page, no file and no place in any list.
 
-### Convex authorization
+### The content compiler
 
-- **Every public function is built with a tier builder** from
-  [`convex/shared/builders.ts`](convex/shared/builders.ts): `publicQuery` for
-  the catalog, `authenticatedQuery/Mutation`, `orgMemberQuery/Mutation`,
-  `orgAdminMutation`, `serviceMutation`. The guard runs before the handler;
-  the handler reads `ctx.actor`, never a caller-supplied id.
-- `internalMutation` appears ONLY in `convex/seed/run.ts` and
-  `convex/documents.ts` (`tests/convex-internal-builders.test.ts`).
-- **A route's authority lives in the route**, never in a proxy matcher:
-  every `/api/*` handler authenticates itself (`/api/revalidate` on the
-  service token). `proxy.ts` only rewrites markdown requests — path matching
-  can diverge from how Next routes a request, so a gate there is not a gate.
-  When auth returns, the check goes in the page or handler, not the proxy.
-- **Server callers go through the gateway**
-  ([`lib/convex/gateway.ts`](lib/convex/gateway.ts)): `publicQuery` for the
-  catalog (no identity), `tenant*` when a verified human acts, `system*` for
-  machines. `convex/nextjs` is banned elsewhere.
-- `convex/model/*` is PURE — no runtime import of `convex/*`,
-  `_generated/server`, `shared/*`, `node:*` or `server-only` — because Next
-  bundles it too (`tests/convex-model-purity.test.ts`).
-
-### Convex data
-
-- `convex/schema.ts` is v0.3.1 of the design doc, verbatim plus `auth.header`
-  and the `by_format_top` / `by_format_new` listing indexes. Keep it the
-  single `defineSchema` export.
-- Every read uses an index and is bounded (`.take(n)`); `.filter(...)` is a
-  scan. Every list is paged. Joins are parallel point reads (`getMany` in
-  [`convex/shared/reads.ts`](convex/shared/reads.ts)) — never an `await` in a loop.
-- PROJECTION fields (`searchText`, `agentLevel`, `listed`, `format`,
-  `toolCount`, `taggings.*`, `tags.counts`, `workflowTools`) are rewritten by
-  one helper or a scheduled batch — never by hand in a second place.
-- Hot counters never touch catalog documents: views/copies go to `events` and
-  roll up into `entityStats`.
-- Arrays stay short (access entries, steps); anything unbounded is a table.
-- Module filenames under `convex/` use letters, digits, underscores, periods.
-- Build-time reads hit the PREVIOUS deployment: a prerendered page must not
-  hard-depend on a function introduced in the same commit.
+- `lib/content/read-tree.ts` is the ONLY module that touches the filesystem;
+  `buildCatalog(files)` is pure and testable with in-memory fixtures.
+- Every rule is enforced at build with the offending file's path, and every
+  problem is reported at once (`ContentErrors`): strict schemas (unknown
+  fields rejected), reserved handles, every step's tool resolves and is
+  published, `via` names a way in the tool has, tags exist, aliases never
+  shadow a live key, a published tool has ≥ 1 way in, logos exist. A new rule
+  ships with a negative test in `tests/content-schema.test.ts` — a guard is
+  not done until it has FAILED.
+- PROJECTIONS (`agentLevel`, `has:*`/`agent:*` tags, tag counts, `searchText`,
+  `toolCount`, the edges) are computed in `lib/content/derive.ts` and
+  `build-catalog.ts` — one writer each, never authored in a file.
+- The pure half of `lib/catalog/*` (keys, agent-level, renderer, search
+  grammar, types) imports nothing from `node:`, `server-only` or
+  `lib/content` — it runs in the proxy and the browser too
+  (`tests/catalog-purity.test.ts`). Only `catalog.ts`, `loaders.ts` and
+  `static-params.ts` are server-side.
 
 ### Rendering and caching
 
-- A page's default export is SYNCHRONOUS and returns a `<Suspense>`; every
-  request-time read (`params`, `searchParams`, `connection()`, a Convex query)
-  lives in the async child. Never `export const dynamic = 'force-dynamic'`.
-  A redirect is therefore never a page: decided in a Suspense child it becomes
-  a `<meta refresh>` that agents ignore, and an async shell cannot prerender
-  at all. A redirect-only URL is a route handler (`/tools/[handle]`).
-- The contract in [`lib/catalog/loaders.ts`](lib/catalog/loaders.ts):
-  per-key loaders are `'use cache: remote'` + `cacheTag(ref)`; list pages
-  `await connection()` first so a build never contacts Convex; search is
-  never cached; **no loader catches** — errors leave the cached scope and
-  `error.tsx` renders them, so an outage is never cached as an empty catalog.
-- `revalidateTag(ref, 'max')` through `POST /api/revalidate` purges a page
-  and its `.md` file together.
+- The catalog is built ONCE per process (`lib/catalog/catalog.ts`) from
+  synchronous reads, so every catalog page, the `.md` handler and `/llms.txt`
+  PRERENDER at build with no `'use cache'` and no `connection()`. Detail
+  routes list their params with `generateStaticParams`
+  (`lib/catalog/static-params.ts`). Never `export const dynamic`,
+  `revalidate` or `dynamicParams` — Cache Components rejects them.
+- A page's default export is SYNCHRONOUS and returns a `<Suspense>`; the only
+  request-time reads are `searchParams` (`/tools`, `/companies`, `/workflows`,
+  `/map`), inside the async child. Those routes read the tree at request
+  time, which is why `next.config.ts` traces `companies/`, `workflows/` and
+  `tags/` into every function bundle.
+- Route handlers never read `request.url`: a redirect is a relative
+  `Location` on a 308, or the route silently goes dynamic.
+- A redirect is never a page: decided in a Suspense child it becomes a
+  `<meta refresh>` agents ignore. A redirect-only URL is a route handler
+  (`/tools/[handle]`).
 - Fallbacks are dimensionally stable. Filters and search are LINKS and GET
   forms — the URL is the state; an agent can use the same URL.
 
 ### Testing
 
-- `tests/` runs in `node`; `convex/**/*.test.ts` runs through `convex-test`
-  (`pnpm test:convex`). `.env.test` is committed and non-secret; the
-  suite is green on a fresh clone.
+- `tests/` runs in `node`; the suite is hermetic on a fresh clone. The
+  content suite (`tests/content.test.ts`) builds the real tree and asks every
+  question a page asks; extend it when you add a read.
 - Write the negative cases. A guard is not done until it has FAILED.
-- The seed (`convex/seed/`) is the first caller of every read and is tested
-  end to end; it is idempotent and illustrative, and every seeded tool is
-  `agent: unverified` because nobody has checked the facts.
+- Every seeded tool is `agent: unverified` because nobody has checked the
+  facts; `agent.checked` in a tool file is the only thing that changes that.
 
 ## Code conventions
 
 - Tailwind: `flex gap-*`, never `space-x/y-*`; `flex-1` pairs with `min-w-0`.
-- File size target ~200 lines, cap 400 (data tables and the schema exempt).
+- File size target ~200 lines, cap 400 (data tables exempt).
 - One concern per file; name files by what they render; `Array<T>`; booleans
   take `is/has/should/can`; environment through `lib/env.ts`.
-- Icons from `lucide-react`; the vendored orb stays byte-identical.
+- Icons from `@hugeicons/react` + `@hugeicons/core-free-icons`; Geist Sans
+  and Geist Mono through `next/font`.
+- Nothing invented in the catalog or the UI: no placeholder facts, fake
+  stats, invented customers or testimonials. Hide a slot when data is absent.
 
 ## Documentation hygiene
 
@@ -169,13 +162,13 @@ same batch. `pnpm docs:check` fails on a broken link or this file over cap.
 
 | Topic | Doc |
 | --- | --- |
+| Adding a company, tool, workflow or tag | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`companies/README.md`](companies/README.md), [`workflows/README.md`](workflows/README.md), [`tags/README.md`](tags/README.md) |
 | Product vision, phases, what is not in v1 | [`docs/vision.md`](docs/vision.md) |
-| Data model: keys, entities, access, tags, ranking, scaling | [`docs/data-model.md`](docs/data-model.md) |
-| The markdown file contract and where files are served | [`docs/markdown-files.md`](docs/markdown-files.md) |
-| Request path, caching contract, search plan, layout | [`docs/architecture.md`](docs/architecture.md) |
-| First run: Convex, service token, seed, Clerk, Vercel | [`docs/setup.md`](docs/setup.md) |
+| The file schema: every field, every rule, the projections | [`docs/data-model.md`](docs/data-model.md) |
+| The rendered markdown file contract and where files are served | [`docs/markdown-files.md`](docs/markdown-files.md) |
+| Request path, the build-time catalog, search, layout | [`docs/architecture.md`](docs/architecture.md) |
+| First run and deploying | [`docs/setup.md`](docs/setup.md) |
 | Validation, the heavy lock, dev servers, worktrees | [`docs/validation.md`](docs/validation.md) |
 | CI jobs and why each exists | [`docs/ci.md`](docs/ci.md) |
 | Cache Components, bundle budget, Turbopack | [`docs/performance.md`](docs/performance.md) |
-| Adding the admin app as a second project | [`docs/microfrontends.md`](docs/microfrontends.md) |
-| Convex module rules and file map | [`convex/README.md`](convex/README.md) |
+| Adding a second app | [`docs/microfrontends.md`](docs/microfrontends.md) |
