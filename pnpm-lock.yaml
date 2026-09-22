@@ -61,6 +61,9 @@ importers:
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
       zod:
         specifier: ^4.4.3
         version: 4.6.5
