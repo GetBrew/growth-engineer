@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { Page, SectionHeading } from '@/components/catalog/primitives'
+import { Page, SectionHeading } from '@/components/layout/primitives'
 import { FocusedNode, MapSkeleton } from '@/components/map/focused'
 import { parseRef } from '@/lib/catalog/keys'
 import { loadNeighborhood } from '@/lib/catalog/loaders'
@@ -9,12 +9,6 @@ import { mapFocusParams } from '@/lib/catalog/static-params'
 
 type Params = Promise<{ focus: Array<string> }>
 
-/**
- * `/map/tool/clay/enrich-contacts`: one node and everything touching it. A
- * PAGE PER NODE, all prerendered, so exploring the graph is a static
- * navigation from one file to the next — no query string, no request-time
- * work, and every focus is a link an agent can follow.
- */
 export function generateStaticParams() {
   return mapFocusParams()
 }

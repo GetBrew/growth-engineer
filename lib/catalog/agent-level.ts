@@ -1,4 +1,5 @@
-import type { Access, AgentLevel } from './types'
+import { AGENT_LEVEL_LABEL } from '@/lib/constants/catalog'
+import type { Access, AgentLevel } from '@/lib/types/catalog'
 
 /**
  * Agent readiness: a LEVEL by rule, a SCORE only for sorting within a level.
@@ -21,13 +22,6 @@ export type AgentAssessment = {
   level: AgentLevel
   score: number
   reason: string
-}
-
-const LEVEL_LABEL: Record<AgentLevel, string> = {
-  unverified: 'Unverified',
-  native: 'Native',
-  friendly: 'Friendly',
-  possible: 'Possible',
 }
 
 /** Levels in descending capability; used to drop one step. */
@@ -123,7 +117,7 @@ export function computeAgentLevel(input: {
   return {
     level,
     score: computeScore(input.access, input.machineReadableDocs, input.now),
-    reason: `${LEVEL_LABEL[level]}: ${reason}`,
+    reason: `${AGENT_LEVEL_LABEL[level]}: ${reason}`,
   }
 }
 

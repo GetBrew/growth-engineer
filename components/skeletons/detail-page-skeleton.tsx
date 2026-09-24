@@ -1,16 +1,12 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Bar, Pill } from './parts'
 
-/**
- * A workflow or tool page while it loads — the same boxes as DetailHeader
- * and the two-column body: byline (36), title (37), the summary (28 a line),
- * stats and logos (28), the two buttons; the tags row (66); then Description
- * and the file on the left, the side panel on the right.
- */
 export function DetailPageSkeleton({
   summaryLines = 1,
+  description = false,
 }: {
   summaryLines?: 1 | 2
+  description?: boolean
 }) {
   return (
     <div aria-hidden="true" className="flex flex-col gap-10">
@@ -63,15 +59,31 @@ export function DetailPageSkeleton({
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-10">
         <div className="flex min-w-0 flex-col gap-14">
+          {description ? (
+            <div className="flex flex-col gap-5">
+              <div className="flex h-7 items-center">
+                <Bar className="h-5 w-32" />
+              </div>
+              <div className="flex h-39.5 flex-col gap-3 rounded-2xl border bg-surface p-5 sm:p-6">
+                <Bar className="w-full" />
+                <Bar className="w-11/12" />
+                <Bar className="w-1/3" />
+                <Bar className="mt-auto w-20" />
+              </div>
+            </div>
+          ) : null}
           <div className="flex flex-col gap-5">
             <div className="flex h-7 items-center">
-              <Bar className="h-5 w-32" />
+              <Bar className="h-5 w-24" />
             </div>
-            <div className="flex h-39.5 flex-col gap-3 rounded-2xl border bg-surface p-5 sm:p-6">
-              <Bar className="w-full" />
-              <Bar className="w-11/12" />
-              <Bar className="w-1/3" />
-              <Bar className="mt-auto w-20" />
+            <div className="flex flex-col gap-2 rounded-2xl border bg-surface p-3 sm:p-4">
+              <div className="flex h-10 items-center justify-between">
+                <Pill className="h-10 w-48" />
+                <Pill className="h-8 w-20" />
+              </div>
+              <div className="flex h-11.1 items-center rounded-xl border bg-background px-4">
+                <Bar className="h-3 w-3/5" />
+              </div>
             </div>
           </div>
           <div className="flex flex-col gap-5">
@@ -108,7 +120,6 @@ export function DetailPageSkeleton({
   )
 }
 
-/** The file's text: ragged lines, like prose. */
 const FILE_LINES = [
   'w-1/2',
   'w-11/12',

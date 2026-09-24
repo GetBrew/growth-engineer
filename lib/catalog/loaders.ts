@@ -1,23 +1,25 @@
 import 'server-only'
 
+import type {
+  Company,
+  EdgeGroup,
+  MapNode,
+  PaletteItem,
+  Tool,
+  WorkflowListItem,
+} from '@/lib/types/catalog'
 import { getCatalog } from './catalog'
 import { type EntityType, formatRef } from './keys'
 import {
   companyListItem,
   companySearchItem,
+  paletteItems,
   tagChip,
   toolListItem,
   toolSearchItem,
   workflowListItem,
   workflowSearchItem,
 } from './lists'
-import type {
-  Company,
-  EdgeGroup,
-  MapNode,
-  Tool,
-  WorkflowListItem,
-} from './types'
 
 /**
  * The catalog's server-side loaders. Every page, route handler and the
@@ -377,4 +379,14 @@ export async function loadDocumentRefs() {
   return [...getCatalog().documents.values()].map(
     ({ ref, entityType, updatedAt }) => ({ ref, entityType, updatedAt })
   )
+}
+
+/**
+ * The ⌘K index: every company, tool and workflow in one flat list, built at
+ * build time and shipped once with the site layout. The catalog is small and
+ * each row is five short strings, so the whole thing costs less than a single
+ * search round trip would — and the palette answers every keystroke offline.
+ */
+export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
+  return paletteItems(getCatalog())
 }

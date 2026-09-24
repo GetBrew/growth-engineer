@@ -1,8 +1,8 @@
 import type { z } from 'zod'
+import { formatIssues } from '@/lib/schemas/content'
 import { ContentError, type ProblemList } from './errors'
 import { splitFrontmatter } from './frontmatter'
 import type { ContentFile } from './read-tree'
-import { formatIssues } from './schemas'
 
 /** Header + schema, or a recorded problem and null. */
 export function parseFile<T>(

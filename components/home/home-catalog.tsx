@@ -4,18 +4,16 @@ import {
   toolListItem,
   workflowListItem,
 } from '@/components/catalog/catalog-list'
+import { CatalogShell } from '@/components/home/catalog-shell'
+import { CatalogTabs } from '@/components/home/catalog-tabs'
 import {
   loadCompanies,
   loadNewTools,
   loadWorkflows,
 } from '@/lib/catalog/loaders'
 
-import { CatalogShell } from './catalog-shell'
-import { CatalogTabs } from './catalog-tabs'
+const PREVIEW = 10
 
-const PREVIEW = 5
-
-/** The three previews: five newest of each kind. */
 export async function HomeCatalog() {
   const [workflows, tools, companies] = await Promise.all([
     loadWorkflows('new', PREVIEW),
@@ -48,7 +46,8 @@ export async function HomeCatalog() {
         tabs={[
           {
             value: 'workflows',
-            icon: '/workflow.svg',
+            entity: 'workflow',
+            href: '/workflows',
             label: 'Workflows',
             content: (
               <CatalogList
@@ -59,7 +58,8 @@ export async function HomeCatalog() {
           },
           {
             value: 'tools',
-            icon: '/tool.svg',
+            entity: 'tool',
+            href: '/tools',
             label: 'Tools',
             content: (
               <CatalogList
@@ -70,7 +70,8 @@ export async function HomeCatalog() {
           },
           {
             value: 'companies',
-            icon: '/company.svg',
+            entity: 'company',
+            href: '/companies',
             label: 'Companies',
             content: (
               <CatalogList

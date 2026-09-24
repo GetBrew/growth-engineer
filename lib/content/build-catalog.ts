@@ -6,13 +6,19 @@ import {
   TAG_NAMESPACES,
   type TagNamespace,
 } from '@/lib/catalog/keys'
+import {
+  accessSchema,
+  type CompanyFrontmatter,
+  companySchema,
+  tagSchema,
+} from '@/lib/schemas/content'
 import type {
   CatalogDocument,
   Company,
   Tag,
   Tool,
   Workflow,
-} from '@/lib/catalog/types'
+} from '@/lib/types/catalog'
 import { buildAliases } from './build-aliases'
 import { buildDocuments } from './build-documents'
 import {
@@ -24,12 +30,6 @@ import { companySearchText, dateToMs, tagCounts } from './derive'
 import { type ContentProblem, ProblemList } from './errors'
 import { parseFile } from './parse-file'
 import type { ContentFile } from './read-tree'
-import {
-  accessSchema,
-  type CompanyFrontmatter,
-  companySchema,
-  tagSchema,
-} from './schemas'
 
 /**
  * Source files → the catalog. PURE: takes the files, returns the graph, and

@@ -1,0 +1,64 @@
+/*
+ * The heart in the footer credit throws sparks while you hover it. Each spark
+ * travels out along its own angle and fades; the delays stagger them so they
+ * read as a burst, and the loop keeps going while the pointer stays.
+ */
+@keyframes spark {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) scale(1);
+  }
+}
+
+@keyframes beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.45);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+
+.heart {
+  position: relative;
+  display: inline-flex;
+}
+
+.spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The group is the whole credit line, so hovering the words sets it off too. */
+.group:hover .spark {
+  animation: spark 900ms ease-out infinite;
+}
+
+.group:hover .mark {
+  animation: beat 900ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .spark,
+  .group:hover .mark {
+    animation: none;
+  }
+}

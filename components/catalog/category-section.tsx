@@ -1,9 +1,5 @@
 import type { ReactNode } from 'react'
 
-/**
- * A group of rows in a listing: category heading with its count, then the
- * rows in two columns (one on phones).
- */
 export function CategorySection({
   title,
   count,
@@ -14,7 +10,7 @@ export function CategorySection({
   children: ReactNode
 }) {
   return (
-    <section className="flex flex-col gap-5">
+    <section className="flex flex-col gap-(--space-md)">
       <div className="flex items-baseline gap-3">
         <h2 className="type-category">{title}</h2>
         <span className="type-meta">{count}</span>

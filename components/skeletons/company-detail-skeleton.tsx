@@ -4,11 +4,6 @@ import { Bar, Pill } from './parts'
 
 const TABS = ['Overview', 'Workflows', 'Tools'] as const
 
-/**
- * `/companies/[handle]` — the back link and tab labels are real; the logo and
- * name (44), the facts row with Website, X and LinkedIn (40), and the
- * Overview panel (description, then two founders) pulse.
- */
 export function CompanyDetailSkeleton() {
   return (
     <div className="flex flex-col">

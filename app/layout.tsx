@@ -5,12 +5,6 @@ import { clientEnv } from '@/lib/env'
 
 import './globals.css'
 
-/**
- * The root layout is a SHELL. Under `cacheComponents: true` it is prerendered
- * once and reused by every route, so nothing here reads request-time data.
- */
-
-// Geist (SIL OFL): the one open family for text; Geist Mono for code.
 const geistSans = Geist({
   subsets: ['latin'],
   variable: '--font-geist-sans',

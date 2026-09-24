@@ -1,6 +1,11 @@
+import type {
+  CompanyListItem,
+  PaletteItem,
+  ToolListItem,
+  WorkflowListItem,
+} from '@/lib/types/catalog'
 import { TAG_NAMESPACES, type TagNamespace } from './keys'
 import { MAX_CHIPS } from './query'
-import type { CompanyListItem, ToolListItem, WorkflowListItem } from './types'
 
 /**
  * Search v1, PURE and browser-safe: the same functions run in the build's
@@ -214,6 +219,30 @@ export function searchCompanyItems(
         key: item.company.key,
         score: score(words, item.company.name, item.searchText),
       })),
+    words.length > 0
+  )
+  return ranked.slice(0, input.limit ?? ranked.length)
+}
+
+/**
+ * The ⌘K palette: one flat list across all three kinds, so a reader who types
+ * "clay" sees the company, its tools and the workflows that use it together
+ * rather than having to guess which listing to open first. Pure, like the
+ * rest of this file — the layout ships every item once and this runs in the
+ * browser on each keystroke.
+ */
+export function searchPaletteItems(
+  items: ReadonlyArray<PaletteItem>,
+  input: { q: string; limit?: number }
+): Array<PaletteItem> {
+  const words = tokens(input.q)
+  const ranked = rank(
+    items.map((item, index) => ({
+      item,
+      index,
+      key: `${item.kind}:${item.key}`,
+      score: score(words, item.title, item.searchText),
+    })),
     words.length > 0
   )
   return ranked.slice(0, input.limit ?? ranked.length)

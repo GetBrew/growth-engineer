@@ -16,8 +16,8 @@ const inputGroupVariants = cva(
           'border-transparent bg-surface focus-within:border-foreground/40 focus-within:bg-background hover:border-foreground/15',
       },
       controlSize: {
-        default: 'h-12 rounded-full border',
-        lg: 'h-14 rounded-full border',
+        default: 'h-10 rounded-full border',
+        lg: 'h-12 rounded-full border',
       },
     },
     defaultVariants: {

@@ -1,4 +1,4 @@
-import type { AccessType, AgentLevel } from './types'
+import type { AccessType, AgentLevel } from '@/lib/types/catalog'
 
 /**
  * The two DERIVED tag namespaces. `agent:*` is a tool's readiness level and

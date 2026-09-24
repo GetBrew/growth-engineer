@@ -1,13 +1,8 @@
 import Link from 'next/link'
-import { Footer } from '@/components/site/footer'
-import { Navbar } from '@/components/site/navigation/navbar'
+import { Footer } from '@/components/layout/footer'
+import { Navbar } from '@/components/layout/navbar'
 import { buttonVariants } from '@/components/ui/button'
 
-/**
- * The root not-found renders outside every route group, so it mounts the site
- * chrome itself. A missing key is a 404 with the same navigation as any page:
- * agents and people alike land somewhere useful.
- */
 export default function NotFound() {
   return (
     <div className="flex min-h-svh flex-col">

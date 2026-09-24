@@ -1,0 +1,38 @@
+/* The stack deals itself out: each avatar slides off the one before it. */
+.item {
+  animation: avatar-deal 0.6s var(--ease-expo-out) backwards;
+  animation-delay: calc(var(--index) * 90ms);
+}
+
+.avatar {
+  transition:
+    transform 0.35s var(--ease-expo-out),
+    box-shadow 0.35s var(--ease-expo-out);
+}
+
+.item:hover .avatar {
+  transform: translateY(-0.3rem);
+  box-shadow: 0 8px 20px -6px rgb(0 0 0 / 0.25);
+  z-index: 1;
+}
+
+/* `backwards` above matters: without it an avatar paints at full opacity
+   before its delay elapses, and the stack flashes complete then re-deals. */
+@keyframes avatar-deal {
+  from {
+    opacity: 0;
+    transform: translateX(-0.75rem) scale(0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .avatar {
+    animation: none;
+    transition: none;
+  }
+
+  .item:hover .avatar {
+    transform: none;
+  }
+}

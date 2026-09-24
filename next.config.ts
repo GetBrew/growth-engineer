@@ -1,6 +1,4 @@
 import type { NextConfig } from 'next'
-// Relative, alias-free: see lib/logos-host.ts for why.
-import { CONTEXT_LOGO_HOST } from './lib/logos-host'
 
 const nextConfig: NextConfig = {
   /** AGENTS.md is the canonical, CI-capped agent-policy file — keep the writer off. */
@@ -42,9 +40,10 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     qualities: [60, 75, 90],
-    // Company logos come from ONE remote host (lib/logos.ts); everything else
-    // is local. A wildcard here would make the deployment an open image proxy.
-    remotePatterns: [{ protocol: 'https', hostname: CONTEXT_LOGO_HOST }],
+    // Every image is local. A contributor's GitHub photo is the one remote
+    // source and it renders unoptimized, so no host needs allowing here — a
+    // wildcard would make the deployment an open image proxy.
+    remotePatterns: [],
   },
 
   /**
@@ -69,7 +68,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: '/login', destination: '/sign-in', permanent: true },
-      { source: '/submit-a-workflow', destination: '/submit', permanent: true },
     ]
   },
 

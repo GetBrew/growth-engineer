@@ -2,11 +2,6 @@ import { parseRef, refToFilePath } from '@/lib/catalog/keys'
 import { loadDocumentRefs } from '@/lib/catalog/loaders'
 import { clientEnv } from '@/lib/env'
 
-/**
- * The index every file: one absolute URL per company, tool and workflow, so
- * an agent can discover the catalog from a single fetch. Served straight from
- * the route handler (the proxy's matcher skips `.txt`), bounded at 1,000.
- */
 const TRAILING_SLASH = /\/$/
 
 export async function GET() {

@@ -1,4 +1,4 @@
-import type { Company, Tag, Tool, Workflow } from '@/lib/catalog/types'
+import type { Company, Tag, Tool, Workflow } from '@/lib/types/catalog'
 
 /**
  * The projections: values that used to be database columns rewritten by a
@@ -36,7 +36,13 @@ export function companySearchText(
 export function toolSearchText(
   tool: { name: string; summary: string },
   companyName: string,
-  capability: Tag | undefined
+  capability: Tag | undefined,
+  /**
+   * The ways in — `mcp`, `cli`, `api`. Without them, typing "mcp" finds
+   * nothing: an access type appears in no name, summary or capability, so the
+   * one word people reach for first matched the whole catalog's silence.
+   */
+  accessTypes: ReadonlyArray<string> = []
 ): string {
   return [
     tool.name,
@@ -44,6 +50,7 @@ export function toolSearchText(
     tool.summary,
     capability?.label ?? '',
     ...(capability?.synonyms ?? []),
+    ...accessTypes,
   ].join(' ')
 }
 

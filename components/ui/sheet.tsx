@@ -49,6 +49,19 @@ function SheetPopup({ className, ...props }: SheetPrimitive.Popup.Props) {
   )
 }
 
+function SheetDescription({
+  className,
+  ...props
+}: SheetPrimitive.Description.Props) {
+  return (
+    <SheetPrimitive.Description
+      className={cn('type-body text-muted-foreground', className)}
+      data-slot="sheet-description"
+      {...props}
+    />
+  )
+}
+
 function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   return (
     <SheetPrimitive.Title
@@ -63,6 +76,7 @@ export {
   Sheet,
   SheetBackdrop,
   SheetClose,
+  SheetDescription,
   SheetPopup,
   SheetPortal,
   SheetTitle,

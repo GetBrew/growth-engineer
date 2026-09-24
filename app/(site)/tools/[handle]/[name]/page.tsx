@@ -1,3 +1,5 @@
+import { Book02Icon, File01Icon, GlobalIcon } from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
@@ -7,19 +9,20 @@ import {
   CatalogList,
   workflowListItem,
 } from '@/components/catalog/catalog-list'
-import { DescriptionSection } from '@/components/catalog/description-section'
+import { NoResults } from '@/components/catalog/no-results'
+import { AgentReadiness } from '@/components/detail/agent-readiness'
+import { PANEL_HEADING } from '@/components/detail/chrome'
+import { DescriptionSection } from '@/components/detail/description-section'
 import {
   DETAIL_DATE,
   DetailByline,
   DetailHeader,
-} from '@/components/catalog/detail-header'
-import { NoResults } from '@/components/catalog/no-results'
-import { Page } from '@/components/catalog/primitives'
-import { ToolAccessPanel } from '@/components/catalog/tool-access-panel'
-import { MarkdownFile } from '@/components/document/markdown-file'
-import { OpenInAgentMenu } from '@/components/document/open-in-agent-menu'
-import { ShareButton } from '@/components/document/share-button'
-import { MaskIcon } from '@/components/site/mask-icon'
+} from '@/components/detail/detail-header'
+import { MarkdownFile } from '@/components/detail/markdown-file'
+import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
+import { ShareButton } from '@/components/detail/share-button'
+import { ToolAccessPanel } from '@/components/detail/tool-access-panel'
+import { BackLink, Page } from '@/components/layout/primitives'
 import { ToolDetailSkeleton } from '@/components/skeletons/tool-detail-skeleton'
 import { isValidOwnedKey, refToFilePath } from '@/lib/catalog/keys'
 import {
@@ -57,19 +60,10 @@ export async function generateMetadata({
     : {}
 }
 
-/**
- * The tool page does one job: show the file and make it easy to copy.
- * Workflows using the tool sit below it.
- */
 export default function ToolPage({ params }: { params: Params }) {
   return (
-    <Page className="flex flex-col gap-8">
-      <Link
-        className="type-control w-fit text-subtle transition-colors hover:text-foreground"
-        href="/tools"
-      >
-        ← All tools
-      </Link>
+    <Page className="flex flex-col gap-(--space-record)">
+      <BackLink href="/tools" label="All tools" />
       <Suspense fallback={<ToolDetailSkeleton />}>
         <ToolDetail params={params} />
       </Suspense>
@@ -88,7 +82,6 @@ async function ToolDetail({ params }: { params: Params }) {
     loadWorkflowsByTool(key),
   ])
   if (!result) {
-    // An old key answers with a real redirect; an unknown one is a 404.
     const alias = await resolveAlias('tool', key)
     if (alias) {
       permanentRedirect(`/tools/${alias.key}`)
@@ -103,13 +96,17 @@ async function ToolDetail({ params }: { params: Params }) {
   })
 
   const docsUrl = tool.access.find((access) => access.docsUrl)?.docsUrl
+
   const links = [
-    ['Website', company.links.website],
-    ['Docs', docsUrl],
-  ].filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+    { label: 'Website', href: company.links.website, icon: GlobalIcon },
+    { label: 'Docs', href: docsUrl, icon: Book02Icon },
+  ].filter(
+    (link): link is { label: string; href: string; icon: IconSvgElement } =>
+      typeof link.href === 'string'
+  )
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-(--space-block)">
       <DetailHeader
         actions={
           <>
@@ -132,14 +129,14 @@ async function ToolDetail({ params }: { params: Params }) {
           >
             by{' '}
             <Link
-              className="text-foreground hover:underline"
+              className="focus-ring rounded-sm text-foreground underline-offset-4 hover:underline"
               href={`/companies/${company.key}`}
             >
               {company.name}
             </Link>
           </DetailByline>
         }
-        links={links.map(([label, href]) => ({ label, href }))}
+        links={links}
         dates={[`Updated ${DETAIL_DATE.format(tool.updatedAt)}`]}
         description={tool.summary}
         tags={[
@@ -152,44 +149,41 @@ async function ToolDetail({ params }: { params: Params }) {
           })),
         ]}
         title={tool.name}
+        titleBadge={<AgentReadiness level={tool.agent.level} />}
       />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-10">
-        <div className="flex min-w-0 flex-col gap-14">
-          <DescriptionSection icon="/tool.svg" text={tool.description} />
-          <section className="flex flex-col gap-5">
-            <h2 className="type-section">Ready-to-use markdown</h2>
-            {document ? (
-              <MarkdownFile
-                fileName={filePath.split('/').pop() ?? 'tool.md'}
-                markdown={document.markdown}
-              />
-            ) : (
-              <p className="type-body rounded-2xl border border-dashed px-6 py-10 text-center">
-                The file for this tool has not been rendered yet.
-              </p>
-            )}
-          </section>
-        </div>
-        <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
-          <ToolAccessPanel tool={tool} />
-        </aside>
-      </div>
-
-      <div className="flex flex-col gap-14">
-        <section className="flex flex-col gap-5">
-          <h2 className="type-section">Workflows using {tool.name}</h2>
-          {workflows.length === 0 ? (
-            <NoResults
-              description={`No published workflow uses ${tool.name} yet.`}
-              icon={<MaskIcon size={20} src="/workflow.svg" />}
-              title="No workflows yet"
+      <div className="flex min-w-0 flex-col gap-(--space-block)">
+        <DescriptionSection entity="tool" text={tool.description} />
+        <section className="flex flex-col gap-(--space-md)">
+          {document ? (
+            <MarkdownFile
+              fileName={filePath.split('/').pop() ?? 'tool.md'}
+              markdown={document.markdown}
             />
           ) : (
-            <CatalogList items={workflows.map(workflowListItem)} />
+            <NoResults
+              description="It appears here as soon as the catalog renders it."
+              icon={File01Icon}
+              title="No file yet"
+              variant="card"
+            />
           )}
         </section>
+        <ToolAccessPanel tool={tool} />
       </div>
+
+      <section className="flex flex-col gap-(--space-md)">
+        <h2 className={PANEL_HEADING}>Workflows using {tool.name}</h2>
+        {workflows.length === 0 ? (
+          <NoResults
+            description={`No published workflow uses ${tool.name} yet.`}
+            entity="workflow"
+            title="No workflows yet"
+          />
+        ) : (
+          <CatalogList items={workflows.map(workflowListItem)} />
+        )}
+      </section>
     </div>
   )
 }

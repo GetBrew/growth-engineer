@@ -52,6 +52,7 @@ const GITHUB_LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/
 export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'admin',
   'api',
+  'cli',
   'companies',
   'company',
   'favicon.ico',
@@ -59,6 +60,7 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'llms.txt',
   'login',
   'map',
+  'mcp',
   'me',
   'new',
   'robots.txt',

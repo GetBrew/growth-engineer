@@ -4,7 +4,7 @@ import {
   computeAgentLevel,
   HEALTH_DEGRADE_AFTER_MS,
 } from '@/lib/catalog/agent-level'
-import type { Access } from '@/lib/catalog/types'
+import type { Access } from '@/lib/types/catalog'
 
 /** The rules table from the design doc, one case per row, checked from the top. */
 

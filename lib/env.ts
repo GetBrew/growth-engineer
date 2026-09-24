@@ -24,13 +24,9 @@ function present<Schema extends z.ZodType>(schema: Schema) {
 const clientSchema = z.object({
   /** Absolute origin of this deployment — `/llms.txt` and the files use it. */
   NEXT_PUBLIC_SITE_URL: present(z.url().default('http://localhost:3000')),
-  /** logos.context.dev public client id; absent = local logos only. */
-  NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID: present(z.string().optional()),
 })
 
 // Next inlines `process.env.NEXT_PUBLIC_*` only where written out literally.
 export const clientEnv = clientSchema.parse({
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-  NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID:
-    process.env.NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID,
 })

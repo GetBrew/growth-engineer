@@ -1,3 +1,4 @@
+import type { Access, AccessType, AgentLevel } from '@/lib/types/catalog'
 import { agentNote } from './agent-level'
 import { fnv1a } from './hash'
 import { formatRef } from './keys'
@@ -9,7 +10,6 @@ import {
   serverUrlLine,
   singleAccessSetup,
 } from './render-access'
-import type { Access, AccessType, AgentLevel } from './types'
 
 /**
  * THE render function. Every company, tool and workflow renders to one

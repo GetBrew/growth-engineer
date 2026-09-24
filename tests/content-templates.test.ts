@@ -9,7 +9,7 @@ import {
   tagSchema,
   toolSchema,
   workflowSchema,
-} from '@/lib/content/schemas'
+} from '@/lib/schemas/content'
 import { REPO_ROOT } from './helpers/source-files'
 
 /**

@@ -5,7 +5,14 @@ import {
   isValidKeyPart,
   isValidOwnedKey,
 } from '@/lib/catalog/keys'
-import type { Access, Company, Tag, Tool, Workflow } from '@/lib/catalog/types'
+import {
+  type AccessFrontmatter,
+  type ToolFrontmatter,
+  toolSchema,
+  type WorkflowFrontmatter,
+  workflowSchema,
+} from '@/lib/schemas/content'
+import type { Access, Company, Tag, Tool, Workflow } from '@/lib/types/catalog'
 import {
   dateToMs,
   distinctToolKeys,
@@ -16,13 +23,6 @@ import {
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
 import type { ContentFile } from './read-tree'
-import {
-  type AccessFrontmatter,
-  type ToolFrontmatter,
-  toolSchema,
-  type WorkflowFrontmatter,
-  workflowSchema,
-} from './schemas'
 
 /**
  * Tools and workflows: the two entities with references to resolve. A tool
@@ -149,7 +149,12 @@ function toTool(
     status: data.status === 'deprecated' ? 'deprecated' : 'published',
     updatedAt,
     aliases: data.aliases,
-    searchText: toolSearchText(data, company.name, capability),
+    searchText: toolSearchText(
+      data,
+      company.name,
+      capability,
+      access.map((entry) => entry.type)
+    ),
   }
   tool.tags = derivedTagKeys(tool)
   return tool

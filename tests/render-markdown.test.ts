@@ -12,7 +12,7 @@ import {
   WORKFLOW_FILE_MAX_LINES,
   type WorkflowFileInput,
 } from '@/lib/catalog/render-markdown'
-import type { Access } from '@/lib/catalog/types'
+import type { Access } from '@/lib/types/catalog'
 
 /**
  * The renderer IS the product. These goldens are the design doc's three

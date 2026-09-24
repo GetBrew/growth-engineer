@@ -2,11 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 
-/**
- * A failed render lands here. With the catalog built from the repository at
- * build time this should never fire in production; in development it is how
- * a content problem surfaces on the page (the terminal has the file paths).
- */
 export default function SiteError({
   reset,
 }: {

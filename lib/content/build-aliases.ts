@@ -1,4 +1,4 @@
-import type { Company, Tool, Workflow } from '@/lib/catalog/types'
+import type { Company, Tool, Workflow } from '@/lib/types/catalog'
 import type { ProblemList } from './errors'
 
 /* ─────────────────────────────────── aliases ────────────────────────────── */

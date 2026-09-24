@@ -2,19 +2,6 @@ import { filePathToRef, refToFilePath } from '@/lib/catalog/keys'
 import { loadDocument, resolveAlias } from '@/lib/catalog/loaders'
 import { markdownFileParams } from '@/lib/catalog/static-params'
 
-/**
- * The markdown files. `/tools/clay/enrich-contacts.md` is rewritten here by
- * proxy.ts; so is any page requested with `Accept: text/markdown`. Agents
- * fetch these with no session, by design.
- *
- * PRERENDERED: every file, every current version pin and every old key is a
- * static param, and the handler never reads the request, so the build writes
- * each response once and the CDN serves it. A renamed key answers with a REAL
- * 308 (a relative `Location`, because reading `request.url` would make the
- * route dynamic) — agents follow it, and a streamed meta-refresh would not.
- * Any other path renders on demand from the same in-memory catalog and is a
- * 404 (Cache Components does not allow `dynamicParams = false`).
- */
 export function generateStaticParams() {
   return markdownFileParams()
 }
@@ -41,8 +28,6 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
-  // v1 stores the current version only; the header names which one it is, so
-  // a pin is honoured exactly when it names the current version.
   if (
     ref.version !== undefined &&
     !document.markdown.includes(`ref: workflow:${ref.key}@${ref.version}\n`)

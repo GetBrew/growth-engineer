@@ -1,27 +1,16 @@
-import type { AccessType, AgentLevel } from '@/lib/catalog/types'
+import {
+  ACCESS_LABEL,
+  ACCESS_ORDER,
+  AGENT_LEVEL_LABEL,
+} from '@/lib/constants/catalog'
+import type { AccessType, AgentLevel } from '@/lib/types/catalog'
 
 type Access = { type: AccessType }
 
-const LEVEL_LABEL: Record<AgentLevel, string> = {
-  unverified: 'Unverified',
-  native: 'Native',
-  friendly: 'Friendly',
-  possible: 'Possible',
-}
-
-const ACCESS_LABEL: Record<Access['type'], string> = {
-  mcp: 'MCP',
-  cli: 'CLI',
-  api: 'API',
-}
-const ACCESS_ORDER: Array<Access['type']> = ['mcp', 'cli', 'api']
-
-/** The ways in as labels ("MCP", "CLI", "API"), deduplicated, in setup order. */
 export function accessLabels(access: ReadonlyArray<Access>): Array<string> {
   return accessTypeLabels(access.map((entry) => entry.type))
 }
 
-/** Access-type labels when a list projection carries only the compact type. */
 export function accessTypeLabels(
   access: ReadonlyArray<Access['type']>
 ): Array<string> {
@@ -31,7 +20,14 @@ export function accessTypeLabels(
   )
 }
 
-/** The agent-readiness level as a label: "Native", "Friendly", … */
+export function accessTypeLabel(type: Access['type']): string {
+  return ACCESS_LABEL[type]
+}
+
+export function isAgentLevelVerified(level: AgentLevel): boolean {
+  return level !== 'unverified'
+}
+
 export function agentLevelLabel(level: AgentLevel): string {
-  return LEVEL_LABEL[level]
+  return AGENT_LEVEL_LABEL[level]
 }

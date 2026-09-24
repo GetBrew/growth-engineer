@@ -4,19 +4,32 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { accessTypeLabels, agentLevelLabel } from '@/components/catalog/badges'
 import type { ToolCardData } from '@/components/catalog/cards'
+import {
+  type CompanyAvatar,
+  CompanyAvatars,
+} from '@/components/catalog/company-avatars'
 import { EntityLogo } from '@/components/catalog/entity-logo'
+import { MaskIcon } from '@/components/layout/mask-icon'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
-import type { WorkflowRowData } from '@/components/workflows/workflow-row'
+import { githubAvatarUrl } from '@/lib/github'
+import type { WorkflowListItem } from '@/lib/types/catalog'
 
 export type CatalogListItem = {
   id: string
   href: string
   title: string
-  logo: { name: string; logoUrl?: string; domain?: string }
+  logo: { name: string; logoUrl?: string }
   pills: ReadonlyArray<string>
   description?: ReactNode
+
+  contributor?: { name?: string; imageUrl?: string }
+
+  companies?: ReadonlyArray<CompanyAvatar>
 }
+
+const MAX_COMPANIES = 3
 
 export function CatalogList({
   items,
@@ -26,10 +39,12 @@ export function CatalogList({
   all?: { href: string; label: string }
 }) {
   return (
-    <div className="flex flex-col items-center gap-8">
-      <ul className="flex w-full flex-col border-t">
+    // The last row brings 16px of its own padding, so 16 here reads as the
+    // 32px that separates the list from the action under it.
+    <div className="flex flex-col items-center gap-4">
+      <ul className="flex w-full flex-col">
         {items.map((item) => (
-          <li className="border-b" key={item.id}>
+          <li className="border-b last:border-b-0" key={item.id}>
             <CatalogListRow {...item} />
           </li>
         ))}
@@ -59,19 +74,25 @@ function CatalogListRow({
   logo,
   pills,
   description,
+  contributor,
+  companies,
 }: CatalogListItem) {
   return (
     <Link
-      className="focus-ring flex items-center gap-4 rounded-lg py-5"
+      className="focus-ring group/row flex items-center gap-4 rounded-lg py-4"
       href={href}
     >
-      <EntityLogo
-        className="entity-shadow shrink-0"
-        domain={logo.domain}
-        logoUrl={logo.logoUrl}
-        name={logo.name}
-        size={44}
-      />
+      {companies ? (
+        <Contributor contributor={contributor} />
+      ) : (
+        <EntityLogo
+          className="entity-shadow shrink-0"
+          logoUrl={logo.logoUrl}
+          name={logo.name}
+          size={44}
+        />
+      )}
+
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="type-item min-w-0 max-w-full truncate">{title}</span>
@@ -85,10 +106,28 @@ function CatalogListRow({
           ))}
         </div>
         {description ? (
-          <p className="type-body sm:line-clamp-1">{description}</p>
+          <p className="type-body line-clamp-2 sm:line-clamp-1">
+            {description}
+          </p>
         ) : null}
       </div>
-      <span className="grid size-7 shrink-0 place-items-center rounded-full border bg-background text-soft">
+
+      {companies && companies.length > 0 ? (
+        <div className="hidden sm:block">
+          <CompanyAvatars
+            companies={companies.slice(0, MAX_COMPANIES)}
+            links={false}
+            more={
+              companies.length > MAX_COMPANIES
+                ? `+${companies.length - MAX_COMPANIES}`
+                : undefined
+            }
+            size="sm"
+          />
+        </div>
+      ) : null}
+
+      <span className="hidden size-7 shrink-0 place-items-center text-soft opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 group-focus-visible/row:opacity-100 sm:grid">
         <HugeiconsIcon
           aria-hidden="true"
           icon={ArrowRight02Icon}
@@ -100,13 +139,60 @@ function CatalogListRow({
   )
 }
 
+function Contributor({
+  contributor,
+}: {
+  contributor?: { name?: string; imageUrl?: string }
+}) {
+  return (
+    <span className="relative block size-10 shrink-0">
+      <Avatar className="size-10 border border-border">
+        <AvatarImage alt="" src={contributor?.imageUrl} />
+        <AvatarFallback>
+          {(contributor?.name ?? '?').slice(0, 1).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+
+      <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-background ring-2 ring-background">
+        <MaskIcon
+          className="text-muted-foreground"
+          size={12}
+          src="/social/github.svg"
+        />
+      </span>
+      {contributor?.name ? (
+        <span className="sr-only">Contributed by {contributor.name}</span>
+      ) : null}
+    </span>
+  )
+}
+
 export function workflowListItem({
   workflow,
   tools,
-}: WorkflowRowData): CatalogListItem {
+}: WorkflowListItem): CatalogListItem {
   const lead = tools[0]
+
+  const companies = [
+    ...new Map(
+      tools.map((tool) => [
+        tool.companyKey,
+        {
+          key: tool.companyKey,
+          name: tool.companyName,
+          ...(tool.logoUrl === undefined ? {} : { logoUrl: tool.logoUrl }),
+        },
+      ])
+    ).values(),
+  ]
+
   return {
     id: workflow.key,
+    companies, // ← this is what selects the layout
+    contributor: {
+      name: workflow.author,
+      imageUrl: githubAvatarUrl(workflow.author),
+    },
     href: `/workflows/${workflow.key}`,
     title: workflow.title,
     logo: {
@@ -115,6 +201,8 @@ export function workflowListItem({
     },
     pills: [
       `${workflow.toolCount} ${workflow.toolCount === 1 ? 'tool' : 'tools'}`,
+
+      ...accessTypeLabels(tools.flatMap((tool) => tool.access)),
     ],
     description: workflow.summary,
   }

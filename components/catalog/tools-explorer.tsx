@@ -1,22 +1,16 @@
 'use client'
 
-import { ArrowRight02Icon, Search01Icon } from '@hugeicons/core-free-icons'
+import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { type ToolCardData, ToolRow } from '@/components/catalog/cards'
-import { CatalogSearch } from '@/components/catalog/catalog-search'
 import { EntityLogo } from '@/components/catalog/entity-logo'
-import { ListingToolbar } from '@/components/catalog/listing-toolbar'
-import { buttonVariants } from '@/components/ui/button'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty'
+import { NoResults } from '@/components/catalog/no-results'
+import { SectionHeading } from '@/components/layout/primitives'
+import { CatalogSearch } from '@/components/search/catalog-search'
+import { ListingToolbar } from '@/components/search/listing-toolbar'
 import {
   completeChips,
   parseSearchText,
@@ -25,15 +19,7 @@ import {
   searchText,
 } from '@/lib/catalog/query'
 import { searchToolItems, type ToolSearchItem } from '@/lib/catalog/search'
-import type { TagChip } from '@/lib/catalog/types'
-
-/**
- * The tools listing, filtered in the browser. The page prerenders every
- * published tool once; this component reads the URL (`?q=…&has=mcp`) and
- * narrows the list with the same grammar and the same search the build
- * tests, so every permutation is instant and the page stays static. The URL
- * is still the state — an agent can use the same URL.
- */
+import type { TagChip } from '@/lib/types/catalog'
 
 function withExpandedView(href: string): string {
   return `${href}${href.includes('?') ? '&' : '?'}view=all`
@@ -61,7 +47,7 @@ function ToolSection({
   }
 
   return (
-    <section className="flex flex-col gap-5">
+    <section className="flex flex-col gap-(--space-md)">
       <div className="flex items-baseline gap-3">
         <h2 className="type-category">{title}</h2>
         <span className="type-meta">{cards.length}</span>
@@ -135,7 +121,7 @@ export function ToolsExplorer({
 }) {
   const searchParams = useSearchParams()
   const params = Object.fromEntries(searchParams.entries())
-  // `q` may carry chips typed inline; lift them into the chip set.
+
   const fromParams = searchStateFromParams(params)
   const typed = parseSearchText(fromParams.words.join(' '))
   const { chips, unknown } = completeChips(
@@ -172,33 +158,15 @@ export function ToolsExplorer({
   let content: ReactNode
   if (!hasContent) {
     content = (
-      <Empty className="border-y py-16">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <HugeiconsIcon
-              aria-hidden="true"
-              icon={Search01Icon}
-              strokeWidth={1.8}
-            />
-          </EmptyMedia>
-          <EmptyTitle>No tools found</EmptyTitle>
-          <EmptyDescription>
-            Try fewer filters or different words.
-          </EmptyDescription>
-        </EmptyHeader>
-        {isBrowsing ? null : (
-          <Link
-            className={buttonVariants({ variant: 'outline', size: 'pill' })}
-            href="/tools"
-          >
-            Clear filters
-          </Link>
-        )}
-      </Empty>
+      <NoResults
+        clearHref={isBrowsing ? undefined : '/tools'}
+        description="Try fewer filters or different words."
+        title="No tools found"
+      />
     )
   } else if (isBrowsing) {
     content = (
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-(--space-3xl)">
         {categoryGroups.map(({ category, cards }) => (
           <ToolSection
             cards={cards}
@@ -226,50 +194,57 @@ export function ToolsExplorer({
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col gap-3">
-        <ListingToolbar
-          groups={[
-            {
-              key: 'category',
-              label: 'Filter tools by category',
-              all: {
-                href: searchHref('/tools', { words: [], chips: searchChips }),
-                active: categoryChips.length === 0,
-              },
-              moreTitle: 'More filters',
-              options: categoryOptions.map((category) => ({
-                ...category,
-                href: searchHref('/tools', {
-                  words: [],
-                  chips: [
-                    ...searchChips,
-                    ...(categoryChips.includes(category.key)
-                      ? []
-                      : [category.key]),
-                  ],
-                }),
-                active: categoryChips.includes(category.key),
-              })),
-            },
-          ]}
-          search={
-            <CatalogSearch
-              action="/tools"
-              defaultValue={searchText(state)}
-              label="Search tools"
-              placeholder="Search tools…"
-            />
-          }
-        />
-        {unknown.length > 0 ? (
-          <p className="type-body text-workflow">
-            No tag matches {unknown.join(', ')}. Pick one above instead.
-          </p>
-        ) : null}
-      </div>
+    <div className="flex flex-col gap-(--space-lg)">
+      <SectionHeading
+        description="Every tool and the company behind it. Reach it over MCP, CLI or API."
+        title="Discover tools"
+      />
 
-      {content}
+      <div className="flex flex-col gap-(--space-3xl)">
+        <div className="flex flex-col gap-3">
+          <ListingToolbar
+            groups={[
+              {
+                key: 'category',
+                label: 'Filter tools by category',
+                all: {
+                  href: searchHref('/tools', { words: [], chips: searchChips }),
+                  active: categoryChips.length === 0,
+                },
+                moreTitle: 'More filters',
+                options: categoryOptions.map((category) => ({
+                  ...category,
+                  href: searchHref('/tools', {
+                    words: [],
+                    chips: [
+                      ...searchChips,
+                      ...(categoryChips.includes(category.key)
+                        ? []
+                        : [category.key]),
+                    ],
+                  }),
+                  active: categoryChips.includes(category.key),
+                })),
+              },
+            ]}
+            search={
+              <CatalogSearch
+                action="/tools"
+                defaultValue={searchText(state)}
+                label="Search tools"
+                placeholder="Search tools…"
+              />
+            }
+          />
+          {unknown.length > 0 ? (
+            <p className="type-body text-workflow">
+              No tag matches {unknown.join(', ')}. Pick one above instead.
+            </p>
+          ) : null}
+        </div>
+
+        {content}
+      </div>
     </div>
   )
 }

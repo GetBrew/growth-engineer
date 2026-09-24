@@ -1,6 +1,5 @@
 import { CategoryRowsSkeleton, ToolbarSkeleton } from './parts'
 
-/** `/tools` — under the heading: the filters and search, then categories. */
 export function ToolsSkeleton() {
   return (
     <div aria-hidden="true" className="flex flex-col gap-10">

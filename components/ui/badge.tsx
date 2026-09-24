@@ -13,6 +13,10 @@ const badgeVariants = cva(
         company: 'border-company/40 bg-company/5 text-company',
         tool: 'border-tool/40 bg-tool/5 text-tool',
         tag: 'border-tag/40 bg-tag/5 text-tag',
+        /* Status and origin are claims, not decoration: filled, in the real
+           colour, so they carry across the card at a glance. */
+        verified: 'border-verified bg-verified text-background',
+        unverified: 'border-unverified bg-unverified text-background',
       },
     },
     defaultVariants: { variant: 'outline' },

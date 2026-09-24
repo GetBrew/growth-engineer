@@ -1,22 +1,18 @@
 import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
+import { EntityIcon, type EntityKind } from '@/components/catalog/entity-icon'
 import { CatalogShell } from '@/components/home/catalog-shell'
-import { MaskIcon } from '@/components/site/mask-icon'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { CatalogListSkeleton } from './parts'
 
-const TABS = [
-  { label: 'Workflows', icon: '/workflow.svg' },
-  { label: 'Tools', icon: '/tool.svg' },
-  { label: 'Companies', icon: '/company.svg' },
-] as const
+const TABS: ReadonlyArray<{ label: string; entity: EntityKind }> = [
+  { label: 'Workflows', entity: 'workflow' },
+  { label: 'Tools', entity: 'tool' },
+  { label: 'Companies', entity: 'company' },
+]
 
-/**
- * `/` — the catalog below the hero. What does not depend on data is real
- * (the heading, the tab labels, "View all"); only the rows pulse.
- */
 export function HomeSkeleton() {
   return (
     <CatalogShell>
@@ -25,7 +21,7 @@ export function HomeSkeleton() {
           aria-hidden="true"
           className="flex h-10 w-fit gap-1 rounded-full bg-hover p-1"
         >
-          {TABS.map(({ label, icon }, index) => (
+          {TABS.map(({ label, entity }, index) => (
             <span
               className={cn(
                 'type-control flex h-8 items-center gap-2 rounded-full border border-transparent px-4',
@@ -35,7 +31,7 @@ export function HomeSkeleton() {
               )}
               key={label}
             >
-              <MaskIcon size={16} src={icon} />
+              <EntityIcon entity={entity} size={16} />
               {label}
             </span>
           ))}

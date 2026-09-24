@@ -2,13 +2,6 @@ import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { type MapNode, NodePill } from './node'
 
-/**
- * The complete edge list under the diagram. The diagram draws a handful per
- * relation so it stays readable; this is every edge, in order, and it is what
- * an agent reading the page gets. Direction is stated, not implied by layout:
- * "used by" pointing IN at a tool is a different fact from "uses" pointing out.
- */
-
 type Group = {
   relation: string
   direction: 'out' | 'in'
@@ -20,7 +13,7 @@ export function RelationGroups({ groups }: { groups: Array<Group> }) {
   const populated = groups.filter((group) => group.nodes.length > 0)
   if (populated.length === 0) {
     return (
-      <p className="text-foreground/55 text-sm">
+      <p className="type-helper text-faint">
         Nothing is connected to this node yet.
       </p>
     )
@@ -33,15 +26,15 @@ export function RelationGroups({ groups }: { groups: Array<Group> }) {
           <div className="flex items-center gap-2">
             <HugeiconsIcon
               aria-hidden="true"
-              className="text-foreground/45"
+              className="text-subtle"
               icon={
                 group.direction === 'in' ? ArrowLeft01Icon : ArrowRight01Icon
               }
               size={16}
               strokeWidth={1.8}
             />
-            <h3 className="font-medium text-sm">{group.relation}</h3>
-            <span className="font-medium text-foreground/45 text-xs">
+            <h3 className="type-field-label">{group.relation}</h3>
+            <span className="type-meta">
               {group.nodes.length}
               {group.isTruncated ? '+' : ''}
             </span>

@@ -1,19 +1,7 @@
 import Link from 'next/link'
-import type { MapNode } from '@/lib/catalog/types'
+import type { MapNode } from '@/lib/types/catalog'
 import { cn } from '@/lib/utils/cn'
 import { NODE_FILL, nodeHref } from './node'
-
-/**
- * The neighborhood, drawn. Server-rendered: an inline SVG draws the spokes,
- * and every node is a `next/link` laid over it at the same coordinates — so
- * the picture is as navigable as the list under it, a click is a client-side
- * navigation to a prerendered page (prefetched on hover), and an agent
- * reading the HTML sees the same edges a person does.
- *
- * WHY IT DRAWS ONLY A FEW PER GROUP: past a handful the labels collide and the
- * picture stops being one. The diagram is the shape; `RelationGroups` below it
- * is the complete, ordered truth. `+n more` says which one you are looking at.
- */
 
 type Group = {
   relation: string
@@ -27,10 +15,8 @@ const CX = WIDTH / 2
 const CY = HEIGHT / 2
 const RADIUS = 186
 
-/** Past this the labels overlap; the rest live in the list below. */
 const DRAWN_PER_GROUP = 5
 
-/** Labels are drawn, not wrapped — long names get an ellipsis. */
 function short(value: string, max: number): string {
   return value.length > max ? `${value.slice(0, max - 1)}…` : value
 }
@@ -43,10 +29,8 @@ function polar(angleDegrees: number, radius: number) {
   }
 }
 
-/** Where a label sits relative to its dot, so it reads away from the centre. */
 type Side = 'start' | 'middle' | 'end'
 
-/** Put the dot on the point: the link's box shifts by the dot's radius. */
 const SHIFT: Record<Side, string> = {
   start: 'translate(-6px, -50%)',
   middle: 'translate(-50%, -6px)',
@@ -68,7 +52,6 @@ function percent(value: number, of: number): string {
   return `${(value / of) * 100}%`
 }
 
-/** A node as a link over the diagram: a dot at the point, the label beside it. */
 function NodeLink({
   node,
   x,
@@ -89,7 +72,7 @@ function NodeLink({
   return (
     <Link
       className={cn(
-        'absolute flex items-center gap-2 rounded-md text-[12px] text-foreground/75 leading-4 hover:text-foreground',
+        'type-label absolute flex items-center gap-2 rounded-md text-soft hover:text-foreground',
         side === 'middle' && 'flex-col gap-1',
         side === 'end' && 'flex-row-reverse'
       )}
@@ -139,11 +122,9 @@ export function NeighborhoodGraph({
         <title>{`What ${node.name} is connected to`}</title>
 
         {drawn.map((group, groupIndex) => {
-          // Spokes are spread evenly around the circle, starting at the top.
           const base = -90 + (360 / drawn.length) * groupIndex
           const visible = group.nodes.slice(0, DRAWN_PER_GROUP)
-          // Fan the group's nodes across its own share of the circle, never
-          // wider than the share itself so two groups cannot interleave.
+
           const share = 360 / drawn.length
           const step = Math.min(share / (DRAWN_PER_GROUP + 1), 15)
           const label = polar(base, RADIUS + 66)
@@ -152,7 +133,7 @@ export function NeighborhoodGraph({
           return (
             <g key={group.relation}>
               <text
-                className="fill-foreground/55 font-medium text-[13px]"
+                className="type-label fill-faint"
                 textAnchor={sideFor(base)}
                 x={label.x}
                 y={label.y}
@@ -175,7 +156,7 @@ export function NeighborhoodGraph({
                 })
                 return (
                   <line
-                    className="stroke-foreground/12"
+                    className="stroke-border"
                     key={`${child.type}:${child.key}`}
                     strokeWidth={1}
                     x1={CX}
@@ -190,7 +171,7 @@ export function NeighborhoodGraph({
         })}
 
         <circle
-          className="fill-background stroke-foreground/15"
+          className="fill-background stroke-border"
           cx={CX}
           cy={CY}
           r={46}
@@ -198,7 +179,7 @@ export function NeighborhoodGraph({
         />
         <circle className={NODE_FILL[node.type]} cx={CX} cy={CY} r={9} />
         <text
-          className="fill-foreground font-semibold text-[13px]"
+          className="type-label fill-foreground"
           textAnchor="middle"
           x={CX}
           y={CY + 30}

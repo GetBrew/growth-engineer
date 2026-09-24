@@ -1,15 +1,11 @@
-import { HeadingSkeleton, ToolbarSkeleton, WorkflowRowsSkeleton } from './parts'
+import { CatalogListSkeleton, HeadingSkeleton, ToolbarSkeleton } from './parts'
 
-/**
- * `/workflows` — below the hero: the heading, the All · Top ·
- * New · Hacks pills with the search, then the workflow rows.
- */
 export function WorkflowsSkeleton() {
   return (
     <div aria-hidden="true" className="flex flex-col gap-6">
       <HeadingSkeleton />
       <ToolbarSkeleton />
-      <WorkflowRowsSkeleton />
+      <CatalogListSkeleton count={6} />
     </div>
   )
 }
