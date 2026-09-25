@@ -17,50 +17,68 @@ workflows that use it — the build links both directions.
 
 ## The file
 
+A short YAML header with the facts, then the workflow itself in plain
+markdown — the same markdown the published file uses, so what you write here
+reads the same on GitHub as on the site. The build adds the setup for every
+tool you name and the rules; you write the rest.
+
 ```markdown
 ---
 title: Turn fresh funding news into qualified outbound
 summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
-author: jdoe                                # your GitHub login
+author: jdoe
 version: 1
 tags: [motion:outbound, channel:email, capability:enrich-contacts]
-inputs:
-  - name: target_segment                    # snake_case; the agent asks the user for it
-    description: the kind of company to watch
-    example: Series A B2B SaaS in the US
-  - name: sender_email
-    description: the address emails are sent from
-steps:                                      # 1 to 10 steps
-  - title: Find funded companies
-    tool: clay/build-audience               # a published tool: companies/<handle>/tools/<slug>.md
-    instruction: List companies matching `target_segment` that announced a round in the last 30 days.
-  - title: Write emails
-    tool: brew/write-copy
-    via: mcp                                # optional: which way in to use for this step
-    instruction: Draft a three-sentence email per contact. Show the drafts to the user.
-doneWhen:
-  - Every funded company has a contact, or a note explaining why not.
-  - Approved emails are sent, and the user has a summary table.
-featured: 3                                 # optional: rank on the featured list; must be unique
+featured: 3
 updated: 2026-09-16
 ---
 
-Optional notes for the agent, rendered as a "Notes" section in the file.
+## Inputs
+
+- `target_segment`: the kind of company to watch, e.g. Series A B2B SaaS in the US
+- `sender_email`: the address emails are sent from
+
+## Steps
+
+1. **Find funded companies** with [clay/build-audience](../companies/clay/tools/build-audience.md). List companies matching `target_segment` that announced a round in the last 30 days.
+2. **Write emails** with [brew/write-copy](../companies/brew/tools/write-copy.md) via MCP. Draft a three-sentence email per contact. Show the drafts to the user.
+
+## Done when
+
+- Every funded company has a contact, or a note explaining why not.
+- Approved emails are sent, and the user has a summary table.
+
+## Notes
+
+Optional. Anything else the agent should know, in any markdown.
 ```
+
+### The header
 
 | Field | Required | Notes |
 | --- | --- | --- |
 | `title` | yes | Phrased as the result. |
 | `summary` | yes | One sentence. |
 | `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
-| `tags` | yes | At least one `namespace:slug` from `tags/` (motion, channel, capability, category, fit). `agent:*` and `has:*` are computed, never listed. |
-| `steps` | yes | 1–10. Each names a `tool` that exists and is published; `via` must be a way in that tool has. |
-| `doneWhen` | yes | At least one check. |
+| `tags` | yes | At least one `namespace:slug` from `tags/` (motion, channel, capability, category, fit). `has:*` is computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
-| `inputs` | no | Named, never templated: the file tells the agent to ask for `target_segment`. |
 | `version` | no | Integer, default 1. Bump it when the steps change materially. |
-| `featured` | no | Editorial rank on `/workflows`; unranked workflows follow by date. |
+| `featured` | no | Editorial rank on `/workflows`; must be unique. Unranked workflows follow by date. |
 | `aliases`, `status` | no | Old names to redirect; `published` (default) or `deprecated`. |
+
+### The body
+
+Four sections, in this order. Anything else is an error, so a typo in a
+heading is caught instead of silently dropped.
+
+| Section | Required | Each entry |
+| --- | --- | --- |
+| `## Inputs` | no | ``- `name`: what it is, e.g. an example`` — the name in snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
+| `## Steps` | yes, 1–10 | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). What to do.`` — the tool is a published tool's key (`<handle>/<slug>`), as a link to its file `../companies/<handle>/tools/<slug>.md` (GitHub follows it) or as a code span. Add `via MCP`, `via CLI` or `via API` after the tool to use that way in; the tool must have it. |
+| `## Done when` | yes | `- A check that means the job is finished.` |
+| `## Notes` | no | Free markdown, to the end of the file. |
+
+A long entry can wrap onto the next line; keep each entry to one paragraph.
 
 ## Writing good steps
 
@@ -74,6 +92,6 @@ Optional notes for the agent, rendered as a "Notes" section in the file.
 ## Checking your work
 
 ```bash
-pnpm content:check   # every step resolves, every tag exists, the file renders within its caps
+pnpm content:check   # every step resolves, every tag exists, the file renders within its caps — each problem names its file and line
 pnpm dev             # then open /workflows/<name>
 ```

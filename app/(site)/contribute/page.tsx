@@ -4,12 +4,14 @@ import type { Metadata } from 'next'
 import { CatalogList, type CatalogListItem } from '@/components/catalog/list'
 import { Page } from '@/components/layout/page'
 import { GUIDES } from '@/lib/constants/guides'
+import { pageMetadata } from '@/lib/seo/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Learn',
   description:
     'How growth.engineer works, and how to add your company, tools and workflows.',
-}
+  path: '/contribute',
+})
 
 /**
  * Each guide is drawn as a catalog row — the same row a workflow gets on

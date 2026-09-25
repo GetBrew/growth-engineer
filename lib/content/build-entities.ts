@@ -8,8 +8,6 @@ import {
   type AccessFrontmatter,
   type ToolFrontmatter,
   toolSchema,
-  type WorkflowFrontmatter,
-  workflowSchema,
 } from '@/lib/schemas/content'
 import type { Access, Company, Tag, Tool, Workflow } from '@/lib/types/catalog'
 import {
@@ -21,6 +19,7 @@ import {
 } from './derive'
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
+import { type ParsedWorkflow, parseWorkflowFile } from './parse-workflow'
 import type { ContentFile } from './read-tree'
 
 /**
@@ -237,16 +236,18 @@ function resolveTags(
 /** Every step names a published tool, and a `via` the tool actually offers. */
 function checkSteps(
   file: WorkflowFile,
-  steps: WorkflowFrontmatter['steps'],
+  parsed: ParsedWorkflow,
   tools: ReadonlyMap<string, Tool>,
   problems: ProblemList
 ): void {
-  for (const [index, step] of steps.entries()) {
+  for (const [index, step] of parsed.data.steps.entries()) {
+    const line = parsed.stepLines[index]
     const tool = tools.get(step.tool)
     if (!tool) {
       problems.add(
         file.path,
-        `steps.${index}.tool: "${step.tool}" is not a published tool (companies/<handle>/tools/<slug>.md)`
+        `step ${index + 1}: "${step.tool}" is not a published tool (companies/<handle>/tools/<slug>.md)`,
+        line
       )
     } else if (
       step.via &&
@@ -254,7 +255,8 @@ function checkSteps(
     ) {
       problems.add(
         file.path,
-        `steps.${index}.via: ${step.tool} has no ${step.via} way in`
+        `step ${index + 1}: ${step.tool} has no ${step.via.toUpperCase()} way in`,
+        line
       )
     }
   }
@@ -262,10 +264,10 @@ function checkSteps(
 
 function toWorkflow(
   file: WorkflowFile,
-  parsed: { data: WorkflowFrontmatter; body: string },
+  parsed: ParsedWorkflow,
   tags: ReadonlyArray<Tag>
 ): Workflow {
-  const { data, body } = parsed
+  const { data, notes } = parsed
   const steps = data.steps.map((step) => ({
     key: slugify(step.title),
     title: step.title,
@@ -284,7 +286,7 @@ function toWorkflow(
     inputs: data.inputs,
     steps,
     doneWhen: data.doneWhen,
-    ...(body ? { notes: body } : {}),
+    ...(notes ? { notes } : {}),
     ...(data.featured === undefined ? {} : { featured: data.featured }),
     toolKeys,
     toolCount: toolKeys.length,
@@ -318,12 +320,12 @@ export function buildWorkflows(
       problems.add(file.path, pathProblem)
       continue
     }
-    const parsed = parseFile(file, workflowSchema, problems)
+    const parsed = parseWorkflowFile(file.path, file.source, problems)
     if (!parsed) {
       continue
     }
     const tags = resolveTags(file, parsed.data.tags, context.tags, problems)
-    checkSteps(file, parsed.data.steps, context.tools, problems)
+    checkSteps(file, parsed, context.tools, problems)
     const workflow = toWorkflow(file, parsed, tags)
     if (workflow.featured !== undefined) {
       const holder = featuredRanks.get(workflow.featured)

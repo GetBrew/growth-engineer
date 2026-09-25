@@ -160,47 +160,68 @@ export const toolSchema = z.strictObject({
 
 /* ─────────────────────────────────── workflow ───────────────────────────── */
 
-export const workflowSchema = z.strictObject({
+/**
+ * A workflow file is a header and a body. The HEADER holds the facts about
+ * the workflow; the inputs, steps and checks are markdown in the BODY
+ * (lib/content/workflow-body.ts reads them), so the source file reads on
+ * GitHub the way the rendered file reads on the site.
+ */
+export const workflowHeaderSchema = z.strictObject({
   title: text,
   summary: text,
   /** The GitHub login of the person who wrote it. */
   author: githubLogin,
   version: z.int().min(1).default(1),
   tags: z.array(tagKey).min(1, 'give the workflow at least one tag'),
-  inputs: z
-    .array(
-      z.strictObject({
-        name: z
-          .string()
-          .regex(
-            /^[a-z][a-z0-9_]*$/,
-            'must be snake_case, like `target_accounts`'
-          ),
-        description: text,
-        example: text.optional(),
-      })
-    )
-    .default([]),
+  featured: z.int().min(1).optional(),
+  aliases: z.array(keyPart).default([]),
+  status: status.default('published'),
+  updated: isoDate,
+})
+
+/** Header fields that live in the body now, and the section each moved to. */
+export const WORKFLOW_BODY_SECTIONS = {
+  inputs: '## Inputs',
+  steps: '## Steps',
+  doneWhen: '## Done when',
+} as const
+
+/** The body's sections once read into fields: the same rules, per entry. */
+export const workflowBodySchema = z.strictObject({
+  inputs: z.array(
+    z.strictObject({
+      name: z
+        .string()
+        .regex(
+          /^[a-z][a-z0-9_]*$/,
+          'must be snake_case, like `target_accounts`'
+        ),
+      description: text,
+      example: text.optional(),
+    })
+  ),
   steps: z
     .array(
       z.strictObject({
         title: text,
         /** A tool key: `clay/enrich-contacts`. */
         tool: ownedKey,
-        via: z.enum(['mcp', 'cli', 'api']).optional(),
+        via: z
+          .enum(['mcp', 'cli', 'api'], {
+            error: 'must be MCP, CLI or API',
+          })
+          .optional(),
         instruction: text,
       })
     )
-    .min(1, 'a workflow has at least one step')
+    .min(1, 'add a `## Steps` section with at least one numbered step')
     .max(
       MAX_WORKFLOW_STEPS,
       `a workflow has at most ${MAX_WORKFLOW_STEPS} steps`
     ),
-  doneWhen: z.array(text).min(1, 'say when the job is done'),
-  featured: z.int().min(1).optional(),
-  aliases: z.array(keyPart).default([]),
-  status: status.default('published'),
-  updated: isoDate,
+  doneWhen: z
+    .array(text)
+    .min(1, 'add a `## Done when` section with at least one check'),
 })
 
 /* ──────────────────────────────────── tag ───────────────────────────────── */
@@ -213,7 +234,9 @@ export const tagSchema = z.strictObject({
 export type CompanyFrontmatter = z.infer<typeof companySchema>
 export type AccessFrontmatter = z.infer<typeof accessSchema>
 export type ToolFrontmatter = z.infer<typeof toolSchema>
-export type WorkflowFrontmatter = z.infer<typeof workflowSchema>
+/** Everything a workflow file says: its header plus its body's fields. */
+export type WorkflowFrontmatter = z.infer<typeof workflowHeaderSchema> &
+  z.infer<typeof workflowBodySchema>
 
 /** "steps.3.tool: must be …" — one line per issue, path first. */
 export function formatIssues(error: z.ZodError): string {

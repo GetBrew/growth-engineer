@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { GuideSteps } from '@/components/contribute/guide-steps'
+import {
+  GuideSteps,
+  type ResolvedGuideStep,
+} from '@/components/contribute/guide-steps'
 import { GuideVideo } from '@/components/contribute/guide-video'
 import { DetailHeader } from '@/components/detail/header'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
@@ -12,7 +15,8 @@ import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
 import { Bar } from '@/components/skeletons/parts'
-import { GUIDE_STEPS } from '@/lib/constants/guide-steps'
+import { loadSourceExcerpt } from '@/lib/catalog/loaders'
+import { GUIDE_STEPS, type GuideStep } from '@/lib/constants/guide-steps'
 import {
   findGuide,
   GUIDES,
@@ -20,6 +24,7 @@ import {
   guideMarkdown,
   nextGuide,
 } from '@/lib/constants/guides'
+import { pageMetadata } from '@/lib/seo/metadata'
 
 type Params = Promise<{ guide: string }>
 
@@ -34,7 +39,31 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { guide } = await params
   const found = findGuide(guide)
-  return found ? { title: found.title, description: found.summary } : {}
+  return found
+    ? pageMetadata({
+        title: found.title,
+        description: found.summary,
+        path: `/contribute/${found.id}`,
+      })
+    : {}
+}
+
+/** A quoted file is read from the repository at build; a command is as written. */
+async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
+  const { sample, ...rest } = step
+  if (!sample) {
+    return rest
+  }
+  if ('file' in sample) {
+    return {
+      ...rest,
+      sample: {
+        caption: sample.file,
+        code: await loadSourceExcerpt(sample.file, sample.excerpt),
+      },
+    }
+  }
+  return { ...rest, sample }
 }
 
 /**
@@ -64,7 +93,9 @@ async function GuideDetail({ params }: { params: Params }) {
   }
 
   const markdown = guideMarkdown(found)
-  const steps = GUIDE_STEPS[found.id] ?? []
+  const steps = await Promise.all(
+    (GUIDE_STEPS[found.id] ?? []).map(resolveStep)
+  )
   const next = nextGuide(found.id)
 
   return (
@@ -84,14 +115,20 @@ async function GuideDetail({ params }: { params: Params }) {
             />
           </>
         }
-        byline={<p className="eyebrow">Video · {found.length} walkthrough</p>}
+        byline={
+          found.loomId ? (
+            <p className="eyebrow">Video · {found.length} walkthrough</p>
+          ) : null
+        }
         description={found.summary}
         title={found.title}
       />
 
       <div className="grid gap-(--space-block) lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <section className="flex min-w-0 flex-col gap-(--space-block)">
-          <GuideVideo loomId={found.loomId} title={found.title} />
+          {found.loomId ? (
+            <GuideVideo loomId={found.loomId} title={found.title} />
+          ) : null}
 
           <div className="flex max-w-3xl flex-col gap-(--space-sm)">
             <p className="type-body">{found.intro}</p>
@@ -130,7 +167,9 @@ async function GuideDetail({ params }: { params: Params }) {
               href={`/contribute/${next.id}`}
             >
               <span className="flex min-w-0 flex-col">
-                <span className="type-label text-faint">Next video</span>
+                <span className="type-label text-faint">
+                  {next.loomId ? 'Next video' : 'Next guide'}
+                </span>
                 <span className="type-item truncate">{next.title}</span>
               </span>
               <span className="type-control shrink-0 text-soft">→</span>

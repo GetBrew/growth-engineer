@@ -1,14 +1,17 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, test } from 'vitest'
+import type { z } from 'zod'
+import { getCatalog } from '@/lib/catalog/catalog'
+import { ProblemList } from '@/lib/content/errors'
 import { splitFrontmatter } from '@/lib/content/frontmatter'
+import { parseWorkflowFile } from '@/lib/content/parse-workflow'
 import {
   accessSchema,
   companySchema,
   formatIssues,
   tagSchema,
   toolSchema,
-  workflowSchema,
 } from '@/lib/schemas/content'
 import { REPO_ROOT } from './helpers/source-files'
 
@@ -33,21 +36,45 @@ function templates(): Array<{ file: string; index: number; source: string }> {
   })
 }
 
-/** Which file kind a template documents, from the fields it carries. */
-function schemaFor(data: Record<string, unknown>) {
+type Kind = 'access' | 'workflow' | 'company' | 'tool' | 'tag'
+
+/** Which file kind a template documents, from the header fields it carries. */
+function kindOf(data: Record<string, unknown>): Kind {
   if ('type' in data && 'auth' in data) {
-    return { kind: 'access', schema: accessSchema }
+    return 'access'
   }
-  if ('steps' in data) {
-    return { kind: 'workflow', schema: workflowSchema }
+  if ('author' in data) {
+    return 'workflow'
   }
   if ('domain' in data) {
-    return { kind: 'company', schema: companySchema }
+    return 'company'
   }
-  if ('summary' in data) {
-    return { kind: 'tool', schema: toolSchema }
+  return 'summary' in data ? 'tool' : 'tag'
+}
+
+const SCHEMAS: Record<Exclude<Kind, 'workflow'>, z.ZodType> = {
+  access: accessSchema,
+  company: companySchema,
+  tool: toolSchema,
+  tag: tagSchema,
+}
+
+/** The problems a template has, read exactly the way the build reads it. */
+function problemsOf(file: string, source: string): Array<string> {
+  const kind = kindOf(splitFrontmatter(file, source).data)
+  if (kind === 'workflow') {
+    // Header AND body: the workflow parser the build uses.
+    const problems = new ProblemList()
+    try {
+      parseWorkflowFile(file, source, problems)
+      problems.throwIfAny()
+    } catch (error) {
+      return [String(error)]
+    }
+    return []
   }
-  return { kind: 'tag', schema: tagSchema }
+  const result = SCHEMAS[kind].safeParse(splitFrontmatter(file, source).data)
+  return result.success ? [] : [`${kind}: ${formatIssues(result.error)}`]
 }
 
 describe('README templates', () => {
@@ -60,20 +87,33 @@ describe('README templates', () => {
   })
 
   test.each(found)('$file template #$index parses', ({ file, source }) => {
-    const parsed = splitFrontmatter(file, source)
-    const { kind, schema } = schemaFor(parsed.data)
-    const result = schema.safeParse(parsed.data)
-    expect(
-      result.success,
-      result.success ? kind : `${kind}: ${formatIssues(result.error)}`
-    ).toBe(true)
+    expect(problemsOf(file, source)).toEqual([])
+  })
+
+  test('the workflow template names tools that are published', () => {
+    const tools = getCatalog().tools
+    const workflowTemplates = found.filter(
+      (template) =>
+        kindOf(splitFrontmatter(template.file, template.source).data) ===
+        'workflow'
+    )
+    expect(workflowTemplates.length).toBeGreaterThan(0)
+    for (const template of workflowTemplates) {
+      const parsed = parseWorkflowFile(
+        template.file,
+        template.source,
+        new ProblemList()
+      )
+      for (const step of parsed?.data.steps ?? []) {
+        expect(tools.has(step.tool), step.tool).toBe(true)
+      }
+    }
   })
 
   test('the templates cover every file kind', () => {
     const kinds = new Set(
-      found.map(
-        (template) =>
-          schemaFor(splitFrontmatter(template.file, template.source).data).kind
+      found.map((template) =>
+        kindOf(splitFrontmatter(template.file, template.source).data)
       )
     )
     expect([...kinds].sort()).toEqual([

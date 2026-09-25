@@ -11,7 +11,12 @@ import { ContentError } from './errors'
 /** `---`, the header, `---` on its own line; the body is whatever follows. */
 const FRONTMATTER = /^---\n([\s\S]*?)^---[ \t]*(?:\n|$)/m
 
-export type ParsedFile = { data: Record<string, unknown>; body: string }
+export type ParsedFile = {
+  data: Record<string, unknown>
+  body: string
+  /** The 1-based line of the file the body's first line is on. */
+  bodyLine: number
+}
 
 export function splitFrontmatter(file: string, source: string): ParsedFile {
   const text = source.replace(/\r\n/g, '\n')
@@ -25,7 +30,10 @@ export function splitFrontmatter(file: string, source: string): ParsedFile {
   if (!match) {
     throw new ContentError(file, 'the YAML header has no closing `---` line')
   }
-  const body = text.slice(match[0].length).trim()
+  const rest = text.slice(match[0].length)
+  const body = rest.trim()
+  const bodyStart = match[0].length + (rest.length - rest.trimStart().length)
+  const bodyLine = text.slice(0, bodyStart).split('\n').length
 
   let data: unknown
   try {
@@ -39,10 +47,10 @@ export function splitFrontmatter(file: string, source: string): ParsedFile {
     )
   }
   if (data === null || data === undefined) {
-    return { data: {}, body }
+    return { data: {}, body, bodyLine }
   }
   if (typeof data !== 'object' || Array.isArray(data)) {
     throw new ContentError(file, 'the YAML header must be a map of fields')
   }
-  return { data: data as Record<string, unknown>, body }
+  return { data: data as Record<string, unknown>, body, bodyLine }
 }

@@ -16,7 +16,7 @@ export type Guide = {
   title: string
   summary: string
 
-  /** Spoken length of the walkthrough, e.g. "four-minute". */
+  /** Spoken length of the walkthrough, e.g. "four-minute"; shown with the video. */
   length: string
 
   /** The line under the video, before the chapters. */
@@ -30,7 +30,7 @@ export type Guide = {
 
   /**
    * The Loom share id of the walkthrough, once it is recorded. Absent means
-   * the page shows the placeholder in the same 16:9 box.
+   * the page has no video slot and makes no mention of one.
    */
   loomId?: string
 }
@@ -89,9 +89,8 @@ export function nextGuide(id: string): Guide | undefined {
 }
 
 /**
- * The placeholder file behind a guide, until guides have real bodies. The
- * agent menu copies and downloads this the way it copies a tool or workflow
- * file on the catalog's detail pages.
+ * The guide as one markdown file: what the agent menu copies and downloads,
+ * the way it copies a tool or workflow file on the catalog's detail pages.
  */
 export function guideMarkdown(guide: Guide): string {
   const steps = (GUIDE_STEPS[guide.id] ?? [])

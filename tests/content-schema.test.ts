@@ -28,6 +28,34 @@ function file(path: string, source: string): ContentFile {
   return { kind: 'company', path, handle, source }
 }
 
+/** Header facts, then the body: steps and checks in markdown. Step 1 is on line 11. */
+const WORKFLOW = [
+  '---',
+  'title: Keep the CRM clean',
+  'summary: Dedupe records weekly.',
+  'author: jdoe',
+  'tags: [channel:email]',
+  'updated: 2026-09-16',
+  '---',
+  '',
+  '## Steps',
+  '',
+  '1. **Dedupe** with [acme/manage-crm](../companies/acme/tools/manage-crm.md). Merge duplicates.',
+  '',
+  '## Done when',
+  '',
+  '- No duplicates remain.',
+  '',
+].join('\n')
+
+/** The valid workflow with one piece of its text swapped. */
+function workflow(from: string, to: string): Array<ContentFile> {
+  if (!WORKFLOW.includes(from)) {
+    throw new Error(`fixture has no ${from}`)
+  }
+  return replace('workflows/keep-crm-clean.md', WORKFLOW.replace(from, to))
+}
+
 const VALID: Array<ContentFile> = [
   file('tags/category/crm.md', '---\nlabel: CRM\n---\n\nSystems of record.\n'),
   file(
@@ -47,10 +75,7 @@ const VALID: Array<ContentFile> = [
     'companies/acme/tools/manage-crm.md',
     '---\nname: Manage a CRM\nsummary: Creates records. Acme does this.\naccess:\n  api: POST /records\nupdated: 2026-09-16\n---\n'
   ),
-  file(
-    'workflows/keep-crm-clean.md',
-    '---\ntitle: Keep the CRM clean\nsummary: Dedupe records weekly.\nauthor: jdoe\ntags: [channel:email]\nsteps:\n  - title: Dedupe\n    tool: acme/manage-crm\n    instruction: Merge duplicates.\ndoneWhen:\n  - No duplicates remain.\nupdated: 2026-09-16\n---\n'
-  ),
+  file('workflows/keep-crm-clean.md', WORKFLOW),
 ]
 
 function replace(path: string, source: string): Array<ContentFile> {
@@ -65,7 +90,8 @@ function problemsOf(files: ReadonlyArray<ContentFile>): Array<string> {
   } catch (error) {
     if (error instanceof ContentErrors) {
       return error.problems.map(
-        (problem) => `${problem.file}: ${problem.message}`
+        (problem) =>
+          `${problem.file}${problem.line ? `:${problem.line}` : ''}: ${problem.message}`
       )
     }
     throw error
@@ -84,11 +110,11 @@ describe('content rules', () => {
     [
       'a step naming an unknown tool',
       () =>
-        replace(
-          'workflows/keep-crm-clean.md',
-          VALID[6]?.source.replace('acme/manage-crm', 'acme/nope') ?? ''
+        workflow(
+          '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
+          '`acme/nope`'
         ),
-      /workflows\/keep-crm-clean\.md: steps\.0\.tool: "acme\/nope" is not a published tool/,
+      /workflows\/keep-crm-clean\.md:11: step 1: "acme\/nope" is not a published tool/,
     ],
     [
       'an alias that shadows a live key',
@@ -104,9 +130,9 @@ describe('content rules', () => {
     [
       'eleven steps',
       () =>
-        replace(
-          'workflows/keep-crm-clean.md',
-          `---\ntitle: Too long\nsummary: Too many steps.\nauthor: jdoe\ntags: [channel:email]\nsteps:\n${'  - title: Step\n    tool: acme/manage-crm\n    instruction: Do it.\n'.repeat(11)}doneWhen:\n  - Done.\nupdated: 2026-09-16\n---\n`
+        workflow(
+          '1. **Dedupe** with',
+          `${'1. **Step** with `acme/manage-crm`. Do it.\n'.repeat(10)}1. **Dedupe** with`
         ),
       /steps: a workflow has at most 10 steps/,
     ],
@@ -146,7 +172,7 @@ describe('content rules', () => {
           'companies/acme/tools/manage-crm.md',
           '---\nname: Manage a CRM\nsummary: Creates records.\nstatus: draft\nupdated: 2026-09-16\n---\n'
         ),
-      /steps\.0\.tool: "acme\/manage-crm" is not a published tool/,
+      /step 1: "acme\/manage-crm" is not a published tool/,
     ],
     [
       'an invalid key part in a path',
@@ -159,11 +185,7 @@ describe('content rules', () => {
     [
       'an unknown tag and an unknown category',
       () => [
-        ...replace(
-          'workflows/keep-crm-clean.md',
-          VALID[6]?.source.replace('channel:email', 'channel:carrier-pigeon') ??
-            ''
-        ).map((entry) =>
+        ...workflow('channel:email', 'channel:carrier-pigeon').map((entry) =>
           entry.path === 'companies/acme/company.md'
             ? file(
                 entry.path,
@@ -205,33 +227,88 @@ describe('content rules', () => {
     ],
     [
       'a `via` the tool does not offer',
-      () =>
-        replace(
-          'workflows/keep-crm-clean.md',
-          VALID[6]?.source.replace(
-            '    instruction:',
-            '    via: mcp\n    instruction:'
-          ) ?? ''
-        ),
-      /steps\.0\.via: acme\/manage-crm has no mcp way in/,
+      () => workflow('manage-crm.md).', 'manage-crm.md) via MCP.'),
+      /keep-crm-clean\.md:11: step 1: acme\/manage-crm has no MCP way in/,
+    ],
+    [
+      'a `via` that is not a way in',
+      () => workflow('manage-crm.md).', 'manage-crm.md) via FAX.'),
+      /keep-crm-clean\.md:11: step 1: via: must be MCP, CLI or API/,
     ],
     [
       'a workflow with no author',
-      () =>
-        replace(
-          'workflows/keep-crm-clean.md',
-          VALID[6]?.source.replace('author: jdoe\n', '') ?? ''
-        ),
+      () => workflow('author: jdoe\n', ''),
       /workflows\/keep-crm-clean\.md: author:/,
     ],
     [
       'an author that is not a GitHub login',
+      () => workflow('author: jdoe', 'author: jane doe'),
+      /author: must be a GitHub login/,
+    ],
+    [
+      'steps written in the header, the old way',
+      () =>
+        workflow(
+          'updated: 2026-09-16\n',
+          'updated: 2026-09-16\nsteps:\n  - title: Dedupe\n'
+        ),
+      /`steps` is not a header field: write it in the body under "## Steps"/,
+    ],
+    [
+      'a step that does not read as a step',
+      () => workflow('1. **Dedupe** with', '1. Dedupe with'),
+      /keep-crm-clean\.md:11: a step reads/,
+    ],
+    [
+      'a step linking somewhere other than its tool file',
+      () =>
+        workflow(
+          '../companies/acme/tools/manage-crm.md',
+          'https://example.com/manage-crm'
+        ),
+      /:11: the link to acme\/manage-crm must point at \.\.\/companies\/acme\/tools\/manage-crm\.md/,
+    ],
+    [
+      'a section the body does not have',
+      () => workflow('## Done when', '## Afterwards'),
+      /keep-crm-clean\.md:13: "## Afterwards" is not a section/,
+    ],
+    [
+      'sections out of order',
       () =>
         replace(
           'workflows/keep-crm-clean.md',
-          VALID[6]?.source.replace('author: jdoe', 'author: jane doe') ?? ''
+          `${WORKFLOW}\n## Inputs\n\n- \`region\`: where to look\n`
         ),
-      /author: must be a GitHub login/,
+      /"## Inputs" is out of order/,
+    ],
+    [
+      'prose outside a section',
+      () => workflow('## Steps', 'Some intro.\n\n## Steps'),
+      /keep-crm-clean\.md:9: text outside a section/,
+    ],
+    [
+      'a body with no steps',
+      () =>
+        workflow(
+          '## Steps\n\n1. **Dedupe** with [acme/manage-crm](../companies/acme/tools/manage-crm.md). Merge duplicates.\n\n',
+          ''
+        ),
+      /steps: add a `## Steps` section/,
+    ],
+    [
+      'a body with no checks',
+      () => workflow('## Done when\n\n- No duplicates remain.\n', ''),
+      /doneWhen: add a `## Done when` section/,
+    ],
+    [
+      'an input that is not snake_case',
+      () =>
+        workflow(
+          '## Steps',
+          '## Inputs\n\n- `Target-List`: the accounts, e.g. top 50\n\n## Steps'
+        ),
+      /keep-crm-clean\.md:11: input 1: name: must be snake_case/,
     ],
     [
       'a workflow name with an owner segment',
@@ -241,7 +318,7 @@ describe('content rules', () => {
           kind: 'workflow',
           path: 'workflows/jdoe/other.md',
           name: 'jdoe/other',
-          source: VALID[6]?.source ?? '',
+          source: WORKFLOW,
         },
       ],
       /"jdoe\/other" is not a valid workflow name|not a valid workflow name/,
@@ -271,13 +348,10 @@ describe('content rules', () => {
     [
       'two workflows claiming the same featured rank',
       () => [
-        ...replace(
-          'workflows/keep-crm-clean.md',
-          VALID[6]?.source.replace('updated:', 'featured: 1\nupdated:') ?? ''
-        ),
+        ...workflow('updated:', 'featured: 1\nupdated:'),
         file(
           'workflows/second.md',
-          VALID[6]?.source.replace('updated:', 'featured: 1\nupdated:') ?? ''
+          WORKFLOW.replace('updated:', 'featured: 1\nupdated:')
         ),
       ],
       /featured: rank 1 is already taken by keep-crm-clean/,

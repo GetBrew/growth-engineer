@@ -9,26 +9,22 @@ tags:
   - capability:find-work-emails
   - capability:write-copy
   - capability:manage-crm
-inputs:
-  - name: target_titles
-    description: the roles to watch
-    example: VP Marketing, Head of Growth
-  - name: target_accounts
-    description: company domains to watch
-    example: acme.example, globex.example
-steps:
-  - title: Find new leaders
-    tool: apollo/find-work-emails
-    instruction: Across `target_accounts`, find people with `target_titles` who started in the last 90 days. Keep name, title, start date and work email.
-  - title: Draft a note
-    tool: anthropic/write-copy
-    instruction: For each person, draft three lines about what a leader in that role usually fixes first. No pitch. Show the drafts to the user.
-  - title: Log it
-    tool: hubspot/manage-crm
-    instruction: Create or update each contact and attach the approved draft as a note on the record.
-doneWhen:
-  - Every new leader has a contact record with a note.
-  - The user has the list with start dates.
 featured: 2
 updated: 2026-09-16
 ---
+
+## Inputs
+
+- `target_titles`: the roles to watch, e.g. VP Marketing, Head of Growth
+- `target_accounts`: company domains to watch, e.g. acme.example, globex.example
+
+## Steps
+
+1. **Find new leaders** with [apollo/find-work-emails](../companies/apollo/tools/find-work-emails.md). Across `target_accounts`, find people with `target_titles` who started in the last 90 days. Keep name, title, start date and work email.
+2. **Draft a note** with [anthropic/write-copy](../companies/anthropic/tools/write-copy.md). For each person, draft three lines about what a leader in that role usually fixes first. No pitch. Show the drafts to the user.
+3. **Log it** with [hubspot/manage-crm](../companies/hubspot/tools/manage-crm.md). Create or update each contact and attach the approved draft as a note on the record.
+
+## Done when
+
+- Every new leader has a contact record with a note.
+- The user has the list with start dates.

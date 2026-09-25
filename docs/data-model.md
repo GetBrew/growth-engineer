@@ -60,13 +60,28 @@ listed). `aliases` lists old slugs. The body is the description.
 
 Workflows are by people: `author` is a GitHub login (letters, digits, single
 hyphens), shown as `@login` and linked to the profile; it is never a company.
-`title` (phrased as the result), `summary`, `author`, `tags` (≥ 1, curated
-namespaces only), `steps` (1–10 of `{ title, tool, via?, instruction }`),
-`doneWhen` (≥ 1), `updated` are required. Optional: `version` (integer, default 1),
-`inputs` (`{ name (snake_case), description, example? }`), `featured`
-(unique rank on the featured list), `aliases`, `status`. The body is the
-notes section. Every step's `tool` must be a published tool; `via` must be a
-way in that tool has.
+
+The HEADER holds the facts: `title` (phrased as the result), `summary`,
+`author`, `tags` (≥ 1, curated namespaces only) and `updated` are required;
+`version` (integer, default 1), `featured` (unique rank on the featured
+list), `aliases` and `status` are optional.
+
+The BODY holds the workflow itself, in the markdown the rendered file uses,
+so the source reads on GitHub the way it reads on the site
+(`lib/content/workflow-body.ts`). Four sections, in order:
+
+| Section | Entries | Becomes |
+| --- | --- | --- |
+| `## Inputs` (optional) | ``- `name`: description, e.g. example`` | `inputs`: `{ name (snake_case), description, example? }` |
+| `## Steps` (1–10) | ``1. **Title** with `handle/slug` via MCP. Instruction.`` — the tool may instead be a link to its file, `../companies/<handle>/tools/<slug>.md` | `steps`: `{ title, tool, via?, instruction }` |
+| `## Done when` (≥ 1) | `- A check.` | `doneWhen` |
+| `## Notes` (optional) | free markdown | `notes` |
+
+A step names its tool by key, as a code span or as a link to the tool's
+source file (the link must point at that file). Every step's tool must be a
+published tool; `via` must be a way in that tool has. Any other heading, text
+outside a section, or a header field that belongs in the body is an error
+with its line number.
 
 ## Tags — `tags/<namespace>/<slug>.md`
 

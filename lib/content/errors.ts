@@ -4,7 +4,8 @@
  * instead of one file per build.
  */
 
-export type ContentProblem = { file: string; message: string }
+/** `line` is 1-based, counted in the whole file, when the problem has one. */
+export type ContentProblem = { file: string; line?: number; message: string }
 
 export class ContentError extends Error {
   readonly file: string
@@ -32,7 +33,8 @@ export class ContentErrors extends Error {
 function formatProblems(problems: ReadonlyArray<ContentProblem>): string {
   const count = problems.length
   const lines = problems.map(
-    (problem) => `  ${problem.file} → ${problem.message}`
+    (problem) =>
+      `  ${problem.file}${problem.line ? `:${problem.line}` : ''} → ${problem.message}`
   )
   return [
     `${count} content ${count === 1 ? 'problem' : 'problems'}:`,
@@ -44,8 +46,8 @@ function formatProblems(problems: ReadonlyArray<ContentProblem>): string {
 export class ProblemList {
   private readonly problems: Array<ContentProblem> = []
 
-  add(file: string, message: string): void {
-    this.problems.push({ file, message })
+  add(file: string, message: string, line?: number): void {
+    this.problems.push(line ? { file, line, message } : { file, message })
   }
 
   get size(): number {

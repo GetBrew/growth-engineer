@@ -4,8 +4,11 @@ Every company, tool and workflow has one file. Tool and workflow files are the
 product; company files are a short index of that company's tools. This is the
 contract the renderer (`lib/catalog/render-markdown.ts`) implements and the
 goldens in `tests/fixtures/markdown/` pin. The SOURCE files under
-`companies/` and `workflows/` are structured input to that renderer; they are
-not the product and they do not look like it.
+`companies/` and `workflows/` are the input to that renderer: a YAML header
+of facts and a markdown body a person reads on GitHub. A workflow's body is
+already written in this format — its inputs, steps and checks — so the
+source and the file read alike; the renderer adds the setup for each tool,
+names the tools, and appends the rules.
 
 ## Rules
 
@@ -70,12 +73,12 @@ byte-identical files (`tests/content.test.ts` pins this).
 
 ## Publishing a workflow
 
-1. Write `workflows/<name>.md` with your GitHub login as `author`: a title
-   phrased as the result, the inputs, the steps (pick a tool, write what to
-   do), the checks that mean it is done
-   ([`workflows/README.md`](../workflows/README.md)).
+1. Write `workflows/<name>.md` with your GitHub login as `author`: a header
+   with a title phrased as the result, then `## Inputs`, `## Steps` (pick a
+   tool, write what to do) and `## Done when`, the checks that mean it is
+   done ([`workflows/README.md`](../workflows/README.md)).
 2. `pnpm content:check` renders the exact file and lists every problem with
-   its path; `pnpm dev` shows the page.
+   its file and line; `pnpm dev` shows the page.
 3. Open a pull request. CI runs the same checks; a maintainer reviews the
    facts. Merging publishes it on the next deploy.
 

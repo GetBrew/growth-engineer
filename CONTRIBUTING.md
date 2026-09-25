@@ -38,12 +38,16 @@ pnpm dev                # http://localhost:3000/companies/<handle>
 
 ## Add a workflow
 
-One file, `workflows/<name>.md` — the folder is flat, no subfolders. A title
-phrased as the result, your GitHub login as `author`, the inputs to ask the
-user for, up to ten steps that each name a published tool, and the checks
-that mean the job is done. Workflows are by people, not companies: the page
-credits `@you` and links to your GitHub profile. The build links every step
-to its tool and every tool back to the workflows that use it.
+One file, `workflows/<name>.md` — the folder is flat, no subfolders. A short
+YAML header (a title phrased as the result, your GitHub login as `author`,
+tags), then the workflow in plain markdown: `## Inputs` to ask the user for,
+`## Steps` — up to ten, each naming a published tool — and `## Done when`,
+the checks that mean the job is done. It reads on GitHub exactly as it will
+on the site; the build adds each tool's setup and the rules. Copy the
+template in [`workflows/README.md`](workflows/README.md) or any file beside
+it. Workflows are by people, not companies: the page credits `@you` and
+links to your GitHub profile. The build links every step to its tool and
+every tool back to the workflows that use it.
 
 ## The rules the build enforces
 

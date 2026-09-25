@@ -8,7 +8,7 @@ import type {
   Tool,
   WorkflowListItem,
 } from '@/lib/types/catalog'
-import { getCatalog } from './catalog'
+import { getCatalog, getSourceFile } from './catalog'
 import { type EntityType, formatRef } from './keys'
 import {
   companyListItem,
@@ -20,6 +20,7 @@ import {
   workflowListItem,
   workflowSearchItem,
 } from './lists'
+import { type Excerpt, sourceExcerpt } from './source-excerpt'
 
 /**
  * The catalog's server-side loaders. Every page and route handler reads
@@ -383,4 +384,21 @@ export async function loadNewTools(limit = 12) {
  */
 export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
   return paletteItems(getCatalog())
+}
+
+/**
+ * A quote from a source file in the repository, for the contribute guides:
+ * the file as written, or its header, or one `## ` section. Throws when the
+ * file or the section is missing, so a guide can never show a sample that
+ * drifted from the catalog — the build fails instead.
+ */
+export async function loadSourceExcerpt(
+  path: string,
+  excerpt?: Excerpt
+): Promise<string> {
+  const source = getSourceFile(path)
+  if (source === undefined) {
+    throw new Error(`${path} is not a file in the content tree`)
+  }
+  return sourceExcerpt(path, source, excerpt)
 }

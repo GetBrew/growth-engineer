@@ -67,8 +67,10 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - ONE render path: [`lib/catalog/render-markdown.ts`](lib/catalog/render-markdown.ts)
   (pure) called only by [`lib/content/build-documents.ts`](lib/content/build-documents.ts)
   at build time. Nothing renders on the request path; a rendered file is
-  never hand-edited; the SOURCE files under `companies/` and `workflows/`
-  are structured input, not the product.
+  never hand-edited. A SOURCE file is a YAML header of facts plus a markdown
+  body a person can read on GitHub: a workflow's inputs, steps and checks
+  are body sections ([`lib/content/workflow-body.ts`](lib/content/workflow-body.ts));
+  the build adds setup and rules.
 - The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
   flat YAML header, setup picks the best way in (official MCP → CLI → API →
   community; tool files list every option, workflow files ≤ 2 per tool or the
