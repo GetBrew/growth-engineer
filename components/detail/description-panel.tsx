@@ -3,9 +3,9 @@
 import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useId, useState } from 'react'
-import type { EntityKind } from '@/components/catalog/entity-icon'
-import { NoResults } from '@/components/catalog/no-results'
-import { PANEL_HEADING } from '@/components/detail/chrome'
+import type { EntityKind } from '@/components/common/entity-icon'
+import { NoResults } from '@/components/common/no-results'
+import { PANEL_HEADING } from '@/components/detail/styles'
 import { useClampOverflow } from '@/lib/hooks/use-clamp-overflow'
 import { cn } from '@/lib/utils/cn'
 
@@ -59,8 +59,6 @@ function DescriptionCard({
       </p>
       {rest.length > 0 || overflows ? (
         <>
-          {/* `0fr` -> `1fr` is how CSS animates to a height it cannot know in
-              advance; the inner element clips while the row grows. */}
           <div
             className={cn(
               'grid transition-[grid-template-rows] duration-400 ease-out motion-reduce:transition-none',

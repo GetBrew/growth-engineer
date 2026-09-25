@@ -1,28 +1,26 @@
-import { Book02Icon, File01Icon, GlobalIcon } from '@hugeicons/core-free-icons'
+import { File01Icon } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { accessLabels } from '@/components/catalog/badges'
-import {
-  CatalogList,
-  workflowListItem,
-} from '@/components/catalog/catalog-list'
-import { NoResults } from '@/components/catalog/no-results'
-import { AgentReadiness } from '@/components/detail/agent-readiness'
-import { PANEL_HEADING } from '@/components/detail/chrome'
-import { DescriptionSection } from '@/components/detail/description-section'
+import { CatalogList, workflowListItem } from '@/components/catalog/list'
+import { accessLabels } from '@/components/common/badges'
+import { NoResults } from '@/components/common/no-results'
+import { DescriptionSection } from '@/components/detail/description-panel'
 import {
   DETAIL_DATE,
   DetailByline,
   DetailHeader,
-} from '@/components/detail/detail-header'
+} from '@/components/detail/header'
 import { MarkdownFile } from '@/components/detail/markdown-file'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
+import { LINK_ICON, PANEL_HEADING } from '@/components/detail/styles'
 import { ToolAccessPanel } from '@/components/detail/tool-access-panel'
-import { BackLink, Page } from '@/components/layout/primitives'
+import { ViewSourceButton } from '@/components/detail/view-source-button'
+import { BackLink } from '@/components/layout/back-link'
+import { Page } from '@/components/layout/page'
 import { ToolDetailSkeleton } from '@/components/skeletons/tool-detail-skeleton'
 import { isValidOwnedKey, refToFilePath } from '@/lib/catalog/keys'
 import {
@@ -98,8 +96,8 @@ async function ToolDetail({ params }: { params: Params }) {
   const docsUrl = tool.access.find((access) => access.docsUrl)?.docsUrl
 
   const links = [
-    { label: 'Website', href: company.links.website, icon: GlobalIcon },
-    { label: 'Docs', href: docsUrl, icon: Book02Icon },
+    { label: 'Website', href: company.links.website, icon: LINK_ICON.website },
+    { label: 'Docs', href: docsUrl, icon: LINK_ICON.docs },
   ].filter(
     (link): link is { label: string; href: string; icon: IconSvgElement } =>
       typeof link.href === 'string'
@@ -111,6 +109,7 @@ async function ToolDetail({ params }: { params: Params }) {
         actions={
           <>
             <ShareButton text={tool.summary} title={tool.name} />
+            <ViewSourceButton entityKey={tool.key} type="tool" />
             {document ? (
               <OpenInAgentMenu
                 filePath={filePath}
@@ -149,7 +148,6 @@ async function ToolDetail({ params }: { params: Params }) {
           })),
         ]}
         title={tool.name}
-        titleBadge={<AgentReadiness level={tool.agent.level} />}
       />
 
       <div className="flex min-w-0 flex-col gap-(--space-block)">

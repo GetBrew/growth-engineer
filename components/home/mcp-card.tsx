@@ -11,29 +11,26 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import { useState } from 'react'
 import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils/cn'
+import { MCP_URL } from '@/lib/constants/site'
 import {
   AGENTS,
   type Agent,
   aiPrompt,
-  MCP_URL,
+  closeSteps,
+  openSteps,
   selectAgent,
   useSelectedAgent,
-} from './agents'
+  useStepsOpen,
+} from '@/lib/stores/agents'
+import { cn } from '@/lib/utils/cn'
 import { McpStepsDialog } from './mcp-steps-dialog'
 
-/**
- * The hero's right column: the URL to paste, for whichever agent is chosen in
- * the band below. Its name is the heading and its mark sits in the corner, so
- * the card always answers for the agent you pointed at.
- */
 export function McpCard() {
   const agent = useSelectedAgent()
   const [copied, setCopied] = useState(false)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
-  const [showSteps, setShowSteps] = useState(false)
+  const showSteps = useStepsOpen()
 
-  /** Walk the list, wrapping at both ends so neither arrow ever dead-ends. */
   function step(by: number) {
     const at = AGENTS.findIndex((one) => one.name === agent.name)
     const next = AGENTS[(at + by + AGENTS.length) % AGENTS.length]
@@ -51,8 +48,6 @@ export function McpCard() {
   }
 
   async function copy() {
-    // Clipboard rejects on insecure origins and denied permissions; unhandled,
-    // that is a console error on a button the reader already thinks worked.
     await navigator.clipboard.writeText(MCP_URL).catch(() => undefined)
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1800)
@@ -64,8 +59,6 @@ export function McpCard() {
         <span className="type-item">
           Connect with {agent.headline ?? agent.name}
         </span>
-        {/* The band below is animated, so a specific agent is a moving target.
-            These are the stationary way to reach every one of them. */}
         <div className="flex shrink-0 items-center gap-1">
           <button
             aria-label="Previous agent"
@@ -138,7 +131,7 @@ export function McpCard() {
                   buttonVariants({ variant: 'secondary', size: 'xs' }),
                   'rounded-full'
                 )}
-                onClick={() => setShowSteps(true)}
+                onClick={openSteps}
                 type="button"
               >
                 Manual
@@ -147,8 +140,6 @@ export function McpCard() {
           </div>
 
           <div className="flex items-center gap-2 rounded-2xl bg-muted px-3.5 py-2.5">
-            {/* `min-w-0` is what lets `truncate` win: without it a long URL
-                sets the flex basis and widens the whole card instead. */}
             <code className="type-label min-w-0 flex-1 truncate">
               {MCP_URL}
             </code>
@@ -171,11 +162,7 @@ export function McpCard() {
         </div>
       </div>
 
-      <McpStepsDialog
-        agent={agent}
-        onClose={() => setShowSteps(false)}
-        open={showSteps}
-      />
+      <McpStepsDialog agent={agent} onClose={closeSteps} open={showSteps} />
     </div>
   )
 }

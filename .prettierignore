@@ -1,0 +1,9 @@
+# Biome is this repo's only formatter (biome.jsonc). Prettier is not a
+# dependency here and no Prettier config exists, but an editor with the
+# extension installed will still format on save and undo Biome's output —
+# single quotes become double, semicolons come back, and `pnpm lint` fails on
+# a file nobody edited.
+#
+# Prettier reads this file before it formats anything, so ignoring everything
+# stops it whatever the editor is configured to do.
+*

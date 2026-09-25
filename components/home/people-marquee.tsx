@@ -25,9 +25,6 @@ export function PeopleMarquee() {
               key={person.id}
               style={{ '--index': index } as CSSProperties}
             >
-              {/* A plain image, not an Avatar: these five SVGs ship with the
-                  site and always resolve, so the Avatar's fallback only ever
-                  flashed "1 2 3 4 5" over them on first paint. */}
               <span
                 className={`${styles.avatar} relative block size-10 overflow-hidden rounded-full border-2 border-background bg-muted shadow-xs sm:size-12`}
               >

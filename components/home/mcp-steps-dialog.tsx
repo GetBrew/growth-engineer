@@ -10,9 +10,9 @@ import {
   SheetPortal,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { type Agent, MCP_URL } from './agents'
+import { MCP_URL } from '@/lib/constants/site'
+import type { Agent } from '@/lib/stores/agents'
 
-/** The long version of the card's two steps, for when the short one is not enough. */
 export function McpStepsDialog({
   agent,
   open,
@@ -32,8 +32,8 @@ export function McpStepsDialog({
       open={open}
     >
       <SheetPortal>
-        <SheetBackdrop className="bg-background/60 backdrop-blur-sm" />
-        <SheetPopup className="floating-panel fixed top-1/2 left-1/2 w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden p-6">
+        <SheetBackdrop className="bg-background/60 backdrop-blur-sm transition-opacity duration-200 ease-out data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none" />
+        <SheetPopup className="floating-panel fixed top-1/2 left-1/2 w-[min(32rem,calc(100vw-2rem))] origin-center -translate-x-1/2 -translate-y-1/2 overflow-hidden p-6 transition-[opacity,scale] duration-200 ease-out data-ending-style:scale-[0.97] data-starting-style:scale-[0.97] data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none">
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 flex-col">
               <SheetTitle className="type-section">
@@ -44,7 +44,6 @@ export function McpStepsDialog({
               </SheetDescription>
             </div>
 
-            {/* The agent's mark, in the same corner the card puts it. */}
             <span className="entity-shadow grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl border bg-background">
               <Image
                 alt=""

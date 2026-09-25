@@ -53,11 +53,9 @@ to its tool and every tool back to the workflows that use it.
   `status: draft`; it has no page until it does.
 - **Steps resolve.** Every `tool` in a workflow exists and is published; a
   `via` names a way in that tool actually has.
-- **Tags exist.** Every tag names a file under `tags/`; `agent:*` and
-  `has:*` are computed and cannot be written.
+- **Tags exist.** Every tag names a file under `tags/`; `has:*` is computed
+  and cannot be written.
 - **Facts carry a date.** `updated` is when someone last checked the file.
-  A tool's readiness stays `unverified` until `agent.checked` says a person
-  verified its access.
 - **Files stay short.** Tool files render to about 60 lines, workflows to
   about 120, with at most ten steps.
 - **Nothing invented.** No placeholder companies, invented endpoints or

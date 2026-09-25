@@ -2,20 +2,21 @@ import { File01Icon } from '@hugeicons/core-free-icons'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { accessTypeLabels } from '@/components/catalog/badges'
-import { CatalogList, toolListItem } from '@/components/catalog/catalog-list'
-import { NoResults } from '@/components/catalog/no-results'
-import { PANEL_HEADING } from '@/components/detail/chrome'
+import { accessTypeLabels } from '@/components/common/badges'
+import { NoResults } from '@/components/common/no-results'
 import {
   DETAIL_DATE,
   DetailByline,
   DetailHeader,
-} from '@/components/detail/detail-header'
+} from '@/components/detail/header'
+import { HowItRuns } from '@/components/detail/how-it-runs'
 import { MarkdownFile } from '@/components/detail/markdown-file'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
+import { ViewSourceButton } from '@/components/detail/view-source-button'
+import { BackLink } from '@/components/layout/back-link'
 import { MaskIcon } from '@/components/layout/mask-icon'
-import { BackLink, Page } from '@/components/layout/primitives'
+import { Page } from '@/components/layout/page'
 import { WorkflowDetailSkeleton } from '@/components/skeletons/workflow-detail-skeleton'
 import {
   isValidKeyPart,
@@ -25,7 +26,7 @@ import {
 } from '@/lib/catalog/keys'
 import { loadDocument, loadWorkflow, resolveAlias } from '@/lib/catalog/loaders'
 import { workflowParams } from '@/lib/catalog/static-params'
-import { cn } from '@/lib/utils/cn'
+import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 
 type Params = Promise<{ name: string }>
 
@@ -87,7 +88,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
     notFound()
   }
 
-  const { workflow, version, tools, toolItems, tags } = result
+  const { workflow, version, tools, tags } = result
   const ref = {
     type: 'workflow' as const,
     key: workflow.key,
@@ -99,8 +100,8 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
   const author = {
     name: workflow.author,
-    avatar: `https://github.com/${encodeURIComponent(workflow.author)}.png?size=96`,
-    href: `https://github.com/${encodeURIComponent(workflow.author)}`,
+    avatar: githubAvatarUrl(workflow.author),
+    href: githubProfileUrl(workflow.author),
   }
   const available = accessTypeLabels(
     tools.flatMap(({ tool }) => tool.access.map((entry) => entry.type))
@@ -112,6 +113,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
         actions={
           <>
             <ShareButton text={workflow.summary} title={workflow.title} />
+            <ViewSourceButton entityKey={workflow.key} type="workflow" />
             {document ? (
               <OpenInAgentMenu
                 filePath={filePath}
@@ -149,8 +151,8 @@ async function WorkflowDetail({ params }: { params: Params }) {
         title={workflow.title}
       />
 
-      <div className="flex min-w-0 flex-col gap-(--space-block)">
-        <section className="flex flex-col gap-(--space-md)">
+      <div className="grid gap-(--space-block) lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <section className="flex min-w-0 flex-col gap-(--space-md)">
           {document ? (
             <MarkdownFile
               fileName={filePath.split('/').pop() ?? 'workflow.md'}
@@ -165,12 +167,18 @@ async function WorkflowDetail({ params }: { params: Params }) {
             />
           )}
         </section>
-        <section className="flex flex-col">
-          {/* `min-h-0`: the heading's button-height box exists to line up with a
-              column beside it, and this page has none. */}
-          <h2 className={cn(PANEL_HEADING, 'min-h-0')}>Built from</h2>
-          <CatalogList items={toolItems.map(toolListItem)} />
-        </section>
+
+        <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
+          <HowItRuns
+            steps={version.steps}
+            tools={tools.map(({ tool, company }) => ({
+              key: tool.key,
+              name: tool.name,
+              logoUrl: company.logo?.url,
+              access: [...new Set(tool.access.map((entry) => entry.type))],
+            }))}
+          />
+        </aside>
       </div>
     </div>
   )

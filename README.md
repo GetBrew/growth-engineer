@@ -28,9 +28,6 @@ tags/<namespace>/<slug>.md           the vocabulary                → capabilit
   result it reaches, written by a person (`author:` is a GitHub login). A
   growth hack is a workflow; there is no second kind. The build links every
   workflow to its tools and every tool to the workflows that use it.
-- A tool's **agent readiness** (unverified, native, friendly, possible) is
-  computed from its ways in and from whether a person has checked them.
-  Unverified means unverified.
 
 Adding your company is three files and a pull request:
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Each folder's README has the full
@@ -41,8 +38,8 @@ field reference: [`companies/`](companies/README.md),
 
 At build time the compiler under `lib/content/` reads every file, validates
 it (strict schemas, resolved references, at most ten steps, unique keys),
-derives what used to be database columns (readiness level, `has:*` tags,
-counts, search text) and renders each company, tool and workflow through the
+derives what used to be database columns (`has:*` tags, counts, search
+text) and renders each company, tool and workflow through the
 one renderer in `lib/catalog/render-markdown.ts` — the file agents fetch,
 golden-tested byte for byte. Nothing renders at request time; nobody
 hand-edits a rendered file. A deploy is the publish.
@@ -103,7 +100,7 @@ app/
   llms.txt                    the file index
 lib/
   content/                    the compiler: read the tree, validate, resolve, derive, render
-  catalog/                    PURE: keys, agent-level rules, THE renderer, search grammar, types
+  catalog/                    PURE: keys, THE renderer, search grammar, types
   catalog/loaders.ts          what pages read; catalog.ts builds the catalog once per process
 components/                   site chrome, catalog rows and detail pages, the map, ui primitives
 tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives

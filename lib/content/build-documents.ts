@@ -55,7 +55,6 @@ export function buildDocuments(
           ? {}
           : { description: tool.description }),
         access: tool.access,
-        agent: { level: tool.agent.level, reason: tool.agent.reason },
         updatedAt: tool.updatedAt,
       })
     )
@@ -129,7 +128,6 @@ export function buildDocuments(
           key: tool.key,
           name: tool.name,
           summary: tool.summary,
-          agentLevel: tool.agent.level,
         })),
         updatedAt,
       })

@@ -55,7 +55,6 @@ export function toolListItem(catalog: Catalog, tool: Tool): ToolListItem {
       key: tool.key,
       name: tool.name,
       summary: tool.summary,
-      agentLevel: tool.agentLevel,
       access: accessTypesOf(tool.access),
     },
     company: {

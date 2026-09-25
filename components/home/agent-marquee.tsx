@@ -3,19 +3,10 @@
 import { FavouriteIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
+import { AGENTS, showStepsFor, useSelectedAgent } from '@/lib/stores/agents'
 import { cn } from '@/lib/utils/cn'
 import styles from './agent-marquee.module.css'
-import { AGENTS, selectAgent, useSelectedAgent } from './agents'
 
-/**
- * The logo band under the hero. The track renders the list TWICE and
- * translates -50%: that is what makes the loop seamless. The second copy is
- * `aria-hidden` and out of the tab order, so a screen reader hears each agent
- * once and a keyboard reaches each one once.
- *
- * Picking an agent drives the card beside it — the band is the control, the
- * card is the answer.
- */
 export function AgentMarquee() {
   const selected = useSelectedAgent()
 
@@ -50,7 +41,7 @@ export function AgentMarquee() {
                     <button
                       aria-pressed={isActive}
                       className="focus-ring group/agent flex shrink-0 items-center gap-2.5 rounded-full px-5 py-1"
-                      onClick={() => selectAgent(agent)}
+                      onClick={() => showStepsFor(agent)}
                       tabIndex={copy === 1 ? -1 : undefined}
                       type="button"
                     >

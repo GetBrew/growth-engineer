@@ -1,19 +1,16 @@
 /*
- * The heart in the footer credit throws sparks while you hover it. Each spark
- * travels out along its own angle and fades; the delays stagger them so they
- * read as a burst, and the loop keeps going while the pointer stays.
+ * The heart in the footer credit lifts three dots while you hover it. They
+ * rise rather than scatter, and the heart swells slightly rather than pulsing:
+ * a credit line is the quietest thing in the footer, so its animation is too.
  */
 @keyframes spark {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3);
-  }
-  25% {
-    opacity: 1;
+    transform: translate(calc(-50% + var(--x)), calc(var(--y) + 6px)) scale(0.4);
   }
   to {
-    opacity: 0;
-    transform: translate(var(--x), var(--y)) scale(1);
+    opacity: 1;
+    transform: translate(calc(-50% + var(--x)), var(--y)) scale(1);
   }
 }
 
@@ -22,11 +19,8 @@
   100% {
     transform: scale(1);
   }
-  30% {
-    transform: scale(1.45);
-  }
-  60% {
-    transform: scale(1.15);
+  40% {
+    transform: scale(1.18);
   }
 }
 
@@ -35,25 +29,34 @@
   display: inline-flex;
 }
 
+/*
+ * The dots sit ABOVE the heart and lift a few pixels; they used to start at
+ * its centre and fly out, which meant they crossed the heart on the way and
+ * read as a smear rather than three dots.
+ */
 .spark {
   position: absolute;
-  top: 50%;
+  bottom: 100%;
   left: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 9999px;
-  background: currentColor;
+  display: inline-flex;
   opacity: 0;
   pointer-events: none;
 }
 
-/* The group is the whole credit line, so hovering the words sets it off too. */
+/*
+ * The group is the whole credit line, so hovering the words sets it off too.
+ * The dots rise ONCE and then hold: `forwards` keeps them at the end of the
+ * keyframe for as long as the pointer stays, so they read as three dots sitting
+ * above the heart rather than something that keeps twitching. They vanish when
+ * the hover ends, because the rule stops applying and the base state is
+ * `opacity: 0`.
+ */
 .group:hover .spark {
-  animation: spark 900ms ease-out infinite;
+  animation: spark 260ms ease-out 1 forwards;
 }
 
 .group:hover .mark {
-  animation: beat 900ms ease-in-out infinite;
+  animation: beat 400ms ease-in-out 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

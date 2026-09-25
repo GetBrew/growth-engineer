@@ -2,9 +2,9 @@ import { LinkSquare02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { CompanyAvatars } from '@/components/catalog/company-avatars'
-import { ACCESS_CHIP, META_CHIP } from '@/components/detail/chrome'
-import { DetailDescription } from '@/components/detail/detail-description'
+import { CompanyAvatars } from '@/components/common/company-avatars'
+import { ACCESS_CHIP, META_CHIP } from '@/components/detail/styles'
+import { DetailDescription } from '@/components/detail/summary'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils/cn'
 
@@ -85,14 +85,12 @@ export function DetailHeader({
 }: {
   byline: ReactNode
   title: string
-  /** Sits beside the title: a status about the record itself. */
   titleBadge?: ReactNode
   description?: string
   stats?: ReadonlyArray<{ value: string; label: string }>
   usedBy?: ReadonlyArray<{ name: string; logo: string }>
   actions: ReactNode
   tags?: ReadonlyArray<DetailTag>
-  /** Tags that carry their own behaviour, rendered after the plain ones. */
   tagsExtra?: ReactNode
 
   links?: ReadonlyArray<{ label: string; href: string; icon?: IconSvgElement }>
@@ -108,11 +106,6 @@ export function DetailHeader({
       <header>
         {byline}
 
-        {/* The title and the actions share a row: what it is on the left,
-            what you can do with it on the right. */}
-        {/* A grid, not a flex row, so the DOM can read title -> summary ->
-            actions. Stacked on a phone that is the order you want; from `sm`
-            the grid lifts the actions into their own column beside both. */}
         <div className="mt-3 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-x-8">
           <div className="flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-2 sm:col-start-1 sm:row-start-1">
             <h1 className="type-page-title text-balance">{title}</h1>
@@ -212,8 +205,6 @@ export function DetailHeader({
             {tagsExtra}
           </div>
 
-          {/* The record's own facts: which revision, when it changed, and how
-              to reach it. */}
           {hasSideMeta ? (
             <div className="type-label flex flex-wrap items-center gap-1.5 text-subtle sm:ml-auto">
               {dates.map((date) => (

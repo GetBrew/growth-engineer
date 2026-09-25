@@ -44,10 +44,8 @@
   --tag: #b82a5b;
   /* Affection, not status: the heart in the agent line. */
   --heart: #ef4444;
-  /* Status, not kind: whether a tool's agent readiness has been checked.
-     Green yes, red no — readable before the word is. */
-  --verified: #0a8363;
-  --unverified: #dc2626;
+  /* A step that went through: the tick in the terminal. */
+  --success: #0a8363;
   /* Ink at fixed strengths: icons and secondary text, placeholders, hovers.
      The faintest step still has to clear WCAG AA at 12px — 4.5:1 — against
      white, --surface and --muted alike, which is what fixes 0.62 as its
@@ -96,8 +94,7 @@
   --color-doc: var(--doc);
   --color-tag: var(--tag);
   --color-heart: var(--heart);
-  --color-verified: var(--verified);
-  --color-unverified: var(--unverified);
+  --color-success: var(--success);
   --color-soft: var(--soft);
   --color-subtle: var(--subtle);
   --color-faint: var(--faint);

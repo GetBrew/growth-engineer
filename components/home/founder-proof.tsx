@@ -2,11 +2,6 @@ import { AccessTerminal } from '@/components/home/access-terminal'
 import { ContributionMarquee } from '@/components/home/contribution-marquee'
 import { GithubLink } from '@/components/layout/github-link'
 
-/**
- * One open panel rather than a bordered card: the wall of contributions is
- * already a shape on the page, and a box around it only adds a line to look
- * past. The heading sits above it, the way in sits beside the heading.
- */
 export function FounderProof() {
   return (
     <section className="page-container py-(--space-section)">

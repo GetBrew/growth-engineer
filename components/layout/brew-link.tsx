@@ -1,7 +1,7 @@
 import Image from 'next/image'
+import { BREW_URL } from '@/lib/constants/site'
 import { cn } from '@/lib/utils/cn'
 
-/** The Brew wordmark, linked. Used wherever the site credits who made it. */
 export function BrewLink({ className }: { className?: string }) {
   return (
     <a
@@ -10,7 +10,7 @@ export function BrewLink({ className }: { className?: string }) {
         'focus-ring relative block h-4 w-12 rounded-sm opacity-80 transition-opacity hover:opacity-100',
         className
       )}
-      href="https://brew.new"
+      href={BREW_URL}
       rel="noreferrer"
       target="_blank"
     >

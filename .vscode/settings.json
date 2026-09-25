@@ -3,14 +3,26 @@
   "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit"
+    "source.fixAll.biome": "explicit",
+    // `pnpm check` runs Biome's assist, so the editor has to as well or a
+    // saved file passes here and fails in CI on import order alone.
+    "source.organizeImports.biome": "explicit"
   },
   "[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
   "[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
   "[javascript]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[javascriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
   "[json]": { "editor.defaultFormatter": "biomejs.biome" },
   "[jsonc]": { "editor.defaultFormatter": "biomejs.biome" },
   "[css]": { "editor.defaultFormatter": "biomejs.biome" },
+
+  // Prettier is installed on this machine and was winning the save: files
+  // came back with double quotes and semicolons, which `pnpm lint` then
+  // rejected. Naming it unwanted in extensions.json only hides a
+  // recommendation; this is the switch that actually stops it running.
+  "prettier.enable": false,
+  "prettier.requireConfig": true,
+
   // TypeScript strictness is owned by tsconfig; use the workspace SDK so the
   // editor and the CLI agree on the compiler version.
   "typescript.tsdk": "node_modules/typescript/lib"

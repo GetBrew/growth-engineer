@@ -96,9 +96,6 @@ summary: Adds firmographic and person data to a contact or account. Clay does th
 access:
   mcp: clay_enrich_contacts      # <access id>: the exact operation for that way in
   api: POST /v1/enrich
-agent:
-  checked: 2026-09-16            # optional: the day a PERSON verified these facts
-  machineReadableDocs: true      # optional: OpenAPI or llms.txt exists
 updated: 2026-09-16
 ---
 
@@ -108,8 +105,6 @@ Optional longer description, shown on the tool page and in the file.
 - `access` maps an id from `access/` to the **operation**: the MCP tool name,
   the CLI subcommand, or `METHOD /path` for an API. A published tool needs at
   least one; a tool with none is `status: draft` and has no page yet.
-- Without `agent.checked`, the tool's readiness is **unverified**, and the
-  file says so. That is honest, not a failure.
 - `aliases` lists old slugs to redirect; `status` is `published`,
   `deprecated` or `draft`.
 

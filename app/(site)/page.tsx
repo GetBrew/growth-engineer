@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
-import { HeroBanner } from '@/components/catalog/hero-banner'
+import { HeroBanner } from '@/components/common/hero-banner'
+import { HomeCatalog } from '@/components/home/catalog'
 import { FounderProof } from '@/components/home/founder-proof'
-import { HomeCatalog } from '@/components/home/home-catalog'
 import { HomeSkeleton } from '@/components/skeletons/home-skeleton'
 
 export default function HomePage() {

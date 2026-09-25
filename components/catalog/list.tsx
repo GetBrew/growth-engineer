@@ -2,13 +2,13 @@ import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { accessTypeLabels, agentLevelLabel } from '@/components/catalog/badges'
 import type { ToolCardData } from '@/components/catalog/cards'
+import { accessTypeLabels } from '@/components/common/badges'
 import {
   type CompanyAvatar,
   CompanyAvatars,
-} from '@/components/catalog/company-avatars'
-import { EntityLogo } from '@/components/catalog/entity-logo'
+} from '@/components/common/company-avatars'
+import { EntityLogo } from '@/components/common/entity-logo'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -39,8 +39,6 @@ export function CatalogList({
   all?: { href: string; label: string }
 }) {
   return (
-    // The last row brings 16px of its own padding, so 16 here reads as the
-    // 32px that separates the list from the action under it.
     <div className="flex flex-col items-center gap-4">
       <ul className="flex w-full flex-col">
         {items.map((item) => (
@@ -214,12 +212,7 @@ export function toolListItem({ tool, company }: ToolCardData): CatalogListItem {
     href: `/tools/${tool.key}`,
     title: tool.name,
     logo: { name: company.name, logoUrl: company.logoUrl },
-    pills: [
-      ...(tool.agentLevel === 'unverified'
-        ? []
-        : [agentLevelLabel(tool.agentLevel)]),
-      ...accessTypeLabels(tool.access),
-    ],
+    pills: accessTypeLabels(tool.access),
     description: `${company.name} · ${tool.summary}`,
   }
 }

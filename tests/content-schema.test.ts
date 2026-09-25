@@ -178,9 +178,9 @@ describe('content rules', () => {
       'a derived tag written as a file',
       () => [
         ...VALID,
-        file('tags/agent/native.md', '---\nlabel: Native\n---\n\nNo.\n'),
+        file('tags/has/mcp.md', '---\nlabel: Has MCP\n---\n\nNo.\n'),
       ],
-      /tags\/agent\/native\.md: agent:\* tags are computed/,
+      /tags\/has\/mcp\.md: has:\* tags are computed/,
     ],
     [
       'an unknown frontmatter field',
@@ -293,7 +293,7 @@ describe('content rules', () => {
   test('reports every problem at once, each with its file', () => {
     const problems = problemsOf([
       ...replace('tags/channel/email.md', '# Email\n'),
-      file('tags/agent/native.md', '---\nlabel: Native\n---\n\nNo.\n'),
+      file('tags/has/mcp.md', '---\nlabel: Has MCP\n---\n\nNo.\n'),
     ])
     expect(problems.length).toBeGreaterThanOrEqual(3)
     expect(problems.every((problem) => /^[a-z]+\//.test(problem))).toBe(true)

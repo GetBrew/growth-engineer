@@ -3,8 +3,8 @@
 import { useSearchParams } from 'next/navigation'
 import { CompanyRow } from '@/components/catalog/cards'
 import { CategorySection } from '@/components/catalog/category-section'
-import { NoResults } from '@/components/catalog/no-results'
-import { SectionHeading } from '@/components/layout/primitives'
+import { NoResults } from '@/components/common/no-results'
+import { SectionHeading } from '@/components/layout/section-heading'
 import { CatalogSearch } from '@/components/search/catalog-search'
 import { ListingToolbar } from '@/components/search/listing-toolbar'
 import {

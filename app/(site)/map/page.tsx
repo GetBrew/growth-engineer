@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import {
-  EmptyState,
-  Page,
-  SectionHeading,
-} from '@/components/layout/primitives'
+import { EmptyState } from '@/components/layout/empty-state'
+import { Page } from '@/components/layout/page'
+import { SectionHeading } from '@/components/layout/section-heading'
 import { MapSkeleton } from '@/components/map/focused'
 import { NodePill } from '@/components/map/node'
 import { loadMapOverview } from '@/lib/catalog/loaders'

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { SectionHeading } from '@/components/layout/primitives'
+import { SectionHeading } from '@/components/layout/section-heading'
 
 export function CatalogShell({ children }: { children: ReactNode }) {
   return (

@@ -2,7 +2,8 @@ import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { accessTypeLabels, agentLevelLabel } from '@/components/catalog/badges'
+import { accessTypeLabels } from '@/components/common/badges'
+import { EntityLogo } from '@/components/common/entity-logo'
 import { Badge } from '@/components/ui/badge'
 import {
   Item,
@@ -13,7 +14,6 @@ import {
   ItemTitle,
 } from '@/components/ui/item'
 import type { CompanyListItem, ToolListItem } from '@/lib/types/catalog'
-import { EntityLogo } from './entity-logo'
 
 export type ToolCardData = ToolListItem
 type CompanyRowData = CompanyListItem
@@ -97,7 +97,6 @@ export function CompanyRow({
 }
 
 export function ToolRow({ tool, company }: ToolCardData) {
-  const level = tool.agentLevel
   return (
     <CatalogRow
       description={
@@ -107,10 +106,7 @@ export function ToolRow({ tool, company }: ToolCardData) {
       }
       href={`/tools/${tool.key}`}
       logo={{ name: company.name, logoUrl: company.logoUrl }}
-      pills={[
-        ...(level === 'unverified' ? [] : [agentLevelLabel(level)]),
-        ...accessTypeLabels(tool.access),
-      ]}
+      pills={accessTypeLabels(tool.access)}
       title={tool.name}
     />
   )

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { CompanyDirectory } from '@/components/catalog/company-directory'
-import { HeroBanner } from '@/components/catalog/hero-banner'
-import { Page } from '@/components/layout/primitives'
+import { HeroBanner } from '@/components/common/hero-banner'
+import { Page } from '@/components/layout/page'
 import { CompaniesSkeleton } from '@/components/skeletons/companies-skeleton'
 import { loadCompanySearchItems, loadTagChips } from '@/lib/catalog/loaders'
 

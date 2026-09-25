@@ -1,8 +1,4 @@
-import {
-  Globe02Icon,
-  Linkedin01Icon,
-  NewTwitterIcon,
-} from '@hugeicons/core-free-icons'
+import { Linkedin01Icon, NewTwitterIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
@@ -11,12 +7,15 @@ import {
   CatalogList,
   toolListItem,
   workflowListItem,
-} from '@/components/catalog/catalog-list'
-import { EntityLogo } from '@/components/catalog/entity-logo'
-import { NoResults } from '@/components/catalog/no-results'
-import { META_CHIP, PANEL_HEADING } from '@/components/detail/chrome'
-import { DetailTabs } from '@/components/detail/detail-tabs'
-import { BackLink, Page } from '@/components/layout/primitives'
+} from '@/components/catalog/list'
+import { EntityLogo } from '@/components/common/entity-logo'
+import { NoResults } from '@/components/common/no-results'
+import { ShareButton } from '@/components/detail/share-button'
+import { LINK_ICON, META_CHIP, PANEL_HEADING } from '@/components/detail/styles'
+import { DetailTabs } from '@/components/detail/tabs'
+import { ViewSourceButton } from '@/components/detail/view-source-button'
+import { BackLink } from '@/components/layout/back-link'
+import { Page } from '@/components/layout/page'
 import { CompanyDetailSkeleton } from '@/components/skeletons/company-detail-skeleton'
 import { buttonVariants } from '@/components/ui/button'
 import { isValidHandle } from '@/lib/catalog/keys'
@@ -77,11 +76,14 @@ async function CompanyDetail({ params }: { params: Params }) {
     notFound()
   }
 
+  const facts = [
+    company.headquarters,
+    company.founded ? `Founded ${company.founded}` : undefined,
+  ].filter((fact): fact is string => Boolean(fact))
+
   return (
     <div className="flex flex-col">
       <header>
-        {/* The actions share the title row, the way Share and Explore do on
-            the other detail pages; the facts keep their own line below. */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex min-w-0 items-center gap-3">
             <EntityLogo
@@ -93,6 +95,11 @@ async function CompanyDetail({ params }: { params: Params }) {
           </div>
 
           <div className="flex shrink-0 items-center gap-2.5">
+            <ShareButton
+              text={company.tagline ?? company.description}
+              title={company.name}
+            />
+            <ViewSourceButton entityKey={company.key} type="company" />
             {company.links.website ? (
               <a
                 className={buttonVariants({ size: 'pill', variant: 'outline' })}
@@ -102,7 +109,7 @@ async function CompanyDetail({ params }: { params: Params }) {
               >
                 <HugeiconsIcon
                   aria-hidden="true"
-                  icon={Globe02Icon}
+                  icon={LINK_ICON.website}
                   size={16}
                   strokeWidth={1.8}
                 />
@@ -146,31 +153,28 @@ async function CompanyDetail({ params }: { params: Params }) {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-1.5">
-          {[
-            company.headquarters,
-            company.founded ? `Founded ${company.founded}` : undefined,
-          ]
-            .filter((fact): fact is string => Boolean(fact))
-            .map((fact) => (
+        {facts.length > 0 || company.status === 'deprecated' ? (
+          <div className="mt-6 flex flex-wrap items-center gap-1.5">
+            {facts.map((fact) => (
               <span className={META_CHIP} key={fact}>
                 {fact}
               </span>
             ))}
-          {company.status === 'deprecated' ? (
-            <span
-              className={cn(
-                META_CHIP,
-                'border-foreground/20 bg-hover text-soft'
-              )}
-            >
-              Deprecated
-            </span>
-          ) : null}
-        </div>
+            {company.status === 'deprecated' ? (
+              <span
+                className={cn(
+                  META_CHIP,
+                  'border-foreground/20 bg-hover text-soft'
+                )}
+              >
+                Deprecated
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </header>
 
-      <div className="mt-12">
+      <div className="mt-[calc(var(--space-block)/2)] border-t border-dashed pt-[calc(var(--space-block)/2)]">
         <DetailTabs
           label="Company sections"
           sections={[
@@ -242,7 +246,6 @@ async function CompanyDetail({ params }: { params: Params }) {
                             key: tool.key,
                             name: tool.name,
                             summary: tool.summary,
-                            agentLevel: tool.agentLevel,
                             access: [
                               ...new Set(
                                 tool.access.map((entry) => entry.type)

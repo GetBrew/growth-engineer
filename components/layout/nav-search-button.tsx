@@ -2,8 +2,8 @@
 
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { openCommandPalette } from '@/components/search/command-palette-store'
 import { Button } from '@/components/ui/button'
+import { openCommandPalette } from '@/lib/stores/command-palette'
 
 export function NavSearchButton() {
   return (

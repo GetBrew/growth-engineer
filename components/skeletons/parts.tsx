@@ -27,14 +27,18 @@ function rows(count: number) {
   }))
 }
 
-export function HeadingSkeleton() {
+export function HeadingSkeleton({
+  titleWidth = 'w-56',
+}: {
+  titleWidth?: string
+}) {
   return (
     <div className="flex flex-col">
-      <div className="flex h-8 items-center">
-        <Bar className="h-6 w-40" />
+      <div className="flex h-[34.5px] items-center">
+        <Bar className={cn('h-7', titleWidth)} />
       </div>
-      <div className="mt-1.5 flex h-6 items-center">
-        <Bar className="w-80 max-w-full" />
+      <div className="mt-2 flex h-6 items-center">
+        <Bar className="h-4 w-96 max-w-full" />
       </div>
     </div>
   )

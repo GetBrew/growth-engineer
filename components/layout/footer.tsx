@@ -2,46 +2,87 @@ import { FavouriteIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
+import { SECTIONS } from '@/lib/constants/sections'
+import { BREW_URL, SITE_TAGLINE } from '@/lib/constants/site'
+import { GITHUB_URL } from '@/lib/github'
 import { BrandLockup } from './brand'
 import { BrewLink } from './brew-link'
 import styles from './footer.module.css'
 import { NewsletterForm } from './newsletter-form'
 
+const DOCS = `${GITHUB_URL}/blob/main`
+
+// Three columns of equal weight. `llms.txt` sits under Explore rather than in
+// a column of its own: it is the index OF those three listings, and it is the
+// only agent-facing URL the site has, so a heading above it stood alone.
+//
+// Contribute points at the guide for each kind of file, not at the repo root.
+// A tool is a file inside a company folder, so its link is the section of that
+// guide describing one — the same page, a different place in it.
 const COLUMNS = [
   {
     heading: 'Explore',
     links: [
-      ['Workflows', '/workflows'],
-      ['Tools', '/tools'],
-      ['Companies', '/companies'],
+      ...SECTIONS.map((section) => [section.label, section.href] as const),
+      ['llms.txt', '/llms.txt'],
     ],
   },
   {
-    heading: 'For agents',
+    heading: 'Contribute',
     links: [
-      ['llms.txt', '/llms.txt'],
-      ['Tool files', '/tools'],
-      ['Workflow files', '/workflows'],
+      ['Add a workflow', `${DOCS}/workflows/README.md`],
+      ['Add a tool', `${DOCS}/companies/README.md#toolsslugmd`],
+      ['Add a company', `${DOCS}/companies/README.md`],
     ],
   },
   {
     heading: 'Company',
     links: [
-      ['Source on GitHub', 'https://github.com/GetBrew/growth-engineer'],
-      ['brew.new', 'https://brew.new'],
+      ['Source on GitHub', GITHUB_URL],
+      ['brew.new', BREW_URL],
+      ['X', 'https://x.com/brewdotnew'],
       ['LinkedIn', 'https://www.linkedin.com/company/brewdotnew'],
     ],
   },
 ] as const
 
-/** Where each spark flies, and when. `red` picks the heart colour. */
+// Three dots, one of each ink the palette already has. `--company` is
+// borrowed for its blue, not for its meaning: these are confetti, and a
+// hardcoded hex would be the only colour in the app outside the tokens.
+// Three dots in a shallow arc above the heart, one of each ink the palette
+// already has. `--company` is borrowed for its blue, not its meaning: these
+// are confetti, and a hardcoded hex would be the only colour outside the
+// tokens. `x`/`y` are the resting offsets from just above the heart.
+// Three little hearts above the big one, graduated so they read as a group
+// rather than a row: the red one leads, the other two step down behind it.
+// The colours are borrowed for their hue, not their meaning: these are
+// confetti, and a hardcoded hex would be the only colour outside the tokens.
+// Black is not among them — it would repeat the big heart they sit above.
 const SPARKS = [
-  { id: 'a', x: '-520%', y: '-560%', delay: '0ms', red: false },
-  { id: 'b', x: '-60%', y: '-760%', delay: '110ms', red: true },
-  { id: 'c', x: '420%', y: '-600%', delay: '220ms', red: false },
-  { id: 'd', x: '-700%', y: '-60%', delay: '160ms', red: true },
-  { id: 'e', x: '640%', y: '-80%', delay: '60ms', red: false },
-  { id: 'f', x: '160%', y: '-820%', delay: '300ms', red: false },
+  {
+    id: 'a',
+    x: '-11px',
+    y: '0px',
+    size: 9,
+    delay: '90ms',
+    colour: 'var(--company)',
+  },
+  {
+    id: 'b',
+    x: '0px',
+    y: '-9px',
+    size: 12,
+    delay: '0ms',
+    colour: 'var(--heart)',
+  },
+  {
+    id: 'c',
+    x: '11px',
+    y: '1px',
+    size: 7,
+    delay: '180ms',
+    colour: 'var(--tool)',
+  },
 ] as const
 
 const YEAR = new Date().getFullYear()
@@ -74,9 +115,12 @@ export function Footer() {
   return (
     <footer className="overflow-hidden border-t border-dashed bg-background">
       <div className="page-container pt-(--space-section) pb-10 sm:pb-12">
-        <div className="grid gap-12 lg:grid-cols-[minmax(20rem,0.9fr)_minmax(0,1.25fr)] lg:gap-16">
+        <div className="grid gap-12 lg:grid-cols-[minmax(20rem,0.75fr)_minmax(0,1.3fr)] lg:gap-16">
           <div className="flex max-w-xl flex-col items-start gap-6">
-            <BrandLockup />
+            <div className="flex flex-col gap-3">
+              <BrandLockup />
+              <p className="type-body max-w-sm text-soft">{SITE_TAGLINE}</p>
+            </div>
             <NewsletterForm />
           </div>
 
@@ -102,11 +146,14 @@ export function Footer() {
         <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="type-label text-faint">© {YEAR} growth.engineer</p>
 
+          {/* Three pieces, not five: "by the … team" wrapped the wordmark in
+              words on both sides, and a logo mid-sentence reads as a gap. The
+              mark ends the line, which is how a credit normally runs. */}
           <p
             className={`${styles.group} type-label flex items-center gap-1.5 text-faint`}
           >
             Built with
-            <span className={`${styles.heart} text-heart`}>
+            <span className={`${styles.heart} text-foreground`}>
               <HugeiconsIcon
                 aria-label="love"
                 className={`${styles.mark} fill-current`}
@@ -122,15 +169,24 @@ export function Footer() {
                       '--x': spark.x,
                       '--y': spark.y,
                       animationDelay: spark.delay,
-                      color: spark.red ? 'var(--heart)' : 'var(--foreground)',
+                      color: spark.colour,
                     } as CSSProperties
                   }
-                />
+                >
+                  <HugeiconsIcon
+                    aria-hidden="true"
+                    className="fill-current"
+                    icon={FavouriteIcon}
+                    size={spark.size}
+                  />
+                </span>
               ))}
             </span>
-            by the
-            <BrewLink />
-            team
+            by
+            {/* The wordmark ships at h-4, which paints 1.58x the 12px text
+                beside it and overhangs it top and bottom. h-3 brings its ink
+                to about 1.2x, which reads as a logo rather than a shout. */}
+            <BrewLink className="h-3 w-9" />
           </p>
         </div>
       </div>

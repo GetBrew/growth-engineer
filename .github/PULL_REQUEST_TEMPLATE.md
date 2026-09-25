@@ -4,7 +4,7 @@
 
 ## How the facts were checked
 
-<!-- Where does each way in come from: the vendor's docs, a public MCP server list, your own use? A tool stays `unverified` until `agent.checked` records that a person verified its access. -->
+<!-- Where does each way in come from: the vendor's docs, a public MCP server list, your own use? -->
 
 ## Checklist
 

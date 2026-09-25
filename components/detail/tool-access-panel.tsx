@@ -1,7 +1,7 @@
 import { LinkSquare02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { accessTypeLabel } from '@/components/catalog/badges'
-import { PANEL_HEADING } from '@/components/detail/chrome'
+import { accessTypeLabel } from '@/components/common/badges'
+import { PANEL_HEADING } from '@/components/detail/styles'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -15,17 +15,9 @@ import { authLine } from '@/lib/catalog/auth-line'
 import { orderAccess } from '@/lib/catalog/render-access'
 import type { Tool as CatalogTool } from '@/lib/types/catalog'
 
-type Tool = Pick<CatalogTool, 'access' | 'agent'>
+type Tool = Pick<CatalogTool, 'access'>
 type Access = Tool['access'][number]
 
-/**
- * Every way into the tool, best first — the same order the file's "Set up"
- * section uses. One row per route: what it is, who stands behind it, the exact
- * call to make, what it asks of you, and where its documentation lives.
- *
- * The primitive sets `text-sm`; the type roles below override it, so every
- * cell still comes from the scale.
- */
 export function ToolAccessPanel({ tool }: { tool: Tool }) {
   const access = orderAccess(tool.access)
 
@@ -50,8 +42,6 @@ export function ToolAccessPanel({ tool }: { tool: Tool }) {
               <TableCell className="py-4 pl-0">
                 <Badge variant="soft">{accessTypeLabel(entry.type)}</Badge>
               </TableCell>
-              {/* Who stands behind it is a fact about the row, not a status
-                  worth a colour of its own — it reads as quiet text. */}
               <TableCell className="type-helper py-4 text-soft">
                 {originLine(entry)}
               </TableCell>
@@ -91,7 +81,6 @@ export function ToolAccessPanel({ tool }: { tool: Tool }) {
   )
 }
 
-/** Who stands behind this way in, and the detail that qualifies it. */
 function originLine(entry: Access): string {
   if (entry.official) {
     return entry.type === 'mcp' ? `Official · ${entry.transport}` : 'Official'

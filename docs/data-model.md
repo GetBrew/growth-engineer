@@ -72,31 +72,14 @@ way in that tool has.
 
 `label` is required; `synonyms` feed search; the body is the required
 description. Namespaces: `capability` (what a tool does), `motion`,
-`channel`, `category` (of a company), `fit`. Two namespaces are DERIVED and
-never files: `agent:<level>` and `has:<type>`, computed from each tool's
-access.
-
-## Agent readiness
-
-Computed at build (`lib/catalog/agent-level.ts`) from a tool's ways in and
-`agent.checked`. Rules top-down, first match wins:
-
-| Level | When |
-| --- | --- |
-| **unverified** | no `agent.checked` — nobody has verified the facts |
-| **native** | an official MCP server or CLI with self-serve credentials |
-| **friendly** | an official API with self-serve credentials |
-| **possible** | community access only, or official access behind approval |
-
-The level and its reason appear in the file header (`agent`, `agent_note`).
-A score (0–100) orders tools within a level and is never shown.
+`channel`, `category` (of a company), `fit`. One namespace is DERIVED and
+never files: `has:<type>`, computed from each tool's access.
 
 ## What the build derives (never authored)
 
 | Projection | From | Where |
 | --- | --- | --- |
-| `agentLevel`, `agent.reason`, `agent.score` | access + `agent.checked` | `agent-level.ts` |
-| `has:*` and `agent:*` tags on a tool | access, level | `derived-tags.ts` |
+| `has:*` tags on a tool | access | `derived-tags.ts` |
 | tag `counts` | published entities | `derive.ts` |
 | `searchText` | name, summary, company, tag labels and synonyms | `derive.ts` |
 | `toolKeys`, `toolCount`, workflow ↔ tool ↔ company edges — written into both rendered files (`tools:` / `workflows:`) | steps | `build-entities.ts`, `build-catalog.ts`, `build-documents.ts` |

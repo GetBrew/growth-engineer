@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { HeroBanner } from '@/components/catalog/hero-banner'
 import { ToolsExplorer } from '@/components/catalog/tools-explorer'
-import { Page } from '@/components/layout/primitives'
+import { HeroBanner } from '@/components/common/hero-banner'
+import { Page } from '@/components/layout/page'
 import { ToolsSkeleton } from '@/components/skeletons/tools-skeleton'
 import { loadTagChips, loadToolSearchItems } from '@/lib/catalog/loaders'
 

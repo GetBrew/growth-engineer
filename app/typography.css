@@ -24,6 +24,7 @@
  * Category     19 / 26.6 / 500
  * Item         17 / 25.5 / 500
  * Body         16 / 24   / 400
+ * Control      14 / 18   / 500
  * Label        12 / 16   / 500
  */
 
@@ -75,9 +76,14 @@
   font-weight: 600;
 }
 
+/*
+ * Controls sit one step below body text. At 16px their 500 weight read as
+ * LARGER than the 16/400 copy beside them — same size, more ink — so the size
+ * drops to offset the weight and a button now sits level with a paragraph.
+ */
 @utility type-control {
-  font-size: 16px;
-  line-height: 20.4px;
+  font-size: 14px;
+  line-height: 18px;
   font-weight: 500;
 }
 

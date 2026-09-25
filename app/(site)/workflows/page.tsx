@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { HeroBanner } from '@/components/catalog/hero-banner'
 import { WorkflowsIndex } from '@/components/catalog/workflows-index'
-import { Page } from '@/components/layout/primitives'
+import { HeroBanner } from '@/components/common/hero-banner'
+import { Page } from '@/components/layout/page'
 import { WorkflowsSkeleton } from '@/components/skeletons/workflows-skeleton'
 import { loadTagChips, loadWorkflowSearchItems } from '@/lib/catalog/loaders'
 

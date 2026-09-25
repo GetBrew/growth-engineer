@@ -2,7 +2,7 @@ import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { EntityIcon, type EntityKind } from '@/components/catalog/entity-icon'
+import { EntityIcon, type EntityKind } from '@/components/common/entity-icon'
 import { buttonVariants } from '@/components/ui/button'
 import {
   Empty,
@@ -14,10 +14,7 @@ import {
 import { cn } from '@/lib/utils/cn'
 
 const SURFACE = {
-  /* No outline: a whole missing list reads better as open space than as a box
-     drawn around nothing. */
   section: 'rounded-none py-16',
-  /* A missing field is small enough to need its edges shown. */
   card: 'rounded-xl border border-dashed p-8 sm:p-8',
 } as const
 

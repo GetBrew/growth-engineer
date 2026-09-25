@@ -14,7 +14,7 @@ import { MAX_CHIPS } from './query'
  * a namespace, AND across; partial completion; the canonical URL). This file
  * is the execution: every word must start a token of the item's search text
  * (a hit in the name counts double), and chips filter on the facts each item
- * carries — `agent:` and `has:` from a tool's access, `capability:` from its
+ * carries — `has:` from a tool's access, `capability:` from its
  * slug, `category:` from its company.
  *
  * Items are the list rows plus the few fields search needs, so a page can
@@ -128,9 +128,6 @@ function toolMatchesChips(
   for (const [namespace, slugs] of groups) {
     let hits: ReadonlyArray<string>
     switch (namespace) {
-      case 'agent':
-        hits = [item.tool.agentLevel]
-        break
       case 'has':
         hits = item.tool.access
         break

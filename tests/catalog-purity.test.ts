@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest'
 import { readSourceFiles } from './helpers/source-files'
 
 /**
- * The pure half of `lib/catalog/*` — the key grammar, the agent-level rules,
- * the renderer, the search grammar and the types — is imported by the proxy
+ * The pure half of `lib/catalog/*` — the key grammar, the renderer, the
+ * search grammar and the types — is imported by the proxy
  * (edge), by client components (the map) and by the build alike. A runtime
  * import of a Node built-in, `server-only` or the content reader would work
  * in one bundle and throw in another — at runtime, on the path nobody tested.

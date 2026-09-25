@@ -24,7 +24,7 @@ not the product and they do not look like it.
 
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
-| Header | `ref`, `name`, `company`, `workflows`, `access`, `agent`, `agent_note`, `updated` | `ref` (with `@N`), `title`, `author`, `tools`, `tags`, `updated` |
+| Header | `ref`, `name`, `company`, `workflows`, `access`, `updated` | `ref` (with `@N`), `title`, `author`, `tools`, `tags`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
@@ -33,8 +33,7 @@ not the product and they do not look like it.
 | Notes | — | Optional, written by the author |
 | Rules | Always | Always |
 
-`agent_note` is the tool's level reason without its prefix ("Official remote
-MCP with self-serve OAuth."). `access` lists the ways in, in setup order.
+`access` lists the ways in, in setup order.
 `workflows` lists every workflow whose steps use the tool, and `tools` in a
 workflow file lists the tools it uses: the relationship is in both files.
 `author` is the workflow author's GitHub login.

@@ -48,7 +48,7 @@ describe('the content tree', () => {
     expect(catalog.companies.size).toBe(files('company'))
     expect(catalog.tools.size).toBe(files('tool') - drafts)
     expect(catalog.workflows.size).toBe(files('workflow'))
-    expect(catalog.tags.size).toBe(files('tag') + 7)
+    expect(catalog.tags.size).toBe(files('tag') + 3)
     expect(catalog.companies.size).toBeGreaterThanOrEqual(25)
     expect(catalog.tools.size).toBeGreaterThanOrEqual(37)
     expect(catalog.workflows.size).toBeGreaterThanOrEqual(12)
@@ -63,8 +63,7 @@ describe('the content tree', () => {
     const tool = catalog.tools.get('clay/enrich-contacts')
     expect(tool?.companyKey).toBe('clay')
     expect(tool?.name).toBe('Enrich contacts')
-    expect(tool?.agentLevel).toBe('unverified')
-    expect(tool?.tags).toEqual(['agent:unverified', 'has:api'])
+    expect(tool?.tags).toEqual(['has:api'])
     // Every way in names the exact call — that is what makes it one function.
     expect(tool?.access.every((entry) => entry.operation.length > 0)).toBe(true)
     // The product is not a listing: there is no `clay/clay`.
@@ -274,23 +273,11 @@ describe('the content tree', () => {
   })
 
   test('tags: the derived namespaces exist and counts are projections', () => {
-    const agent = [...catalog.tags.values()].filter(
-      (tag) => tag.namespace === 'agent'
+    const has = [...catalog.tags.values()].filter(
+      (tag) => tag.namespace === 'has'
     )
-    expect(agent.map((tag) => tag.slug).sort()).toEqual([
-      'friendly',
-      'native',
-      'possible',
-      'unverified',
-    ])
-    const unverified = catalog.tags.get('agent:unverified')
-    expect(unverified?.counts.tools).toBe(
-      [...catalog.tools.values()].filter(
-        (tool) =>
-          tool.status === 'published' && tool.agentLevel === 'unverified'
-      ).length
-    )
-    expect(unverified?.derived).toBe(true)
+    expect(has.every((tag) => tag.derived)).toBe(true)
+    expect(has.map((tag) => tag.slug).sort()).toEqual(['api', 'cli', 'mcp'])
     expect(
       catalog.tags.get('category:data-provider')?.counts.companies
     ).toBeGreaterThan(0)

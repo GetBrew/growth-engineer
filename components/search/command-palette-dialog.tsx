@@ -20,13 +20,14 @@ import {
 } from '@/components/ui/sheet'
 import type { EntityType } from '@/lib/catalog/keys'
 import { searchPaletteItems } from '@/lib/catalog/search'
-import type { PaletteItem } from '@/lib/types/catalog'
-import { cn } from '@/lib/utils/cn'
+import { SECTIONS } from '@/lib/constants/sections'
 import {
   setCommandPaletteOpen,
   toggleCommandPalette,
   useCommandPaletteOpen,
-} from './command-palette-store'
+} from '@/lib/stores/command-palette'
+import type { PaletteItem } from '@/lib/types/catalog'
+import { cn } from '@/lib/utils/cn'
 
 const MAX_RESULTS = 15
 
@@ -40,16 +41,6 @@ const GROUPS: ReadonlyArray<{ kind: EntityType; label: string }> = [
   { kind: 'workflow', label: 'Workflows' },
   { kind: 'tool', label: 'Tools' },
   { kind: 'company', label: 'Companies' },
-]
-
-const INDEXES: ReadonlyArray<{
-  href: string
-  label: string
-  kind: EntityType
-}> = [
-  { href: '/workflows', label: 'Browse all workflows', kind: 'workflow' },
-  { href: '/tools', label: 'Browse all tools', kind: 'tool' },
-  { href: '/companies', label: 'Browse all companies', kind: 'company' },
 ]
 
 const SUGGESTIONS = ['outbound', 'enrich', 'mcp', 'lifecycle'] as const
@@ -244,9 +235,9 @@ function EmptyState({
     <div className="flex flex-col gap-3 py-1">
       <div>
         <p className="eyebrow px-3 pt-2 pb-1 uppercase">Jump to</p>
-        {INDEXES.map((index) => (
+        {SECTIONS.map((index) => (
           <Row
-            icon={KIND_ICON[index.kind]}
+            icon={KIND_ICON[index.entity]}
             isActive={false}
             key={index.href}
             onSelect={() => onSelect(index.href)}
@@ -316,7 +307,7 @@ function Row({
         strokeWidth={1.8}
       />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="type-item truncate">{title}</span>
+        <span className="type-control truncate">{title}</span>
         {subtitle ? (
           <span className="type-meta truncate">{subtitle}</span>
         ) : null}

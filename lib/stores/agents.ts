@@ -1,23 +1,16 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+import { MCP_URL } from '@/lib/constants/site'
 
 export type Agent = {
   name: string
-  /** How the card names it, when the band's short label would not read. */
   headline?: string
   logo: string
-  /** The whole first step, written to fit one line. */
   path: ReadonlyArray<string>
-  /** The same journey spelled out, for the dialog. */
   steps: ReadonlyArray<string>
 }
 
-/**
- * Every agent connects to the SAME server — an MCP server is a URL, not a
- * per-client build — so only the path through the agent's own settings
- * differs. That path is what `path` records, segment by segment.
- */
 export const AGENTS = [
   {
     name: 'Claude',
@@ -117,8 +110,6 @@ export const AGENTS = [
   },
   {
     name: 'MCP',
-    // The band needs a short label; the card needs a sentence that is true of
-    // every client, because this entry is not a product.
     headline: 'any MCP client',
     logo: '/marquee/mcp.svg',
     path: ['Open your config', 'Streamable HTTP'],
@@ -131,13 +122,20 @@ export const AGENTS = [
   },
 ] as const satisfies ReadonlyArray<Agent>
 
-/**
- * The band and the card sit in different corners of the hero, so the choice
- * lives outside both rather than being threaded through the server components
- * between them.
- */
 let selected: Agent = AGENTS[0]
+let stepsOpen = false
 const listeners = new Set<() => void>()
+
+function publish() {
+  for (const listener of listeners) {
+    listener()
+  }
+}
+
+function subscribe(onStoreChange: () => void) {
+  listeners.add(onStoreChange)
+  return () => listeners.delete(onStoreChange)
+}
 
 export function selectAgent(agent: Agent) {
   if (selected.name === agent.name) {
@@ -145,26 +143,49 @@ export function selectAgent(agent: Agent) {
   }
 
   selected = agent
-  for (const listener of listeners) {
-    listener()
-  }
+  publish()
 }
 
 export function useSelectedAgent() {
   return useSyncExternalStore(
-    (onStoreChange) => {
-      listeners.add(onStoreChange)
-      return () => listeners.delete(onStoreChange)
-    },
+    subscribe,
     () => selected,
     () => AGENTS[0]
   )
 }
 
-/** One server, one URL — every agent adds the same one. */
-export const MCP_URL = 'https://growth.engineer/mcp'
+export function showStepsFor(agent: Agent) {
+  selected = agent
+  stepsOpen = true
+  publish()
+}
 
-/** What to hand an agent so it can do the wiring itself. */
+export function closeSteps() {
+  if (!stepsOpen) {
+    return
+  }
+
+  stepsOpen = false
+  publish()
+}
+
+export function openSteps() {
+  if (stepsOpen) {
+    return
+  }
+
+  stepsOpen = true
+  publish()
+}
+
+export function useStepsOpen() {
+  return useSyncExternalStore(
+    subscribe,
+    () => stepsOpen,
+    () => false
+  )
+}
+
 export function aiPrompt(agent: Agent): string {
   return [
     `Connect me to the growth.engineer MCP server in ${agent.name}.`,

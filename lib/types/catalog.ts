@@ -28,7 +28,6 @@ export type Auth = {
 type AccessHealth = {
   ok: boolean
   checkedAt: number
-  /** Failing this long drops the agent level one step (agent-level.ts). */
   failingSince?: number
 }
 
@@ -59,21 +58,6 @@ export type Access =
       repoUrl?: string
     })
   | (AccessCommon & { type: 'api'; baseUrl: string; openApiUrl?: string })
-
-/* ─────────────────────────────── agent readiness ────────────────────────── */
-
-export type AgentLevel = 'unverified' | 'native' | 'friendly' | 'possible'
-
-type Agent = {
-  level: AgentLevel
-  /** 0–100, sorting within a level only. */
-  score: number
-  /** "Native: official remote MCP with self-serve OAuth." */
-  reason: string
-  machineReadableDocs?: boolean
-  /** When a person last checked the facts; absent = unverified. */
-  checkedAt?: number
-}
 
 /* ─────────────────────────────────── entities ───────────────────────────── */
 
@@ -115,10 +99,7 @@ export type Tool = {
   /** The capability slug — the second half of the key. */
   capability: string
   access: ReadonlyArray<Access>
-  agent: Agent
-  /** `agent.level`, flat, for lists and search. */
-  agentLevel: AgentLevel
-  /** Derived tag keys: `agent:<level>` and one `has:<type>` per way in. */
+  /** Derived tag keys: one `has:<type>` per way in. */
   tags: ReadonlyArray<string>
   status: Status
   updatedAt: number
@@ -175,7 +156,7 @@ export type Tag = {
   label: string
   synonyms: ReadonlyArray<string>
   description: string
-  /** `agent:*` and `has:*` are computed from tools, never authored. */
+  /** `has:*` is computed from tools, never authored. */
   derived: boolean
   counts: { companies: number; tools: number; workflows: number }
 }
@@ -210,7 +191,6 @@ export type ToolListItem = {
     key: string
     name: string
     summary: string
-    agentLevel: AgentLevel
     access: ReadonlyArray<AccessType>
   }
   company: { key: string; name: string; logoUrl?: string }

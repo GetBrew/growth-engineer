@@ -1,7 +1,7 @@
 'use client'
 
 import { type ReactNode, useState } from 'react'
-import { EntityIcon, type EntityKind } from '@/components/catalog/entity-icon'
+import { EntityIcon, type EntityKind } from '@/components/common/entity-icon'
 import { CatalogSearch } from '@/components/search/catalog-search'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -22,8 +22,6 @@ export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
 
   return (
     <Tabs
-      /* The list rows carry 20px of their own top padding, so 4 here reads
-         as the same 24px this section spaces everything by. */
       className="gap-1"
       onValueChange={(value) => setActive(String(value))}
       value={active}

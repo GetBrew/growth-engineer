@@ -105,12 +105,12 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   shadow a live key, a published tool has ≥ 1 way in, logos exist. A new rule
   ships with a negative test in `tests/content-schema.test.ts` — a guard is
   not done until it has FAILED.
-- PROJECTIONS (`agentLevel`, `has:*`/`agent:*` tags, tag counts, `searchText`,
+- PROJECTIONS (`has:*` tags, tag counts, `searchText`,
   `toolCount`, the edges) are computed in `lib/content/derive.ts` and
   `build-catalog.ts` — one writer each, never authored in a file. The
   workflow ↔ tool relationship is written into BOTH rendered files (`tools:`
   in a workflow file, `workflows:` in a tool file) and shown on both pages.
-- The pure half of `lib/catalog/*` (keys, agent-level, renderer, search
+- The pure half of `lib/catalog/*` (keys, renderer, search
   grammar, types) imports nothing from `node:`, `server-only` or
   `lib/content` — it runs in the proxy and the browser too
   (`tests/catalog-purity.test.ts`). Only `catalog.ts`, `loaders.ts` and
@@ -149,8 +149,6 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   content suite (`tests/content.test.ts`) builds the real tree and asks every
   question a page asks; extend it when you add a read.
 - Write the negative cases. A guard is not done until it has FAILED.
-- Every seeded tool is `agent: unverified` because nobody has checked the
-  facts; `agent.checked` in a tool file is the only thing that changes that.
 
 ## Code conventions
 

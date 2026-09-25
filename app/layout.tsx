@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
+import { SITE_DESCRIPTION } from '@/lib/constants/site'
 import { clientEnv } from '@/lib/env'
 
 import './globals.css'
@@ -23,8 +24,7 @@ export const metadata: Metadata = {
     default: 'growth.engineer',
     template: '%s · growth.engineer',
   },
-  description:
-    'The agent-friendly marketplace for go-to-market tools and workflows. Every tool and workflow is one markdown file any agent can run.',
+  description: SITE_DESCRIPTION,
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -27,14 +27,12 @@ export const TAG_NAMESPACES = [
   'channel',
   'category',
   'fit',
-  'agent',
   'has',
 ] as const
 export type TagNamespace = (typeof TAG_NAMESPACES)[number]
 
 /** Namespaces the system computes; nobody can propose tags in them. */
 export const DERIVED_TAG_NAMESPACES: ReadonlySet<TagNamespace> = new Set([
-  'agent',
   'has',
 ])
 

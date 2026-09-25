@@ -36,9 +36,6 @@ That single decision shapes everything else:
 - **Open source, by pull request.** The catalog IS the repository: every
   company, tool and workflow is a markdown file anyone can add or correct,
   and the build checks every rule before it ships.
-- **Honest about agent readiness.** A tool's level (unverified, native,
-  friendly, possible) comes from rules over checked facts, with the reason
-  shown. Nobody has checked it yet? It says so.
 
 ## The abstractions
 
@@ -65,8 +62,8 @@ cannot be published.
 
 1. **Plan the schema.** Done — the file schema in `docs/data-model.md`.
 2. **Seed by hand.** Done — 25 companies, 37 published tools and 12
-   workflows under `companies/` and `workflows/`, illustrative and
-   `unverified` until a person checks each one.
+   workflows under `companies/` and `workflows/`, illustrative until a
+   person checks each one.
 3. **Open community contributions.** Now: anyone adds or corrects a file by
    pull request; CI checks every rule; a maintainer reviews the facts;
    vendors maintain their own folder.
@@ -92,5 +89,5 @@ the submission pipeline and git is the history.
   Writes arrive with identity.
 - **Facts a machine can check apply on their own.** Everything else waits for
   a person.
-- **The catalog is honest.** Unverified means unverified. A tool with no way
-  in we can stand behind is not published.
+- **The catalog is honest.** A tool with no way in we can stand behind is
+  not published.

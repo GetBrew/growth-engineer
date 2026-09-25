@@ -12,7 +12,7 @@ import {
   DETAIL_ACTION,
   DETAIL_ACTION_ICON,
   PANEL_HEADING,
-} from '@/components/detail/chrome'
+} from '@/components/detail/styles'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils/cn'
 
@@ -56,14 +56,23 @@ export function MarkdownFile({
 
   return (
     <Tabs className="gap-3" defaultValue="preview">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className={cn(PANEL_HEADING, 'min-w-0')}>
-          <span className="truncate">{fileName}</span>
-        </h2>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:flex-nowrap sm:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <h2 className={cn(PANEL_HEADING, 'min-w-0')}>
+            <span className="truncate">{fileName}</span>
+          </h2>
 
-        {/* Ghost buttons carry their own padding; a gap on top of it reads
-            as a gap between two unrelated things. */}
-        <div className="-mr-3 flex items-center">
+          <TabsList className="h-9 shrink-0 p-0.5">
+            <TabsTrigger className="h-8 px-3" value="preview">
+              Preview
+            </TabsTrigger>
+            <TabsTrigger className="h-8 px-3" value="markdown">
+              Markdown
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <div className="-mr-3 flex shrink-0 items-center">
           <button className={DETAIL_ACTION} onClick={copy} type="button">
             <HugeiconsIcon
               aria-hidden="true"
@@ -86,18 +95,6 @@ export function MarkdownFile({
       </div>
 
       <div className="rounded-xl border bg-background">
-        {/* The switch lives inside the file, above whichever view it picks. */}
-        <div className="flex justify-end px-5 pt-4 sm:px-6">
-          <TabsList className="h-8 p-0.5">
-            <TabsTrigger className="type-label h-7 px-3" value="preview">
-              Preview
-            </TabsTrigger>
-            <TabsTrigger className="type-label h-7 px-3" value="markdown">
-              Markdown
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
         <TabsContent value="preview">
           <div className={VIEW}>
             <Streamdown
@@ -111,8 +108,6 @@ export function MarkdownFile({
           </div>
         </TabsContent>
 
-        {/* The file exactly as it sits in the repository, frontmatter included
-            — that is what Copy and Download hand over. */}
         <TabsContent value="markdown">
           <pre className={`${VIEW} overflow-x-auto`}>
             <code className="type-label font-mono text-soft">{markdown}</code>

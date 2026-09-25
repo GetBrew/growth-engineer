@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react'
-import { EntityLogo } from '@/components/catalog/entity-logo'
+import { EntityLogo } from '@/components/common/entity-logo'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { loadCompanies, loadWorkflows } from '@/lib/catalog/loaders'
-import { githubAvatarUrl } from '@/lib/github'
+import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 import { cn } from '@/lib/utils/cn'
 import styles from './contribution-marquee.module.css'
 
@@ -10,28 +10,18 @@ type Pill = {
   id: string
   href: string
   label: string
-  /** The mark beside the label: a company logo, or a contributor's photo. */
   logoUrl?: string
-  /** Its alt text, and its fallback letter when there is no mark. */
   name: string
-  /** A workflow names the person who submitted it. */
   author?: string
-  /** People get a circular mark; companies keep the rounded square. */
   round?: boolean
 }
 
-/** Rows run at different speeds and directions, so the wall never slides as one block. */
 const ROWS = [
   { duration: '128s', reverse: false },
   { duration: '156s', reverse: true },
   { duration: '140s', reverse: false },
 ]
 
-/**
- * The catalog, moving: workflows beside the company whose tool leads them, the
- * companies themselves, and the people who submitted them. Read from the tree,
- * so the wall grows with the catalog instead of being a fixed picture of it.
- */
 export async function ContributionMarquee() {
   const [workflows, companies] = await Promise.all([
     loadWorkflows('featured', 30),
@@ -57,7 +47,7 @@ export async function ContributionMarquee() {
     [...new Set(workflows.map(({ workflow }) => workflow.author))].map(
       (login) => ({
         id: `person:${login}`,
-        href: `https://github.com/${encodeURIComponent(login)}`,
+        href: githubProfileUrl(login),
         label: login,
         logoUrl: githubAvatarUrl(login),
         name: login,
@@ -66,8 +56,6 @@ export async function ContributionMarquee() {
     ),
   ]
 
-  // Interleaved, then dealt round-robin across the rows: left to themselves the
-  // three kinds would clump, and a row would end up all companies.
   const mixed = interleave(kinds)
 
   return (
@@ -91,11 +79,6 @@ function interleave(lists: ReadonlyArray<ReadonlyArray<Pill>>): Array<Pill> {
   ).flat()
 }
 
-/**
- * The row renders its pills TWICE and translates -50%: that is what makes the
- * loop seamless. The second copy is `aria-hidden`, so a screen reader hears
- * each contribution once.
- */
 function MarqueeRow({
   pills,
   seconds,
@@ -134,13 +117,11 @@ function PillChip({ pill }: { pill: Pill }) {
 
   return (
     <a
-      className="focus-ring flex items-center gap-2.5 whitespace-nowrap rounded-full border bg-background py-2 pr-5 pl-2 transition-colors duration-200 hover:bg-surface"
+      className="focus-ring flex h-10 items-center gap-2.5 whitespace-nowrap rounded-full border bg-background pr-5 pl-2 transition-colors duration-200 hover:bg-surface"
       href={pill.href}
       rel={external ? 'noreferrer' : undefined}
       target={external ? '_blank' : undefined}
     >
-      {/* `border-0` because the pill is already a bordered shape, and grayscale
-          because a dozen unrelated brand palettes read as noise. */}
       <EntityLogo
         className={cn(
           'shrink-0 border-0 bg-transparent grayscale',
@@ -148,11 +129,11 @@ function PillChip({ pill }: { pill: Pill }) {
         )}
         logoUrl={pill.logoUrl}
         name={pill.name}
-        size={30}
+        size={24}
       />
-      <span className="type-item text-foreground">{pill.label}</span>
+      <span className="type-control text-foreground">{pill.label}</span>
       {pill.author ? (
-        <span className="type-item flex shrink-0 items-center gap-1.5 text-faint">
+        <span className="type-control flex shrink-0 items-center gap-1.5 text-faint">
           <MaskIcon size={15} src="/social/github.svg" />
           {pill.author}
         </span>

@@ -1,9 +1,5 @@
-import {
-  ACCESS_LABEL,
-  ACCESS_ORDER,
-  AGENT_LEVEL_LABEL,
-} from '@/lib/constants/catalog'
-import type { AccessType, AgentLevel } from '@/lib/types/catalog'
+import { ACCESS_LABEL, ACCESS_ORDER } from '@/lib/constants/catalog'
+import type { AccessType } from '@/lib/types/catalog'
 
 type Access = { type: AccessType }
 
@@ -22,12 +18,4 @@ export function accessTypeLabels(
 
 export function accessTypeLabel(type: Access['type']): string {
   return ACCESS_LABEL[type]
-}
-
-export function isAgentLevelVerified(level: AgentLevel): boolean {
-  return level !== 'unverified'
-}
-
-export function agentLevelLabel(level: AgentLevel): string {
-  return AGENT_LEVEL_LABEL[level]
 }

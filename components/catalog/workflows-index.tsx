@@ -1,12 +1,9 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import {
-  CatalogList,
-  workflowListItem,
-} from '@/components/catalog/catalog-list'
-import { NoResults } from '@/components/catalog/no-results'
-import { SectionHeading } from '@/components/layout/primitives'
+import { CatalogList, workflowListItem } from '@/components/catalog/list'
+import { NoResults } from '@/components/common/no-results'
+import { SectionHeading } from '@/components/layout/section-heading'
 import { CatalogSearch } from '@/components/search/catalog-search'
 import type { FilterOption } from '@/components/search/filter-types'
 import { ListingToolbar } from '@/components/search/listing-toolbar'

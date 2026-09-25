@@ -1,4 +1,3 @@
-import { computeAgentLevel } from '@/lib/catalog/agent-level'
 import { derivedTagKeys } from '@/lib/catalog/derived-tags'
 import {
   DERIVED_TAG_NAMESPACES,
@@ -120,15 +119,6 @@ function toTool(
 ): Tool {
   const { data, body } = parsed
   const updatedAt = dateToMs(data.updated)
-  const checkedAt = data.agent?.checked
-    ? dateToMs(data.agent.checked)
-    : undefined
-  const assessment = computeAgentLevel({
-    access,
-    checkedAt,
-    machineReadableDocs: data.agent?.machineReadableDocs,
-    now: updatedAt,
-  })
   const tool: Tool = {
     key: `${file.handle}/${file.slug}`,
     companyKey: file.handle,
@@ -137,14 +127,6 @@ function toTool(
     ...(body ? { description: body } : {}),
     capability: file.slug,
     access,
-    agent: {
-      ...assessment,
-      ...(data.agent?.machineReadableDocs === undefined
-        ? {}
-        : { machineReadableDocs: data.agent.machineReadableDocs }),
-      ...(checkedAt === undefined ? {} : { checkedAt }),
-    },
-    agentLevel: assessment.level,
     tags: [],
     status: data.status === 'deprecated' ? 'deprecated' : 'published',
     updatedAt,

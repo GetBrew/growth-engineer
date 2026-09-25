@@ -1,7 +1,7 @@
 import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
-import { EntityIcon, type EntityKind } from '@/components/catalog/entity-icon'
+import { EntityIcon, type EntityKind } from '@/components/common/entity-icon'
 import { CatalogShell } from '@/components/home/catalog-shell'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'

@@ -3,7 +3,7 @@ import {
   type CatalogListItem,
   toolListItem,
   workflowListItem,
-} from '@/components/catalog/catalog-list'
+} from '@/components/catalog/list'
 import { CatalogShell } from '@/components/home/catalog-shell'
 import { CatalogTabs } from '@/components/home/catalog-tabs'
 import {
@@ -11,6 +11,7 @@ import {
   loadNewTools,
   loadWorkflows,
 } from '@/lib/catalog/loaders'
+import { SECTIONS } from '@/lib/constants/sections'
 
 const PREVIEW = 10
 
@@ -40,47 +41,30 @@ export async function HomeCatalog() {
     })
   )
 
+  const items: Record<string, ReadonlyArray<CatalogListItem>> = {
+    workflow: workflowItems,
+    tool: toolItems,
+    company: companyItems,
+  }
+
   return (
     <CatalogShell>
       <CatalogTabs
-        tabs={[
-          {
-            value: 'workflows',
-            entity: 'workflow',
-            href: '/workflows',
-            label: 'Workflows',
-            content: (
-              <CatalogList
-                all={{ href: '/workflows', label: 'View all workflows' }}
-                items={workflowItems}
-              />
-            ),
-          },
-          {
-            value: 'tools',
-            entity: 'tool',
-            href: '/tools',
-            label: 'Tools',
-            content: (
-              <CatalogList
-                all={{ href: '/tools', label: 'View all tools' }}
-                items={toolItems}
-              />
-            ),
-          },
-          {
-            value: 'companies',
-            entity: 'company',
-            href: '/companies',
-            label: 'Companies',
-            content: (
-              <CatalogList
-                all={{ href: '/companies', label: 'View all companies' }}
-                items={companyItems}
-              />
-            ),
-          },
-        ]}
+        tabs={SECTIONS.map((section) => ({
+          value: section.href.slice(1),
+          entity: section.entity,
+          href: section.href,
+          label: section.label,
+          content: (
+            <CatalogList
+              all={{
+                href: section.href,
+                label: `View all ${section.label.toLowerCase()}`,
+              }}
+              items={items[section.entity] ?? []}
+            />
+          ),
+        }))}
       />
     </CatalogShell>
   )

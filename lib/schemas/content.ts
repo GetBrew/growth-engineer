@@ -152,13 +152,6 @@ export const toolSchema = z.strictObject({
   summary: text,
   /** `{ <access id>: <operation> }` — the exact call, per way in. */
   access: z.record(z.string(), text).default({}),
-  agent: z
-    .strictObject({
-      /** When a person last checked the facts; absent = unverified. */
-      checked: isoDate.optional(),
-      machineReadableDocs: z.boolean().optional(),
-    })
-    .optional(),
   aliases: z.array(ownedKey).default([]),
   /** A draft is allowed to have no way in; it has no page and no file. */
   status: z.enum(['published', 'deprecated', 'draft']).default('published'),
