@@ -165,6 +165,10 @@
   }
   html {
     @apply font-sans;
+    /* In-page anchors glide rather than jump — the "In this guide" jump list
+       on a guide page, and any `#id` link added later. The reduced-motion
+       block above already forces this back to `auto`. */
+    scroll-behavior: smooth;
   }
 }
 

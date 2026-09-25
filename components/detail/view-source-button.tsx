@@ -3,20 +3,21 @@ import { MaskIcon } from '@/components/layout/mask-icon'
 import type { EntityType } from '@/lib/catalog/keys'
 import { sourceFileUrl } from '@/lib/github'
 
-export function ViewSourceButton({
-  type,
-  entityKey,
-}: {
-  type: EntityType
-  entityKey: string
-}) {
+/**
+ * A catalog entry knows its own source file, so it passes its key and the URL
+ * is derived. A page with no entry behind it — a guide — passes the URL it
+ * wants instead, rather than growing a second button that looks the same.
+ */
+type Props = { type: EntityType; entityKey: string } | { href: string }
+
+export function ViewSourceButton(props: Props) {
+  const href =
+    'href' in props
+      ? props.href
+      : sourceFileUrl({ type: props.type, key: props.entityKey })
+
   return (
-    <a
-      className={DETAIL_ACTION}
-      href={sourceFileUrl({ type, key: entityKey })}
-      rel="noreferrer"
-      target="_blank"
-    >
+    <a className={DETAIL_ACTION} href={href} rel="noreferrer" target="_blank">
       <MaskIcon size={DETAIL_ACTION_ICON} src="/social/github.svg" />
       View on GitHub
     </a>

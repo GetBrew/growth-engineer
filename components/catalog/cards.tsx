@@ -2,9 +2,7 @@ import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { accessTypeLabels } from '@/components/common/badges'
 import { EntityLogo } from '@/components/common/entity-logo'
-import { Badge } from '@/components/ui/badge'
 import {
   Item,
   ItemActions,
@@ -22,13 +20,11 @@ function CatalogRow({
   href,
   logo,
   title,
-  pills,
   description,
 }: {
   href: string
   logo: { name: string; logoUrl?: string }
   title: string
-  pills: ReadonlyArray<string>
   description: ReactNode
 }) {
   return (
@@ -47,14 +43,6 @@ function CatalogRow({
       <ItemContent className="min-w-0 gap-1">
         <ItemTitle className="type-item line-clamp-none flex w-full flex-wrap gap-x-2 gap-y-1">
           <span className="min-w-0 max-w-full truncate">{title}</span>
-          {pills.map((pill) => (
-            <Badge
-              className="h-auto shrink-0 bg-background px-2 py-0.5"
-              key={pill}
-            >
-              {pill}
-            </Badge>
-          ))}
         </ItemTitle>
         <ItemDescription className="type-body sm:line-clamp-1">
           {description}
@@ -76,11 +64,8 @@ function CatalogRow({
 
 export function CompanyRow({
   company,
-  access = [],
 }: {
   company: CompanyRowData['company']
-
-  access?: ReadonlyArray<string>
 }) {
   return (
     <CatalogRow
@@ -90,7 +75,6 @@ export function CompanyRow({
         name: company.name,
         logoUrl: company.logoUrl,
       }}
-      pills={access}
       title={company.name}
     />
   )
@@ -106,7 +90,6 @@ export function ToolRow({ tool, company }: ToolCardData) {
       }
       href={`/tools/${tool.key}`}
       logo={{ name: company.name, logoUrl: company.logoUrl }}
-      pills={accessTypeLabels(tool.access)}
       title={tool.name}
     />
   )

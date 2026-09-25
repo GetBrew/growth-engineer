@@ -3,15 +3,14 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { ToolCardData } from '@/components/catalog/cards'
-import { accessTypeLabels } from '@/components/common/badges'
 import {
   type CompanyAvatar,
   CompanyAvatars,
 } from '@/components/common/company-avatars'
+import { EntityIcon, type EntityKind } from '@/components/common/entity-icon'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { githubAvatarUrl } from '@/lib/github'
 import type { WorkflowListItem } from '@/lib/types/catalog'
@@ -21,10 +20,17 @@ export type CatalogListItem = {
   href: string
   title: string
   logo: { name: string; logoUrl?: string }
-  pills: ReadonlyArray<string>
   description?: ReactNode
 
   contributor?: { name?: string; imageUrl?: string }
+
+  /**
+   * Draws the kind's own icon in the leading slot instead of a photo. A guide
+   * is about workflows or tools in general, so there is no one logo or face
+   * that stands for it. The icon stays in ink: the entity colours mark a real
+   * entry, and a row about a kind is not one.
+   */
+  entity?: EntityKind
 
   companies?: ReadonlyArray<CompanyAvatar>
 }
@@ -70,10 +76,10 @@ function CatalogListRow({
   href,
   title,
   logo,
-  pills,
   description,
   contributor,
   companies,
+  entity,
 }: CatalogListItem) {
   return (
     <Link
@@ -81,7 +87,7 @@ function CatalogListRow({
       href={href}
     >
       {companies ? (
-        <Contributor contributor={contributor} />
+        <Contributor contributor={contributor} entity={entity} />
       ) : (
         <EntityLogo
           className="entity-shadow shrink-0"
@@ -92,17 +98,7 @@ function CatalogListRow({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="type-item min-w-0 max-w-full truncate">{title}</span>
-          {pills.map((pill) => (
-            <Badge
-              className="h-auto shrink-0 bg-background px-2 py-0.5"
-              key={pill}
-            >
-              {pill}
-            </Badge>
-          ))}
-        </div>
+        <span className="type-item min-w-0 max-w-full truncate">{title}</span>
         {description ? (
           <p className="type-body line-clamp-2 sm:line-clamp-1">
             {description}
@@ -139,25 +135,38 @@ function CatalogListRow({
 
 function Contributor({
   contributor,
+  entity,
 }: {
   contributor?: { name?: string; imageUrl?: string }
+
+  entity?: EntityKind
 }) {
   return (
     <span className="relative block size-10 shrink-0">
-      <Avatar className="size-10 border border-border">
-        <AvatarImage alt="" src={contributor?.imageUrl} />
-        <AvatarFallback>
-          {(contributor?.name ?? '?').slice(0, 1).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      {entity ? (
+        <span className="grid size-10 place-items-center rounded-full border border-border bg-background text-soft">
+          <EntityIcon entity={entity} size={18} />
+        </span>
+      ) : (
+        <Avatar className="size-10 border border-border">
+          <AvatarImage alt="" src={contributor?.imageUrl} />
+          <AvatarFallback>
+            {(contributor?.name ?? '?').slice(0, 1).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      )}
 
-      <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-background ring-2 ring-background">
-        <MaskIcon
-          className="text-muted-foreground"
-          size={12}
-          src="/social/github.svg"
-        />
-      </span>
+      {/* The badge says whose face this is and where to find them. A kind's
+          icon is nobody's face, so it carries no badge. */}
+      {entity ? null : (
+        <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-background ring-2 ring-background">
+          <MaskIcon
+            className="text-muted-foreground"
+            size={12}
+            src="/social/github.svg"
+          />
+        </span>
+      )}
       {contributor?.name ? (
         <span className="sr-only">Contributed by {contributor.name}</span>
       ) : null}
@@ -197,11 +206,6 @@ export function workflowListItem({
       name: lead?.companyName ?? workflow.title,
       logoUrl: lead?.logoUrl,
     },
-    pills: [
-      `${workflow.toolCount} ${workflow.toolCount === 1 ? 'tool' : 'tools'}`,
-
-      ...accessTypeLabels(tools.flatMap((tool) => tool.access)),
-    ],
     description: workflow.summary,
   }
 }
@@ -212,7 +216,6 @@ export function toolListItem({ tool, company }: ToolCardData): CatalogListItem {
     href: `/tools/${tool.key}`,
     title: tool.name,
     logo: { name: company.name, logoUrl: company.logoUrl },
-    pills: accessTypeLabels(tool.access),
     description: `${company.name} · ${tool.summary}`,
   }
 }

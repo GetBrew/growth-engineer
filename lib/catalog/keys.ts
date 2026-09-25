@@ -53,6 +53,7 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'cli',
   'companies',
   'company',
+  'contribute',
   'favicon.ico',
   'hacks',
   'llms.txt',

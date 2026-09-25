@@ -100,12 +100,8 @@ export function CompanyDirectory({
                   key={label}
                   title={label}
                 >
-                  {entries.map(({ company, access }) => (
-                    <CompanyRow
-                      access={access.map((type) => type.toUpperCase())}
-                      company={company}
-                      key={company.key}
-                    />
+                  {entries.map(({ company }) => (
+                    <CompanyRow company={company} key={company.key} />
                   ))}
                 </CategorySection>
               ))}

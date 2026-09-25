@@ -26,20 +26,17 @@ export async function HomeCatalog() {
 
   const toolItems = tools.map(toolListItem)
 
-  const companyItems: Array<CatalogListItem> = companies.map(
-    ({ company, access }) => ({
-      id: company.key,
-      href: `/companies/${company.key}`,
-      title: company.name,
-      logo: {
-        name: company.name,
-        logoUrl: company.logoUrl,
-        domain: company.domain,
-      },
-      pills: access.map((type) => type.toUpperCase()),
-      description: company.description ?? company.tagline,
-    })
-  )
+  const companyItems: Array<CatalogListItem> = companies.map(({ company }) => ({
+    id: company.key,
+    href: `/companies/${company.key}`,
+    title: company.name,
+    logo: {
+      name: company.name,
+      logoUrl: company.logoUrl,
+      domain: company.domain,
+    },
+    description: company.description ?? company.tagline,
+  }))
 
   const items: Record<string, ReadonlyArray<CatalogListItem>> = {
     workflow: workflowItems,
