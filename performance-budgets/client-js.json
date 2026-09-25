@@ -13,7 +13,6 @@
     "/companies/[handle]": 884066,
     "/map": 858268,
     "/map/[...focus]": 858268,
-    "/submit": 890099,
     "/tools": 975307,
     "/tools/[handle]/[name]": 1396120,
     "/workflows": 996573,

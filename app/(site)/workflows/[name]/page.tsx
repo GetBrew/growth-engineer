@@ -17,6 +17,7 @@ import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { Page } from '@/components/layout/page'
+import { JsonLd } from '@/components/seo/json-ld'
 import { WorkflowDetailSkeleton } from '@/components/skeletons/workflow-detail-skeleton'
 import {
   isValidKeyPart,
@@ -26,7 +27,10 @@ import {
 } from '@/lib/catalog/keys'
 import { loadDocument, loadWorkflow, resolveAlias } from '@/lib/catalog/loaders'
 import { workflowParams } from '@/lib/catalog/static-params'
+import { SITE_ORIGIN } from '@/lib/env'
 import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { workflowJsonLd } from '@/lib/seo/structured-data'
 
 type Params = Promise<{ name: string }>
 
@@ -50,9 +54,22 @@ export async function generateMetadata({
     return {}
   }
   const result = await loadWorkflow(resolved.key, resolved.version)
-  return result
-    ? { title: result.workflow.title, description: result.workflow.summary }
-    : {}
+  if (!result) {
+    return {}
+  }
+  // A version pin is the same file: its canonical URL is the unpinned one.
+  const ref = {
+    type: 'workflow' as const,
+    key: result.workflow.key,
+    version: undefined,
+  }
+  return pageMetadata({
+    title: result.workflow.title,
+    description: result.workflow.summary,
+    path: refToPath(ref),
+    file: refToFilePath(ref),
+    type: 'article',
+  })
 }
 
 export default function WorkflowPage({ params }: { params: Params }) {
@@ -109,6 +126,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-(--space-block)">
+      <JsonLd data={workflowJsonLd(SITE_ORIGIN, workflow, tools)} />
       <DetailHeader
         actions={
           <>

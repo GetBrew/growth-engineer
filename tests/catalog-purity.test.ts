@@ -8,11 +8,16 @@ import { readSourceFiles } from './helpers/source-files'
  * import of a Node built-in, `server-only` or the content reader would work
  * in one bundle and throw in another — at runtime, on the path nobody tested.
  *
- * The three modules that DO read the tree or the process are named here and
- * are the only ones allowed to.
+ * The modules that DO read the tree or the process are named here and are
+ * the only ones allowed to.
  */
 
-const SERVER_SIDE = new Set(['catalog.ts', 'loaders.ts', 'static-params.ts'])
+const SERVER_SIDE = new Set([
+  'catalog.ts',
+  'discovery.ts',
+  'loaders.ts',
+  'static-params.ts',
+])
 
 const FORBIDDEN = [
   /^node:/, // Node built-ins are not in the edge or browser runtime

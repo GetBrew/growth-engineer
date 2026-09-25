@@ -18,7 +18,7 @@ describe('hasBackslashInPath', () => {
     }
   )
 
-  test.each(['/', '/tools', '/api/health', '/workflows/brew/x'])(
+  test.each(['/', '/tools', '/llms.txt', '/workflows/brew/x'])(
     'allows %s',
     (pathname) => {
       expect(hasBackslashInPath(pathname)).toBe(false)

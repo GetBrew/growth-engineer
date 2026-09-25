@@ -16,9 +16,10 @@ import { DetailTabs } from '@/components/detail/tabs'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
+import { JsonLd } from '@/components/seo/json-ld'
 import { CompanyDetailSkeleton } from '@/components/skeletons/company-detail-skeleton'
 import { buttonVariants } from '@/components/ui/button'
-import { isValidHandle } from '@/lib/catalog/keys'
+import { isValidHandle, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadCompany,
   loadToolsByCompany,
@@ -26,6 +27,9 @@ import {
   resolveAlias,
 } from '@/lib/catalog/loaders'
 import { companyParams } from '@/lib/catalog/static-params'
+import { SITE_ORIGIN } from '@/lib/env'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { companyJsonLd } from '@/lib/seo/structured-data'
 import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ handle: string }>
@@ -44,7 +48,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle } = await params
   const company = isValidHandle(handle) ? await loadCompany(handle) : null
-  return company ? { title: company.name, description: company.tagline } : {}
+  if (!company) {
+    return {}
+  }
+  const ref = { type: 'company' as const, key: company.key, version: undefined }
+  return pageMetadata({
+    title: company.name,
+    description:
+      company.tagline ??
+      company.description ??
+      `${company.name}: the tools it makes and the workflows that use them.`,
+    path: refToPath(ref),
+    file: refToFilePath(ref),
+  })
 }
 
 export default function CompanyPage({ params }: { params: Params }) {
@@ -83,6 +99,7 @@ async function CompanyDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col">
+      <JsonLd data={companyJsonLd(SITE_ORIGIN, company)} />
       <header>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex min-w-0 items-center gap-3">

@@ -49,8 +49,10 @@ READMEs have the field reference and templates.
 - **Build command** is `pnpm build:raw` (via `vercel.json`); `next build`
   renders every catalog page and every `.md` file at build time. A deploy IS
   the publish — there is nothing to seed, migrate or revalidate.
-- **Environment variables**: `NEXT_PUBLIC_SITE_URL` set to the deployment's
-  origin, and optionally the logo client id. Nothing secret.
+- **Environment variables**: none required. `/llms.txt` and `metadataBase`
+  use `NEXT_PUBLIC_SITE_URL` when set (a custom domain), otherwise the
+  deployment's own Vercel hostname; the logo client id is optional. Nothing
+  secret.
 - **Preview deployments** need nothing extra: each builds its branch's tree.
 - **Function bundles**: the routes that read `searchParams` (`/tools`,
   `/companies`, `/workflows`, `/map`) read the tree at request time, so

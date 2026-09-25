@@ -96,8 +96,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 
 ### The content compiler
 
-- `lib/content/read-tree.ts` is the ONLY module that touches the filesystem;
-  `buildCatalog(files)` is pure and testable with in-memory fixtures.
+- `lib/content/read-tree.ts` is the only reader of the content tree (the OG
+  font is `lib/seo/og-font.ts`); `buildCatalog(files)` is pure and testable.
 - Every rule is enforced at build with the offending file's path, and every
   problem is reported at once (`ContentErrors`): strict schemas (unknown
   fields rejected), reserved handles, every step's tool resolves and is
@@ -113,8 +113,23 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - The pure half of `lib/catalog/*` (keys, renderer, search
   grammar, types) imports nothing from `node:`, `server-only` or
   `lib/content` — it runs in the proxy and the browser too
-  (`tests/catalog-purity.test.ts`). Only `catalog.ts`, `loaders.ts` and
-  `static-params.ts` are server-side.
+  (`tests/catalog-purity.test.ts`). Only `catalog.ts`, `loaders.ts`,
+  `discovery.ts` and `static-params.ts` are server-side.
+
+### Discovery: SEO, GEO and agents
+
+- The words are defined ONCE, in `lib/catalog/definitions.ts`; the home page,
+  `/llms.txt`, `/llms-full.txt` and the structured data read from it. Never
+  restate a definition in a page or a doc — link or import.
+- Every page's metadata comes from `pageMetadata()` (`lib/seo/metadata.ts`):
+  a canonical path, Open Graph facts, and for a page that IS a file its
+  `text/markdown` alternate. The card is the segment's `opengraph-image.tsx`,
+  drawn at build (`generateStaticParams`, `next/og`). Structured data
+  (`lib/seo/structured-data.ts`, rendered by `<JsonLd>`) restates facts
+  already on the page — never new ones. `/sitemap.xml` lists every indexable
+  page with its `updated` date; map focus pages are `noindex`. `/robots.txt`
+  allows every crawler and names the AI crawlers. `tests/seo.test.tsx` holds
+  the sitemap, `/llms.txt` and `/llms-full.txt` to the catalog exactly.
 
 ### Rendering and caching
 
