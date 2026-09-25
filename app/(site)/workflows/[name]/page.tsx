@@ -11,6 +11,7 @@ import {
 } from '@/components/detail/header'
 import { HowItRuns } from '@/components/detail/how-it-runs'
 import { MarkdownFile } from '@/components/detail/markdown-file'
+import { MarkdownPreview } from '@/components/detail/markdown-preview'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
@@ -175,6 +176,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
             <MarkdownFile
               fileName={filePath.split('/').pop() ?? 'workflow.md'}
               markdown={document.markdown}
+              preview={<MarkdownPreview markdown={document.markdown} />}
             />
           ) : (
             <NoResults

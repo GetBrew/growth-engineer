@@ -1,15 +1,19 @@
 'use client'
 
-import {
-  ArrowRight01Icon,
-  Building03Icon,
-  Search01Icon,
-  WorkflowSquare01Icon,
-  Wrench01Icon,
-} from '@hugeicons/core-free-icons'
+import { ArrowRight01Icon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { EntityIcon } from '@/components/common/entity-icon'
 import {
   Sheet,
   SheetBackdrop,
@@ -18,115 +22,227 @@ import {
   SheetPortal,
   SheetTitle,
 } from '@/components/ui/sheet'
-import type { EntityType } from '@/lib/catalog/keys'
 import { searchPaletteItems } from '@/lib/catalog/search'
-import { SECTIONS } from '@/lib/constants/sections'
+import { SECTIONS, type Section } from '@/lib/constants/sections'
 import {
   setCommandPaletteOpen,
   toggleCommandPalette,
   useCommandPaletteOpen,
 } from '@/lib/stores/command-palette'
+import { preloadSearchIndex, useSearchIndex } from '@/lib/stores/search-index'
 import type { PaletteItem } from '@/lib/types/catalog'
 import { cn } from '@/lib/utils/cn'
 
-const MAX_RESULTS = 15
-
-const KIND_ICON = {
-  workflow: WorkflowSquare01Icon,
-  tool: Wrench01Icon,
-  company: Building03Icon,
-} as const
-
-const GROUPS: ReadonlyArray<{ kind: EntityType; label: string }> = [
-  { kind: 'workflow', label: 'Workflows' },
-  { kind: 'tool', label: 'Tools' },
-  { kind: 'company', label: 'Companies' },
-]
+/** Rows per kind before the group ends in "See all". */
+const PER_GROUP = 5
 
 const SUGGESTIONS = ['outbound', 'enrich', 'mcp', 'lifecycle'] as const
 
-export function CommandPaletteDialog({
-  items,
-}: {
-  items: ReadonlyArray<PaletteItem>
-}) {
+/** One navigable row: a result, a "see all" link, or a section to jump to. */
+type Option = {
+  id: string
+  href: string
+  title: string
+  subtitle?: string
+  entity: Section['entity']
+  isMore?: boolean
+}
+
+type Group = { section: Section; options: Array<Option> }
+
+/**
+ * Results grouped by kind, the groups in the order of their best match — so
+ * the first row, the one Enter opens, is the best match overall.
+ */
+function groupResults(
+  ranked: ReadonlyArray<PaletteItem>,
+  query: string
+): Array<Group> {
+  const byKind = new Map<string, Array<PaletteItem>>()
+  for (const item of ranked) {
+    byKind.set(item.kind, [...(byKind.get(item.kind) ?? []), item])
+  }
+  return [...byKind.entries()].flatMap(([kind, items]) => {
+    const section = SECTIONS.find((candidate) => candidate.entity === kind)
+    if (!section) {
+      return []
+    }
+    const options: Array<Option> = items.slice(0, PER_GROUP).map((item) => ({
+      id: `${item.kind}:${item.key}`,
+      href: item.href,
+      title: item.title,
+      subtitle: item.subtitle,
+      entity: item.kind,
+    }))
+    if (items.length > PER_GROUP) {
+      options.push({
+        id: `more:${kind}`,
+        href: `${section.href}?q=${encodeURIComponent(query.trim())}`,
+        title: `See all ${items.length} ${section.label.toLowerCase()}`,
+        entity: section.entity,
+        isMore: true,
+      })
+    }
+    return [{ section, options }]
+  })
+}
+
+const JUMP_TO: ReadonlyArray<Option> = SECTIONS.map((section) => ({
+  id: `section:${section.entity}`,
+  href: section.href,
+  title: section.label,
+  entity: section.entity,
+  isMore: true,
+}))
+
+export function CommandPaletteDialog() {
   const isOpen = useCommandPaletteOpen()
+  const index = useSearchIndex()
   const router = useRouter()
+  const listId = useId()
 
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const results = useMemo(
+  const hasQuery = query.trim() !== ''
+  const groups = useMemo(
     () =>
-      query.trim()
-        ? searchPaletteItems(items, { q: query, limit: MAX_RESULTS })
+      hasQuery && index.status === 'ready'
+        ? groupResults(searchPaletteItems(index.items, { q: query }), query)
         : [],
-    [items, query]
+    [hasQuery, index, query]
   )
+  const options = hasQuery
+    ? groups.flatMap((group) => group.options)
+    : [...JUMP_TO]
+  const active = options[activeIndex]
 
-  const flat = useMemo(
-    () =>
-      GROUPS.flatMap((group) => results.filter((r) => r.kind === group.kind)),
-    [results]
-  )
-
+  // ⌘K / Ctrl+K anywhere; warm the index once the page is idle.
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (!(event.metaKey || event.ctrlKey)) {
-        return
-      }
-
-      if (event.key?.toLowerCase() === 'k') {
+    function onKeyDown(event: globalThis.KeyboardEvent) {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.key?.toLowerCase() === 'k'
+      ) {
         event.preventDefault()
         toggleCommandPalette()
       }
     }
-
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    const idle = window.requestIdleCallback?.(() => preloadSearchIndex())
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      if (idle !== undefined) {
+        window.cancelIdleCallback?.(idle)
+      }
+    }
+  }, [])
+
+  // Back and Forward leave the page the palette was opened on.
+  useEffect(() => {
+    const onPopState = () => setCommandPaletteOpen(false)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
   useEffect(() => {
     if (isOpen) {
+      preloadSearchIndex()
       setQuery('')
       setActiveIndex(0)
       inputRef.current?.focus()
     }
   }, [isOpen])
 
-  const go = useCallback(
-    (href: string) => {
-      setCommandPaletteOpen(false)
-      router.push(href)
-    },
-    [router]
-  )
+  function close() {
+    setCommandPaletteOpen(false)
+  }
 
-  function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (flat.length === 0) {
+  function onInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (options.length === 0 || event.nativeEvent.isComposing) {
       return
     }
-
     if (event.key === 'ArrowDown') {
       event.preventDefault()
-      setActiveIndex((current) => (current + 1) % flat.length)
-      return
-    }
-
-    if (event.key === 'ArrowUp') {
+      setActiveIndex((current) => (current + 1) % options.length)
+    } else if (event.key === 'ArrowUp') {
       event.preventDefault()
-      setActiveIndex((current) => (current - 1 + flat.length) % flat.length)
-      return
+      setActiveIndex(
+        (current) => (current - 1 + options.length) % options.length
+      )
+    } else if (event.key === 'Enter' && active) {
+      event.preventDefault()
+      close()
+      router.push(active.href)
     }
+  }
 
-    if (event.key === 'Enter') {
-      const item = flat[activeIndex]
-      if (item) {
-        event.preventDefault()
-        go(item.href)
-      }
-    }
+  function suggest(value: string) {
+    setQuery(value)
+    setActiveIndex(0)
+    inputRef.current?.focus()
+  }
+
+  const optionId = (option: Option) => `${listId}-${option.id}`
+  const row = (option: Option) => (
+    <Row
+      id={optionId(option)}
+      isActive={option === active}
+      key={option.id}
+      onSelect={close}
+      option={option}
+    />
+  )
+
+  let body: ReactNode
+  if (!hasQuery) {
+    body = (
+      <div className="flex flex-col gap-3 py-1">
+        <div>
+          <p className="eyebrow px-3 pt-2 pb-1 uppercase">Jump to</p>
+          {JUMP_TO.map(row)}
+        </div>
+        <div>
+          <p className="eyebrow px-3 pb-2 uppercase">Try searching</p>
+          <div className="flex flex-wrap gap-2 px-3 pb-2">
+            {SUGGESTIONS.map((suggestion) => (
+              <button
+                className="focus-ring type-label rounded-full border px-3 py-1.5 text-faint transition-colors duration-200 hover:bg-hover hover:text-foreground"
+                key={suggestion}
+                onClick={() => suggest(suggestion)}
+                type="button"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  } else if (index.status === 'error') {
+    body = (
+      <p className="type-body px-3 py-10 text-center">
+        Search could not load. Browse the listings instead.
+      </p>
+    )
+  } else if (index.status !== 'ready') {
+    body = <p className="type-body px-3 py-10 text-center">Loading…</p>
+  } else if (groups.length === 0) {
+    body = (
+      <p className="type-body px-3 py-10 text-center">
+        Nothing matches that yet.
+      </p>
+    )
+  } else {
+    body = groups.map((group) => (
+      <div className="pb-1" key={group.section.entity}>
+        <p className="eyebrow px-3 pt-3 pb-1 uppercase">
+          {group.section.label}
+        </p>
+        {group.options.map(row)}
+      </div>
+    ))
   }
 
   return (
@@ -149,6 +265,10 @@ export function CommandPaletteDialog({
               strokeWidth={1.8}
             />
             <input
+              aria-activedescendant={active ? optionId(active) : undefined}
+              aria-autocomplete="list"
+              aria-controls={listId}
+              aria-expanded={options.length > 0}
               aria-label="Search workflows, tools and companies"
               autoComplete="off"
               className="type-control h-14 min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-faint"
@@ -159,21 +279,18 @@ export function CommandPaletteDialog({
               onKeyDown={onInputKeyDown}
               placeholder="Search workflows, tools and companies"
               ref={inputRef}
+              role="combobox"
               type="text"
               value={query}
             />
           </div>
 
-          <div className="max-h-[min(24rem,52vh)] overflow-y-auto p-2">
-            {query.trim() ? (
-              <Results
-                activeItem={flat[activeIndex]}
-                onSelect={go}
-                results={results}
-              />
-            ) : (
-              <EmptyState onSelect={go} onSuggest={setQuery} />
-            )}
+          <div
+            className="max-h-[min(24rem,52vh)] overflow-y-auto p-2"
+            id={listId}
+            role="listbox"
+          >
+            {body}
           </div>
 
           <Hints />
@@ -183,105 +300,22 @@ export function CommandPaletteDialog({
   )
 }
 
-function Results({
-  activeItem,
-  onSelect,
-  results,
-}: {
-  activeItem: PaletteItem | undefined
-  onSelect: (href: string) => void
-  results: ReadonlyArray<PaletteItem>
-}) {
-  if (results.length === 0) {
-    return (
-      <p className="type-body px-3 py-10 text-center">
-        Nothing matches that yet.
-      </p>
-    )
-  }
-
-  return GROUPS.map((group) => {
-    const rows = results.filter((item) => item.kind === group.kind)
-    if (rows.length === 0) {
-      return null
-    }
-
-    return (
-      <div className="pb-1" key={group.kind}>
-        <p className="eyebrow px-3 pt-3 pb-1 uppercase">{group.label}</p>
-        {rows.map((item) => (
-          <Row
-            icon={KIND_ICON[item.kind]}
-            isActive={item === activeItem}
-            key={`${item.kind}:${item.key}`}
-            onSelect={() => onSelect(item.href)}
-            subtitle={item.subtitle}
-            title={item.title}
-          />
-        ))}
-      </div>
-    )
-  })
-}
-
-function EmptyState({
-  onSelect,
-  onSuggest,
-}: {
-  onSelect: (href: string) => void
-  onSuggest: (query: string) => void
-}) {
-  return (
-    <div className="flex flex-col gap-3 py-1">
-      <div>
-        <p className="eyebrow px-3 pt-2 pb-1 uppercase">Jump to</p>
-        {SECTIONS.map((index) => (
-          <Row
-            icon={KIND_ICON[index.entity]}
-            isActive={false}
-            key={index.href}
-            onSelect={() => onSelect(index.href)}
-            showArrow
-            title={index.label}
-          />
-        ))}
-      </div>
-
-      <div>
-        <p className="eyebrow px-3 pb-2 uppercase">Try searching</p>
-        <div className="flex flex-wrap gap-2 px-3 pb-2">
-          {SUGGESTIONS.map((suggestion) => (
-            <button
-              className="focus-ring type-label rounded-full border px-3 py-1.5 text-faint transition-colors duration-200 hover:bg-hover hover:text-foreground"
-              key={suggestion}
-              onClick={() => onSuggest(suggestion)}
-              type="button"
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
+/**
+ * A real link, so it prefetches and opens in a new tab like any other; the
+ * input keeps focus and points at the highlighted row.
+ */
 function Row({
-  icon,
+  id,
   isActive,
   onSelect,
-  showArrow = false,
-  subtitle,
-  title,
+  option,
 }: {
-  icon: typeof Search01Icon
+  id: string
   isActive: boolean
   onSelect: () => void
-  showArrow?: boolean
-  subtitle?: string
-  title: string
+  option: Option
 }) {
-  const ref = useRef<HTMLButtonElement>(null)
+  const ref = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
     if (isActive) {
@@ -290,29 +324,27 @@ function Row({
   }, [isActive])
 
   return (
-    <button
+    <Link
+      aria-selected={isActive}
       className={cn(
         'focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors duration-200',
         isActive ? 'bg-muted' : 'hover:bg-muted'
       )}
+      href={option.href}
+      id={id}
       onClick={onSelect}
       ref={ref}
-      type="button"
+      role="option"
+      tabIndex={-1}
     >
-      <HugeiconsIcon
-        aria-hidden="true"
-        className="shrink-0 text-subtle"
-        icon={icon}
-        size={18}
-        strokeWidth={1.8}
-      />
+      <EntityIcon className="text-subtle" entity={option.entity} size={18} />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="type-control truncate">{title}</span>
-        {subtitle ? (
-          <span className="type-meta truncate">{subtitle}</span>
+        <span className="type-control truncate">{option.title}</span>
+        {option.subtitle ? (
+          <span className="type-meta truncate">{option.subtitle}</span>
         ) : null}
       </span>
-      {showArrow ? (
+      {option.isMore ? (
         <HugeiconsIcon
           aria-hidden="true"
           className="shrink-0 text-subtle"
@@ -321,7 +353,7 @@ function Row({
           strokeWidth={1.8}
         />
       ) : null}
-    </button>
+    </Link>
   )
 }
 
@@ -345,7 +377,7 @@ function Hints() {
   )
 }
 
-function Key({ children }: { children: React.ReactNode }) {
+function Key({ children }: { children: ReactNode }) {
   return (
     <kbd className="type-label rounded-sm border px-1.5 py-0.5">{children}</kbd>
   )

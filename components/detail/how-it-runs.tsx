@@ -3,6 +3,7 @@ import { accessTypeLabels } from '@/components/common/badges'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { PANEL_HEADING } from '@/components/detail/styles'
 import { Badge } from '@/components/ui/badge'
+import { ACCESS_LABEL } from '@/lib/constants/catalog'
 import type { AccessType, WorkflowStep as Step } from '@/lib/types/catalog'
 
 type StepTool = {
@@ -11,8 +12,6 @@ type StepTool = {
   logoUrl?: string
   access: ReadonlyArray<AccessType>
 }
-
-const VIA_LABEL = { mcp: 'MCP', cli: 'CLI', api: 'API' } as const
 
 export function HowItRuns({
   steps,
@@ -30,8 +29,11 @@ export function HowItRuns({
         {steps.map((step, index) => {
           const tool = toolByKey.get(step.toolKey)
           return (
+            // `#step-N` is the anchor each HowToStep in the page's
+            // structured data points at.
             <li
-              className="relative grid grid-cols-[28px_minmax(0,1fr)] gap-3 pb-5 before:absolute before:top-7 before:bottom-0 before:left-3.25 before:w-px before:bg-border last:pb-0 last:before:hidden"
+              className="relative grid scroll-mt-[calc(var(--header-height)+2rem)] grid-cols-[28px_minmax(0,1fr)] gap-3 pb-5 before:absolute before:top-7 before:bottom-0 before:left-3.25 before:w-px before:bg-border last:pb-0 last:before:hidden"
+              id={`step-${index + 1}`}
               key={step.key}
             >
               <span className="type-meta relative z-10 grid size-7 place-items-center rounded-full border bg-background text-soft tabular-nums">
@@ -63,7 +65,7 @@ export function HowItRuns({
                     ))}
                     {step.via ? (
                       <span className="eyebrow shrink-0">
-                        via {VIA_LABEL[step.via]}
+                        via {ACCESS_LABEL[step.via]}
                       </span>
                     ) : null}
                   </div>

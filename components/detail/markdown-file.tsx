@@ -6,8 +6,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useState } from 'react'
-import { Streamdown } from 'streamdown'
+import { type ReactNode, useState } from 'react'
 import {
   DETAIL_ACTION,
   DETAIL_ACTION_ICON,
@@ -16,31 +15,33 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils/cn'
 
-const FRONTMATTER = /^---\n[\s\S]*?\n---\n+/
-
-const HEADINGS = {
-  h1: 'h2',
-  h2: 'h3',
-  h3: 'h4',
-  h4: 'h5',
-  h5: 'h6',
-} as const
-
 const VIEW = 'px-5 pt-4 pb-5 sm:px-6 sm:pb-6'
 
+/**
+ * The file, two ways — its page and its markdown — with Copy and Download.
+ * The PREVIEW arrives already rendered from the server (`MarkdownPreview`),
+ * so this client shell only switches tabs and handles the clipboard.
+ */
 export function MarkdownFile({
   markdown,
   fileName,
+  preview,
 }: {
   markdown: string
   fileName: string
+  preview: ReactNode
 }) {
   const [copied, setCopied] = useState(false)
 
   async function copy() {
-    await navigator.clipboard.writeText(markdown).catch(() => undefined)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1800)
+    const didCopy = await navigator.clipboard
+      .writeText(markdown)
+      .then(() => true)
+      .catch(() => false)
+    if (didCopy) {
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1800)
+    }
   }
 
   function download() {
@@ -51,7 +52,8 @@ export function MarkdownFile({
     link.href = url
     link.download = fileName
     link.click()
-    URL.revokeObjectURL(url)
+    // Revoking at once can cancel the download in Firefox and Safari.
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return (
@@ -96,16 +98,7 @@ export function MarkdownFile({
 
       <div className="rounded-xl border bg-background">
         <TabsContent value="preview">
-          <div className={VIEW}>
-            <Streamdown
-              className="type-body [&_h2]:type-item [&_h3]:type-subsection [&_h4]:type-control [&_table]:type-label [&_h2]:mt-0 [&_h2]:mb-2 [&_h3]:mt-7 [&_h3]:mb-2 [&_h4]:mt-5 [&_h4]:mb-1.5 [&_hr]:my-6 [&_li]:my-0.5 [&_p]:my-1.5"
-              components={HEADINGS}
-              controls={false}
-              mode="static"
-            >
-              {markdown.replace(FRONTMATTER, '')}
-            </Streamdown>
-          </div>
+          <div className={VIEW}>{preview}</div>
         </TabsContent>
 
         <TabsContent value="markdown">

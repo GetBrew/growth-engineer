@@ -45,7 +45,7 @@ export type Catalog = {
   companies: ReadonlyMap<string, Company>
   tools: ReadonlyMap<string, Tool>
   workflows: ReadonlyMap<string, Workflow>
-  /** Curated tags from tags/ plus the derived `agent:*` and `has:*`. */
+  /** Curated tags from tags/ plus the derived `has:*`. */
   tags: ReadonlyMap<string, Tag>
   /** By ref: `tool:clay/enrich-contacts`. */
   documents: ReadonlyMap<string, CatalogDocument>
@@ -177,7 +177,10 @@ function toCompany(
     status: data.status,
     updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
-    searchText: companySearchText(data, category),
+    searchText: companySearchText(
+      { ...data, ...(body ? { description: body } : {}) },
+      category
+    ),
   }
 }
 

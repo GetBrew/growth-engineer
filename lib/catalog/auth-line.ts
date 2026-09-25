@@ -17,21 +17,3 @@ export function authLine(auth: Auth): string {
   }
   return `API key${auth.envVar ? ` in $${auth.envVar}` : ''}, ${approval}`
 }
-
-/** The same fact in plain English, for the tooltip. */
-export function authMeaning(auth: Auth): string {
-  const approval = auth.selfServe
-    ? 'You can set this up yourself, right now.'
-    : 'You have to request access and wait for approval first.'
-
-  if (auth.method === 'none') {
-    return 'Nothing to sign in with — this is open to anyone.'
-  }
-  if (auth.method === 'oauth') {
-    return `Sign in with your account, the way a "Sign in with…" button works. Nothing to copy or paste. ${approval}`
-  }
-  const where = auth.envVar
-    ? `save it on your machine as ${auth.envVar}`
-    : 'save it on your machine'
-  return `You need a secret key: get one from the company, then ${where}. ${approval}`
-}

@@ -24,9 +24,14 @@ export function ShareButton({ title, text }: { title: string; text?: string }) {
       await navigator.share({ title, text, url }).catch(() => undefined)
       return
     }
-    await navigator.clipboard.writeText(url).catch(() => undefined)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1800)
+    const didCopy = await navigator.clipboard
+      .writeText(url)
+      .then(() => true)
+      .catch(() => false)
+    if (didCopy) {
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1800)
+    }
   }
 
   return (

@@ -7,6 +7,13 @@ import { AGENTS, showStepsFor, useSelectedAgent } from '@/lib/stores/agents'
 import { cn } from '@/lib/utils/cn'
 import styles from './agent-marquee.module.css'
 
+/**
+ * The track holds the list four times and slides half its width, so the
+ * seam is never on screen however few agents there are; only the first copy
+ * is reachable by keyboard or screen reader.
+ */
+const COPIES = [0, 1, 2, 3] as const
+
 export function AgentMarquee() {
   const selected = useSelectedAgent()
 
@@ -28,9 +35,9 @@ export function AgentMarquee() {
 
       <div className={`${styles.viewport} min-w-0 flex-1 overflow-hidden`}>
         <div className={`${styles.track} flex w-max`}>
-          {[0, 1].map((copy) => (
+          {COPIES.map((copy) => (
             <ul
-              aria-hidden={copy === 1 ? true : undefined}
+              aria-hidden={copy > 0 ? true : undefined}
               className="flex shrink-0 items-center"
               key={copy}
             >
@@ -42,7 +49,7 @@ export function AgentMarquee() {
                       aria-pressed={isActive}
                       className="focus-ring group/agent flex shrink-0 items-center gap-2.5 rounded-full px-5 py-1"
                       onClick={() => showStepsFor(agent)}
-                      tabIndex={copy === 1 ? -1 : undefined}
+                      tabIndex={copy > 0 ? -1 : undefined}
                       type="button"
                     >
                       <span className="entity-shadow grid size-8 place-items-center overflow-hidden rounded-xl border bg-background">

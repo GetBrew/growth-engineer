@@ -9,11 +9,11 @@
   );
 }
 
-/* One lap = half the track, because the list is rendered twice. ~5s per item
+/* One lap = half the track: two of the four copies of the list. ~5s per item
    keeps the names readable; add an agent, add to the duration or the band
-   speeds up. 15 items -> 75s. */
+   speeds up. 6 agents x 2 copies -> 60s. */
 .track {
-  animation: agent-scroll 75s linear infinite;
+  animation: agent-scroll 60s linear infinite;
 }
 
 .viewport:hover .track {

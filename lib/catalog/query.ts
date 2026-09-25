@@ -8,8 +8,8 @@ import { TAG_NAMESPACES, type TagNamespace } from '@/lib/catalog/keys'
  *   words      free text → the full-text index
  *   chips      `namespace:slug` → tag filters
  *   grammar    chips in the SAME group mean OR, in DIFFERENT groups mean AND
- *   URL        /tools?q=enrich+linkedin&agent=native&has=mcp,cli
- *   partial    `agent:nat` completes to `agent:native` against the tag list
+ *   URL        /tools?q=enrich+linkedin&has=mcp,cli
+ *   partial    `has:m` completes to `has:mcp` when it is the only match
  */
 
 export const MAX_CHIPS = 8
@@ -52,7 +52,7 @@ export function parseSearchText(text: string): SearchState {
 /**
  * Resolve partial chips against the active tag keys: an exact key stays, a
  * unique-prefix match completes, anything else is reported as unknown so the
- * page can say "No tag matches agent:xyz".
+ * page can say "No tag matches has:xyz".
  */
 export function completeChips(
   chips: ReadonlyArray<string>,
@@ -71,7 +71,9 @@ export function completeChips(
       (key) =>
         key.startsWith(`${namespace}:`) && (slug === '' || key.startsWith(chip))
     )
-    if (slug && candidates.length >= 1) {
+    // Only a UNIQUE prefix completes: `capability:manage` could be four
+    // tags, and picking one would search for something nobody asked for.
+    if (slug && candidates.length === 1) {
       resolved.push(candidates[0] as string)
     } else {
       unknown.push(chip)
@@ -89,7 +91,7 @@ export function firstParam(
   return (Array.isArray(value) ? value[0] : value) ?? ''
 }
 
-/** `?q=…&capability=a,b&agent=native` → state. */
+/** `?q=…&capability=a,b&has=mcp` → state. */
 export function searchStateFromParams(params: Params): SearchState {
   const words = firstParam(params.q).trim().split(WHITESPACE).filter(Boolean)
   const chips: Array<string> = []

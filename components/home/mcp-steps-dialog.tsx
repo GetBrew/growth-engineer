@@ -2,25 +2,28 @@
 
 import Image from 'next/image'
 
+import { Button } from '@/components/ui/button'
 import {
   Sheet,
   SheetBackdrop,
+  SheetClose,
   SheetDescription,
   SheetPopup,
   SheetPortal,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { MCP_URL } from '@/lib/constants/site'
-import type { Agent } from '@/lib/stores/agents'
+import { type Agent, stepWithUrl } from '@/lib/stores/agents'
 
 export function McpStepsDialog({
   agent,
   open,
   onClose,
+  url,
 }: {
   agent: Agent
   open: boolean
   onClose: () => void
+  url: string
 }) {
   return (
     <Sheet
@@ -62,15 +65,23 @@ export function McpStepsDialog({
                 <span className="type-label grid size-6 shrink-0 place-items-center rounded-full bg-muted text-soft">
                   {index + 1}
                 </span>
-                <span className="type-body text-foreground">{step}</span>
+                <span className="type-body min-w-0 break-words text-foreground">
+                  {stepWithUrl(step, url)}
+                </span>
               </li>
             ))}
           </ol>
 
           <div className="mt-5 rounded-xl border bg-surface px-4 py-3">
             <code className="type-label block truncate font-mono text-soft">
-              {MCP_URL}
+              {url}
             </code>
+          </div>
+
+          <div className="mt-5 flex justify-end">
+            <SheetClose render={<Button size="pill" variant="outline" />}>
+              Done
+            </SheetClose>
           </div>
         </SheetPopup>
       </SheetPortal>

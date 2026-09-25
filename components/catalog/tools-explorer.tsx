@@ -4,7 +4,7 @@ import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import type { ReactNode } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { type ToolCardData, ToolRow } from '@/components/catalog/cards'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { NoResults } from '@/components/common/no-results'
@@ -112,14 +112,37 @@ function groupByCategory(
   )
 }
 
-export function ToolsExplorer({
-  tools,
-  tags,
-}: {
+type ExplorerProps = {
   tools: ReadonlyArray<ToolSearchItem>
   tags: ReadonlyArray<TagChip>
-}) {
-  const searchParams = useSearchParams()
+}
+
+/** No query: what the prerendered page shows before the URL is read. */
+const NO_PARAMS = new URLSearchParams()
+
+/**
+ * Every tool, prerendered, narrowed by the URL in the browser. The URL is only
+ * known at request time, so reading it suspends the prerender — and the
+ * fallback is the SAME explorer with no query: the static HTML carries every
+ * tool and every link, and a visit with no query swaps in identical markup.
+ */
+export function ToolsExplorer(props: ExplorerProps) {
+  return (
+    <Suspense fallback={<ToolsExplorerView {...props} params={NO_PARAMS} />}>
+      <ToolsExplorerFromUrl {...props} />
+    </Suspense>
+  )
+}
+
+function ToolsExplorerFromUrl(props: ExplorerProps) {
+  return <ToolsExplorerView {...props} params={useSearchParams()} />
+}
+
+function ToolsExplorerView({
+  tools,
+  tags,
+  params: searchParams,
+}: ExplorerProps & { params: URLSearchParams }) {
   const params = Object.fromEntries(searchParams.entries())
 
   const fromParams = searchStateFromParams(params)
@@ -208,14 +231,17 @@ export function ToolsExplorer({
                 key: 'category',
                 label: 'Filter tools by category',
                 all: {
-                  href: searchHref('/tools', { words: [], chips: searchChips }),
+                  href: searchHref('/tools', {
+                    words: state.words,
+                    chips: searchChips,
+                  }),
                   active: categoryChips.length === 0,
                 },
                 moreTitle: 'More filters',
                 options: categoryOptions.map((category) => ({
                   ...category,
                   href: searchHref('/tools', {
-                    words: [],
+                    words: state.words,
                     chips: [
                       ...searchChips,
                       ...(categoryChips.includes(category.key)

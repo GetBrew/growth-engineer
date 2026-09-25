@@ -82,10 +82,10 @@ stated once:
 | --- | --- | --- |
 | Search engines | canonical URL, Open Graph, the social card, schema.org JSON-LD (`Organization`, `SoftwareApplication`, `HowTo`, `CollectionPage`, `BreadcrumbList`), `/sitemap.xml` with per-page `lastmod`, `/robots.txt` | `lib/seo/metadata.ts`, `lib/seo/structured-data.ts`, `app/sitemap.ts`, `app/robots.ts` |
 | Answer engines and AI crawlers | the same, plus `/llms.txt` (llmstxt.org: definitions, then every file with a summary) and `/llms-full.txt` (every file in one document); every AI crawler is named in `/robots.txt` | `lib/seo/llms.ts`, `lib/catalog/discovery.ts` |
-| Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt` | `proxy.ts`, `app/api/markdown` |
+| Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the read-only MCP server at `/mcp` (`search`, `get`) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
 
-The definitions (company, tool, workflow, tag, the agent levels, how to read
-a file) live in `lib/catalog/definitions.ts` and nowhere else; the home
+The definitions (company, tool, workflow, tag, how to read a file) live in
+`lib/catalog/definitions.ts` and nowhere else; the home
 page's Definitions section, the llms preamble and the structured data import
 them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
 catalog exactly: every page, every file, nothing invented. Map focus pages
@@ -101,9 +101,10 @@ components. The GRAMMAR is `lib/catalog/query.ts`
 chip completion; the canonical URL) and is shared with the search box. The
 EXECUTION: every word must start a token of the entity's search text (a hit
 in the name counts double); chips filter on facts each entity carries —
-`agent:` and `has:` from a tool's access, `capability:` from its slug,
-`category:` from its company. Results are ranked by score, then date, then
-key. MCP `search` will reuse both halves.
+`has:` from a tool's access, `capability:` from its slug, `category:` from
+its company. Results are ranked by score, then date, then key; a query with
+no words in it (`???`) matches nothing. The ⌘K palette and MCP `search` run
+the same scoring over `/search.json`'s flat index.
 
 ## Where to add things
 

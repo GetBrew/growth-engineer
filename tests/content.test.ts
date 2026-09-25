@@ -270,6 +270,37 @@ describe('the content tree', () => {
     expect(searchCompanyItems(companies, { q: '' })).toHaveLength(
       catalog.order.companies.length
     )
+
+    // A workflow is found by the vendor of every tool it uses: each row
+    // shows that vendor's logo, so its name must find the row.
+    for (const workflow of catalog.workflows.values()) {
+      for (const toolKey of workflow.toolKeys) {
+        const handle = toolKey.split('/')[0] ?? ''
+        expect(
+          searchWorkflowItems(workflows, { q: handle, sort: 'new' }).map(
+            (row) => row.workflow.key
+          ),
+          `${handle} → ${workflow.key}`
+        ).toContain(workflow.key)
+      }
+    }
+    // A company is found by the description its row shows.
+    for (const company of catalog.companies.values()) {
+      const word = (company.description ?? '')
+        .split(/\W+/)
+        .find((part) => part.length > 6)
+      if (word) {
+        expect(
+          searchCompanyItems(companies, { q: word }).map(
+            (row) => row.company.key
+          ),
+          `${word} → ${company.key}`
+        ).toContain(company.key)
+      }
+    }
+    // Punctuation is not a query for everything.
+    expect(searchCompanyItems(companies, { q: '???' })).toEqual([])
+    expect(searchWorkflowItems(workflows, { q: '—', sort: 'new' })).toEqual([])
   })
 
   test('tags: the derived namespaces exist and counts are projections', () => {

@@ -1,5 +1,6 @@
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import Form from 'next/form'
 import {
   InputGroup,
   InputGroupAddon,
@@ -28,7 +29,10 @@ export function CatalogSearch({
   const large = size === 'lg'
 
   return (
-    <form action={action} className={cn('w-full', className)} method="get">
+    // next/form: the same GET form (the URL is the state, and it works with
+    // no JavaScript), but a submit is a client-side navigation to the
+    // prerendered listing instead of a full reload.
+    <Form action={action} className={cn('w-full', className)}>
       {Object.entries(params).map(([name, value]) =>
         value ? (
           <input key={name} name={name} type="hidden" value={value} />
@@ -58,6 +62,6 @@ export function CatalogSearch({
           type="search"
         />
       </InputGroup>
-    </form>
+    </Form>
   )
 }

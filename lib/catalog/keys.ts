@@ -18,7 +18,7 @@
  * and a file path in the source tree.
  */
 
-const ENTITY_TYPES = ['company', 'tool', 'workflow'] as const
+export const ENTITY_TYPES = ['company', 'tool', 'workflow'] as const
 export type EntityType = (typeof ENTITY_TYPES)[number]
 
 export const TAG_NAMESPACES = [
@@ -70,6 +70,7 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'new',
   'opengraph-image',
   'robots.txt',
+  'search.json',
   'settings',
   'sign-in',
   'sign-up',

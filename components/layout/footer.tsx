@@ -2,57 +2,45 @@ import { FavouriteIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
+import { SITE } from '@/lib/catalog/definitions'
 import { SECTIONS } from '@/lib/constants/sections'
-import { BREW_URL, SITE_TAGLINE } from '@/lib/constants/site'
 import { GITHUB_URL } from '@/lib/github'
 import { BrandLockup } from './brand'
 import { BrewLink } from './brew-link'
 import styles from './footer.module.css'
-import { NewsletterForm } from './newsletter-form'
 
-const DOCS = `${GITHUB_URL}/blob/main`
-
-// Three columns of equal weight. `llms.txt` sits under Explore rather than in
-// a column of its own: it is the index OF those three listings, and it is the
-// only agent-facing URL the site has, so a heading above it stood alone.
-//
-// Contribute points at the guide for each kind of file, not at the repo root.
-// A tool is a file inside a company folder, so its link is the section of that
-// guide describing one — the same page, a different place in it.
+// Three columns of equal weight. Explore holds every listing plus the map
+// and the two files an agent reads first; Contribute points at the guide for
+// each kind of file (each guide links on to its README on GitHub).
 const COLUMNS = [
   {
     heading: 'Explore',
     links: [
       ...SECTIONS.map((section) => [section.label, section.href] as const),
+      ['Relationship map', '/map'],
       ['llms.txt', '/llms.txt'],
+      ['llms-full.txt', '/llms-full.txt'],
     ],
   },
   {
     heading: 'Contribute',
     links: [
-      ['Add a workflow', `${DOCS}/workflows/README.md`],
-      ['Add a tool', `${DOCS}/companies/README.md#toolsslugmd`],
-      ['Add a company', `${DOCS}/companies/README.md`],
+      ['Add a workflow', '/contribute/workflow'],
+      ['Add a tool', '/contribute/tool'],
+      ['Add your company', '/contribute/company'],
+      ['Source on GitHub', GITHUB_URL],
     ],
   },
   {
     heading: 'Company',
     links: [
-      ['Source on GitHub', GITHUB_URL],
-      ['brew.new', BREW_URL],
+      ['brew.new', SITE.publisher.url],
       ['X', 'https://x.com/brewdotnew'],
       ['LinkedIn', 'https://www.linkedin.com/company/brewdotnew'],
     ],
   },
 ] as const
 
-// Three dots, one of each ink the palette already has. `--company` is
-// borrowed for its blue, not for its meaning: these are confetti, and a
-// hardcoded hex would be the only colour in the app outside the tokens.
-// Three dots in a shallow arc above the heart, one of each ink the palette
-// already has. `--company` is borrowed for its blue, not its meaning: these
-// are confetti, and a hardcoded hex would be the only colour outside the
-// tokens. `x`/`y` are the resting offsets from just above the heart.
 // Three little hearts above the big one, graduated so they read as a group
 // rather than a row: the red one leads, the other two step down behind it.
 // The colours are borrowed for their hue, not their meaning: these are
@@ -85,12 +73,15 @@ const SPARKS = [
   },
 ] as const
 
+/** A file the site serves (`/llms.txt`), not a page: no RSC prefetch. */
+const FILE = /\.[a-z]+$/
+
 const YEAR = new Date().getFullYear()
 const LINK =
   'type-label rounded-sm text-soft transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground'
 
 function FooterLink({ href, label }: { href: string; label: string }) {
-  if (href.startsWith('/')) {
+  if (href.startsWith('/') && !FILE.test(href)) {
     return (
       <Link className={LINK} href={href}>
         {label}
@@ -119,9 +110,8 @@ export function Footer() {
           <div className="flex max-w-xl flex-col items-start gap-6">
             <div className="flex flex-col gap-3">
               <BrandLockup />
-              <p className="type-body max-w-sm text-soft">{SITE_TAGLINE}</p>
+              <p className="type-body max-w-sm text-soft">{SITE.tagline}</p>
             </div>
-            <NewsletterForm />
           </div>
 
           <nav

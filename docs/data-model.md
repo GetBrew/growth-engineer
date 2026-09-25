@@ -50,9 +50,7 @@ selfServe, envVar?, header?, keyUrl? }`; `docsUrl` is optional.
 A tool is ONE function. The slug is a capability (`tags/capability/<slug>.md`
 must exist). `name`, `summary`, `updated` are required. `access` maps an
 access id to the **operation** — the MCP tool name, the CLI subcommand, or
-`METHOD /path` — and a published tool needs at least one. `agent.checked`
-(a date) records that a person verified the access facts;
-`agent.machineReadableDocs` that OpenAPI or llms.txt exists. `status` is
+`METHOD /path` — and a published tool needs at least one. `status` is
 `published` (default), `deprecated`, or `draft` (no page, no file, not
 listed). `aliases` lists old slugs. The body is the description.
 

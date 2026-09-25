@@ -11,7 +11,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import { useState } from 'react'
 import { buttonVariants } from '@/components/ui/button'
-import { MCP_URL } from '@/lib/constants/site'
 import {
   AGENTS,
   type Agent,
@@ -25,7 +24,13 @@ import {
 import { cn } from '@/lib/utils/cn'
 import { McpStepsDialog } from './mcp-steps-dialog'
 
-export function McpCard() {
+/**
+ * The connection card: pick an agent, copy the server URL, or copy a prompt
+ * that asks the agent to connect itself. `url` is the deployment's own
+ * `/mcp` (app/mcp/route.ts), passed from the server so it is the origin the
+ * page was built for — never a hardcoded host.
+ */
+export function McpCard({ url }: { url: string }) {
   const agent = useSelectedAgent()
   const [copied, setCopied] = useState(false)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
@@ -40,17 +45,25 @@ export function McpCard() {
   }
 
   async function copyPrompt(current: Agent) {
-    await navigator.clipboard
-      .writeText(aiPrompt(current))
-      .catch(() => undefined)
-    setCopiedPrompt(true)
-    window.setTimeout(() => setCopiedPrompt(false), 1800)
+    const didCopy = await navigator.clipboard
+      .writeText(aiPrompt(current, url))
+      .then(() => true)
+      .catch(() => false)
+    if (didCopy) {
+      setCopiedPrompt(true)
+      window.setTimeout(() => setCopiedPrompt(false), 1800)
+    }
   }
 
   async function copy() {
-    await navigator.clipboard.writeText(MCP_URL).catch(() => undefined)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1800)
+    const didCopy = await navigator.clipboard
+      .writeText(url)
+      .then(() => true)
+      .catch(() => false)
+    if (didCopy) {
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1800)
+    }
   }
 
   return (
@@ -140,9 +153,7 @@ export function McpCard() {
           </div>
 
           <div className="flex items-center gap-2 rounded-2xl bg-muted px-3.5 py-2.5">
-            <code className="type-label min-w-0 flex-1 truncate">
-              {MCP_URL}
-            </code>
+            <code className="type-label min-w-0 flex-1 truncate">{url}</code>
             <button
               className="focus-ring grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors duration-200 hover:text-foreground"
               onClick={copy}
@@ -162,7 +173,12 @@ export function McpCard() {
         </div>
       </div>
 
-      <McpStepsDialog agent={agent} onClose={closeSteps} open={showSteps} />
+      <McpStepsDialog
+        agent={agent}
+        onClose={closeSteps}
+        open={showSteps}
+        url={url}
+      />
     </div>
   )
 }

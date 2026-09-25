@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { MaskIcon } from '@/components/layout/mask-icon'
@@ -98,6 +99,8 @@ function MarqueeRow({
           <ul
             aria-hidden={copy === 1 ? true : undefined}
             className="flex shrink-0 items-center gap-3 pr-3"
+            // The second copy only fills the loop: no tab stops, no reading.
+            inert={copy === 1}
             key={copy}
           >
             {pills.map((pill) => (
@@ -112,16 +115,28 @@ function MarqueeRow({
   )
 }
 
-function PillChip({ pill }: { pill: Pill }) {
-  const external = pill.href.startsWith('http')
+const PILL =
+  'focus-ring flex h-10 items-center gap-2.5 whitespace-nowrap rounded-full border bg-background pr-5 pl-2 transition-colors duration-200 hover:bg-surface'
 
+function PillChip({ pill }: { pill: Pill }) {
+  const body = <PillBody pill={pill} />
+  if (pill.href.startsWith('/')) {
+    return (
+      <Link className={PILL} href={pill.href}>
+        {body}
+      </Link>
+    )
+  }
   return (
-    <a
-      className="focus-ring flex h-10 items-center gap-2.5 whitespace-nowrap rounded-full border bg-background pr-5 pl-2 transition-colors duration-200 hover:bg-surface"
-      href={pill.href}
-      rel={external ? 'noreferrer' : undefined}
-      target={external ? '_blank' : undefined}
-    >
+    <a className={PILL} href={pill.href} rel="noreferrer" target="_blank">
+      {body}
+    </a>
+  )
+}
+
+function PillBody({ pill }: { pill: Pill }) {
+  return (
+    <>
       <EntityLogo
         className={cn(
           'shrink-0 border-0 bg-transparent grayscale',
@@ -138,6 +153,6 @@ function PillChip({ pill }: { pill: Pill }) {
           {pill.author}
         </span>
       ) : null}
-    </a>
+    </>
   )
 }

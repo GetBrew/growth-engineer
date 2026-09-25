@@ -19,14 +19,15 @@ export function slugify(title: string): string {
     .replace(/^-|-$/g, '')
 }
 
-/** What the search box can find a company by. */
+/** What the search box can find a company by: everything its row shows. */
 export function companySearchText(
-  company: { name: string; tagline?: string },
+  company: { name: string; tagline?: string; description?: string },
   category: Tag | undefined
 ): string {
   return [
     company.name,
     company.tagline ?? '',
+    company.description ?? '',
     category?.label ?? '',
     ...(category?.synonyms ?? []),
   ].join(' ')
@@ -68,7 +69,9 @@ export function workflowSearchText(
     workflow.title,
     workflow.summary,
     workflow.author,
-    ...workflow.toolKeys.map((key) => key.split('/')[1] ?? key),
+    // Both halves of each tool key: `clay/enrich-contacts` finds the workflow
+    // by "clay" as well as by "enrich" — its rows show the vendor's logo.
+    ...workflow.toolKeys.flatMap((key) => key.split('/')),
     ...tags.flatMap((tag) => [tag.label, ...tag.synonyms]),
   ].join(' ')
 }

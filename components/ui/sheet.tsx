@@ -4,10 +4,9 @@ import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
 import { cn } from '@/lib/utils/cn'
 
 /*
- * Thin wrappers over Base UI's Dialog. The sheet's motion lives with the
- * caller: pass a `motion.div` through `render` on SheetBackdrop / SheetPopup,
- * inside <AnimatePresence> with <SheetPortal keepMounted>, so exits finish
- * before Base UI unmounts.
+ * Thin wrappers over Base UI's Dialog. Transitions are the caller's, in CSS
+ * on Base UI's `data-starting-style` / `data-ending-style` attributes, which
+ * it holds until the exit finishes before unmounting.
  */
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {

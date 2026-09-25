@@ -3,8 +3,6 @@
 import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useId, useState } from 'react'
-import type { EntityKind } from '@/components/common/entity-icon'
-import { NoResults } from '@/components/common/no-results'
 import { PANEL_HEADING } from '@/components/detail/styles'
 import { useClampOverflow } from '@/lib/hooks/use-clamp-overflow'
 import { cn } from '@/lib/utils/cn'
@@ -13,27 +11,20 @@ const PARAGRAPH = 'type-body'
 
 const BLANK_LINE = /\n\s*\n/
 
-export function DescriptionSection({
-  text,
-  entity,
-}: {
-  text?: string
-
-  entity: EntityKind
-}) {
+/** The entry's own description; no section at all when it has none. */
+export function DescriptionSection({ text }: { text?: string }) {
   const [first, ...rest] = (text ?? '')
     .split(BLANK_LINE)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
+  if (!first) {
+    return null
+  }
 
   return (
     <section className="flex flex-col gap-3">
       <h2 className={PANEL_HEADING}>Description</h2>
-      {first ? (
-        <DescriptionCard first={first} rest={rest} />
-      ) : (
-        <NoDescription entity={entity} />
-      )}
+      <DescriptionCard first={first} rest={rest} />
     </section>
   )
 }
@@ -96,15 +87,5 @@ function DescriptionCard({
         </>
       ) : null}
     </div>
-  )
-}
-
-function NoDescription({ entity }: { entity: EntityKind }) {
-  return (
-    <NoResults
-      description="The summary above is all there is for now."
-      entity={entity}
-      title="No description yet"
-    />
   )
 }

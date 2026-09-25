@@ -43,10 +43,26 @@ export type CompanySearchItem = CompanyListItem & {
 
 type Chip = { namespace: TagNamespace; slug: string; key: string }
 
-const TOKEN = /[^a-z0-9]+/
+/** Letters and digits in any script; accents fold away (`Zoë` → `zoe`). */
+const TOKEN = /[^\p{L}\p{N}]+/u
+const COMBINING_MARKS = /\p{M}+/gu
 
 function tokens(text: string): Array<string> {
-  return text.toLowerCase().split(TOKEN).filter(Boolean)
+  return text
+    .normalize('NFKD')
+    .replace(COMBINING_MARKS, '')
+    .toLowerCase()
+    .split(TOKEN)
+    .filter(Boolean)
+}
+
+/**
+ * Words the query asks for, or null when it asked for something that has no
+ * words at all (`???`, `—`): that matches nothing, not everything.
+ */
+function queryWords(q: string): Array<string> | null {
+  const words = tokens(q)
+  return words.length === 0 && q.trim() !== '' ? null : words
 }
 
 /** `capability:enrich-contacts` → chip; anything malformed is dropped. */
@@ -155,7 +171,10 @@ export function searchToolItems(
 ): { results: Array<ToolSearchItem>; chips: Array<string> } {
   const chips = parseChips(input.chips)
   const groups = groupByNamespace(chips)
-  const words = tokens(input.q)
+  const words = queryWords(input.q)
+  if (words === null) {
+    return { results: [], chips: chips.map((chip) => chip.key) }
+  }
   const ranked = rank(
     items
       .filter((item) => toolMatchesChips(item, groups))
@@ -178,7 +197,10 @@ export function searchWorkflowItems(
   items: ReadonlyArray<WorkflowSearchItem>,
   input: { q: string; sort: 'featured' | 'new'; tag?: string; limit?: number }
 ): Array<WorkflowSearchItem> {
-  const words = tokens(input.q)
+  const words = queryWords(input.q)
+  if (words === null) {
+    return []
+  }
   const ordered = items
     .filter((item) => !input.tag || item.tags.includes(input.tag))
     .sort((a, b) =>
@@ -204,7 +226,10 @@ export function searchCompanyItems(
   items: ReadonlyArray<CompanySearchItem>,
   input: { q: string; category?: string; limit?: number }
 ): Array<CompanySearchItem> {
-  const words = tokens(input.q)
+  const words = queryWords(input.q)
+  if (words === null) {
+    return []
+  }
   const ranked = rank(
     items
       .filter(
@@ -232,7 +257,10 @@ export function searchPaletteItems(
   items: ReadonlyArray<PaletteItem>,
   input: { q: string; limit?: number }
 ): Array<PaletteItem> {
-  const words = tokens(input.q)
+  const words = queryWords(input.q)
+  if (words === null) {
+    return []
+  }
   const ranked = rank(
     items.map((item, index) => ({
       item,

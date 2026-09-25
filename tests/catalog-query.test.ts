@@ -47,6 +47,24 @@ describe('search grammar', () => {
     })
   })
 
+  test('only a unique prefix completes', () => {
+    // `capability:` + nothing, or a prefix two tags share, is not a choice.
+    expect(completeChips(['has:c', 'capability:'], TAGS)).toEqual({
+      chips: ['has:cli'],
+      unknown: ['capability:'],
+    })
+    expect(completeChips(['fit:'], [...TAGS, 'fit:smb-saas']).unknown).toEqual([
+      'fit:',
+    ])
+    expect(completeChips(['fit:smb'], [...TAGS, 'fit:smb-saas']).chips).toEqual(
+      ['fit:smb']
+    )
+    expect(completeChips(['fit:sm'], [...TAGS, 'fit:smb-saas'])).toEqual({
+      chips: [],
+      unknown: ['fit:sm'],
+    })
+  })
+
   test('the URL is the query, in one canonical order', () => {
     const state = searchStateFromParams({
       has: 'mcp,cli',

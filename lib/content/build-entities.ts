@@ -268,8 +268,17 @@ function toWorkflow(
   tags: ReadonlyArray<Tag>
 ): Workflow {
   const { data, notes } = parsed
+  // A step's key is its title as a slug, made unique within the workflow: two
+  // steps may share a title ("Send"), never a key.
+  const seen = new Map<string, number>()
+  const stepKey = (title: string) => {
+    const slug = slugify(title) || 'step'
+    const count = (seen.get(slug) ?? 0) + 1
+    seen.set(slug, count)
+    return count === 1 ? slug : `${slug}-${count}`
+  }
   const steps = data.steps.map((step) => ({
-    key: slugify(step.title),
+    key: stepKey(step.title),
     title: step.title,
     toolKey: step.tool,
     ...(step.via ? { via: step.via } : {}),

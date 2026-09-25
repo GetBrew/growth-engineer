@@ -8,7 +8,7 @@ import {
 } from '@/components/layout/browse-nav'
 import { GithubLink } from '@/components/layout/github-link'
 import { NavSearchButton } from '@/components/layout/nav-search-button'
-import { CommandPalette } from '@/components/search/command-palette'
+import { CommandPaletteDialog } from '@/components/search/command-palette-dialog'
 
 export function Navbar() {
   return (
@@ -29,7 +29,7 @@ export function Navbar() {
         </div>
       </div>
 
-      <CommandPalette />
+      <CommandPaletteDialog />
     </header>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { NoResults } from '@/components/common/no-results'
 import { SectionHeading } from '@/components/layout/section-heading'
@@ -85,15 +86,36 @@ function emptyCopy(
   }
 }
 
-export function WorkflowsIndex({
+type IndexProps = {
+  workflows: ReadonlyArray<WorkflowSearchItem>
+  tags: ReadonlyArray<TagChip>
+}
+
+/** No query: what the prerendered page shows before the URL is read. */
+const NO_PARAMS = new URLSearchParams()
+
+/**
+ * Every workflow, prerendered, narrowed by the URL in the browser. Reading
+ * the URL suspends the prerender, and the fallback is the same index with no
+ * query — so the static HTML carries every workflow and every link.
+ */
+export function WorkflowsIndex(props: IndexProps) {
+  return (
+    <Suspense fallback={<WorkflowsIndexView {...props} params={NO_PARAMS} />}>
+      <WorkflowsIndexFromUrl {...props} />
+    </Suspense>
+  )
+}
+
+function WorkflowsIndexFromUrl(props: IndexProps) {
+  return <WorkflowsIndexView {...props} params={useSearchParams()} />
+}
+
+function WorkflowsIndexView({
   workflows,
   tags,
-}: {
-  workflows: ReadonlyArray<WorkflowSearchItem>
-
-  tags: ReadonlyArray<TagChip>
-}) {
-  const searchParams = useSearchParams()
+  params: searchParams,
+}: IndexProps & { params: URLSearchParams }) {
   const sort = parseSort(searchParams.get('sort'))
   const tag = (searchParams.get('tag') ?? '').trim()
   const q = (searchParams.get('q') ?? '').trim()

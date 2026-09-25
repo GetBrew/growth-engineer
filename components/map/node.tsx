@@ -32,13 +32,27 @@ function focusHref(type: 'company' | 'tool' | 'workflow', key: string) {
   return `/map/${type}/${key}`
 }
 
+/**
+ * Where a tag filters: a tool's facts (`has:`, `capability:`) on /tools, a
+ * company's category on /companies, and what a workflow is for (`motion:`,
+ * `channel:`, `fit:`) on /workflows — each the listing that reads it.
+ */
 function tagHref(key: string): string {
   const namespace = TAG_NAMESPACES.find((candidate) =>
     key.startsWith(`${candidate}:`)
   )
-  return namespace
-    ? `/tools?${namespace}=${encodeURIComponent(key.slice(namespace.length + 1))}`
-    : '/tools'
+  const slug = encodeURIComponent(key.slice((namespace?.length ?? 0) + 1))
+  switch (namespace) {
+    case 'has':
+    case 'capability':
+      return `/tools?${namespace}=${slug}`
+    case 'category':
+      return `/companies?category=${slug}`
+    case undefined:
+      return '/tools'
+    default:
+      return `/workflows?tag=${encodeURIComponent(key)}`
+  }
 }
 
 export function nodeHref(node: MapNode): string {

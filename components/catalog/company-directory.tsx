@@ -1,6 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import { CompanyRow } from '@/components/catalog/cards'
 import { CategorySection } from '@/components/catalog/category-section'
 import { NoResults } from '@/components/common/no-results'
@@ -25,14 +26,36 @@ function companiesHref(q: string, category: string): string {
   return query ? `/companies?${query}` : '/companies'
 }
 
-export function CompanyDirectory({
-  companies,
-  categories,
-}: {
+type DirectoryProps = {
   companies: ReadonlyArray<CompanySearchItem>
   categories: ReadonlyArray<TagChip>
-}) {
-  const searchParams = useSearchParams()
+}
+
+/** No query: what the prerendered page shows before the URL is read. */
+const NO_PARAMS = new URLSearchParams()
+
+/**
+ * Every company, prerendered, narrowed by the URL in the browser. Reading the
+ * URL suspends the prerender, and the fallback is the same directory with no
+ * query — so the static HTML carries every company and every link.
+ */
+export function CompanyDirectory(props: DirectoryProps) {
+  return (
+    <Suspense fallback={<CompanyDirectoryView {...props} params={NO_PARAMS} />}>
+      <CompanyDirectoryFromUrl {...props} />
+    </Suspense>
+  )
+}
+
+function CompanyDirectoryFromUrl(props: DirectoryProps) {
+  return <CompanyDirectoryView {...props} params={useSearchParams()} />
+}
+
+function CompanyDirectoryView({
+  companies,
+  categories,
+  params: searchParams,
+}: DirectoryProps & { params: URLSearchParams }) {
   const q = (searchParams.get('q') ?? '').trim()
   const category = (searchParams.get('category') ?? '').trim()
   const rows = searchCompanyItems(companies, {

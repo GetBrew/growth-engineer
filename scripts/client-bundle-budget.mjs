@@ -191,6 +191,16 @@ for (const [route, baseline] of Object.entries(budget.routes)) {
   }
 }
 
+// A page the build ships but the budget never measured is uncovered, not
+// fine: a new route has to enter the ratchet in the pull request that adds it.
+for (const route of Object.keys(routeBytes)) {
+  if (!(route in budget.routes)) {
+    failures.push(
+      `${route}: built but not in the budget — add it with \`pnpm perf:bundle:snapshot\``
+    )
+  }
+}
+
 if (failures.length > 0) {
   console.error('client bundle budget FAILED:')
   for (const failure of failures) {

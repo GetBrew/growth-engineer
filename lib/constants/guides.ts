@@ -1,6 +1,6 @@
 import type { EntityKind } from '@/components/common/entity-icon'
 import { GUIDE_STEPS } from '@/lib/constants/guide-steps'
-import { GITHUB_URL } from '@/lib/github'
+import { repoFileUrl } from '@/lib/github'
 
 /**
  * The guides on `/contribute`, one per kind of entry someone can add.
@@ -75,7 +75,7 @@ export const GUIDES: ReadonlyArray<Guide> = [
 
 /** Where the guide's file lives on GitHub. */
 export function guideDocUrl(guide: Guide): string {
-  return `${GITHUB_URL}/blob/main/${guide.docPath}`
+  return repoFileUrl(guide.docPath)
 }
 
 export function findGuide(id: string): Guide | undefined {

@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { BREW_URL } from '@/lib/constants/site'
+import { SITE } from '@/lib/catalog/definitions'
 import { cn } from '@/lib/utils/cn'
 
 export function BrewLink({ className }: { className?: string }) {
@@ -10,7 +10,7 @@ export function BrewLink({ className }: { className?: string }) {
         'focus-ring relative block h-4 w-12 rounded-sm opacity-80 transition-opacity hover:opacity-100',
         className
       )}
-      href={BREW_URL}
+      href={SITE.publisher.url}
       rel="noreferrer"
       target="_blank"
     >

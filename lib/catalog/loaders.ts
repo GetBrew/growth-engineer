@@ -377,10 +377,9 @@ export async function loadNewTools(limit = 12) {
 }
 
 /**
- * The ⌘K index: every company, tool and workflow in one flat list, built at
- * build time and shipped once with the site layout. The catalog is small and
- * each row is five short strings, so the whole thing costs less than a single
- * search round trip would — and the palette answers every keystroke offline.
+ * The ⌘K index: every company, tool and workflow in one flat list, served
+ * prerendered as `/search.json` and fetched by the palette the first time it
+ * is needed — then every keystroke is answered in the browser.
  */
 export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
   return paletteItems(getCatalog())

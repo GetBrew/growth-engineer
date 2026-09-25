@@ -12,12 +12,10 @@ import { filePathToRef } from '@/lib/catalog/keys'
  * before cached HTML is served.
  *
  * THERE IS NO AUTH GATE HERE, because there is no auth provider: every route
- * is public and the catalog is meant to be. The gate does not come back to
- * this file when auth returns. Clerk deprecated matcher-only gating because
- * path matching can diverge from how Next routes a request, so protection
- * belongs IN the protected thing — each `/api/*` handler authenticating
- * itself, each private page checking in the page. `/api/revalidate` already
- * works that way with the service token.
+ * is public and the catalog is meant to be. If auth ever arrives it does not
+ * come back to this file either: path matching can diverge from how Next
+ * routes a request, so protection belongs IN the protected thing — each
+ * handler authenticating itself, each private page checking in the page.
  */
 
 const PERCENT_ENCODED_BACKSLASH = /%5c/i
@@ -76,9 +74,7 @@ export default function proxy(req: NextRequest) {
     return response
   }
 
-  const requestHeaders = new Headers(req.headers)
-  requestHeaders.set('x-pathname', pathname)
-  return NextResponse.next({ request: { headers: requestHeaders } })
+  return NextResponse.next()
 }
 
 export const config = {

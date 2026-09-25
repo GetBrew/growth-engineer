@@ -50,7 +50,7 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
   },
   {
     term: 'Workflow',
-    example: 'intent-to-meeting',
+    example: 'funding-signal-outbound',
     definition:
       'Several tools in order, with the instructions that reach a result, written by a person.',
     detail:
@@ -68,9 +68,13 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
   },
 ]
 
-/** How an agent gets a file: the three doors, stated once. */
+/** Where the MCP server answers (app/mcp/route.ts), from the site origin. */
+export const MCP_PATH = '/mcp'
+
+/** How an agent gets a file: the doors, stated once. */
 export const AGENT_ACCESS = [
   'Append `.md` to any company, tool or workflow URL to get its file.',
-  'Or request any page with `Accept: text/markdown`.',
+  'Or request a company, tool or workflow page with `Accept: text/markdown`.',
   '`/llms.txt` lists every file; `/llms-full.txt` is every file in one document.',
+  `Or connect an MCP client to \`${MCP_PATH}\` (Streamable HTTP, no sign-in): \`search\` finds files, \`get\` returns one.`,
 ] as const

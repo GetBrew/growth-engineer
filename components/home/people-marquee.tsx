@@ -1,45 +1,56 @@
-import Image from 'next/image'
 import type { CSSProperties } from 'react'
 import { BrewLink } from '@/components/layout/brew-link'
+import { loadWorkflows } from '@/lib/catalog/loaders'
+import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 import styles from './people-marquee.module.css'
 
-const PEOPLE = [
-  { id: 'person-1', src: '/people/person1.svg' },
-  { id: 'person-2', src: '/people/person2.svg' },
-  { id: 'person-3', src: '/people/person3.svg' },
-  { id: 'person-4', src: '/people/person4.svg' },
-  { id: 'person-5', src: '/people/person5.svg' },
-] as const
+const MAX_PEOPLE = 5
 
-export function PeopleMarquee() {
+/**
+ * The people who wrote the catalog's workflows — real GitHub accounts, read
+ * from each workflow's `author` — dealt out beside the welcome line. Nobody
+ * appears here who has not published a workflow.
+ */
+export async function PeopleMarquee() {
+  const workflows = await loadWorkflows('featured', 200)
+  const authors = [...new Set(workflows.map(({ workflow }) => workflow.author))]
+  const people = authors.slice(0, MAX_PEOPLE)
+
   return (
     <div className="flex w-full max-w-[30rem] flex-col gap-4 lg:shrink-0">
       <div className="flex items-center gap-3 sm:gap-4">
-        <ul
-          aria-label="People building with growth.engineer"
-          className={`${styles.stack} flex items-center justify-center`}
-        >
-          {PEOPLE.map((person, index) => (
-            <li
-              className={`${styles.item} -ml-3 first:ml-0`}
-              key={person.id}
-              style={{ '--index': index } as CSSProperties}
-            >
-              <span
-                className={`${styles.avatar} relative block size-10 overflow-hidden rounded-full border-2 border-background bg-muted shadow-xs sm:size-12`}
+        {people.length > 0 ? (
+          <ul
+            aria-label="People who wrote workflows here"
+            className="flex items-center justify-center"
+          >
+            {people.map((login, index) => (
+              <li
+                className={`${styles.item} -ml-3 first:ml-0`}
+                key={login}
+                style={{ '--index': index } as CSSProperties}
               >
-                <Image
-                  alt=""
-                  className="object-cover"
-                  fill
-                  priority
-                  sizes="48px"
-                  src={person.src}
-                />
-              </span>
-            </li>
-          ))}
-        </ul>
+                <a
+                  className={`${styles.avatar} focus-ring relative block size-10 overflow-hidden rounded-full border-2 border-background bg-muted shadow-xs sm:size-12`}
+                  href={githubProfileUrl(login)}
+                  rel="noreferrer"
+                  target="_blank"
+                  title={`@${login}`}
+                >
+                  {/* A GitHub photo: plain <img>, never the image optimizer. */}
+                  {/* biome-ignore lint/performance/noImgElement: remote avatar, deliberately unoptimized */}
+                  <img
+                    alt={`@${login}`}
+                    className="size-full object-cover"
+                    height={48}
+                    src={githubAvatarUrl(login)}
+                    width={48}
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
         <p className="flex min-w-0 flex-col">
           <span className="type-item text-muted-foreground sm:whitespace-nowrap">

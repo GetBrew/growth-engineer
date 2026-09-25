@@ -14,6 +14,7 @@ import {
   DetailHeader,
 } from '@/components/detail/header'
 import { MarkdownFile } from '@/components/detail/markdown-file'
+import { MarkdownPreview } from '@/components/detail/markdown-preview'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
 import { LINK_ICON, PANEL_HEADING } from '@/components/detail/styles'
@@ -164,12 +165,13 @@ async function ToolDetail({ params }: { params: Params }) {
       />
 
       <div className="flex min-w-0 flex-col gap-(--space-block)">
-        <DescriptionSection entity="tool" text={tool.description} />
+        <DescriptionSection text={tool.description} />
         <section className="flex flex-col gap-(--space-md)">
           {document ? (
             <MarkdownFile
               fileName={filePath.split('/').pop() ?? 'tool.md'}
               markdown={document.markdown}
+              preview={<MarkdownPreview markdown={document.markdown} />}
             />
           ) : (
             <NoResults
