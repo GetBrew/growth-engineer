@@ -117,9 +117,9 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 
 ### Discovery: SEO, GEO and agents
 
-- The words are defined ONCE, in `lib/catalog/definitions.ts`; the home page,
-  `/llms.txt`, `/llms-full.txt` and the structured data read from it. Never
-  restate a definition in a page or a doc — link or import.
+- The words are defined ONCE, in `lib/catalog/definitions.ts`; `/llms.txt`,
+  `/llms-full.txt` and the structured data read from it. Never restate a
+  definition in a page or a doc — link or import.
 - Every page's metadata comes from `pageMetadata()` (`lib/seo/metadata.ts`):
   a canonical path, Open Graph facts, and for a page that IS a file its
   `text/markdown` alternate. The card is the segment's `opengraph-image.tsx`,

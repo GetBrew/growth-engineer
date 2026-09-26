@@ -1,8 +1,8 @@
 /**
  * THE definitions, written once. Everything that explains the catalog to a
- * person or a machine reads from here — the home page, `/llms.txt`,
- * `/llms-full.txt`, the structured data — so the site, the files and the
- * docs never describe the same thing three different ways.
+ * machine reads from here — `/llms.txt`, `/llms-full.txt`, the structured
+ * data, the site's metadata — so the site, the files and the docs never
+ * describe the same thing three different ways.
  *
  * PURE MODULE: constants only; imported by pages and route handlers alike.
  */
