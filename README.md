@@ -64,7 +64,7 @@ sign-in, no rate limit, no key. Any MCP client can connect to `/mcp`
 (Streamable HTTP, read-only): `search` finds files, `get` returns one.
 
 The definitions themselves live in ONE place, `lib/catalog/definitions.ts`,
-and feed the home page, `/llms.txt` and the structured data.
+and feed `/llms.txt` and the structured data.
 
 ## Running the site
 
@@ -90,7 +90,7 @@ the one optional public variable, the site origin.
 
 | Route | Shows |
 | --- | --- |
-| `/` | Connect over MCP; the newest workflows and tools, companies; the definitions |
+| `/` | Connect over MCP; the newest workflows and tools, companies |
 | `/companies`, `/companies/[handle]` | The directory by category; a company, its tools, workflows using them |
 | `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |

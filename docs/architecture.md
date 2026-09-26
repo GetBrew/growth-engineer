@@ -92,9 +92,8 @@ stated once:
 | Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the read-only MCP server at `/mcp` (`search`, `get`) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
 
 The definitions (company, tool, workflow, tag, how to read a file) live in
-`lib/catalog/definitions.ts` and nowhere else; the home
-page's Definitions section, the llms preamble and the structured data import
-them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
+`lib/catalog/definitions.ts` and nowhere else; the llms preamble and the
+structured data import them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
 catalog exactly: every page, every file, nothing invented. Map focus pages
 (`/map/<type>/<key>`) are `noindex, follow` — one thin page per node, for
 navigation — and stay out of the sitemap.
