@@ -41,6 +41,8 @@ type AccessCommon = {
   auth: Auth
   docsUrl?: string
   health?: AccessHealth
+  /** The access file this way in was read from: `companies/clay/access/api.md`. */
+  file?: string
 }
 
 export type Access =
@@ -179,6 +181,12 @@ export type CatalogDocument = {
   hash: string
   lineCount: number
   updatedAt: number
+  /**
+   * The source files the markdown was rendered from, from the repo root: the
+   * entry's own file first, then every tool and access file whose facts it
+   * prints. The layout and the Rules come from the renderer, not a file.
+   */
+  sources: ReadonlyArray<string>
 }
 
 /* ──────────────────────────────── list shapes ───────────────────────────── */

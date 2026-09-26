@@ -98,6 +98,7 @@ never files: `has:<type>`, computed from each tool's access.
 | `toolKeys`, `toolCount`, workflow ↔ tool ↔ company edges — written into both rendered files (`tools:` / `workflows:`) | steps | `build-entities.ts`, `build-catalog.ts`, `build-documents.ts` |
 | listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
 | the rendered files, their hash and line count | everything above | `build-documents.ts` |
+| each file's `sources`: the entry's own file, then every tool and access file whose facts it prints (a workflow: only the ways in its setup shows) | the files above | `build-documents.ts` |
 
 ## Rules the build enforces
 

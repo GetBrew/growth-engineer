@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 import {
   GuideSteps,
   type ResolvedGuideStep,
@@ -68,17 +67,14 @@ async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
 /**
  * Built on the same shell as every other detail page: the page container at
  * its usual width, a back link, `DetailHeader`, then the two-column grid with
- * a sticky aside. The default export is SYNCHRONOUS and the awaited params
- * sit in a Suspense child, because awaiting URL data in the page itself
- * blocks the route from prerendering.
+ * a sticky aside. Every guide is listed by `generateStaticParams`, so the
+ * whole page prerenders complete — nothing on it loads.
  */
-export default function GuidePage({ params }: { params: Params }) {
+export default async function GuidePage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/contribute" label="Learn" />
-      <Suspense fallback={null}>
-        <GuideDetail params={params} />
-      </Suspense>
+      <GuideDetail params={params} />
     </Page>
   )
 }

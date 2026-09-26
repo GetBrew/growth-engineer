@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 import { Page } from '@/components/layout/page'
 import { SectionHeading } from '@/components/layout/section-heading'
 import { FocusedNode } from '@/components/map/focused'
@@ -42,7 +41,7 @@ export async function generateMetadata({
   })
 }
 
-export default function MapFocusPage({ params }: { params: Params }) {
+export default async function MapFocusPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-8">
       <SectionHeading
@@ -50,9 +49,7 @@ export default function MapFocusPage({ params }: { params: Params }) {
         description="What is connected to what. Every company, tool and workflow, with the edges between them — the one view the catalog pages do not give you."
         title="Relationship map"
       />
-      <Suspense fallback={null}>
-        <Focused params={params} />
-      </Suspense>
+      <Focused params={params} />
     </Page>
   )
 }

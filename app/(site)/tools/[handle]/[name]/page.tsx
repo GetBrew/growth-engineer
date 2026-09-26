@@ -3,10 +3,10 @@ import type { IconSvgElement } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { Suspense } from 'react'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { accessLabels } from '@/components/common/badges'
 import { NoResults } from '@/components/common/no-results'
+import { BuiltFrom } from '@/components/detail/built-from'
 import { DescriptionSection } from '@/components/detail/description-panel'
 import {
   DETAIL_DATE,
@@ -70,13 +70,11 @@ export async function generateMetadata({
   })
 }
 
-export default function ToolPage({ params }: { params: Params }) {
+export default async function ToolPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/tools" label="All tools" />
-      <Suspense fallback={null}>
-        <ToolDetail params={params} />
-      </Suspense>
+      <ToolDetail params={params} />
     </Page>
   )
 }
@@ -167,11 +165,14 @@ async function ToolDetail({ params }: { params: Params }) {
         <DescriptionSection text={tool.description} />
         <section className="flex flex-col gap-(--space-md)">
           {document ? (
-            <MarkdownFile
-              fileName={filePath.split('/').pop() ?? 'tool.md'}
-              markdown={document.markdown}
-              preview={<MarkdownPreview markdown={document.markdown} />}
-            />
+            <>
+              <MarkdownFile
+                fileName={filePath.split('/').pop() ?? 'tool.md'}
+                markdown={document.markdown}
+                preview={<MarkdownPreview markdown={document.markdown} />}
+              />
+              <BuiltFrom sources={document.sources} />
+            </>
           ) : (
             <NoResults
               description="It appears here as soon as the catalog renders it."

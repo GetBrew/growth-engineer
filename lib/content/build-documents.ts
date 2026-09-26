@@ -1,10 +1,12 @@
-import { formatRef } from '@/lib/catalog/keys'
+import { formatRef, refToSourcePath } from '@/lib/catalog/keys'
+import { orderAccess, selectWorkflowAccess } from '@/lib/catalog/render-access'
 import {
   renderCompanyDocument,
   renderToolDocument,
   renderWorkflowDocument,
 } from '@/lib/catalog/render-markdown'
 import type {
+  Access,
   CatalogDocument,
   Company,
   Tool,
@@ -26,6 +28,45 @@ export type DocumentInputs = {
   workflowsByTool: ReadonlyMap<string, ReadonlyArray<string>>
 }
 
+/** The access files a list of ways in was read from, in that order. */
+function accessFiles(access: ReadonlyArray<Access>): Array<string> {
+  return access.flatMap((entry) => (entry.file ? [entry.file] : []))
+}
+
+/**
+ * What a tool file prints: the tool's own file, then every way in (a tool
+ * file lists them all, in setup order).
+ */
+function toolSources(tool: Tool): Array<string> {
+  return [
+    refToSourcePath({ type: 'tool', key: tool.key }),
+    ...accessFiles(orderAccess(tool.access)),
+  ]
+}
+
+/**
+ * What a workflow file prints: the workflow's own file, then for each tool in
+ * first-use order its file and ONLY the ways in its setup shows — the step's
+ * `via`, else the best one or two — exactly as the renderer selects them.
+ */
+function workflowSources(
+  workflow: Workflow,
+  tools: ReadonlyArray<Tool>
+): Array<string> {
+  return [
+    refToSourcePath({ type: 'workflow', key: workflow.key }),
+    ...tools.flatMap((tool) => {
+      const via = workflow.steps.find(
+        (step) => step.toolKey === tool.key && step.via
+      )?.via
+      return [
+        refToSourcePath({ type: 'tool', key: tool.key }),
+        ...accessFiles(selectWorkflowAccess(tool.access, via)),
+      ]
+    }),
+  ]
+}
+
 export function buildDocuments(
   inputs: DocumentInputs
 ): Map<string, CatalogDocument> {
@@ -34,10 +75,17 @@ export function buildDocuments(
     entityType: CatalogDocument['entityType'],
     key: string,
     updatedAt: number,
-    rendered: { markdown: string; hash: string; lineCount: number }
+    rendered: { markdown: string; hash: string; lineCount: number },
+    sources: ReadonlyArray<string>
   ) => {
     const ref = formatRef(entityType, key)
-    documents.set(ref, { ref, entityType, updatedAt, ...rendered })
+    documents.set(ref, {
+      ref,
+      entityType,
+      updatedAt,
+      ...rendered,
+      sources: [...new Set(sources)],
+    })
   }
 
   for (const tool of inputs.tools.values()) {
@@ -56,7 +104,8 @@ export function buildDocuments(
           : { description: tool.description }),
         access: tool.access,
         updatedAt: tool.updatedAt,
-      })
+      }),
+      toolSources(tool)
     )
   }
 
@@ -94,7 +143,8 @@ export function buildDocuments(
         doneWhen: workflow.doneWhen,
         ...(workflow.notes === undefined ? {} : { notes: workflow.notes }),
         updatedAt,
-      })
+      }),
+      workflowSources(workflow, tools)
     )
   }
 
@@ -130,7 +180,13 @@ export function buildDocuments(
           summary: tool.summary,
         })),
         updatedAt,
-      })
+      }),
+      [
+        refToSourcePath({ type: 'company', key: company.key }),
+        ...tools.map((tool) =>
+          refToSourcePath({ type: 'tool', key: tool.key })
+        ),
+      ]
     )
   }
 

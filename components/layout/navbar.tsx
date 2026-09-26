@@ -1,11 +1,5 @@
-import { Suspense } from 'react'
 import { BrandLockup } from '@/components/layout/brand'
-import {
-  BrowseMenu,
-  BrowseMenuFallback,
-  SectionLinks,
-  SectionLinksFallback,
-} from '@/components/layout/browse-nav'
+import { BrowseMenu, SectionLinks } from '@/components/layout/browse-nav'
 import { GithubLink } from '@/components/layout/github-link'
 import { NavSearchButton } from '@/components/layout/nav-search-button'
 import { CommandPalette } from '@/components/search/command-palette'
@@ -16,14 +10,10 @@ export function Navbar() {
       <div className="page-container flex h-header items-center">
         <BrandLockup markOnlyOnNarrow />
 
-        <Suspense fallback={<SectionLinksFallback />}>
-          <SectionLinks />
-        </Suspense>
+        <SectionLinks />
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          <Suspense fallback={<BrowseMenuFallback />}>
-            <BrowseMenu />
-          </Suspense>
+          <BrowseMenu />
           <NavSearchButton />
           <GithubLink compact />
         </div>
