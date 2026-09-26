@@ -1,5 +1,6 @@
 import { derivedTagKeys } from '@/lib/catalog/derived-tags'
 import {
+  accessSourcePath,
   DERIVED_TAG_NAMESPACES,
   isValidKeyPart,
   isValidOwnedKey,
@@ -36,10 +37,15 @@ type ToolFile = ContentFile & { kind: 'tool' }
 type WorkflowFile = ContentFile & { kind: 'workflow' }
 
 /** One option plus the tool's operation = one way in. */
-function toAccess(option: AccessFrontmatter, operation: string): Access {
+function toAccess(
+  option: AccessFrontmatter,
+  operation: string,
+  file: string
+): Access {
   const common = {
     official: option.official,
     operation,
+    file,
     auth: option.auth,
     ...(option.maintainer ? { maintainer: option.maintainer } : {}),
     ...(option.docsUrl ? { docsUrl: option.docsUrl } : {}),
@@ -92,7 +98,9 @@ function resolveAccess(
   for (const [id, operation] of Object.entries(data.access)) {
     const option = options.get(id)
     if (option) {
-      access.push(toAccess(option, operation))
+      access.push(
+        toAccess(option, operation, accessSourcePath(file.handle, id))
+      )
     } else {
       problems.add(
         file.path,

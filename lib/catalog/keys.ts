@@ -227,3 +227,29 @@ export function filePathToRef(pathname: string): Ref | null {
   }
   return null
 }
+
+/**
+ * The SOURCE file behind a ref, from the repo root. Not the same as
+ * `refToFilePath`, the rendered `.md` URL this site serves: a tool renders at
+ * `/tools/clay/enrich-contacts.md` but is WRITTEN at
+ * `companies/clay/tools/enrich-contacts.md`. The key carries both. A version
+ * pin is dropped — the file on the branch is only ever the current one.
+ */
+export function refToSourcePath(ref: {
+  type: EntityType
+  key: string
+}): string {
+  if (ref.type === 'company') {
+    return `companies/${ref.key}/company.md`
+  }
+  if (ref.type === 'tool') {
+    const [handle, slug] = ref.key.split('/')
+    return `companies/${handle}/tools/${slug}.md`
+  }
+  return `workflows/${ref.key}.md`
+}
+
+/** A way in's source file: `companies/clay/access/api.md`. */
+export function accessSourcePath(handle: string, id: string): string {
+  return `companies/${handle}/access/${id}.md`
+}

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from 'vitest'
-import { parseRef } from '@/lib/catalog/keys'
+import { parseRef, refToSourcePath } from '@/lib/catalog/keys'
 import {
   companySearchItem,
   toolSearchItem,
@@ -16,6 +16,27 @@ import {
 } from '@/lib/catalog/search'
 import { buildCatalog, type Catalog } from '@/lib/content/build-catalog'
 import { readContentTree } from '@/lib/content/read-tree'
+import type { Access } from '@/lib/types/catalog'
+
+const WHITESPACE = /\s+/
+
+/** The fact a way in contributes to a file, which must appear in it. */
+function accessFact(access: Access): string {
+  switch (access.type) {
+    case 'mcp':
+      // A local server's command renders as JSON `command` + `args`, so its
+      // last word (the package) is what appears verbatim.
+      return (
+        access.url ??
+        access.command?.trim().split(WHITESPACE).at(-1) ??
+        access.operation
+      )
+    case 'cli':
+      return access.installCommand
+    default:
+      return access.baseUrl
+  }
+}
 
 /**
  * THE CONTENT SUITE (`pnpm content:check`): the real tree under companies/,
@@ -169,6 +190,45 @@ describe('the content tree', () => {
     expect(clay?.markdown.trimEnd().endsWith('- Never print API keys.')).toBe(
       true
     )
+  })
+
+  test('every file names the source files it was built from, and each one feeds it', () => {
+    const paths = new Set(readContentTree().files.map((file) => file.path))
+    const accessByFile = new Map(
+      [...catalog.tools.values()].flatMap((tool) =>
+        tool.access.map((entry) => [entry.file, entry] as const)
+      )
+    )
+    for (const document of catalog.documents.values()) {
+      const ref = parseRef(document.ref)
+      expect(ref, document.ref).not.toBeNull()
+      // Its own file first, and nothing listed twice.
+      expect(document.sources[0]).toBe(
+        refToSourcePath({ type: ref?.type ?? 'tool', key: ref?.key ?? '' })
+      )
+      expect(new Set(document.sources).size).toBe(document.sources.length)
+      for (const source of document.sources) {
+        // A real file in the tree...
+        expect(paths.has(source), `${document.ref} → ${source}`).toBe(true)
+        // ...and an access file only when its facts are in the file.
+        const access = accessByFile.get(source)
+        if (source.includes('/access/')) {
+          expect(access, source).toBeDefined()
+          expect(document.markdown, `${document.ref} → ${source}`).toContain(
+            accessFact(access as Access)
+          )
+        }
+      }
+    }
+    // A workflow lists every tool it uses.
+    for (const workflow of catalog.workflows.values()) {
+      const sources = catalog.documents.get(`workflow:${workflow.key}`)?.sources
+      for (const key of workflow.toolKeys) {
+        expect(sources, workflow.key).toContain(
+          refToSourcePath({ type: 'tool', key })
+        )
+      }
+    }
   })
 
   test('two builds of the same tree render byte-identical files', () => {

@@ -2,7 +2,6 @@ import { Linkedin01Icon, NewTwitterIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { Suspense } from 'react'
 import {
   CatalogList,
   toolListItem,
@@ -62,13 +61,11 @@ export async function generateMetadata({
   })
 }
 
-export default function CompanyPage({ params }: { params: Params }) {
+export default async function CompanyPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/companies" label="All companies" />
-      <Suspense fallback={null}>
-        <CompanyDetail params={params} />
-      </Suspense>
+      <CompanyDetail params={params} />
     </Page>
   )
 }
