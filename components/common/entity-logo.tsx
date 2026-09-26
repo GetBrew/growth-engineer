@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import { isRemoteLogo } from '@/lib/logos'
 import { cn } from '@/lib/utils/cn'
 
 export function EntityLogo({
@@ -28,7 +27,6 @@ export function EntityLogo({
           className="size-full object-contain p-[18%]"
           height={size}
           src={src}
-          unoptimized={isRemoteLogo(src)}
           width={size}
         />
       ) : (

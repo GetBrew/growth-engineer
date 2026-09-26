@@ -49,7 +49,7 @@ description on the company page and in the company's file.
 | `name` | yes | Display name. |
 | `domain` | yes | Bare domain, no scheme. |
 | `category` | yes | Must exist as `tags/category/<slug>.md`. |
-| `logo` | yes | File name under `public/logos/`; png, jpg, svg or webp. |
+| `logo` | yes | File name under `public/logos/`; svg, png, jpg or webp, at most 32 KB — an SVG, or 128px square. It is served as is. |
 | `updated` | yes | `YYYY-MM-DD` — the day these facts were last checked. |
 | `tagline`, `website`, `docs`, `github`, `linkedin`, `x`, `founded`, `headquarters` | no | Shown when present. |
 | `kind` | no | `vendor` (default), `open_source` or `individual`. |

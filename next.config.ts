@@ -42,16 +42,13 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [60, 75, 90],
-    // Every image is local. A contributor's GitHub photo is the one remote
-    // source and it renders unoptimized, so no host needs allowing here — a
-    // wildcard would make the deployment an open image proxy.
-    remotePatterns: [],
-  },
+  /**
+   * No image optimizer: every image is a small static file served from the
+   * CDN as it is — logos are capped at 32 KB by `content:check`, the agent
+   * marks are SVGs, and a contributor's GitHub photo is a plain <img>. Nothing
+   * is resized on request, and there is no open image proxy to abuse.
+   */
+  images: { unoptimized: true },
 
   /**
    * Keys and URLs are permanent after publishing, so the site starts on the

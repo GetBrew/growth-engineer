@@ -51,8 +51,8 @@ export function sourceFileUrl(ref: { type: EntityType; key: string }): string {
  * `author` IS a GitHub login, so there is nothing to store and nothing to
  * invent — the avatar is real or GitHub serves its own identicon.
  *
- * Rendered through a plain `<img>`, so it needs no entry in `next.config.ts`
- * remotePatterns and never touches the image optimizer.
+ * Rendered through a plain `<img>`: a remote photo, loaded straight from
+ * GitHub, never proxied through this site.
  */
 export function githubAvatarUrl(login: string, size = 96): string {
   return `https://github.com/${encodeURIComponent(login)}.png?size=${size}`

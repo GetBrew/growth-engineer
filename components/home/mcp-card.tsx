@@ -93,6 +93,7 @@ export function McpCard({ url }: { url: string }) {
               className="size-5 object-contain"
               height={20}
               key={agent.logo}
+              loading="eager"
               src={agent.logo}
               width={20}
             />

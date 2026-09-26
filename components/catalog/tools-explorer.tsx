@@ -256,7 +256,13 @@ function ToolsExplorerView({
             search={
               <CatalogSearch
                 action="/tools"
-                defaultValue={searchText(state)}
+                // A trailing space when chips are shown, so a word typed after
+                // `category:crm` starts a new token instead of joining it.
+                defaultValue={
+                  state.chips.length > 0
+                    ? `${searchText(state)} `
+                    : searchText(state)
+                }
                 label="Search tools"
                 placeholder="Search tools…"
               />

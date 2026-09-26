@@ -60,6 +60,7 @@ export function AgentMarquee() {
                             isActive ? 'opacity-100' : 'opacity-75'
                           )}
                           height={20}
+                          loading="eager"
                           src={agent.logo}
                           width={20}
                         />
