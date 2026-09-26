@@ -4,7 +4,7 @@ import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { type ReactNode, Suspense } from 'react'
+import type { ReactNode } from 'react'
 import { type ToolCardData, ToolRow } from '@/components/catalog/cards'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { NoResults } from '@/components/common/no-results'
@@ -19,6 +19,7 @@ import {
   searchText,
 } from '@/lib/catalog/query'
 import { searchToolItems, type ToolSearchItem } from '@/lib/catalog/search'
+import { useIsClient } from '@/lib/hooks/use-is-client'
 import type { TagChip } from '@/lib/types/catalog'
 
 function withExpandedView(href: string): string {
@@ -121,16 +122,16 @@ type ExplorerProps = {
 const NO_PARAMS = new URLSearchParams()
 
 /**
- * Every tool, prerendered, narrowed by the URL in the browser. The URL is only
- * known at request time, so reading it suspends the prerender — and the
- * fallback is the SAME explorer with no query: the static HTML carries every
- * tool and every link, and a visit with no query swaps in identical markup.
+ * Every tool, prerendered, narrowed by the URL in the browser. The query is
+ * only known in the browser, so the prerender draws the explorer with no
+ * query — every tool and every link, fully static — and once hydrated it
+ * reads the URL and stays in step with it on every navigation.
  */
 export function ToolsExplorer(props: ExplorerProps) {
-  return (
-    <Suspense fallback={<ToolsExplorerView {...props} params={NO_PARAMS} />}>
-      <ToolsExplorerFromUrl {...props} />
-    </Suspense>
+  return useIsClient() ? (
+    <ToolsExplorerFromUrl {...props} />
+  ) : (
+    <ToolsExplorerView {...props} params={NO_PARAMS} />
   )
 }
 

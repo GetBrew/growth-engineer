@@ -1,7 +1,6 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { NoResults } from '@/components/common/no-results'
 import { SectionHeading } from '@/components/layout/section-heading'
@@ -12,6 +11,7 @@ import {
   searchWorkflowItems,
   type WorkflowSearchItem,
 } from '@/lib/catalog/search'
+import { useIsClient } from '@/lib/hooks/use-is-client'
 import type { TagChip } from '@/lib/types/catalog'
 
 type Sort = 'featured' | 'new'
@@ -95,15 +95,15 @@ type IndexProps = {
 const NO_PARAMS = new URLSearchParams()
 
 /**
- * Every workflow, prerendered, narrowed by the URL in the browser. Reading
- * the URL suspends the prerender, and the fallback is the same index with no
- * query — so the static HTML carries every workflow and every link.
+ * Every workflow, prerendered, narrowed by the URL in the browser: the
+ * prerender draws the index with no query (every workflow and link, fully
+ * static); once hydrated it reads the URL and follows it.
  */
 export function WorkflowsIndex(props: IndexProps) {
-  return (
-    <Suspense fallback={<WorkflowsIndexView {...props} params={NO_PARAMS} />}>
-      <WorkflowsIndexFromUrl {...props} />
-    </Suspense>
+  return useIsClient() ? (
+    <WorkflowsIndexFromUrl {...props} />
+  ) : (
+    <WorkflowsIndexView {...props} params={NO_PARAMS} />
   )
 }
 

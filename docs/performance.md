@@ -47,9 +47,10 @@ why that setting is pinned rather than left to the framework default.
 **Never `export const dynamic`, `revalidate` or `dynamicParams`.** Cache
 Components rejects them at build.
 
-**A client component that reads the URL** (`useSearchParams`) suspends the
-prerender, so its fallback is the same component with no query — the
-listings do this, and their static HTML holds every row.
+**A client component that reads the URL** renders its no-query version until
+hydration (`useIsClient`), then reads `useSearchParams`. The prerender never
+touches the query, so the listings are fully static (`○`) and their HTML
+holds every row.
 
 ## 2. Instant Navigations — the prefetch
 
@@ -65,9 +66,8 @@ Listings never read the URL on the server: they prerender every item and a
 client component narrows the list from `useSearchParams`, so `/tools?has=mcp`
 is the same static page as `/tools` with a different filter applied in the
 browser. The map is one prerendered page per node. `pnpm build` prints `○`
-or `●` for every page, `◐` for the listings (a static shell that already
-holds every row) and for the on-demand fallbacks of unknown keys, and `ƒ`
-only for `/mcp`.
+or `●` for every page, `◐` only for the on-demand fallbacks of unknown keys,
+and `ƒ` only for `/mcp` (plus the proxy, which runs for `.md` requests only).
 
 ## 3. The bundle budget — the ratchet
 

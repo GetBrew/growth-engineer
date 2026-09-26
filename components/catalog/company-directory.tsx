@@ -1,7 +1,6 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
 import { CompanyRow } from '@/components/catalog/cards'
 import { CategorySection } from '@/components/catalog/category-section'
 import { NoResults } from '@/components/common/no-results'
@@ -12,6 +11,7 @@ import {
   type CompanySearchItem,
   searchCompanyItems,
 } from '@/lib/catalog/search'
+import { useIsClient } from '@/lib/hooks/use-is-client'
 import type { TagChip } from '@/lib/types/catalog'
 
 function companiesHref(q: string, category: string): string {
@@ -35,15 +35,15 @@ type DirectoryProps = {
 const NO_PARAMS = new URLSearchParams()
 
 /**
- * Every company, prerendered, narrowed by the URL in the browser. Reading the
- * URL suspends the prerender, and the fallback is the same directory with no
- * query — so the static HTML carries every company and every link.
+ * Every company, prerendered, narrowed by the URL in the browser: the
+ * prerender draws the directory with no query (every company and link, fully
+ * static); once hydrated it reads the URL and follows it.
  */
 export function CompanyDirectory(props: DirectoryProps) {
-  return (
-    <Suspense fallback={<CompanyDirectoryView {...props} params={NO_PARAMS} />}>
-      <CompanyDirectoryFromUrl {...props} />
-    </Suspense>
+  return useIsClient() ? (
+    <CompanyDirectoryFromUrl {...props} />
+  ) : (
+    <CompanyDirectoryView {...props} params={NO_PARAMS} />
   )
 }
 

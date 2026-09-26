@@ -35,8 +35,6 @@ import { cn } from '@/lib/utils/cn'
 /** Rows per kind before the group ends in "See all". */
 const PER_GROUP = 5
 
-const SUGGESTIONS = ['outbound', 'enrich', 'mcp', 'lifecycle'] as const
-
 /** One navigable row: a result, a "see all" link, or a section to jump to. */
 type Option = {
   id: string
@@ -101,8 +99,10 @@ const JUMP_TO: ReadonlyArray<Option> = SECTIONS.map((section) => ({
  */
 export function CommandPaletteDialog({
   items,
+  suggestions,
 }: {
   items: ReadonlyArray<PaletteItem>
+  suggestions: ReadonlyArray<string>
 }) {
   const isOpen = useCommandPaletteOpen()
   const router = useRouter()
@@ -206,7 +206,7 @@ export function CommandPaletteDialog({
         <div>
           <p className="eyebrow px-3 pb-2 uppercase">Try searching</p>
           <div className="flex flex-wrap gap-2 px-3 pb-2">
-            {SUGGESTIONS.map((suggestion) => (
+            {suggestions.map((suggestion) => (
               <button
                 className="focus-ring type-label rounded-full border px-3 py-1.5 text-faint transition-colors duration-200 hover:bg-hover hover:text-foreground"
                 key={suggestion}

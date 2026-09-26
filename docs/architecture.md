@@ -39,7 +39,8 @@ value that resolves without I/O keeps a route static.
 
 **`proxy.ts`** — one job: the markdown files. A `.md` URL, or a company,
 tool or workflow page requested with `Accept: text/markdown`, is rewritten to
-the file handler.
+the file handler. Its matcher admits only those requests (and paths with a
+backslash, answered 404), so a page view or a Link prefetch never runs it.
 There is NO auth gate here and no auth provider anywhere; every route is
 public.
 
@@ -50,9 +51,10 @@ and prerender in full; so does every map focus (`/map/<type>/<key>`). The
 listings prerender EVERY item and hand them to a client component
 (`ToolsExplorer`, `CompanyDirectory`, `WorkflowsIndex`) that reads the URL
 with `useSearchParams` and narrows the list in the browser — so no page reads
-`searchParams` on the server and every filter permutation is instant. Reading
-the URL suspends the prerender, so each listing's Suspense fallback is the
-same listing with no query: the static HTML carries every row and link.
+`searchParams` on the server and every filter permutation is instant. The
+query exists only in the browser, so each listing prerenders with no query —
+every row and link, fully static — and reads the URL once hydrated
+(`useIsClient`), following it on every navigation after that.
 Filters and search are still links and GET forms: the URL is the state. A
 URL whose only job is to redirect is a route handler (`/tools/[handle]`),
 with a relative `Location` so it prerenders too. Internal navigation is
@@ -70,7 +72,7 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | `/api/markdown/[...path]` — every file, every current pin, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow (+ `@N`) | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
-| `/tools`, `/companies`, `/workflows` | static shell with every row (`◐`, no server work) | every item is prerendered into the page as the no-query fallback; a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
+| `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 | `/map`, `/contribute`, `/contribute/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call; stateless, read-only, the same catalog |
 

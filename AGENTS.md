@@ -138,11 +138,10 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   params with `generateStaticParams` (`lib/catalog/static-params.ts`). Never
   `export const dynamic`, `revalidate` or `dynamicParams`.
 - EVERY page and permutation is generated at build. Listings prerender every
-  item and narrow themselves in the browser from the URL (`useSearchParams`
-  under a `<Suspense>` whose fallback is the same listing with no query, so
-  the HTML holds every row; pure search in `lib/catalog/search.ts`); the map
-  is one page per node. No page reads `searchParams` on the server. The one
-  dynamic route is `/mcp` (POST).
+  item with no query and, once hydrated (`useIsClient`), narrow themselves
+  from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`);
+  the map is one page per node. No page reads `searchParams` on the server.
+  The one dynamic route is `/mcp` (POST); the proxy runs only for `.md`.
 - NOTHING LOADS: no skeletons, no spinners, no fetch after load. A page with
   no params renders its data directly — the build fails if anything in it is
   request-time. A page with params is SYNCHRONOUS and awaits them in a

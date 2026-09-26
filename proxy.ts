@@ -5,11 +5,12 @@ import { filePathToRef } from '@/lib/catalog/keys'
  * `proxy.ts` is what Next 16 calls the file that used to be `middleware.ts`.
  * It runs before every matched request.
  *
- * ONE JOB TODAY: serve the markdown files. `/tools/clay/clay.md`, and any page
+ * ONE JOB: serve the markdown files. `/tools/clay/clay.md`, and a page
  * requested with `Accept: text/markdown`, is rewritten to the file handler —
  * agents fetch files with no session, and on Vercel the proxy runs ahead of
  * the CDN cache, which does not key on `Vary`, so agents must be diverted
- * before cached HTML is served.
+ * before cached HTML is served. The matcher below admits only those
+ * requests, so an ordinary page view never runs this file.
  *
  * THERE IS NO AUTH GATE HERE, because there is no auth provider: every route
  * is public and the catalog is meant to be. If auth ever arrives it does not
@@ -77,12 +78,21 @@ export default function proxy(req: NextRequest) {
   return NextResponse.next()
 }
 
+/**
+ * ONLY the requests this file has a job for. Every other request — every page
+ * view, every Link prefetch, every asset — is served straight from the static
+ * build with no proxy hop at all.
+ */
 export const config = {
   matcher: [
-    // Skip Next internals and static assets. `.md` is deliberately NOT in this
-    // list — file requests must reach the rewrite above. `.txt` is, so
-    // `/llms.txt` is served by its route handler with no proxy hop at all.
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|txt|xml|webmanifest|wasm|mp4|pdf)).*)',
-    '/(api|trpc)(.*)',
+    // A file: `/tools/clay/enrich-contacts.md`.
+    '/(.+\\.md)',
+    // A page asked for as markdown (an agent, `curl -H 'Accept: text/markdown'`).
+    {
+      source: '/((?!_next|api).*)',
+      has: [{ type: 'header', key: 'accept', value: '.*text/markdown.*' }],
+    },
+    // A path with a backslash, answered 404 before Next can route it.
+    '/(.*(?:%5[cC]|\\\\).*)',
   ],
 }
