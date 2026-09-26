@@ -1,4 +1,4 @@
-import { agentNote } from './agent-level'
+import type { Access, AccessType } from '@/lib/types/catalog'
 import { fnv1a } from './hash'
 import { formatRef } from './keys'
 import {
@@ -9,7 +9,6 @@ import {
   serverUrlLine,
   singleAccessSetup,
 } from './render-access'
-import type { Access, AccessType, AgentLevel } from './types'
 
 /**
  * THE render function. Every company, tool and workflow renders to one
@@ -39,7 +38,6 @@ export type ToolFileInput = {
   summary: string
   description?: string
   access: ReadonlyArray<Access>
-  agent: { level: AgentLevel; reason: string }
   updatedAt: number
 }
 
@@ -82,7 +80,6 @@ export type CompanyFileInput = {
     key: string
     name: string
     summary: string
-    agentLevel: AgentLevel
   }>
   updatedAt: number
 }
@@ -139,8 +136,6 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     `company: ${formatRef('company', tool.companyKey)}`,
     `workflows: ${list(tool.workflows.map((key) => formatRef('workflow', key)))}`,
     `access: ${list(accessTypes)}`,
-    `agent: ${tool.agent.level}`,
-    `agent_note: ${agentNote(tool.agent.reason)}`,
     `updated: ${isoDate(tool.updatedAt)}`,
     '---',
     '',
@@ -340,7 +335,7 @@ export function renderCompanyDocument(
   }
   for (const tool of company.tools) {
     lines.push(
-      `- ${formatRef('tool', tool.key)} — ${tool.name}: ${tool.summary} (agent: ${tool.agentLevel})`
+      `- ${formatRef('tool', tool.key)} — ${tool.name}: ${tool.summary}`
     )
   }
   const links = [

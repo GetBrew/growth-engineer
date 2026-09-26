@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterAll, describe, expect, test } from 'vitest'
-import { readContentTree } from '@/lib/content/read-tree'
+import { MAX_LOGO_BYTES, readContentTree } from '@/lib/content/read-tree'
 
 /**
  * The tree walk itself, on a throwaway directory: what it places, what it
@@ -47,6 +47,19 @@ describe('the content tree walk', () => {
     ])
     expect(tree.logos.has('acme.png')).toBe(true)
     expect(tree.fingerprint).toMatch(/^\d+:\d+(\.\d+)?$/)
+  })
+
+  test('rejects a logo too heavy to serve as is', () => {
+    write('public/logos/huge.png', 'x'.repeat(MAX_LOGO_BYTES + 1))
+    const problems = readContentTree(root).problems.map(
+      (problem) => `${problem.file}: ${problem.message}`
+    )
+    expect(problems).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^public\/logos\/huge\.png: 33 KB; a logo/),
+      ])
+    )
+    rmSync(path.join(root, 'public/logos/huge.png'))
   })
 
   test('rejects a nested workflow folder, a stray file and a misplaced folder', () => {

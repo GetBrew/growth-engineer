@@ -6,7 +6,7 @@ import robots from '@/app/robots'
 import sitemap from '@/app/sitemap'
 import { JsonLd } from '@/components/seo/json-ld'
 import { getCatalog } from '@/lib/catalog/catalog'
-import { AGENT_LEVELS, DEFINITIONS, SITE } from '@/lib/catalog/definitions'
+import { DEFINITIONS, SITE } from '@/lib/catalog/definitions'
 import { loadSitemapEntries } from '@/lib/catalog/discovery'
 import {
   filePathToRef,
@@ -15,6 +15,7 @@ import {
   isValidOwnedKey,
   isValidTagKey,
 } from '@/lib/catalog/keys'
+import { GUIDES } from '@/lib/constants/guides'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
 import {
@@ -55,12 +56,6 @@ describe('definitions', () => {
       expect(entry.definition.endsWith('.')).toBe(true)
       expect(entry.path).toMatch(/\.md$/)
     }
-  })
-
-  test('every agent level is defined once', () => {
-    expect(AGENT_LEVELS.map((entry) => entry.level).sort()).toEqual(
-      ['friendly', 'native', 'possible', 'unverified'].sort()
-    )
   })
 
   test('the site origin is absolute with no trailing slash', () => {
@@ -110,8 +105,17 @@ describe('sitemap.xml', () => {
     for (const key of catalog.workflows.keys()) {
       expect(urls).toContain(`${SITE_ORIGIN}/workflows/${key}`)
     }
+    // The home page, three listings, the map, /contribute and each guide.
+    expect(urls).toContain(`${SITE_ORIGIN}/contribute`)
+    for (const guide of GUIDES) {
+      expect(urls).toContain(`${SITE_ORIGIN}/contribute/${guide.id}`)
+    }
     expect(urls.length).toBe(
-      5 + catalog.companies.size + catalog.tools.size + catalog.workflows.size
+      6 +
+        GUIDES.length +
+        catalog.companies.size +
+        catalog.tools.size +
+        catalog.workflows.size
     )
     // Map focus pages are noindex; a version pin is the same page; no file URLs.
     expect(urls.some((url) => url.includes('/map/'))).toBe(false)
@@ -164,9 +168,6 @@ describe('/llms.txt', () => {
       expect(text).toContain(
         `**${entry.term}** (\`${entry.example}\`): ${entry.definition}`
       )
-    }
-    for (const entry of AGENT_LEVELS) {
-      expect(text).toContain(`**${entry.level}**: ${entry.definition}`)
     }
     const fileLines = lines.filter((line) => FILE_LINE.test(line))
     expect(fileLines.length).toBe(catalog.documents.size)

@@ -1,12 +1,12 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { ArrowReloadHorizontalIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import Link from 'next/link'
+import { NoResults } from '@/components/common/no-results'
+import { Page } from '@/components/layout/page'
+import { Button, buttonVariants } from '@/components/ui/button'
 
-/**
- * A failed render lands here. With the catalog built from the repository at
- * build time this should never fire in production; in development it is how
- * a content problem surfaces on the page (the terminal has the file paths).
- */
 export default function SiteError({
   reset,
 }: {
@@ -14,15 +14,30 @@ export default function SiteError({
   reset: () => void
 }) {
   return (
-    <div className="mx-auto flex max-w-xl flex-col items-center gap-4 px-6 py-24 text-center">
-      <h1 className="type-page-title">This page could not be rendered</h1>
-      <p className="type-body">
-        The files themselves have not changed. In development, the terminal
-        lists what went wrong; otherwise try again in a moment.
-      </p>
-      <Button onClick={reset} size="pill" variant="outline">
-        Try again
-      </Button>
-    </div>
+    <Page>
+      <NoResults
+        description="Nothing in the catalog has changed. This page just failed to load."
+        icon={ArrowReloadHorizontalIcon}
+        title="Something went wrong"
+      >
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button onClick={reset} size="pill" type="button">
+            <HugeiconsIcon
+              aria-hidden="true"
+              icon={ArrowReloadHorizontalIcon}
+              size={16}
+              strokeWidth={1.8}
+            />
+            Try again
+          </Button>
+          <Link
+            className={buttonVariants({ variant: 'outline', size: 'pill' })}
+            href="/"
+          >
+            Go home
+          </Link>
+        </div>
+      </NoResults>
+    </Page>
   )
 }

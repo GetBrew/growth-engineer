@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "./markdown.css";
 @import "./surfaces.css";
 @import "./typography.css";
 @custom-variant dark (&:is(.dark *));
@@ -14,6 +13,13 @@
 
 :root {
   --radius: 0.75rem;
+  /* Elevation, one ramp. Tailwind's `shadow-*` read these, so a stock
+     `shadow-lg` and a `floating-panel` cannot drift apart. */
+  --shadow-xs: 0 4px 14px rgb(23 23 23 / 0.06);
+  --shadow-sm: 0 6px 24px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 7px 20px rgb(23 23 23 / 0.1);
+  --shadow-lg: 0 10px 40px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0 24px 60px rgb(23 23 23 / 0.1);
   --muted: #f6f6f4;
   --muted-foreground: #5c5c5c;
   --border: rgb(23 23 23 / 0.1);
@@ -35,10 +41,17 @@
   --workflow: #9a650b;
   --doc: #7245d4;
   --tag: #b82a5b;
-  /* Ink at fixed strengths: icons and secondary text, placeholders, hovers. */
+  /* Affection, not status: the heart in the agent line. */
+  --heart: #ef4444;
+  /* A step that went through: the tick in the terminal. */
+  --success: #0a8363;
+  /* Ink at fixed strengths: icons and secondary text, placeholders, hovers.
+     The faintest step still has to clear WCAG AA at 12px — 4.5:1 — against
+     white, --surface and --muted alike, which is what fixes 0.62 as its
+     floor. Lower it and `type-meta` fails on every page at once. */
   --soft: rgb(23 23 23 / 0.7);
-  --subtle: rgb(23 23 23 / 0.62);
-  --faint: rgb(23 23 23 / 0.55);
+  --subtle: rgb(23 23 23 / 0.66);
+  --faint: rgb(23 23 23 / 0.62);
   --hover: rgb(0 0 0 / 0.04);
   /* The off-white behind the footer and quiet panels. */
   --surface: #fafafa;
@@ -79,14 +92,16 @@
   --color-workflow: var(--workflow);
   --color-doc: var(--doc);
   --color-tag: var(--tag);
+  --color-heart: var(--heart);
+  --color-success: var(--success);
   --color-soft: var(--soft);
   --color-subtle: var(--subtle);
   --color-faint: var(--faint);
   --color-hover: var(--hover);
   --color-surface: var(--surface);
   --spacing-header: var(--header-height);
-  /* Expo-out: fast off the mark, long soft settle. Motion code mirrors it as
-     EXPO_OUT in lib/motion.ts — change both together. */
+  /* Expo-out: fast off the mark, long soft settle. Every CSS animation that
+     settles (the marquees, the terminal, the avatar stack) uses it. */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   /* One family everywhere, code included (the design system rule). */
@@ -94,6 +109,7 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+  --radius-xs: calc(var(--radius) - 8px);
   --font-heading: var(--font-sans);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
@@ -124,7 +140,9 @@
     @apply bg-background text-foreground;
     font-size: 16px;
     line-height: 24px;
-    font-weight: 450;
+    /* Geist Regular. `font-synthesis: none` below means the browser never
+       fakes a bolder cut — every weight rendered is one the file has. */
+    font-weight: 400;
     font-synthesis: none;
     font-feature-settings:
       "rlig" 1,
@@ -146,6 +164,10 @@
   }
   html {
     @apply font-sans;
+    /* In-page anchors glide rather than jump — the "In this guide" jump list
+       on a guide page, and any `#id` link added later. The reduced-motion
+       block above already forces this back to `auto`. */
+    scroll-behavior: smooth;
   }
 }
 
@@ -153,6 +175,46 @@
   &:focus-visible {
     outline: 2px solid var(--foreground);
     outline-offset: 2px;
+  }
+}
+
+/*
+ * Spacing
+ *
+ * THE THREE STRUCTURAL DISTANCES repeat across every route, so they are named
+ * rather than typed out: change one here and every page follows. Each steps up
+ * once at `sm`, so a phone gets the same rhythm at a smaller size.
+ *
+ *   --space-section  one section of a page to the next          56 -> 80
+ *   --space-block    one block inside a section to the next     32 -> 48
+ *   --space-record   a page's back link to the record below it  24 -> 32
+ *
+ * THE SIZE RAMP is named by size, not purpose — a component picks the step its
+ * composition needs, because a heading over a padded list, a heading over a
+ * card and a heading over its own blurb are three different distances. Values
+ * match Tailwind's own steps, so `gap-5` and `gap-(--space-md)` are the same
+ * 20px; the token names WHICH 20px this is.
+ */
+:root {
+  --space-section: 3.5rem;
+  --space-block: 2rem;
+  --space-record: 1.5rem;
+
+  --space-3xs: 0.375rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.25rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 2.5rem;
+  --space-3xl: 3rem;
+  --space-4xl: 3.5rem;
+
+  @media (width >= 40rem) {
+    --space-section: 5rem;
+    --space-block: 3rem;
+    --space-record: 2rem;
   }
 }
 
@@ -175,160 +237,5 @@
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
-  }
-}
-
-/* Hover text slide: each character lifts and its twin slides in from below. */
-@utility nav-text {
-  display: inline-flex;
-  height: 1.25em;
-  overflow: hidden;
-  line-height: 1.25;
-  white-space: nowrap;
-}
-
-/* The "Explore with AI" trigger: a brushed-metal rim with a slow reflection. */
-@keyframes ai-rim-reflection {
-  from {
-    background-position: 180% 0;
-  }
-  to {
-    background-position: -80% 0;
-  }
-}
-
-.ai-metallic-trigger {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border: 1px solid transparent;
-  background:
-    linear-gradient(#fff, #fff) padding-box,
-    linear-gradient(
-      115deg,
-      #b8bbc2 0%,
-      #f8f8f8 24%,
-      #8d9199 48%,
-      #fff 72%,
-      #b4b7be 100%
-    )
-    border-box;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.9),
-    inset 0 -1px 0 rgb(0 0 0 / 0.05),
-    0 1px 2px rgb(0 0 0 / 0.07);
-  transition:
-    color 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.ai-metallic-trigger::before {
-  position: absolute;
-  inset: -1px;
-  z-index: -1;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    105deg,
-    transparent 30%,
-    rgb(255 255 255 / 0.95) 48%,
-    transparent 66%
-  );
-  background-size: 260% 100%;
-  content: "";
-  pointer-events: none;
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: ai-rim-reflection 3.4s linear infinite;
-}
-
-.ai-metallic-trigger:hover {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.95),
-    inset 0 -1px 0 rgb(0 0 0 / 0.06),
-    0 5px 14px rgb(0 0 0 / 0.1);
-}
-
-.ai-metallic-trigger:active {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.9),
-    inset 0 -1px 0 rgb(0 0 0 / 0.06),
-    0 2px 6px rgb(0 0 0 / 0.09);
-}
-
-.ai-metallic-trigger[data-popup-open] {
-  background:
-    linear-gradient(#171717, #171717) padding-box,
-    linear-gradient(115deg, #777 0%, #e6e6e6 30%, #5f5f5f 58%, #d8d8d8 100%)
-    border-box;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.16),
-    0 4px 12px rgb(0 0 0 / 0.14);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ai-metallic-trigger::before {
-    animation: none;
-  }
-}
-
-/* Search placeholder: a gentle wave of opacity and a 2px lift, letter by letter. */
-@keyframes placeholder-wave {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 0.85;
-    transform: translateY(-2px);
-  }
-}
-
-.placeholder-wave > span {
-  display: inline-block;
-  opacity: 0.5;
-  animation: placeholder-wave 1.4s ease-in-out infinite both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .placeholder-wave > span {
-    opacity: 0.6;
-    animation: none;
-  }
-}
-
-/* Footer wordmark: a slow light sweep across the giant display type. */
-@keyframes wordmark-sweep {
-  from {
-    background-position: 160% 50%;
-  }
-  to {
-    background-position: -60% 50%;
-  }
-}
-
-@utility wordmark-sweep {
-  --wordmark-dim: color-mix(in srgb, var(--foreground) 10%, transparent);
-  --wordmark-lit: color-mix(in srgb, var(--foreground) 42%, transparent);
-  background-image: linear-gradient(
-    100deg,
-    var(--wordmark-dim) 0%,
-    var(--wordmark-dim) 32%,
-    var(--wordmark-lit) 48%,
-    var(--wordmark-dim) 64%,
-    var(--wordmark-dim) 100%
-  );
-  background-size: 260% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  animation: wordmark-sweep 9s linear infinite;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
   }
 }

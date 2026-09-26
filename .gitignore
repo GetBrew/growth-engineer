@@ -42,3 +42,6 @@ coverage/
 # Logs and scratch
 *.log
 tmp/
+
+# The skills CLI's local install state; the repo's own skills live in .agents/skills.
+skills-lock.json

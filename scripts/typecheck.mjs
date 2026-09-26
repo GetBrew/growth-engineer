@@ -4,11 +4,11 @@
  *
  * THE SPLIT IS THE POINT. `next build` and the fast check should compile
  * runtime code only, not the thousands of test and script files no runtime
- * depends on. So the repo has five TypeScript programs, and this is the ONE
+ * depends on. So the repo has three TypeScript programs, and this is the ONE
  * place that knows their names — the CI matrix passes a program name straight
  * through, and there is no per-program package script to keep in sync.
  *
- *   pnpm tsc            # all five, in order
+ *   pnpm tsc            # all three, in order
  *   pnpm tsc app        # just the app program
  *   pnpm tsc app tests
  *

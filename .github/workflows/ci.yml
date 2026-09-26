@@ -129,15 +129,17 @@ jobs:
         run: pnpm test:run
 
   test:
-    # The required-check name. `if: always()` so a sibling failure shows as a
-    # RED `test` status instead of a skipped required check that a branch
-    # protection rule would happily merge past.
+    # THE required check: it needs every other job, so branch protection names
+    # one check and still covers lint, all three typecheck legs, the build and
+    # its bundle budget, the unit suite and hygiene. `if: always()` so a failed
+    # job shows as a RED `test` instead of a skipped required check that a
+    # branch protection rule would happily merge past.
     if: always()
-    needs: [test-unit]
+    needs: [lint, typecheck, build, test-unit, hygiene]
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
-      - name: Require sibling test jobs
+      - name: Require every job
         env:
           NEEDS: ${{ toJSON(needs) }}
         run: |
@@ -147,10 +149,10 @@ jobs:
               .filter(([, job]) => job.result !== "success")
               .map(([id]) => id)
             if (failed.length > 0) {
-              console.error(`✗ test suites failed: ${failed.join(", ")}`)
+              console.error(`✗ required jobs did not pass: ${failed.join(", ")}`)
               process.exit(1)
             }
-            console.log("✓ test suites passed")
+            console.log("✓ every required job passed")
           '
 
   hygiene:

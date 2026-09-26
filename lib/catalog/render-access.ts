@@ -1,4 +1,5 @@
-import type { Access, AccessType } from './types'
+import { ACCESS_RANK } from '@/lib/constants/catalog'
+import type { Access, AccessType } from '@/lib/types/catalog'
 
 /**
  * How a WAY IN renders inside a file: the MCP block, the CLI install, the API
@@ -17,7 +18,6 @@ import type { Access, AccessType } from './types'
  * PURE MODULE: type-only imports.
  */
 
-const ACCESS_ORDER: Record<AccessType, number> = { mcp: 0, cli: 1, api: 2 }
 const WHITESPACE = /\s+/
 
 /** Official first, then community; within each, MCP, CLI, API. */
@@ -25,7 +25,7 @@ export function orderAccess(access: ReadonlyArray<Access>): Array<Access> {
   return [...access].sort(
     (a, b) =>
       Number(b.official) - Number(a.official) ||
-      ACCESS_ORDER[a.type] - ACCESS_ORDER[b.type]
+      ACCESS_RANK[a.type] - ACCESS_RANK[b.type]
   )
 }
 

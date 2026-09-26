@@ -1,11 +1,7 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import {
-  EmptyState,
-  Page,
-  SectionHeading,
-} from '@/components/catalog/primitives'
-import { MapSkeleton } from '@/components/map/focused'
+import { EmptyState } from '@/components/layout/empty-state'
+import { Page } from '@/components/layout/page'
+import { SectionHeading } from '@/components/layout/section-heading'
 import { NodePill } from '@/components/map/node'
 import { loadMapOverview } from '@/lib/catalog/loaders'
 import { pageMetadata } from '@/lib/seo/metadata'
@@ -23,12 +19,6 @@ const SECTION_TITLE = {
   workflow: 'Workflows',
 } as const
 
-/**
- * The relationship map. READ-ONLY by construction — it reads the built
- * catalog and nothing else. The overview is prerendered here; every node has
- * its own prerendered page under `/map/<type>/<key>`, so exploring the graph
- * is a static navigation from one file to the next.
- */
 export default function MapPage() {
   return (
     <Page className="flex flex-col gap-8">
@@ -37,9 +27,7 @@ export default function MapPage() {
         description="What is connected to what. Every company, tool and workflow, with the edges between them — the one view the catalog pages do not give you."
         title="Relationship map"
       />
-      <Suspense fallback={<MapSkeleton />}>
-        <Overview />
-      </Suspense>
+      <Overview />
     </Page>
   )
 }
@@ -69,7 +57,7 @@ async function Overview() {
   }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-(--space-2xl)">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <StatCard
           caption="Everything the map can draw."
@@ -88,14 +76,10 @@ async function Overview() {
       </div>
 
       {(['company', 'tool', 'workflow'] as const).map((type) => (
-        <section className="flex flex-col gap-3" key={type}>
+        <section className="flex flex-col gap-(--space-xs)" key={type}>
           <div className="flex items-baseline gap-3">
-            <h2 className="font-semibold text-lg tracking-[-0.02em]">
-              {SECTION_TITLE[type]}
-            </h2>
-            <span className="font-medium text-foreground/45 text-xs">
-              {byType[type].length}
-            </span>
+            <h2 className="type-category">{SECTION_TITLE[type]}</h2>
+            <span className="type-meta">{byType[type].length}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {byType[type].map((node) => (
@@ -125,10 +109,10 @@ function StatCard({
   rows: ReadonlyArray<readonly [string, number]>
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-white p-6">
+    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-background p-6">
       <div className="flex flex-col gap-1">
-        <h2 className="font-semibold text-base">{title}</h2>
-        <p className="text-foreground/55 text-xs leading-5">{caption}</p>
+        <h2 className="type-subsection">{title}</h2>
+        <p className="type-meta">{caption}</p>
       </div>
       <dl className="flex flex-col gap-2">
         {rows.map(([label, value]) => (
@@ -136,8 +120,8 @@ function StatCard({
             className="flex items-baseline justify-between gap-4 border-border border-b pb-2 last:border-0 last:pb-0"
             key={label}
           >
-            <dt className="text-foreground/62 text-sm">{label}</dt>
-            <dd className="font-medium font-mono text-sm tabular-nums">
+            <dt className="type-helper text-subtle">{label}</dt>
+            <dd className="type-field-label font-mono tabular-nums">
               {value.toLocaleString()}
             </dd>
           </div>

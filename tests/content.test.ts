@@ -48,7 +48,7 @@ describe('the content tree', () => {
     expect(catalog.companies.size).toBe(files('company'))
     expect(catalog.tools.size).toBe(files('tool') - drafts)
     expect(catalog.workflows.size).toBe(files('workflow'))
-    expect(catalog.tags.size).toBe(files('tag') + 7)
+    expect(catalog.tags.size).toBe(files('tag') + 3)
     expect(catalog.companies.size).toBeGreaterThanOrEqual(25)
     expect(catalog.tools.size).toBeGreaterThanOrEqual(37)
     expect(catalog.workflows.size).toBeGreaterThanOrEqual(12)
@@ -63,8 +63,7 @@ describe('the content tree', () => {
     const tool = catalog.tools.get('clay/enrich-contacts')
     expect(tool?.companyKey).toBe('clay')
     expect(tool?.name).toBe('Enrich contacts')
-    expect(tool?.agentLevel).toBe('unverified')
-    expect(tool?.tags).toEqual(['agent:unverified', 'has:api'])
+    expect(tool?.tags).toEqual(['has:api'])
     // Every way in names the exact call — that is what makes it one function.
     expect(tool?.access.every((entry) => entry.operation.length > 0)).toBe(true)
     // The product is not a listing: there is no `clay/clay`.
@@ -271,26 +270,45 @@ describe('the content tree', () => {
     expect(searchCompanyItems(companies, { q: '' })).toHaveLength(
       catalog.order.companies.length
     )
+
+    // A workflow is found by the vendor of every tool it uses: each row
+    // shows that vendor's logo, so its name must find the row.
+    for (const workflow of catalog.workflows.values()) {
+      for (const toolKey of workflow.toolKeys) {
+        const handle = toolKey.split('/')[0] ?? ''
+        expect(
+          searchWorkflowItems(workflows, { q: handle, sort: 'new' }).map(
+            (row) => row.workflow.key
+          ),
+          `${handle} → ${workflow.key}`
+        ).toContain(workflow.key)
+      }
+    }
+    // A company is found by the description its row shows.
+    for (const company of catalog.companies.values()) {
+      const word = (company.description ?? '')
+        .split(/\W+/)
+        .find((part) => part.length > 6)
+      if (word) {
+        expect(
+          searchCompanyItems(companies, { q: word }).map(
+            (row) => row.company.key
+          ),
+          `${word} → ${company.key}`
+        ).toContain(company.key)
+      }
+    }
+    // Punctuation is not a query for everything.
+    expect(searchCompanyItems(companies, { q: '???' })).toEqual([])
+    expect(searchWorkflowItems(workflows, { q: '—', sort: 'new' })).toEqual([])
   })
 
   test('tags: the derived namespaces exist and counts are projections', () => {
-    const agent = [...catalog.tags.values()].filter(
-      (tag) => tag.namespace === 'agent'
+    const has = [...catalog.tags.values()].filter(
+      (tag) => tag.namespace === 'has'
     )
-    expect(agent.map((tag) => tag.slug).sort()).toEqual([
-      'friendly',
-      'native',
-      'possible',
-      'unverified',
-    ])
-    const unverified = catalog.tags.get('agent:unverified')
-    expect(unverified?.counts.tools).toBe(
-      [...catalog.tools.values()].filter(
-        (tool) =>
-          tool.status === 'published' && tool.agentLevel === 'unverified'
-      ).length
-    )
-    expect(unverified?.derived).toBe(true)
+    expect(has.every((tag) => tag.derived)).toBe(true)
+    expect(has.map((tag) => tag.slug).sort()).toEqual(['api', 'cli', 'mcp'])
     expect(
       catalog.tags.get('category:data-provider')?.counts.companies
     ).toBeGreaterThan(0)

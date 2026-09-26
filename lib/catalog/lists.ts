@@ -1,27 +1,27 @@
+import { ACCESS_ORDER } from '@/lib/constants/catalog'
 import type { Catalog } from '@/lib/content/build-catalog'
-import type {
-  CompanySearchItem,
-  ToolSearchItem,
-  WorkflowSearchItem,
-} from './search'
 import type {
   AccessType,
   Category,
   Company,
   CompanyListItem,
+  PaletteItem,
   TagChip,
   Tool,
   ToolListItem,
   Workflow,
   WorkflowListItem,
-} from './types'
+} from '@/lib/types/catalog'
+import type {
+  CompanySearchItem,
+  ToolSearchItem,
+  WorkflowSearchItem,
+} from './search'
 
 /**
  * List projections: what a row needs and nothing more, built from the
  * in-memory catalog.
  */
-
-const ACCESS_ORDER: ReadonlyArray<AccessType> = ['mcp', 'cli', 'api']
 
 /** The distinct ways in, in setup order. */
 function accessTypesOf(
@@ -55,7 +55,6 @@ export function toolListItem(catalog: Catalog, tool: Tool): ToolListItem {
       key: tool.key,
       name: tool.name,
       summary: tool.summary,
-      agentLevel: tool.agentLevel,
       access: accessTypesOf(tool.access),
     },
     company: {
@@ -164,4 +163,66 @@ export function tagChip(
     label: tag.label,
     counts: tag.counts,
   }
+}
+
+/* ────────────────────────────── palette items ───────────────────────────── */
+/* The flattest row of all: what ⌘K draws. One shape across all three kinds. */
+
+function toolPaletteItem(catalog: Catalog, tool: Tool): PaletteItem {
+  const company = catalog.companies.get(tool.companyKey)
+  return {
+    kind: 'tool',
+    key: tool.key,
+    // A bare capability name ("Enrich contacts") is ambiguous across vendors.
+    title: company ? `${company.name} · ${tool.name}` : tool.name,
+    subtitle: tool.summary,
+    href: `/tools/${tool.key}`,
+    searchText: tool.searchText,
+    updatedAt: tool.updatedAt,
+  }
+}
+
+function workflowPaletteItem(workflow: Workflow): PaletteItem {
+  return {
+    kind: 'workflow',
+    key: workflow.key,
+    title: workflow.title,
+    subtitle: workflow.summary,
+    href: `/workflows/${workflow.key}`,
+    searchText: workflow.searchText,
+    updatedAt: workflow.updatedAt,
+  }
+}
+
+function companyPaletteItem(company: Company): PaletteItem {
+  return {
+    kind: 'company',
+    key: company.key,
+    title: company.name,
+    subtitle: company.tagline ?? company.description ?? company.domain,
+    href: `/companies/${company.key}`,
+    searchText: company.searchText,
+    updatedAt: company.updatedAt,
+  }
+}
+
+/**
+ * The whole catalog, flat and in palette order: workflows lead because they
+ * are the thing to run, then the newest tools, then the companies behind them.
+ */
+export function paletteItems(catalog: Catalog): Array<PaletteItem> {
+  return [
+    ...catalog.order.workflowsFeatured.flatMap((key) => {
+      const workflow = catalog.workflows.get(key)
+      return workflow ? [workflowPaletteItem(workflow)] : []
+    }),
+    ...catalog.order.toolsNew.flatMap((key) => {
+      const tool = catalog.tools.get(key)
+      return tool ? [toolPaletteItem(catalog, tool)] : []
+    }),
+    ...catalog.order.companies.flatMap((key) => {
+      const company = catalog.companies.get(key)
+      return company ? [companyPaletteItem(company)] : []
+    }),
+  ]
 }

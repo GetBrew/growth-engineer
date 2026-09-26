@@ -16,8 +16,8 @@ const inputVariants = cva(
           'rounded-none border-transparent bg-transparent hover:border-transparent focus-visible:border-transparent',
       },
       controlSize: {
-        default: 'h-12 py-2',
-        lg: 'h-14 px-5 py-3',
+        default: 'h-10 py-2',
+        lg: 'h-12 px-5 py-3',
       },
     },
     defaultVariants: {

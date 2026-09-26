@@ -1,13 +1,13 @@
 /**
  * Keys and refs — the public identity of every record.
  *
- * Every record has an internal `_id` (the only thing stored in reference
- * fields) and a public `key`, resolved ONCE at the edge through a `by_key`
- * index. A ref is `${type}:${key}`, and it is what agents pass around.
+ * The public `key` IS the identity: it is the file's path and the page's
+ * URL, so nothing else identifies a record. A ref is `${type}:${key}`, and it
+ * is what agents pass around.
  *
  *   company    clay
  *   tool       clay/clay                  a company's only tool uses its product name
- *   workflow   intent-to-meeting          @3 pins a version; the author (a GitHub login) is in the file
+ *   workflow   funding-signal-outbound    @3 pins a version; the author (a GitHub login) is in the file
  *   tag        capability:enrich-contacts
  *
  * Keys never change after publishing. A rename lists the old key under
@@ -18,7 +18,7 @@
  * and a file path in the source tree.
  */
 
-const ENTITY_TYPES = ['company', 'tool', 'workflow'] as const
+export const ENTITY_TYPES = ['company', 'tool', 'workflow'] as const
 export type EntityType = (typeof ENTITY_TYPES)[number]
 
 export const TAG_NAMESPACES = [
@@ -27,14 +27,12 @@ export const TAG_NAMESPACES = [
   'channel',
   'category',
   'fit',
-  'agent',
   'has',
 ] as const
 export type TagNamespace = (typeof TAG_NAMESPACES)[number]
 
 /** Namespaces the system computes; nobody can propose tags in them. */
 export const DERIVED_TAG_NAMESPACES: ReadonlySet<TagNamespace> = new Set([
-  'agent',
   'has',
 ])
 
@@ -54,8 +52,10 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'api',
   'apple-icon',
   'apple-icon.png',
+  'cli',
   'companies',
   'company',
+  'contribute',
   'favicon.ico',
   'hacks',
   'icon',
@@ -65,6 +65,7 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'login',
   'manifest.webmanifest',
   'map',
+  'mcp',
   'me',
   'new',
   'opengraph-image',
@@ -122,7 +123,7 @@ export function isValidGithubLogin(value: string): boolean {
 
 /**
  * A key of the given type: a handle for a company, `company/slug` for a tool,
- * one part for a workflow (`intent-to-meeting` — the file name under
+ * one part for a workflow (`funding-signal-outbound` — the file name under
  * workflows/; who wrote it lives in the file, not the key).
  */
 function isValidKey(type: EntityType, value: string): boolean {
@@ -138,7 +139,7 @@ function isValidKey(type: EntityType, value: string): boolean {
 
 const VERSION_SUFFIX = /^(.+)@(\d+)$/
 
-/** `brew/intent-to-meeting@3` → `{ key, version: 3 }`; no suffix → `version: undefined`. */
+/** `funding-signal-outbound@3` → `{ key, version: 3 }`; no suffix → `version: undefined`. */
 export function splitVersionedKey(value: string): {
   key: string
   version: number | undefined

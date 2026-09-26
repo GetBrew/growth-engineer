@@ -1,6 +1,11 @@
+import type {
+  CompanyListItem,
+  PaletteItem,
+  ToolListItem,
+  WorkflowListItem,
+} from '@/lib/types/catalog'
 import { TAG_NAMESPACES, type TagNamespace } from './keys'
 import { MAX_CHIPS } from './query'
-import type { CompanyListItem, ToolListItem, WorkflowListItem } from './types'
 
 /**
  * Search v1, PURE and browser-safe: the same functions run in the build's
@@ -9,7 +14,7 @@ import type { CompanyListItem, ToolListItem, WorkflowListItem } from './types'
  * a namespace, AND across; partial completion; the canonical URL). This file
  * is the execution: every word must start a token of the item's search text
  * (a hit in the name counts double), and chips filter on the facts each item
- * carries — `agent:` and `has:` from a tool's access, `capability:` from its
+ * carries — `has:` from a tool's access, `capability:` from its
  * slug, `category:` from its company.
  *
  * Items are the list rows plus the few fields search needs, so a page can
@@ -38,10 +43,26 @@ export type CompanySearchItem = CompanyListItem & {
 
 type Chip = { namespace: TagNamespace; slug: string; key: string }
 
-const TOKEN = /[^a-z0-9]+/
+/** Letters and digits in any script; accents fold away (`Zoë` → `zoe`). */
+const TOKEN = /[^\p{L}\p{N}]+/u
+const COMBINING_MARKS = /\p{M}+/gu
 
 function tokens(text: string): Array<string> {
-  return text.toLowerCase().split(TOKEN).filter(Boolean)
+  return text
+    .normalize('NFKD')
+    .replace(COMBINING_MARKS, '')
+    .toLowerCase()
+    .split(TOKEN)
+    .filter(Boolean)
+}
+
+/**
+ * Words the query asks for, or null when it asked for something that has no
+ * words at all (`???`, `—`): that matches nothing, not everything.
+ */
+function queryWords(q: string): Array<string> | null {
+  const words = tokens(q)
+  return words.length === 0 && q.trim() !== '' ? null : words
 }
 
 /** `capability:enrich-contacts` → chip; anything malformed is dropped. */
@@ -123,9 +144,6 @@ function toolMatchesChips(
   for (const [namespace, slugs] of groups) {
     let hits: ReadonlyArray<string>
     switch (namespace) {
-      case 'agent':
-        hits = [item.tool.agentLevel]
-        break
       case 'has':
         hits = item.tool.access
         break
@@ -153,7 +171,10 @@ export function searchToolItems(
 ): { results: Array<ToolSearchItem>; chips: Array<string> } {
   const chips = parseChips(input.chips)
   const groups = groupByNamespace(chips)
-  const words = tokens(input.q)
+  const words = queryWords(input.q)
+  if (words === null) {
+    return { results: [], chips: chips.map((chip) => chip.key) }
+  }
   const ranked = rank(
     items
       .filter((item) => toolMatchesChips(item, groups))
@@ -176,7 +197,10 @@ export function searchWorkflowItems(
   items: ReadonlyArray<WorkflowSearchItem>,
   input: { q: string; sort: 'featured' | 'new'; tag?: string; limit?: number }
 ): Array<WorkflowSearchItem> {
-  const words = tokens(input.q)
+  const words = queryWords(input.q)
+  if (words === null) {
+    return []
+  }
   const ordered = items
     .filter((item) => !input.tag || item.tags.includes(input.tag))
     .sort((a, b) =>
@@ -202,7 +226,10 @@ export function searchCompanyItems(
   items: ReadonlyArray<CompanySearchItem>,
   input: { q: string; category?: string; limit?: number }
 ): Array<CompanySearchItem> {
-  const words = tokens(input.q)
+  const words = queryWords(input.q)
+  if (words === null) {
+    return []
+  }
   const ranked = rank(
     items
       .filter(
@@ -214,6 +241,33 @@ export function searchCompanyItems(
         key: item.company.key,
         score: score(words, item.company.name, item.searchText),
       })),
+    words.length > 0
+  )
+  return ranked.slice(0, input.limit ?? ranked.length)
+}
+
+/**
+ * The ⌘K palette: one flat list across all three kinds, so a reader who types
+ * "clay" sees the company, its tools and the workflows that use it together
+ * rather than having to guess which listing to open first. Pure, like the
+ * rest of this file — the layout ships every item once and this runs in the
+ * browser on each keystroke.
+ */
+export function searchPaletteItems(
+  items: ReadonlyArray<PaletteItem>,
+  input: { q: string; limit?: number }
+): Array<PaletteItem> {
+  const words = queryWords(input.q)
+  if (words === null) {
+    return []
+  }
+  const ranked = rank(
+    items.map((item, index) => ({
+      item,
+      index,
+      key: `${item.kind}:${item.key}`,
+      score: score(words, item.title, item.searchText),
+    })),
     words.length > 0
   )
   return ranked.slice(0, input.limit ?? ranked.length)

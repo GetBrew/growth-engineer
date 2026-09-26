@@ -6,13 +6,19 @@ import {
   TAG_NAMESPACES,
   type TagNamespace,
 } from '@/lib/catalog/keys'
+import {
+  accessSchema,
+  type CompanyFrontmatter,
+  companySchema,
+  tagSchema,
+} from '@/lib/schemas/content'
 import type {
   CatalogDocument,
   Company,
   Tag,
   Tool,
   Workflow,
-} from '@/lib/catalog/types'
+} from '@/lib/types/catalog'
 import { buildAliases } from './build-aliases'
 import { buildDocuments } from './build-documents'
 import {
@@ -24,12 +30,6 @@ import { companySearchText, dateToMs, tagCounts } from './derive'
 import { type ContentProblem, ProblemList } from './errors'
 import { parseFile } from './parse-file'
 import type { ContentFile } from './read-tree'
-import {
-  accessSchema,
-  type CompanyFrontmatter,
-  companySchema,
-  tagSchema,
-} from './schemas'
 
 /**
  * Source files → the catalog. PURE: takes the files, returns the graph, and
@@ -45,7 +45,7 @@ export type Catalog = {
   companies: ReadonlyMap<string, Company>
   tools: ReadonlyMap<string, Tool>
   workflows: ReadonlyMap<string, Workflow>
-  /** Curated tags from tags/ plus the derived `agent:*` and `has:*`. */
+  /** Curated tags from tags/ plus the derived `has:*`. */
   tags: ReadonlyMap<string, Tag>
   /** By ref: `tool:clay/enrich-contacts`. */
   documents: ReadonlyMap<string, CatalogDocument>
@@ -177,7 +177,10 @@ function toCompany(
     status: data.status,
     updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
-    searchText: companySearchText(data, category),
+    searchText: companySearchText(
+      { ...data, ...(body ? { description: body } : {}) },
+      category
+    ),
   }
 }
 

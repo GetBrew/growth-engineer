@@ -26,9 +26,10 @@ template: [`companies/README.md`](companies/README.md),
    them.
 3. `companies/<handle>/tools/<slug>.md` — one file per **function**, named
    after a capability in `tags/capability/`, listing the exact operation for
-   each way in (`mcp: clay_enrich_contacts`, `api: POST /v1/enrich`).
+   each way in (`mcp: acme_enrich_contacts`, `api: POST /v1/enrich`), exactly
+   as the vendor's docs name it.
 
-Then:
+Then, with Node 22+ and pnpm 11 (`corepack enable` gives you the pinned pnpm):
 
 ```bash
 pnpm install
@@ -38,12 +39,16 @@ pnpm dev                # http://localhost:3000/companies/<handle>
 
 ## Add a workflow
 
-One file, `workflows/<name>.md` — the folder is flat, no subfolders. A title
-phrased as the result, your GitHub login as `author`, the inputs to ask the
-user for, up to ten steps that each name a published tool, and the checks
-that mean the job is done. Workflows are by people, not companies: the page
-credits `@you` and links to your GitHub profile. The build links every step
-to its tool and every tool back to the workflows that use it.
+One file, `workflows/<name>.md` — the folder is flat, no subfolders. A short
+YAML header (a title phrased as the result, your GitHub login as `author`,
+tags), then the workflow in plain markdown: `## Inputs` to ask the user for,
+`## Steps` — up to ten, each naming a published tool — and `## Done when`,
+the checks that mean the job is done. It reads on GitHub exactly as it will
+on the site; the build adds each tool's setup and the rules. Copy the
+template in [`workflows/README.md`](workflows/README.md) or any file beside
+it. Workflows are by people, not companies: the page credits `@you` and
+links to your GitHub profile. The build links every step to its tool and
+every tool back to the workflows that use it.
 
 ## The rules the build enforces
 
@@ -53,18 +58,17 @@ to its tool and every tool back to the workflows that use it.
   `status: draft`; it has no page until it does.
 - **Steps resolve.** Every `tool` in a workflow exists and is published; a
   `via` names a way in that tool actually has.
-- **Tags exist.** Every tag names a file under `tags/`; `agent:*` and
-  `has:*` are computed and cannot be written.
+- **Tags exist.** Every tag names a file under `tags/`; `has:*` is computed
+  and cannot be written.
 - **Facts carry a date.** `updated` is when someone last checked the file.
-  A tool's readiness stays `unverified` until `agent.checked` says a person
-  verified its access.
 - **Files stay short.** Tool files render to about 60 lines, workflows to
   about 120, with at most ten steps.
 - **Nothing invented.** No placeholder companies, invented endpoints or
   made-up customers. If a fact is not public, leave the field out.
 
 `pnpm content:check` runs every one of these and lists every problem with
-its file path. The same suite runs in CI on your pull request.
+its file and line. The same suite runs in CI on your pull request (a
+maintainer approves the first run for a first-time contributor).
 
 ## Pull requests
 

@@ -10,11 +10,9 @@ and file is public, and nobody signs in.
 pnpm install
 ```
 
-`.env.example` lists the only two variables, both optional and both public:
-`NEXT_PUBLIC_SITE_URL` (the absolute origin `/llms.txt` prints) and
-`NEXT_PUBLIC_CONTEXT_LOGO_CLIENT_ID` (logos.context.dev; absent means the
-local marks under `public/logos/` are used). Copy it to `.env.local` only if
-you need to change one.
+`.env.example` lists the only variable, optional and public:
+`NEXT_PUBLIC_SITE_URL`, the absolute origin `/llms.txt`, the MCP card and the
+metadata print. Copy it to `.env.local` only if you need to change it.
 
 ## 2. Run it
 
@@ -51,10 +49,9 @@ READMEs have the field reference and templates.
   the publish — there is nothing to seed, migrate or revalidate.
 - **Environment variables**: none required. `/llms.txt` and `metadataBase`
   use `NEXT_PUBLIC_SITE_URL` when set (a custom domain), otherwise the
-  deployment's own Vercel hostname; the logo client id is optional. Nothing
-  secret.
+  deployment's own Vercel hostname. Nothing secret.
 - **Preview deployments** need nothing extra: each builds its branch's tree.
-- **Function bundles**: the routes that read `searchParams` (`/tools`,
-  `/companies`, `/workflows`, `/map`) read the tree at request time, so
+- **Function bundles**: every page prerenders; only an unknown key on a
+  detail route and the `/mcp` endpoint read the tree at request time, so
   `next.config.ts` traces `companies/`, `workflows/` and `tags/` into every
   serverless bundle (`outputFileTracingIncludes`).

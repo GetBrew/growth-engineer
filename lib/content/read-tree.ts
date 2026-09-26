@@ -42,6 +42,12 @@ export type ContentTree = {
 
 const MARKDOWN = /\.md$/
 
+/**
+ * Logos are drawn at 16–44px and served as they are (no image optimizer), so
+ * a logo over this is a 900px export someone forgot to shrink.
+ */
+export const MAX_LOGO_BYTES = 32 * 1024
+
 /** One walk's state: the root, what it found, and what it could not place. */
 class Walk {
   readonly files: Array<ContentFile> = []
@@ -207,10 +213,22 @@ export function readContentTree(root = process.cwd()): ContentTree {
   )) {
     walkTags(walk, namespace)
   }
+  const logoDir = path.join('public', 'logos')
+  const logos = new Set(walk.entries(logoDir))
+  for (const logo of logos) {
+    const relative = path.join(logoDir, logo)
+    const bytes = statSync(path.join(root, relative)).size
+    if (bytes > MAX_LOGO_BYTES) {
+      walk.reject(
+        relative,
+        `${Math.ceil(bytes / 1024)} KB; a logo is drawn at 44px and served as is — keep it under ${MAX_LOGO_BYTES / 1024} KB (an SVG, or a PNG at most 128px square)`
+      )
+    }
+  }
   return {
     files: walk.files,
     problems: walk.problems,
-    logos: new Set(walk.entries(path.join('public', 'logos'))),
+    logos,
     fingerprint: `${walk.count}:${walk.newest}`,
   }
 }

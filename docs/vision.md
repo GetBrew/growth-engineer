@@ -1,6 +1,6 @@
 # Vision
 
-growth.engineer is the agent-friendly marketplace for go-to-market tools and
+growth.engineer is the open-source, agent-friendly catalog of go-to-market tools and
 workflows: where a growth engineer — or their agent — finds what exists, what
 it can do, how to reach it, and what other people have built with it.
 
@@ -31,14 +31,11 @@ That single decision shapes everything else:
   tools inside it.
 - **Agent-readable by construction.** Files are generated from structured
   source files by one render function, so they are consistent, current, and
-  never hand-edited. Any page answers `Accept: text/markdown` with its file;
+  never hand-edited. Every company, tool and workflow page answers `Accept: text/markdown` with its file;
   `/llms.txt` indexes all of them.
 - **Open source, by pull request.** The catalog IS the repository: every
   company, tool and workflow is a markdown file anyone can add or correct,
   and the build checks every rule before it ships.
-- **Honest about agent readiness.** A tool's level (unverified, native,
-  friendly, possible) comes from rules over checked facts, with the reason
-  shown. Nobody has checked it yet? It says so.
 
 ## The abstractions
 
@@ -46,7 +43,7 @@ That single decision shapes everything else:
 | --- | --- | --- |
 | **Company** | `clay` | A vendor, open-source project or person that makes tools. |
 | **Tool** | `clay/enrich-contacts` | ONE function an agent can call, tied to a specific public API endpoint, MCP tool or CLI subcommand of a company's product. Every way in names its `operation`. A company with three functions has three tools. |
-| **Workflow** | `intent-to-meeting` | Steps across tools that reach a result, written by a person (a GitHub login). Frozen versions (`@3`); the current one renders the file. |
+| **Workflow** | `funding-signal-outbound` | Steps across tools that reach a result, written by a person (a GitHub login). Frozen versions (`@3`); the current one renders the file. |
 | **Growth hack** | `clay-waterfall-order` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
 
 Each company has many tools. Each workflow combines tools from different
@@ -65,8 +62,8 @@ cannot be published.
 
 1. **Plan the schema.** Done — the file schema in `docs/data-model.md`.
 2. **Seed by hand.** Done — 25 companies, 37 published tools and 12
-   workflows under `companies/` and `workflows/`, illustrative and
-   `unverified` until a person checks each one.
+   workflows under `companies/` and `workflows/`, illustrative until a
+   person checks each one.
 3. **Open community contributions.** Now: anyone adds or corrects a file by
    pull request; CI checks every rule; a maintainer reviews the facts;
    vendors maintain their own folder.
@@ -92,5 +89,5 @@ the submission pipeline and git is the history.
   Writes arrive with identity.
 - **Facts a machine can check apply on their own.** Everything else waits for
   a person.
-- **The catalog is honest.** Unverified means unverified. A tool with no way
-  in we can stand behind is not published.
+- **The catalog is honest.** A tool with no way in we can stand behind is
+  not published.

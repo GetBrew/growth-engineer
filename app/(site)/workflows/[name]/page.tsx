@@ -1,23 +1,24 @@
-import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { File01Icon } from '@hugeicons/core-free-icons'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { accessTypeLabels } from '@/components/catalog/badges'
-import { CatalogList, toolListItem } from '@/components/catalog/catalog-list'
+import { accessTypeLabels } from '@/components/common/badges'
+import { NoResults } from '@/components/common/no-results'
 import {
   DETAIL_DATE,
   DetailByline,
   DetailHeader,
-} from '@/components/catalog/detail-header'
-import { Page } from '@/components/catalog/primitives'
-import { MarkdownFile } from '@/components/document/markdown-file'
-import { OpenInAgentMenu } from '@/components/document/open-in-agent-menu'
-import { ShareButton } from '@/components/document/share-button'
+} from '@/components/detail/header'
+import { HowItRuns } from '@/components/detail/how-it-runs'
+import { MarkdownFile } from '@/components/detail/markdown-file'
+import { MarkdownPreview } from '@/components/detail/markdown-preview'
+import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
+import { ShareButton } from '@/components/detail/share-button'
+import { ViewSourceButton } from '@/components/detail/view-source-button'
+import { BackLink } from '@/components/layout/back-link'
+import { MaskIcon } from '@/components/layout/mask-icon'
+import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { WorkflowDetailSkeleton } from '@/components/skeletons/workflow-detail-skeleton'
-import { HowItRuns } from '@/components/workflows/how-it-runs'
 import {
   isValidKeyPart,
   refToFilePath,
@@ -27,14 +28,12 @@ import {
 import { loadDocument, loadWorkflow, resolveAlias } from '@/lib/catalog/loaders'
 import { workflowParams } from '@/lib/catalog/static-params'
 import { SITE_ORIGIN } from '@/lib/env'
+import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { workflowJsonLd } from '@/lib/seo/structured-data'
 
 type Params = Promise<{ name: string }>
 
-const PANEL_HEADING = 'type-section'
-
-/** `/workflows/<name>` or `/workflows/<name>@<version>`: one part, no owner. */
 async function resolveParams(params: Params) {
   const { name } = await params
   const { key, version } = splitVersionedKey(decodeURIComponent(name))
@@ -75,15 +74,9 @@ export async function generateMetadata({
 
 export default function WorkflowPage({ params }: { params: Params }) {
   return (
-    <Page className="flex flex-col gap-8">
-      <Link
-        className="type-control flex w-fit items-center gap-2 text-subtle transition-colors hover:text-foreground"
-        href="/workflows"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={1.5} />
-        All workflows
-      </Link>
-      <Suspense fallback={<WorkflowDetailSkeleton />}>
+    <Page className="flex flex-col gap-(--space-record)">
+      <BackLink href="/workflows" label="All workflows" />
+      <Suspense fallback={null}>
         <WorkflowDetail params={params} />
       </Suspense>
     </Page>
@@ -100,7 +93,6 @@ async function WorkflowDetail({ params }: { params: Params }) {
     loadDocument('workflow', resolved.key),
   ])
   if (!result) {
-    // An old key answers with a real redirect; an unknown one is a 404.
     const alias =
       resolved.version === undefined
         ? await resolveAlias('workflow', resolved.key)
@@ -113,33 +105,33 @@ async function WorkflowDetail({ params }: { params: Params }) {
     notFound()
   }
 
-  const { workflow, version, tools, toolItems, tags } = result
+  const { workflow, version, tools, tags } = result
   const ref = {
     type: 'workflow' as const,
     key: workflow.key,
     version: resolved.version,
   }
   const filePath = refToFilePath(ref)
-  // The file's date: the newest of the workflow and the tools it uses.
+
   const dates = [`Updated ${DETAIL_DATE.format(version.updatedAt)}`]
-  // Workflows are by people: the author is a GitHub login, and GitHub serves
-  // the avatar for it, so nothing here is invented.
+
   const author = {
     name: workflow.author,
-    avatar: `https://github.com/${encodeURIComponent(workflow.author)}.png?size=96`,
-    href: `https://github.com/${encodeURIComponent(workflow.author)}`,
+    avatar: githubAvatarUrl(workflow.author),
+    href: githubProfileUrl(workflow.author),
   }
   const available = accessTypeLabels(
     tools.flatMap(({ tool }) => tool.access.map((entry) => entry.type))
   )
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-(--space-block)">
       <JsonLd data={workflowJsonLd(SITE_ORIGIN, workflow, tools)} />
       <DetailHeader
         actions={
           <>
             <ShareButton text={workflow.summary} title={workflow.title} />
+            <ViewSourceButton entityKey={workflow.key} type="workflow" />
             {document ? (
               <OpenInAgentMenu
                 filePath={filePath}
@@ -154,54 +146,47 @@ async function WorkflowDetail({ params }: { params: Params }) {
           <DetailByline avatars={[{ name: author.name, src: author.avatar }]}>
             by{' '}
             <a
-              className="text-foreground hover:underline"
+              className="focus-ring inline-flex items-center gap-1.5 rounded-sm text-foreground underline-offset-4 hover:underline"
               href={author.href}
               rel="noreferrer"
               target="_blank"
             >
               @{author.name}
+              <MaskIcon
+                className="text-soft"
+                size={14}
+                src="/social/github.svg"
+              />
             </a>
           </DetailByline>
         }
         dates={dates}
         description={workflow.summary}
-        tags={[
-          { label: `v${version.version}`, emphasis: true },
-          ...tags.map((tag) => ({
-            label: tag.label,
-            href: `/workflows?tag=${encodeURIComponent(tag.key)}`,
-          })),
-        ]}
+        tags={tags.map((tag) => ({
+          label: tag.label,
+          href: `/workflows?tag=${encodeURIComponent(tag.key)}`,
+        }))}
         title={workflow.title}
       />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-10">
-        <div className="flex min-w-0 flex-col gap-14">
-          <section className="flex flex-col gap-5">
-            <h2 className={PANEL_HEADING}>Ready-to-use markdown</h2>
-            {document ? (
-              <MarkdownFile
-                fileName={filePath.split('/').pop() ?? 'workflow.md'}
-                markdown={document.markdown}
-              />
-            ) : (
-              <p className="type-body rounded-2xl border border-dashed px-6 py-10 text-center">
-                The file for this workflow has not been rendered yet.
-              </p>
-            )}
-          </section>
-          <section className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1.5">
-              <h2 className={PANEL_HEADING}>Built from</h2>
-              <p className="type-body">
-                {toolItems.length} {toolItems.length === 1 ? 'tool' : 'tools'},
-                each one function of one company. Every tool page lists the
-                workflows that use it.
-              </p>
-            </div>
-            <CatalogList items={toolItems.map(toolListItem)} />
-          </section>
-        </div>
+      <div className="grid gap-(--space-block) lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <section className="flex min-w-0 flex-col gap-(--space-md)">
+          {document ? (
+            <MarkdownFile
+              fileName={filePath.split('/').pop() ?? 'workflow.md'}
+              markdown={document.markdown}
+              preview={<MarkdownPreview markdown={document.markdown} />}
+            />
+          ) : (
+            <NoResults
+              description="It appears here as soon as the catalog renders it."
+              icon={File01Icon}
+              title="No file yet"
+              variant="card"
+            />
+          )}
+        </section>
+
         <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
           <HowItRuns
             steps={version.steps}
@@ -209,6 +194,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
               key: tool.key,
               name: tool.name,
               logoUrl: company.logo?.url,
+              access: [...new Set(tool.access.map((entry) => entry.type))],
             }))}
           />
         </aside>

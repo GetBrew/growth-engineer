@@ -4,8 +4,11 @@ Every company, tool and workflow has one file. Tool and workflow files are the
 product; company files are a short index of that company's tools. This is the
 contract the renderer (`lib/catalog/render-markdown.ts`) implements and the
 goldens in `tests/fixtures/markdown/` pin. The SOURCE files under
-`companies/` and `workflows/` are structured input to that renderer; they are
-not the product and they do not look like it.
+`companies/` and `workflows/` are the input to that renderer: a YAML header
+of facts and a markdown body a person reads on GitHub. A workflow's body is
+already written in this format — its inputs, steps and checks — so the
+source and the file read alike; the renderer adds the setup for each tool,
+names the tools, and appends the rules.
 
 ## Rules
 
@@ -24,7 +27,7 @@ not the product and they do not look like it.
 
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
-| Header | `ref`, `name`, `company`, `workflows`, `access`, `agent`, `agent_note`, `updated` | `ref` (with `@N`), `title`, `author`, `tools`, `tags`, `updated` |
+| Header | `ref`, `name`, `company`, `workflows`, `access`, `updated` | `ref` (with `@N`), `title`, `author`, `tools`, `tags`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
@@ -33,8 +36,7 @@ not the product and they do not look like it.
 | Notes | — | Optional, written by the author |
 | Rules | Always | Always |
 
-`agent_note` is the tool's level reason without its prefix ("Official remote
-MCP with self-serve OAuth."). `access` lists the ways in, in setup order.
+`access` lists the ways in, in setup order.
 `workflows` lists every workflow whose steps use the tool, and `tools` in a
 workflow file lists the tools it uses: the relationship is in both files.
 `author` is the workflow author's GitHub login.
@@ -44,10 +46,10 @@ workflow file lists the tools it uses: the relationship is in both files.
 | Where | Example |
 | --- | --- |
 | Copy prompt button | On every tool and workflow page |
-| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/intent-to-meeting.md`, `/workflows/intent-to-meeting@3.md`, `/companies/clay.md` |
-| Any page, when asked for markdown | `Accept: text/markdown` |
+| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`, `/workflows/funding-signal-outbound@1.md`, `/companies/clay.md` |
+| A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file |
-| MCP (later) | `get` with a ref returns the file |
+| MCP, at `/mcp` | `search` finds files; `get` with a ref returns the file |
 
 `proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`. The
 handler reads the rendered document from the in-memory catalog — the same
@@ -71,12 +73,12 @@ byte-identical files (`tests/content.test.ts` pins this).
 
 ## Publishing a workflow
 
-1. Write `workflows/<name>.md` with your GitHub login as `author`: a title
-   phrased as the result, the inputs, the steps (pick a tool, write what to
-   do), the checks that mean it is done
-   ([`workflows/README.md`](../workflows/README.md)).
+1. Write `workflows/<name>.md` with your GitHub login as `author`: a header
+   with a title phrased as the result, then `## Inputs`, `## Steps` (pick a
+   tool, write what to do) and `## Done when`, the checks that mean it is
+   done ([`workflows/README.md`](../workflows/README.md)).
 2. `pnpm content:check` renders the exact file and lists every problem with
-   its path; `pnpm dev` shows the page.
+   its file and line; `pnpm dev` shows the page.
 3. Open a pull request. CI runs the same checks; a maintainer reviews the
    facts. Merging publishes it on the next deploy.
 

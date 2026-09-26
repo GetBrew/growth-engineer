@@ -29,4 +29,4 @@ body:
     id: verified
     attributes:
       label: What you have verified yourself
-      description: Which of these have you actually used? A tool stays `unverified` until a person confirms its access works.
+      description: Which of these have you used yourself, and which come only from the vendor's docs? Maintainers check the rest before merging.

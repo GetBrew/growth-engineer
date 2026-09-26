@@ -1,57 +1,82 @@
+'use client'
+
+import { FavouriteIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
+import { AGENTS, showStepsFor, useSelectedAgent } from '@/lib/stores/agents'
+import { cn } from '@/lib/utils/cn'
 import styles from './agent-marquee.module.css'
 
-const AGENTS = [
-  { name: 'Claude', logo: '/logos/anthropic.png' },
-  { name: 'ChatGPT', logo: '/logos/openai.svg' },
-  { name: 'Gemini', logo: '/logos/gemini.jpg' },
-  { name: 'Copilot', logo: '/logos/copilot.png' },
-  { name: 'Perplexity', logo: '/logos/perplexity.svg' },
-  { name: 'Grok', logo: '/logos/grok.png' },
-  { name: 'Mistral', logo: '/logos/mistral.jpg' },
-  { name: 'DeepSeek', logo: '/logos/deepseek.png' },
-  { name: 'Manus', logo: '/logos/manus.jpg' },
-  { name: 'Lovable', logo: '/logos/lovable.jpg' },
-  { name: 'Replit', logo: '/logos/replit.jpg' },
-  { name: 'v0', logo: '/logos/v0.jpg' },
-  { name: 'Bolt', logo: '/logos/bolt.jpg' },
-] as const
+/**
+ * The track holds the list four times and slides half its width, so the
+ * seam is never on screen however few agents there are; only the first copy
+ * is reachable by keyboard or screen reader.
+ */
+const COPIES = [0, 1, 2, 3] as const
 
 export function AgentMarquee() {
+  const selected = useSelectedAgent()
+
   return (
     <section
-      aria-label="Agents that read markdown files"
+      aria-label="Supported agents"
       className="mt-8 flex flex-col gap-4 border-y border-dashed py-5 sm:flex-row sm:items-center sm:gap-0"
     >
-      <p className="type-label shrink-0 text-muted-foreground sm:w-44 sm:border-r sm:border-dashed sm:pr-6">
-        Plain markdown: runs in any agent
+      <p className="type-meta shrink-0 text-pretty sm:w-48 sm:border-r sm:border-dashed sm:pr-6">
+        Connect over <span className="text-foreground">MCP</span> with the agent
+        you already use{' '}
+        <HugeiconsIcon
+          aria-hidden="true"
+          className={`${styles.heart} inline-block translate-y-[0.1em] fill-current text-heart`}
+          icon={FavouriteIcon}
+          size={14}
+        />
       </p>
 
       <div className={`${styles.viewport} min-w-0 flex-1 overflow-hidden`}>
         <div className={`${styles.track} flex w-max`}>
-          {[0, 1].map((copy) => (
+          {COPIES.map((copy) => (
             <ul
-              aria-hidden={copy === 1 ? true : undefined}
+              aria-hidden={copy > 0 ? true : undefined}
               className="flex shrink-0 items-center"
               key={copy}
             >
-              {AGENTS.map((agent) => (
-                <li
-                  className="flex shrink-0 items-center gap-2.5 px-6 opacity-60 grayscale transition duration-300 hover:opacity-100 hover:grayscale-0"
-                  key={agent.name}
-                >
-                  <Image
-                    alt=""
-                    className="size-6 rounded-md object-cover"
-                    height={24}
-                    src={agent.logo}
-                    width={24}
-                  />
-                  <span className="type-item whitespace-nowrap">
-                    {agent.name}
-                  </span>
-                </li>
-              ))}
+              {AGENTS.map((agent) => {
+                const isActive = agent.name === selected.name
+                return (
+                  <li key={agent.name}>
+                    <button
+                      aria-pressed={isActive}
+                      className="focus-ring group/agent flex shrink-0 items-center gap-2.5 rounded-full px-5 py-1"
+                      onClick={() => showStepsFor(agent)}
+                      tabIndex={copy > 0 ? -1 : undefined}
+                      type="button"
+                    >
+                      <span className="entity-shadow grid size-8 place-items-center overflow-hidden rounded-xl border bg-background">
+                        <Image
+                          alt=""
+                          className={cn(
+                            'size-5 object-contain transition-opacity duration-300 group-hover/agent:opacity-100',
+                            isActive ? 'opacity-100' : 'opacity-75'
+                          )}
+                          height={20}
+                          loading="eager"
+                          src={agent.logo}
+                          width={20}
+                        />
+                      </span>
+                      <span
+                        className={cn(
+                          'type-label whitespace-nowrap transition-colors duration-300 group-hover/agent:text-foreground',
+                          isActive ? 'text-foreground' : 'text-muted-foreground'
+                        )}
+                      >
+                        {agent.name}
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           ))}
         </div>

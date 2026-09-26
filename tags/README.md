@@ -11,9 +11,8 @@ The path is the key: `tags/motion/outbound.md` is `motion:outbound`.
 | `category` | what kind of company? (crm, data-provider…) | `company.md` `category` |
 | `fit` | who is it for? (b2b-saas, smb, enterprise…) | workflows |
 
-Two more namespaces exist on the site but are **computed, never written as
-files**: `agent:<level>` (a tool's readiness) and `has:<type>` (its ways in),
-both derived from each tool's access.
+One more namespace exists on the site but is **computed, never written as a
+file**: `has:<type>` (a tool's ways in), derived from its access.
 
 ## The file
 

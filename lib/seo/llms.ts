@@ -1,14 +1,9 @@
-import {
-  AGENT_ACCESS,
-  AGENT_LEVELS,
-  DEFINITIONS,
-  SITE,
-} from '@/lib/catalog/definitions'
+import { AGENT_ACCESS, DEFINITIONS, SITE } from '@/lib/catalog/definitions'
 
 /**
  * The preamble `/llms.txt` and `/llms-full.txt` share, in the llmstxt.org
  * shape: an H1, a blockquote summary, then free-form markdown with no
- * headings — the definitions, the readiness levels, and how to read a file —
+ * headings — the definitions and how to read a file —
  * before the H2 file sections start. PURE: strings from the definitions.
  */
 export function llmsPreamble(origin: string, title: string): Array<string> {
@@ -28,10 +23,6 @@ export function llmsPreamble(origin: string, title: string): Array<string> {
       (entry) =>
         `- **${entry.term}** (\`${entry.example}\`): ${entry.definition} ${entry.detail} Source file: \`${entry.path}\`.`
     ),
-    '',
-    'Agent readiness (the `agent:` line of a tool file):',
-    '',
-    ...AGENT_LEVELS.map((entry) => `- **${entry.level}**: ${entry.definition}`),
     '',
     'Reading a file:',
     '',

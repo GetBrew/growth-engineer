@@ -1,23 +1,26 @@
 import 'server-only'
 
-import { getCatalog } from './catalog'
+import type {
+  Company,
+  EdgeGroup,
+  MapNode,
+  PaletteItem,
+  Tool,
+  WorkflowListItem,
+} from '@/lib/types/catalog'
+import { getCatalog, getSourceFile } from './catalog'
 import { type EntityType, formatRef } from './keys'
 import {
   companyListItem,
   companySearchItem,
+  paletteItems,
   tagChip,
   toolListItem,
   toolSearchItem,
   workflowListItem,
   workflowSearchItem,
 } from './lists'
-import type {
-  Company,
-  EdgeGroup,
-  MapNode,
-  Tool,
-  WorkflowListItem,
-} from './types'
+import { type Excerpt, sourceExcerpt } from './source-excerpt'
 
 /**
  * The catalog's server-side loaders. Every page and route handler reads
@@ -371,4 +374,30 @@ export async function loadNewTools(limit = 12) {
     const tool = catalog.tools.get(key)
     return tool ? [toolListItem(catalog, tool)] : []
   })
+}
+
+/**
+ * The ⌘K index: every company, tool and workflow in one flat list,
+ * prerendered into every page with the site chrome — the palette never
+ * fetches, and every keystroke is answered in the browser.
+ */
+export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
+  return paletteItems(getCatalog())
+}
+
+/**
+ * A quote from a source file in the repository, for the contribute guides:
+ * the file as written, or its header, or one `## ` section. Throws when the
+ * file or the section is missing, so a guide can never show a sample that
+ * drifted from the catalog — the build fails instead.
+ */
+export async function loadSourceExcerpt(
+  path: string,
+  excerpt?: Excerpt
+): Promise<string> {
+  const source = getSourceFile(path)
+  if (source === undefined) {
+    throw new Error(`${path} is not a file in the content tree`)
+  }
+  return sourceExcerpt(path, source, excerpt)
 }

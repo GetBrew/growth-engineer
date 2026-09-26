@@ -1,23 +1,37 @@
 /*
  * Type system
  *
- * Geist is a variable face, so use its intentional intermediate weights
- * instead of rounding everything to 400/500/600. Product typography uses a
- * compact set of roles; components choose a role and never invent a size.
+ * WEIGHTS ARE GEIST'S, NOT THE ORIGINAL FACE'S. The scale was drawn for
+ * Season, whose intermediate weights (450/520/560) sat where they were meant
+ * to. Geist runs optically heavier at the same number, so 560 everywhere made
+ * every list and button read as semibold.
  *
- * Display      30 -> 48 / 1.05 / 560
- * Page title   30 -> 32 / 1.08 / 560
- * Section      24 / 28.8 / 560
- * Category     19 / 26.6 / 560
- * Item         17 / 25.5 / 560
- * Body         16 / 24 / 450
- * Label        12 / 16 / 520
+ * Geist's own system favours Regular and leans on SIZE for hierarchy, with
+ * Medium for emphasis (vercel.com/geist/typography). So there are three
+ * weights here and no more:
+ *
+ *   400  reading text — body, lead, helper. Geist Regular.
+ *   500  everything structural — headings, row titles, controls, labels.
+ *   600  ONE exception: a heading at body size, where weight is the only
+ *        thing telling it apart from the paragraph next to it.
+ *
+ * Hierarchy is carried by size and colour. Reach for a bigger role before a
+ * heavier one; a new weight is a change to this comment, not to a component.
+ *
+ * Display      30 -> 48 / 1.05 / 500
+ * Page title   30 -> 32 / 1.08 / 500
+ * Section      24 / 1.2  / 500
+ * Category     19 / 26.6 / 500
+ * Item         17 / 25.5 / 500
+ * Body         16 / 24   / 400
+ * Control      14 / 18   / 500
+ * Label        12 / 16   / 500
  */
 
 @utility type-display {
   font-size: 30px;
   line-height: 1.05;
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.025em;
   @media (width >= 40rem) {
     font-size: 36px;
@@ -30,7 +44,7 @@
 @utility type-page-title {
   font-size: 30px;
   line-height: 1.08;
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.02em;
   @media (width >= 40rem) {
     font-size: 32px;
@@ -40,20 +54,20 @@
 @utility type-section {
   font-size: 24px;
   line-height: 1.2;
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.015em;
 }
 
 @utility type-category {
   font-size: 19px;
   line-height: 26.6px;
-  font-weight: 560;
+  font-weight: 500;
 }
 
 @utility type-item {
   font-size: 17px;
   line-height: 25.5px;
-  font-weight: 560;
+  font-weight: 500;
 }
 
 @utility type-subsection {
@@ -62,62 +76,76 @@
   font-weight: 600;
 }
 
+/*
+ * Controls sit one step below body text. At 16px their 500 weight read as
+ * LARGER than the 16/400 copy beside them — same size, more ink — so the size
+ * drops to offset the weight and a button now sits level with a paragraph.
+ */
 @utility type-control {
-  font-size: 16px;
-  line-height: 20.4px;
-  font-weight: 560;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
 }
 
 /* Forms use the compact scale from the product input convention. */
 @utility type-form-title {
   font-size: 22px;
   line-height: 26.4px;
-  font-weight: 560;
+  font-weight: 500;
 }
 
 @utility type-field-label {
   font-size: 14px;
   line-height: 21px;
-  font-weight: 560;
+  font-weight: 500;
 }
 
 @utility type-helper {
   font-size: 14px;
   line-height: 21px;
-  font-weight: 450;
+  font-weight: 400;
 }
 
 @utility type-lead {
   font-size: 17px;
   line-height: 25.5px;
-  font-weight: 450;
+  font-weight: 400;
   color: var(--soft);
 }
 
 @utility type-body {
   font-size: 16px;
   line-height: 24px;
-  font-weight: 450;
+  font-weight: 400;
   color: var(--soft);
+}
+
+/*
+ * Inline emphasis inside running text — the one role that sets NO size, so a
+ * `<b>` takes the size of whatever role it sits in and only gains weight.
+ * Without this there was nothing to point `<b>` at, and it got `font-semibold`.
+ */
+@utility type-emphasis {
+  font-weight: 500;
 }
 
 @utility type-label {
   font-size: 12px;
   line-height: 16px;
-  font-weight: 520;
+  font-weight: 500;
 }
 
 @utility type-meta {
   font-size: 12px;
   line-height: 16px;
-  font-weight: 520;
+  font-weight: 500;
   color: var(--faint);
 }
 
 @utility eyebrow {
   font-size: 12px;
   line-height: 16px;
-  font-weight: 520;
+  font-weight: 500;
   letter-spacing: 0.08em;
   color: var(--faint);
 }

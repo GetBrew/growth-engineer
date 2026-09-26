@@ -64,7 +64,7 @@ describe('key grammar', () => {
 
   test('tag keys are namespace:slug within the managed namespaces', () => {
     expect(isValidTagKey('capability:enrich-contacts')).toBe(true)
-    expect(isValidTagKey('agent:native')).toBe(true)
+    expect(isValidTagKey('fit:smb')).toBe(true)
     expect(isValidTagKey('price:cheap')).toBe(false)
     expect(isValidTagKey('capability')).toBe(false)
   })

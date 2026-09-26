@@ -1,86 +1,41 @@
-import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-
-const PROOF_POINTS = [
-  {
-    value: '1',
-    label: 'Runnable file',
-    body: 'Each workflow is one portable Markdown file with its setup, inputs, steps, and rules in one place.',
-  },
-  {
-    value: '3',
-    label: 'Access paths',
-    body: 'See whether a tool works through MCP, a command-line interface, or a direct API before you choose it.',
-  },
-  {
-    value: 'Public',
-    label: 'Catalog access',
-    body: 'People and agents can inspect the catalog and fetch its files without creating an account first.',
-  },
-  {
-    value: 'Stable',
-    label: 'Resource keys',
-    body: 'Predictable references make every tool and workflow easy to share, revisit, and run again.',
-  },
-] as const
-
-const DOTS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] as const
+import { AccessTerminal } from '@/components/home/access-terminal'
+import { ContributionMarquee } from '@/components/home/contribution-marquee'
+import { GithubLink } from '@/components/layout/github-link'
 
 export function FounderProof() {
   return (
-    <section className="page-container py-20 sm:py-24">
-      <div className="mb-9 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-3xl">
-          <p className="type-label text-muted-foreground">For founders</p>
-          <h2 className="type-display mt-3">
-            Proven workflows, with the access details up front.
-          </h2>
-        </div>
-        <div className="flex max-w-md flex-col items-start gap-5 md:items-end md:text-right">
-          <p className="type-body text-subtle">
-            Know what an agent can run, how it connects, and exactly what you
-            are handing it before your team commits.
-          </p>
-          <Link
-            className={buttonVariants({ variant: 'outline', size: 'pill' })}
-            href="/workflows"
-          >
-            Explore proven workflows
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {PROOF_POINTS.map((point) => (
-          <article
-            className="relative min-h-80 overflow-hidden rounded-2xl bg-foreground p-7 text-background"
-            key={point.label}
-          >
-            <DotMark />
-            <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-white/5 to-transparent" />
-            <div className="relative flex h-full flex-col justify-end pt-28">
-              <p className="text-5xl leading-none tracking-tighter sm:text-6xl lg:text-5xl xl:text-6xl">
-                {point.value}
+    <section className="page-container py-(--space-section)">
+      <div className="grid gap-12 lg:grid-cols-2 lg:gap-10">
+        <div className="flex min-w-0 flex-col">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="type-item">Open source</span>
+              <p className="type-body mt-0.5 text-foreground/60">
+                Contribute your own workflows and tools
               </p>
-              <p className="type-label mt-4 text-white/55">{point.label}</p>
-              <p className="type-body mt-6 text-white/65">{point.body}</p>
             </div>
-          </article>
-        ))}
+
+            <GithubLink className="shrink-0" />
+          </div>
+
+          <div className="mt-8">
+            <ContributionMarquee />
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-col">
+          <div className="flex flex-col">
+            <span className="type-item">Three ways in</span>
+            <p className="type-body mt-0.5 text-foreground/60">
+              Every tool and workflow says how an agent reaches it
+            </p>
+          </div>
+
+          <div className="mt-8">
+            <AccessTerminal />
+          </div>
+        </div>
       </div>
     </section>
-  )
-}
-
-function DotMark() {
-  return (
-    <div
-      aria-hidden="true"
-      className="absolute top-8 left-8 grid grid-cols-3 gap-2"
-    >
-      {DOTS.map((dot) => (
-        <span className="size-1.5 rounded-full bg-white/80" key={dot} />
-      ))}
-    </div>
   )
 }

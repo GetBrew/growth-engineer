@@ -1,5 +1,3 @@
-import type { AgentLevel } from './types'
-
 /**
  * THE definitions, written once. Everything that explains the catalog to a
  * person or a machine reads from here — the home page, `/llms.txt`,
@@ -47,12 +45,12 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
     definition:
       'ONE function an agent can call, tied to a specific MCP tool, CLI subcommand or API endpoint.',
     detail:
-      'Not the product: a product with three functions is three tools. Every way in names the exact operation, and the tool carries an agent-readiness level computed from checked facts.',
+      'Not the product: a product with three functions is three tools. Every way in names the exact operation an agent calls.',
     path: 'companies/<handle>/tools/<slug>.md',
   },
   {
     term: 'Workflow',
-    example: 'intent-to-meeting',
+    example: 'funding-signal-outbound',
     definition:
       'Several tools in order, with the instructions that reach a result, written by a person.',
     detail:
@@ -65,40 +63,18 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
     definition:
       'A word from the managed vocabulary that companies, tools and workflows are filtered by.',
     detail:
-      'Five curated namespaces — capability, motion, channel, category, fit — plus two derived from each tool’s access: agent (its readiness) and has (its ways in).',
+      'Five curated namespaces — capability, motion, channel, category, fit — plus one derived from each tool’s access: has (its ways in).',
     path: 'tags/<namespace>/<slug>.md',
   },
 ]
 
-export const AGENT_LEVELS: ReadonlyArray<{
-  level: AgentLevel
-  definition: string
-}> = [
-  {
-    level: 'unverified',
-    definition:
-      'Nobody has checked the access facts yet. The default, and honest.',
-  },
-  {
-    level: 'native',
-    definition:
-      'An official MCP server or CLI with self-serve credentials: an agent can drive it without a person in the loop.',
-  },
-  {
-    level: 'friendly',
-    definition:
-      'An official API with self-serve credentials: an agent can call it once it has a key.',
-  },
-  {
-    level: 'possible',
-    definition:
-      'Community-maintained access only, or official access that needs a sales call or approval.',
-  },
-]
+/** Where the MCP server answers (app/mcp/route.ts), from the site origin. */
+export const MCP_PATH = '/mcp'
 
-/** How an agent gets a file: the three doors, stated once. */
+/** How an agent gets a file: the doors, stated once. */
 export const AGENT_ACCESS = [
   'Append `.md` to any company, tool or workflow URL to get its file.',
-  'Or request any page with `Accept: text/markdown`.',
+  'Or request a company, tool or workflow page with `Accept: text/markdown`.',
   '`/llms.txt` lists every file; `/llms-full.txt` is every file in one document.',
+  `Or connect an MCP client to \`${MCP_PATH}\` (Streamable HTTP, no sign-in): \`search\` finds files, \`get\` returns one.`,
 ] as const

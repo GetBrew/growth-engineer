@@ -1,53 +1,56 @@
 'use client'
 
 import { type ReactNode, useState } from 'react'
-
-import { MaskIcon } from '@/components/site/mask-icon'
-import { buttonVariants } from '@/components/ui/button'
+import { EntityIcon, type EntityKind } from '@/components/common/entity-icon'
+import { CatalogSearch } from '@/components/search/catalog-search'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export type CatalogTab = {
   value: string
   label: string
-  icon: string
+  entity: EntityKind
+
+  href: string
   content: ReactNode
 }
 
 export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
   const [active, setActive] = useState(tabs[0]?.value)
 
+  const activeTab = tabs.find((tab) => tab.value === active) ?? tabs[0]
+  const subject = activeTab?.label.toLowerCase() ?? 'the catalog'
+
   return (
     <Tabs
-      className="gap-8"
+      className="gap-1"
       onValueChange={(value) => setActive(String(value))}
       value={active}
     >
-      {/* Tabs + Submit button */}
-      <div className="flex items-center justify-between gap-4">
-        <TabsList aria-label="Browse the catalog">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <TabsList aria-label="Browse the catalog" className="w-full sm:w-fit">
           {tabs.map((tab) => (
             <TabsTrigger
-              className="flex-none gap-2"
+              className="min-w-0 gap-1.5 px-2 sm:flex-none sm:gap-2 sm:px-4"
               key={tab.value}
               value={tab.value}
             >
-              <MaskIcon size={16} src={tab.icon} />
+              <EntityIcon entity={tab.entity} size={16} />
               {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        <a
-          className={buttonVariants({ size: 'pill' })}
-          href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
-          rel="noreferrer"
-          target="_blank"
-        >
-          Add a workflow
-        </a>
+        {activeTab ? (
+          <CatalogSearch
+            action={activeTab.href}
+            className="w-full sm:max-w-xs"
+            key={activeTab.value}
+            label={`Search ${subject}`}
+            placeholder={`Search ${subject}`}
+          />
+        ) : null}
       </div>
 
-      {/* Tab content */}
       {tabs.map((tab) => (
         <TabsContent keepMounted key={tab.value} value={tab.value}>
           {tab.content}

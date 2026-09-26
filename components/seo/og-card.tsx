@@ -41,7 +41,7 @@ export function OgCard({
   kind: OgKind
   title: string
   description: string
-  /** Short facts, drawn in a row: "by Clay", "MCP", "agent: native". */
+  /** Short facts, drawn in a row: "by Clay", "MCP", "API". */
   facts: ReadonlyArray<string>
   /** The page's path, or the file's for a page that is one. */
   path: string

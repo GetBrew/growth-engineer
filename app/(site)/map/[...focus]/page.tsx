@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { Page, SectionHeading } from '@/components/catalog/primitives'
-import { FocusedNode, MapSkeleton } from '@/components/map/focused'
+import { Page } from '@/components/layout/page'
+import { SectionHeading } from '@/components/layout/section-heading'
+import { FocusedNode } from '@/components/map/focused'
 import { parseRef } from '@/lib/catalog/keys'
 import { loadNeighborhood } from '@/lib/catalog/loaders'
 import { mapFocusParams } from '@/lib/catalog/static-params'
@@ -10,12 +11,6 @@ import { pageMetadata } from '@/lib/seo/metadata'
 
 type Params = Promise<{ focus: Array<string> }>
 
-/**
- * `/map/tool/clay/enrich-contacts`: one node and everything touching it. A
- * PAGE PER NODE, all prerendered, so exploring the graph is a static
- * navigation from one file to the next — no query string, no request-time
- * work, and every focus is a link an agent can follow.
- */
 export function generateStaticParams() {
   return mapFocusParams()
 }
@@ -55,7 +50,7 @@ export default function MapFocusPage({ params }: { params: Params }) {
         description="What is connected to what. Every company, tool and workflow, with the edges between them — the one view the catalog pages do not give you."
         title="Relationship map"
       />
-      <Suspense fallback={<MapSkeleton />}>
+      <Suspense fallback={null}>
         <Focused params={params} />
       </Suspense>
     </Page>

@@ -1,6 +1,4 @@
 import type { NextConfig } from 'next'
-// Relative, alias-free: see lib/logos-host.ts for why.
-import { CONTEXT_LOGO_HOST } from './lib/logos-host'
 
 const nextConfig: NextConfig = {
   /** AGENTS.md is the canonical, CI-capped agent-policy file — keep the writer off. */
@@ -28,10 +26,11 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: process.env.EMIT_BROWSER_SOURCEMAPS === '1',
 
   /**
-   * The catalog is read from the markdown tree at build time; the only routes
-   * that read it at request time are the ones with `searchParams` (/tools,
-   * /companies, /workflows, /map). Their serverless bundles need the tree
-   * beside them, and the tracer cannot see a directory walk.
+   * The catalog is read from the markdown tree at build time; at request time
+   * only an unknown key on a detail route (which asks the alias map) and the
+   * `/mcp` endpoint read it. Their serverless bundles need the tree beside
+   * them, and the tracer cannot see a directory walk. The key is a glob with
+   * `contains` matching, so `/` covers every route.
    */
   outputFileTracingIncludes: {
     '/': [
@@ -43,15 +42,13 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [60, 75, 90],
-    // Company logos come from ONE remote host (lib/logos.ts); everything else
-    // is local. A wildcard here would make the deployment an open image proxy.
-    remotePatterns: [{ protocol: 'https', hostname: CONTEXT_LOGO_HOST }],
-  },
+  /**
+   * No image optimizer: every image is a small static file served from the
+   * CDN as it is — logos are capped at 32 KB by `content:check`, the agent
+   * marks are SVGs, and a contributor's GitHub photo is a plain <img>. Nothing
+   * is resized on request, and there is no open image proxy to abuse.
+   */
+  images: { unoptimized: true },
 
   /**
    * Keys and URLs are permanent after publishing, so the site starts on the

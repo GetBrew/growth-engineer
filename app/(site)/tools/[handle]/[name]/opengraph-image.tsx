@@ -30,11 +30,7 @@ export default async function Image({
   return new ImageResponse(
     <OgCard
       description={tool.summary}
-      facts={[
-        `by ${company.name}`,
-        ...ways.map((type) => type.toUpperCase()),
-        `agent: ${tool.agentLevel}`,
-      ]}
+      facts={[`by ${company.name}`, ...ways.map((type) => type.toUpperCase())]}
       kind="Tool"
       path={refToFilePath({ type: 'tool', key: tool.key, version: undefined })}
       title={tool.name}

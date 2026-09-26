@@ -2,8 +2,8 @@
 
 The catalog is a tree of markdown files. This page is the map of that tree —
 every entity, every field, every rule the build enforces, and the values it
-derives. The schemas themselves live in `lib/content/schemas.ts`; the types
-in `lib/catalog/types.ts`.
+derives. The schemas themselves live in `lib/schemas/content.ts`; the types
+in `lib/types/catalog.ts`.
 
 ## Identity
 
@@ -13,7 +13,7 @@ The public `key` is the path, and the path is the URL:
 | --- | --- | --- | --- |
 | Company | `clay` | `companies/clay/company.md` | `/companies/clay` |
 | Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` | `/tools/clay/enrich-contacts` |
-| Workflow | `intent-to-meeting` | `workflows/intent-to-meeting.md` | `/workflows/intent-to-meeting` (`@3` pins a version) |
+| Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` (`@1` pins a version) |
 | Tag | `capability:enrich-contacts` | `tags/capability/enrich-contacts.md` | a filter chip |
 
 A key part is lowercase letters, digits and hyphens, 2–39 characters, never
@@ -50,9 +50,7 @@ selfServe, envVar?, header?, keyUrl? }`; `docsUrl` is optional.
 A tool is ONE function. The slug is a capability (`tags/capability/<slug>.md`
 must exist). `name`, `summary`, `updated` are required. `access` maps an
 access id to the **operation** — the MCP tool name, the CLI subcommand, or
-`METHOD /path` — and a published tool needs at least one. `agent.checked`
-(a date) records that a person verified the access facts;
-`agent.machineReadableDocs` that OpenAPI or llms.txt exists. `status` is
+`METHOD /path` — and a published tool needs at least one. `status` is
 `published` (default), `deprecated`, or `draft` (no page, no file, not
 listed). `aliases` lists old slugs. The body is the description.
 
@@ -60,43 +58,41 @@ listed). `aliases` lists old slugs. The body is the description.
 
 Workflows are by people: `author` is a GitHub login (letters, digits, single
 hyphens), shown as `@login` and linked to the profile; it is never a company.
-`title` (phrased as the result), `summary`, `author`, `tags` (≥ 1, curated
-namespaces only), `steps` (1–10 of `{ title, tool, via?, instruction }`),
-`doneWhen` (≥ 1), `updated` are required. Optional: `version` (integer, default 1),
-`inputs` (`{ name (snake_case), description, example? }`), `featured`
-(unique rank on the featured list), `aliases`, `status`. The body is the
-notes section. Every step's `tool` must be a published tool; `via` must be a
-way in that tool has.
+
+The HEADER holds the facts: `title` (phrased as the result), `summary`,
+`author`, `tags` (≥ 1, curated namespaces only) and `updated` are required;
+`version` (integer, default 1), `featured` (unique rank on the featured
+list), `aliases` and `status` are optional.
+
+The BODY holds the workflow itself, in the markdown the rendered file uses,
+so the source reads on GitHub the way it reads on the site
+(`lib/content/workflow-body.ts`). Four sections, in order:
+
+| Section | Entries | Becomes |
+| --- | --- | --- |
+| `## Inputs` (optional) | ``- `name`: description, e.g. example`` | `inputs`: `{ name (snake_case), description, example? }` |
+| `## Steps` (1–10) | ``1. **Title** with `handle/slug` via MCP. Instruction.`` — the tool may instead be a link to its file, `../companies/<handle>/tools/<slug>.md` | `steps`: `{ title, tool, via?, instruction }` |
+| `## Done when` (≥ 1) | `- A check.` | `doneWhen` |
+| `## Notes` (optional) | free markdown | `notes` |
+
+A step names its tool by key, as a code span or as a link to the tool's
+source file (the link must point at that file). Every step's tool must be a
+published tool; `via` must be a way in that tool has. Any other heading, text
+outside a section, or a header field that belongs in the body is an error
+with its line number.
 
 ## Tags — `tags/<namespace>/<slug>.md`
 
 `label` is required; `synonyms` feed search; the body is the required
 description. Namespaces: `capability` (what a tool does), `motion`,
-`channel`, `category` (of a company), `fit`. Two namespaces are DERIVED and
-never files: `agent:<level>` and `has:<type>`, computed from each tool's
-access.
-
-## Agent readiness
-
-Computed at build (`lib/catalog/agent-level.ts`) from a tool's ways in and
-`agent.checked`. Rules top-down, first match wins:
-
-| Level | When |
-| --- | --- |
-| **unverified** | no `agent.checked` — nobody has verified the facts |
-| **native** | an official MCP server or CLI with self-serve credentials |
-| **friendly** | an official API with self-serve credentials |
-| **possible** | community access only, or official access behind approval |
-
-The level and its reason appear in the file header (`agent`, `agent_note`).
-A score (0–100) orders tools within a level and is never shown.
+`channel`, `category` (of a company), `fit`. One namespace is DERIVED and
+never files: `has:<type>`, computed from each tool's access.
 
 ## What the build derives (never authored)
 
 | Projection | From | Where |
 | --- | --- | --- |
-| `agentLevel`, `agent.reason`, `agent.score` | access + `agent.checked` | `agent-level.ts` |
-| `has:*` and `agent:*` tags on a tool | access, level | `derived-tags.ts` |
+| `has:*` tags on a tool | access | `derived-tags.ts` |
 | tag `counts` | published entities | `derive.ts` |
 | `searchText` | name, summary, company, tag labels and synonyms | `derive.ts` |
 | `toolKeys`, `toolCount`, workflow ↔ tool ↔ company edges — written into both rendered files (`tools:` / `workflows:`) | steps | `build-entities.ts`, `build-catalog.ts`, `build-documents.ts` |

@@ -1,4 +1,4 @@
-import type { Company, Tag, Tool, Workflow } from '@/lib/catalog/types'
+import type { Company, Tag, Tool, Workflow } from '@/lib/types/catalog'
 
 /**
  * The projections: values that used to be database columns rewritten by a
@@ -19,14 +19,15 @@ export function slugify(title: string): string {
     .replace(/^-|-$/g, '')
 }
 
-/** What the search box can find a company by. */
+/** What the search box can find a company by: everything its row shows. */
 export function companySearchText(
-  company: { name: string; tagline?: string },
+  company: { name: string; tagline?: string; description?: string },
   category: Tag | undefined
 ): string {
   return [
     company.name,
     company.tagline ?? '',
+    company.description ?? '',
     category?.label ?? '',
     ...(category?.synonyms ?? []),
   ].join(' ')
@@ -36,7 +37,13 @@ export function companySearchText(
 export function toolSearchText(
   tool: { name: string; summary: string },
   companyName: string,
-  capability: Tag | undefined
+  capability: Tag | undefined,
+  /**
+   * The ways in — `mcp`, `cli`, `api`. Without them, typing "mcp" finds
+   * nothing: an access type appears in no name, summary or capability, so the
+   * one word people reach for first matched the whole catalog's silence.
+   */
+  accessTypes: ReadonlyArray<string> = []
 ): string {
   return [
     tool.name,
@@ -44,6 +51,7 @@ export function toolSearchText(
     tool.summary,
     capability?.label ?? '',
     ...(capability?.synonyms ?? []),
+    ...accessTypes,
   ].join(' ')
 }
 
@@ -61,7 +69,9 @@ export function workflowSearchText(
     workflow.title,
     workflow.summary,
     workflow.author,
-    ...workflow.toolKeys.map((key) => key.split('/')[1] ?? key),
+    // Both halves of each tool key: `clay/enrich-contacts` finds the workflow
+    // by "clay" as well as by "enrich" — its rows show the vendor's logo.
+    ...workflow.toolKeys.flatMap((key) => key.split('/')),
     ...tags.flatMap((tag) => [tag.label, ...tag.synonyms]),
   ].join(' ')
 }

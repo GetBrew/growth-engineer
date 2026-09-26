@@ -1,12 +1,8 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { HeroBanner } from '@/components/catalog/hero-banner'
-import { Page, SectionHeading } from '@/components/catalog/primitives'
 import { ToolsExplorer } from '@/components/catalog/tools-explorer'
-import { HeroActions } from '@/components/catalog/works-with-agents'
+import { HeroBanner } from '@/components/common/hero-banner'
+import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { ToolsSkeleton } from '@/components/skeletons/tools-skeleton'
-import { buttonVariants } from '@/components/ui/button'
 import { loadTagChips, loadToolSearchItems } from '@/lib/catalog/loaders'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
@@ -34,31 +30,9 @@ export const metadata: Metadata = pageMetadata({
 export default function ToolsPage() {
   return (
     <>
-      <HeroBanner
-        description="Discover agent-ready tools available through MCP, CLI, and API."
-        eyebrow="Tools"
-        icon="/tool.svg"
-        title="Tools your agent can run"
-      >
-        <HeroActions>
-          <a
-            className={buttonVariants({ size: 'pill' })}
-            href="https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Add a tool
-          </a>
-        </HeroActions>
-      </HeroBanner>
-      <Page className="flex flex-col gap-8">
-        <SectionHeading
-          description="Every tool an agent can reach over MCP, CLI or API."
-          title="Discover tools"
-        />
-        <Suspense fallback={<ToolsSkeleton />}>
-          <ToolsCatalog />
-        </Suspense>
+      <HeroBanner title="Every tool your agent can run" />
+      <Page>
+        <ToolsCatalog />
       </Page>
     </>
   )

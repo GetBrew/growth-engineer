@@ -14,8 +14,8 @@ const TAGS = [
   'capability:enrich-contacts',
   'capability:find-work-emails',
   'motion:outbound',
-  'agent:native',
-  'agent:friendly',
+  'fit:smb',
+  'fit:enterprise',
   'has:mcp',
   'has:cli',
 ]
@@ -23,10 +23,10 @@ const TAGS = [
 describe('search grammar', () => {
   test('splits words from chips, keeps unknown namespaces as words', () => {
     expect(
-      parseSearchText('enrich linkedin agent:native has:mcp price:cheap')
+      parseSearchText('enrich linkedin fit:smb has:mcp price:cheap')
     ).toEqual({
       words: ['enrich', 'linkedin', 'price:cheap'],
-      chips: ['agent:native', 'has:mcp'],
+      chips: ['fit:smb', 'has:mcp'],
     })
   })
 
@@ -41,9 +41,27 @@ describe('search grammar', () => {
   })
 
   test('a partial chip completes itself; an impossible one is reported', () => {
-    expect(completeChips(['agent:nat', 'has:mcp', 'agent:xyz'], TAGS)).toEqual({
-      chips: ['agent:native', 'has:mcp'],
-      unknown: ['agent:xyz'],
+    expect(completeChips(['fit:sm', 'has:mcp', 'fit:xyz'], TAGS)).toEqual({
+      chips: ['fit:smb', 'has:mcp'],
+      unknown: ['fit:xyz'],
+    })
+  })
+
+  test('only a unique prefix completes', () => {
+    // `capability:` + nothing, or a prefix two tags share, is not a choice.
+    expect(completeChips(['has:c', 'capability:'], TAGS)).toEqual({
+      chips: ['has:cli'],
+      unknown: ['capability:'],
+    })
+    expect(completeChips(['fit:'], [...TAGS, 'fit:smb-saas']).unknown).toEqual([
+      'fit:',
+    ])
+    expect(completeChips(['fit:smb'], [...TAGS, 'fit:smb-saas']).chips).toEqual(
+      ['fit:smb']
+    )
+    expect(completeChips(['fit:sm'], [...TAGS, 'fit:smb-saas'])).toEqual({
+      chips: [],
+      unknown: ['fit:sm'],
     })
   })
 
@@ -51,25 +69,23 @@ describe('search grammar', () => {
     const state = searchStateFromParams({
       has: 'mcp,cli',
       q: 'cold outbound',
-      agent: 'native',
+      fit: 'smb',
     })
     expect(state).toEqual({
       words: ['cold', 'outbound'],
-      chips: ['agent:native', 'has:mcp', 'has:cli'],
+      chips: ['fit:smb', 'has:mcp', 'has:cli'],
     })
     expect(searchHref('/tools', state)).toBe(
-      '/tools?q=cold+outbound&agent=native&has=mcp,cli'
+      '/tools?q=cold+outbound&fit=smb&has=mcp,cli'
     )
     expect(searchHref('/tools', { words: [], chips: [] })).toBe('/tools')
   })
 
   test('the same search from text and from params produces the same key', () => {
-    const fromText = parseSearchText(
-      'cold outbound has:cli agent:native has:mcp'
-    )
+    const fromText = parseSearchText('cold outbound has:cli fit:smb has:mcp')
     const fromParams = searchStateFromParams({
       q: 'cold outbound',
-      agent: 'native',
+      fit: 'smb',
       has: 'mcp,cli',
     })
     expect(searchKey(fromText)).toBe(searchKey(fromParams))
@@ -79,10 +95,7 @@ describe('search grammar', () => {
     const state = parseSearchText('enrich has:mcp')
     expect(searchText(state)).toBe('enrich has:mcp')
     expect(toggleChip(state, 'has:mcp').chips).toEqual([])
-    expect(toggleChip(state, 'agent:native').chips).toEqual([
-      'has:mcp',
-      'agent:native',
-    ])
+    expect(toggleChip(state, 'fit:smb').chips).toEqual(['has:mcp', 'fit:smb'])
   })
 
   test('rejects hostile slugs from the URL', () => {

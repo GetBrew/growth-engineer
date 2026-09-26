@@ -1,56 +1,56 @@
 # Performance
 
 > What prerenders and why — the catalog built once per process from sync
-> reads, `generateStaticParams` on every detail route, only `searchParams`
-> routes streaming — lives in [`architecture.md`](architecture.md). This
-> page is the general mechanics.
+> reads, `generateStaticParams` on every detail route, listings that narrow
+> in the browser — lives in [`architecture.md`](architecture.md). This page
+> is the general mechanics.
 
 Three mechanisms, each guarding a different way an app gets slow.
 
-## 1. Cache Components — the static shell
+## 1. Cache Components — everything prerendered, nothing loads
 
-`cacheComponents: true` prerenders a static shell for every route and streams
-request-time data into it. Two rules make it work, and breaking either one
-silently reverts a route to "blank until the server finishes":
+`cacheComponents: true` prerenders every route. This site has no
+request-time data at all — the catalog is in memory — so every page's HTML is
+complete at build and nothing on it loads: no skeletons, no spinners, no
+fetch after the page arrives. Two rules keep it that way.
 
-**A page's default export is synchronous.** It returns a `<Suspense>`; the
-async child does the request-time reads.
+**A page without params renders its data directly.** Its async children read
+the in-memory catalog, which resolves during the prerender. There is no
+Suspense and no fallback to design — and if a request-time read ever sneaks
+in, the build fails instead of the page quietly growing a loading state.
+
+**A page with params is synchronous and awaits them in a Suspense child.**
+Every known key is listed by `generateStaticParams` and prerenders complete;
+only an unknown key (answered on demand with a 404 or an alias's 308) reaches
+the boundary, so its fallback is `null`.
 
 ```tsx
-// ✅ the shell prerenders; data streams in
-export default function Page() {
+// ✅ every known key prerenders complete; nothing is drawn while it resolves
+export default function Page({ params }: { params: Params }) {
   return (
-    <Suspense fallback={<Skeleton />}>
-      <Loader />
+    <Suspense fallback={null}>
+      <Detail params={params} />
     </Suspense>
   )
 }
 
-async function Loader({ searchParams }: { searchParams: Promise<Params> }) {
-  const params = await searchParams // the one request-time read
-  const companies = await loadCompanies(200, params.category)
-  return <CompanyGrid companies={companies} />
-}
-
-// ❌ nothing prerenders — the whole route waits
+// ❌ awaiting params in the page itself blocks the route from prerendering
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params
   …
 }
 ```
 
-Any of `auth()`, `cookies()`, `headers()`, `params`, `searchParams` or a data
-read at the top of an async page has this effect. `next dev` flags it as a
-blocking route (`experimental.instantInsights`), which is why that setting is
-pinned rather than left to the framework default.
+`next dev` flags a blocking route (`experimental.instantInsights`), which is
+why that setting is pinned rather than left to the framework default.
 
 **Never `export const dynamic`, `revalidate` or `dynamicParams`.** Cache
-Components rejects them at build. A route that must not be static reads
-request data in its Suspense child; everything else prerenders.
+Components rejects them at build.
 
-**Fallbacks must be dimensionally stable** — the same box as the real content.
-A fallback that is shorter makes the page land and then jump, which measures as
-layout shift and feels like a bug.
+**A client component that reads the URL** renders its no-query version until
+hydration (`useIsClient`), then reads `useSearchParams`. The prerender never
+touches the query, so the listings are fully static (`○`) and their HTML
+holds every row.
 
 ## 2. Instant Navigations — the prefetch
 
@@ -66,7 +66,8 @@ Listings never read the URL on the server: they prerender every item and a
 client component narrows the list from `useSearchParams`, so `/tools?has=mcp`
 is the same static page as `/tools` with a different filter applied in the
 browser. The map is one prerendered page per node. `pnpm build` prints `○`
-for every route except the not-found and the on-demand fallbacks.
+or `●` for every page, `◐` only for the on-demand fallbacks of unknown keys,
+and `ƒ` only for `/mcp` (plus the proxy, which runs for `.md` requests only).
 
 ## 3. The bundle budget — the ratchet
 

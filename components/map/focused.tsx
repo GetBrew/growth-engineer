@@ -1,12 +1,12 @@
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
-import type { EdgeGroup, MapNode } from '@/lib/catalog/types'
+import { buttonVariants } from '@/components/ui/button'
+import type { EdgeGroup, MapNode } from '@/lib/types/catalog'
 import { NeighborhoodGraph } from './graph'
 import { catalogHref } from './node'
 import { RelationGroups } from './relations'
 
-/** One node and everything touching it: the header, the diagram, the list. */
 export function FocusedNode({
   node,
   groups,
@@ -20,16 +20,14 @@ export function FocusedNode({
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-foreground/55 text-sm">
+          <p className="type-helper text-faint">
             {node.type} · {edges} {edges === 1 ? 'edge' : 'edges'}
           </p>
-          <h2 className="truncate font-semibold text-2xl tracking-[-0.02em]">
-            {node.name}
-          </h2>
+          <h2 className="type-section truncate">{node.name}</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            className="focus-ring flex h-10 items-center gap-2 rounded-full border border-border bg-white px-4 text-foreground/62 text-sm transition-colors hover:border-foreground/20 hover:text-foreground"
+            className={buttonVariants({ variant: 'outline', size: 'pill' })}
             href={catalogHref(node)}
           >
             Open page
@@ -41,7 +39,7 @@ export function FocusedNode({
             />
           </Link>
           <Link
-            className="focus-ring flex h-10 items-center rounded-full border border-border bg-white px-4 text-foreground/62 text-sm transition-colors hover:border-foreground/20 hover:text-foreground"
+            className={buttonVariants({ variant: 'outline', size: 'pill' })}
             href="/map"
           >
             Whole map
@@ -49,20 +47,11 @@ export function FocusedNode({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-white p-2 sm:p-4">
+      <div className="rounded-2xl border border-border bg-background p-2 sm:p-4">
         <NeighborhoodGraph groups={groups} node={node} />
       </div>
 
       <RelationGroups groups={groups} />
     </div>
-  )
-}
-
-export function MapSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="h-[520px] w-full animate-pulse rounded-2xl bg-muted"
-    />
   )
 }

@@ -1,0 +1,67 @@
+/*
+ * The heart in the footer credit lifts three little hearts while you hover it. They
+ * rise rather than scatter, and the heart swells slightly rather than pulsing:
+ * a credit line is the quietest thing in the footer, so its animation is too.
+ */
+@keyframes spark {
+  from {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(var(--y) + 6px)) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--x)), var(--y)) scale(1);
+  }
+}
+
+@keyframes beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+}
+
+.heart {
+  position: relative;
+  display: inline-flex;
+}
+
+/*
+ * The hearts sit ABOVE the big one and lift a few pixels; they used to start at
+ * its centre and fly out, which meant they crossed the heart on the way and
+ * read as a smear rather than three hearts.
+ */
+.spark {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  display: inline-flex;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * The group is the whole credit line, so hovering the words sets it off too.
+ * The hearts rise ONCE and then hold: `forwards` keeps them at the end of the
+ * keyframe for as long as the pointer stays, so they read as three hearts sitting
+ * above the heart rather than something that keeps twitching. They vanish when
+ * the hover ends, because the rule stops applying and the base state is
+ * `opacity: 0`.
+ */
+.group:hover .spark {
+  animation: spark 260ms ease-out 1 forwards;
+}
+
+.group:hover .mark {
+  animation: beat 400ms ease-in-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .spark,
+  .group:hover .mark {
+    animation: none;
+  }
+}

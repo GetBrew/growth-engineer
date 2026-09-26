@@ -1,9 +1,8 @@
 # Agent Guidelines — growth.engineer
 
-Canonical instructions for coding agents (Claude, Codex, Cursor, Copilot) and
-for humans. This file holds the durable invariants and the routing table into
-the deep-dive docs. CI caps it at 200 lines (`pnpm docs:check`) — keep it
-pointer-style: one canonical statement per policy, no history, no changelog.
+Canonical instructions for coding agents and humans: the durable invariants
+and the routing table into the deep-dive docs. CI caps it at 200 lines
+(`pnpm docs:check`) — one canonical statement per policy, no changelog.
 
 ## What this is
 
@@ -30,7 +29,7 @@ a fact. Vision: [`docs/vision.md`](docs/vision.md). File schema:
 Next.js 16 (App Router, Cache Components, Turbopack) · a build-time content
 compiler (`lib/content/`) · Tailwind v4 · shadcn on Base UI · Biome · Vitest
 · pnpm. **There is no backend, no database and no auth provider.** Every
-route is public; the only environment is two optional `NEXT_PUBLIC_*` values.
+route is public; the only environment is one optional `NEXT_PUBLIC_SITE_URL`.
 
 ## Validation — proportional, not ceremonial
 
@@ -67,8 +66,10 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - ONE render path: [`lib/catalog/render-markdown.ts`](lib/catalog/render-markdown.ts)
   (pure) called only by [`lib/content/build-documents.ts`](lib/content/build-documents.ts)
   at build time. Nothing renders on the request path; a rendered file is
-  never hand-edited; the SOURCE files under `companies/` and `workflows/`
-  are structured input, not the product.
+  never hand-edited. A SOURCE file is a YAML header of facts plus a markdown
+  body a person can read on GitHub: a workflow's inputs, steps and checks
+  are body sections ([`lib/content/workflow-body.ts`](lib/content/workflow-body.ts));
+  the build adds setup and rules.
 - The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
   flat YAML header, setup picks the best way in (official MCP → CLI → API →
   community; tool files list every option, workflow files ≤ 2 per tool or the
@@ -81,9 +82,9 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 ### Keys and refs
 
 - Public identity is the `key` (`clay`, `clay/enrich-contacts`,
-  `intent-to-meeting`, `@3` pins a version), and the key IS the path:
+  `funding-signal-outbound`, `@3` pins a version), and the key IS the path:
   `companies/clay/`, `companies/clay/tools/enrich-contacts.md`,
-  `workflows/intent-to-meeting.md` (FLAT — no folders; the workflow's
+  `workflows/funding-signal-outbound.md` (FLAT — no folders; the workflow's
   `author` is a GitHub login in its header, never a company). Keys are never
   authored in a header.
   Grammar and reserved handles live in [`lib/catalog/keys.ts`](lib/catalog/keys.ts);
@@ -105,16 +106,14 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   shadow a live key, a published tool has ≥ 1 way in, logos exist. A new rule
   ships with a negative test in `tests/content-schema.test.ts` — a guard is
   not done until it has FAILED.
-- PROJECTIONS (`agentLevel`, `has:*`/`agent:*` tags, tag counts, `searchText`,
-  `toolCount`, the edges) are computed in `lib/content/derive.ts` and
-  `build-catalog.ts` — one writer each, never authored in a file. The
-  workflow ↔ tool relationship is written into BOTH rendered files (`tools:`
-  in a workflow file, `workflows:` in a tool file) and shown on both pages.
-- The pure half of `lib/catalog/*` (keys, agent-level, renderer, search
-  grammar, types) imports nothing from `node:`, `server-only` or
-  `lib/content` — it runs in the proxy and the browser too
-  (`tests/catalog-purity.test.ts`). Only `catalog.ts`, `loaders.ts`,
-  `discovery.ts` and `static-params.ts` are server-side.
+- PROJECTIONS (`has:*` tags, tag counts, `searchText`, `toolCount`, the
+  edges) are computed in `lib/content/derive.ts` and `build-catalog.ts` — one
+  writer each, never authored in a file. The workflow ↔ tool relationship is
+  written into BOTH rendered files (`tools:` / `workflows:`) and both pages.
+- The pure half of `lib/catalog/*` (keys, renderer, search grammar) imports
+  nothing from `node:`, `server-only` or `lib/content` — it runs in the proxy
+  and the browser too (`tests/catalog-purity.test.ts`). Only `catalog.ts`,
+  `loaders.ts`, `discovery.ts` and `static-params.ts` are server-side.
 
 ### Discovery: SEO, GEO and agents
 
@@ -134,29 +133,31 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 ### Rendering and caching
 
 - The catalog is built ONCE per process (`lib/catalog/catalog.ts`) from
-  synchronous reads, so every catalog page, the `.md` handler and `/llms.txt`
-  PRERENDER at build with no `'use cache'` and no `connection()`. Detail
-  routes list their params with `generateStaticParams`
-  (`lib/catalog/static-params.ts`). Never `export const dynamic`,
-  `revalidate` or `dynamicParams` — Cache Components rejects them.
-- EVERY page and permutation is generated at build. Listings (`/tools`,
-  `/companies`, `/workflows`) prerender every item and narrow themselves in
-  the browser from the URL (`useSearchParams` in a client component under
-  `<Suspense>`, with the pure search in `lib/catalog/search.ts`); the map is
-  one prerendered page per node (`/map/<type>/<key>`). No page reads
-  `searchParams` on the server. A page's default export is SYNCHRONOUS and
-  returns a `<Suspense>`. Unknown keys render on demand from the traced tree
-  (`outputFileTracingIncludes`).
+  synchronous reads, so every page, the `.md` handler and `/llms.txt`
+  PRERENDER with no `'use cache'` and no `connection()`; detail routes list
+  params with `generateStaticParams` (`lib/catalog/static-params.ts`). Never
+  `export const dynamic`, `revalidate` or `dynamicParams`.
+- EVERY page and permutation is generated at build. Listings prerender every
+  item with no query and, once hydrated (`useIsClient`), narrow themselves
+  from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`);
+  the map is one page per node. No page reads `searchParams` on the server.
+  The one dynamic route is `/mcp` (POST); the proxy runs only for `.md`.
+- NOTHING LOADS: no skeletons, no spinners, no fetch after load. A page with
+  no params renders its data directly — the build fails if anything in it is
+  request-time. A page with params is SYNCHRONOUS and awaits them in a
+  `<Suspense fallback={null}>` child, which only an unknown key (rendered on
+  demand from the traced tree) ever reaches.
 - Internal navigation is ALWAYS `next/link` (never a raw `<a href="/…">`):
   Link prefetches on viewport and on hover, and every target is static, so a
-  navigation is a cached fetch. Raw anchors are for external URLs only.
+  navigation is a cached fetch. Raw anchors are for external URLs and for
+  files a route handler serves (`/llms.txt`, `.md`), which are not pages.
 - Route handlers never read `request.url`: a redirect is a relative
   `Location` on a 308, or the route silently goes dynamic.
 - A redirect is never a page: decided in a Suspense child it becomes a
   `<meta refresh>` agents ignore. A redirect-only URL is a route handler
   (`/tools/[handle]`).
-- Fallbacks are dimensionally stable. Filters and search are LINKS and GET
-  forms — the URL is the state; an agent can use the same URL.
+- Filters and search are LINKS and GET forms (`next/form`) — the URL is the
+  state; an agent can use the same URL.
 
 ### Testing
 
@@ -164,8 +165,6 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   content suite (`tests/content.test.ts`) builds the real tree and asks every
   question a page asks; extend it when you add a read.
 - Write the negative cases. A guard is not done until it has FAILED.
-- Every seeded tool is `agent: unverified` because nobody has checked the
-  facts; `agent.checked` in a tool file is the only thing that changes that.
 
 ## Code conventions
 
@@ -175,13 +174,13 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   take `is/has/should/can`; environment through `lib/env.ts`.
 - Icons from `@hugeicons/react` + `@hugeicons/core-free-icons`; Geist Sans
   and Geist Mono through `next/font`.
-- Nothing invented in the catalog or the UI: no placeholder facts, fake
-  stats, invented customers or testimonials. Hide a slot when data is absent.
+- Nothing invented in the catalog or the UI: no placeholder facts, fake stats,
+  invented users, commands or endpoints. Hide a slot when data is absent.
 
 ## Documentation hygiene
 
 A change that moves a boundary updates the closest README or this file in the
-same batch. `pnpm docs:check` fails on a broken link or this file over cap.
+same batch; `pnpm docs:check` fails on a broken link or this file over cap.
 
 ## Docs routing table
 

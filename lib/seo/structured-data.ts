@@ -7,7 +7,7 @@ import type {
   ToolListItem,
   Workflow,
   WorkflowListItem,
-} from '@/lib/catalog/types'
+} from '@/lib/types/catalog'
 
 /**
  * Structured data (schema.org JSON-LD) for the pages that describe one
@@ -159,11 +159,7 @@ export function toolJsonLd(
               },
             }
           : {}),
-        keywords: [
-          tool.capability,
-          ...tool.tags,
-          `agent readiness: ${tool.agentLevel}`,
-        ].join(', '),
+        keywords: [tool.capability, ...tool.tags].join(', '),
         dateModified: new Date(tool.updatedAt).toISOString(),
       },
       {

@@ -1,11 +1,15 @@
-import { computeAgentLevel } from '@/lib/catalog/agent-level'
 import { derivedTagKeys } from '@/lib/catalog/derived-tags'
 import {
   DERIVED_TAG_NAMESPACES,
   isValidKeyPart,
   isValidOwnedKey,
 } from '@/lib/catalog/keys'
-import type { Access, Company, Tag, Tool, Workflow } from '@/lib/catalog/types'
+import {
+  type AccessFrontmatter,
+  type ToolFrontmatter,
+  toolSchema,
+} from '@/lib/schemas/content'
+import type { Access, Company, Tag, Tool, Workflow } from '@/lib/types/catalog'
 import {
   dateToMs,
   distinctToolKeys,
@@ -15,14 +19,8 @@ import {
 } from './derive'
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
+import { type ParsedWorkflow, parseWorkflowFile } from './parse-workflow'
 import type { ContentFile } from './read-tree'
-import {
-  type AccessFrontmatter,
-  type ToolFrontmatter,
-  toolSchema,
-  type WorkflowFrontmatter,
-  workflowSchema,
-} from './schemas'
 
 /**
  * Tools and workflows: the two entities with references to resolve. A tool
@@ -120,15 +118,6 @@ function toTool(
 ): Tool {
   const { data, body } = parsed
   const updatedAt = dateToMs(data.updated)
-  const checkedAt = data.agent?.checked
-    ? dateToMs(data.agent.checked)
-    : undefined
-  const assessment = computeAgentLevel({
-    access,
-    checkedAt,
-    machineReadableDocs: data.agent?.machineReadableDocs,
-    now: updatedAt,
-  })
   const tool: Tool = {
     key: `${file.handle}/${file.slug}`,
     companyKey: file.handle,
@@ -137,19 +126,16 @@ function toTool(
     ...(body ? { description: body } : {}),
     capability: file.slug,
     access,
-    agent: {
-      ...assessment,
-      ...(data.agent?.machineReadableDocs === undefined
-        ? {}
-        : { machineReadableDocs: data.agent.machineReadableDocs }),
-      ...(checkedAt === undefined ? {} : { checkedAt }),
-    },
-    agentLevel: assessment.level,
     tags: [],
     status: data.status === 'deprecated' ? 'deprecated' : 'published',
     updatedAt,
     aliases: data.aliases,
-    searchText: toolSearchText(data, company.name, capability),
+    searchText: toolSearchText(
+      data,
+      company.name,
+      capability,
+      access.map((entry) => entry.type)
+    ),
   }
   tool.tags = derivedTagKeys(tool)
   return tool
@@ -250,16 +236,18 @@ function resolveTags(
 /** Every step names a published tool, and a `via` the tool actually offers. */
 function checkSteps(
   file: WorkflowFile,
-  steps: WorkflowFrontmatter['steps'],
+  parsed: ParsedWorkflow,
   tools: ReadonlyMap<string, Tool>,
   problems: ProblemList
 ): void {
-  for (const [index, step] of steps.entries()) {
+  for (const [index, step] of parsed.data.steps.entries()) {
+    const line = parsed.stepLines[index]
     const tool = tools.get(step.tool)
     if (!tool) {
       problems.add(
         file.path,
-        `steps.${index}.tool: "${step.tool}" is not a published tool (companies/<handle>/tools/<slug>.md)`
+        `step ${index + 1}: "${step.tool}" is not a published tool (companies/<handle>/tools/<slug>.md)`,
+        line
       )
     } else if (
       step.via &&
@@ -267,7 +255,8 @@ function checkSteps(
     ) {
       problems.add(
         file.path,
-        `steps.${index}.via: ${step.tool} has no ${step.via} way in`
+        `step ${index + 1}: ${step.tool} has no ${step.via.toUpperCase()} way in`,
+        line
       )
     }
   }
@@ -275,12 +264,21 @@ function checkSteps(
 
 function toWorkflow(
   file: WorkflowFile,
-  parsed: { data: WorkflowFrontmatter; body: string },
+  parsed: ParsedWorkflow,
   tags: ReadonlyArray<Tag>
 ): Workflow {
-  const { data, body } = parsed
+  const { data, notes } = parsed
+  // A step's key is its title as a slug, made unique within the workflow: two
+  // steps may share a title ("Send"), never a key.
+  const seen = new Map<string, number>()
+  const stepKey = (title: string) => {
+    const slug = slugify(title) || 'step'
+    const count = (seen.get(slug) ?? 0) + 1
+    seen.set(slug, count)
+    return count === 1 ? slug : `${slug}-${count}`
+  }
   const steps = data.steps.map((step) => ({
-    key: slugify(step.title),
+    key: stepKey(step.title),
     title: step.title,
     toolKey: step.tool,
     ...(step.via ? { via: step.via } : {}),
@@ -297,7 +295,7 @@ function toWorkflow(
     inputs: data.inputs,
     steps,
     doneWhen: data.doneWhen,
-    ...(body ? { notes: body } : {}),
+    ...(notes ? { notes } : {}),
     ...(data.featured === undefined ? {} : { featured: data.featured }),
     toolKeys,
     toolCount: toolKeys.length,
@@ -331,12 +329,12 @@ export function buildWorkflows(
       problems.add(file.path, pathProblem)
       continue
     }
-    const parsed = parseFile(file, workflowSchema, problems)
+    const parsed = parseWorkflowFile(file.path, file.source, problems)
     if (!parsed) {
       continue
     }
     const tags = resolveTags(file, parsed.data.tags, context.tags, problems)
-    checkSteps(file, parsed.data.steps, context.tools, problems)
+    checkSteps(file, parsed, context.tools, problems)
     const workflow = toWorkflow(file, parsed, tags)
     if (workflow.featured !== undefined) {
       const holder = featuredRanks.get(workflow.featured)

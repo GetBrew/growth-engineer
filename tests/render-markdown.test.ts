@@ -12,7 +12,7 @@ import {
   WORKFLOW_FILE_MAX_LINES,
   type WorkflowFileInput,
 } from '@/lib/catalog/render-markdown'
-import type { Access } from '@/lib/catalog/types'
+import type { Access } from '@/lib/types/catalog'
 
 /**
  * The renderer IS the product. These goldens are the design doc's three
@@ -64,10 +64,6 @@ const clay: ToolFileInput = {
     'Adds firmographic and person data to a contact or account. Clay does this.',
   // API first on purpose: the renderer must reorder to MCP-first.
   access: [clayApi, clayMcp],
-  agent: {
-    level: 'native',
-    reason: 'Native: official remote MCP with self-serve OAuth.',
-  },
   updatedAt: UPDATED_AT,
 }
 
@@ -313,7 +309,6 @@ describe('company file', () => {
           key: 'clay/clay',
           name: 'Clay',
           summary: 'Enriches people and companies.',
-          agentLevel: 'native',
         },
       ],
       updatedAt: UPDATED_AT,
@@ -321,7 +316,7 @@ describe('company file', () => {
     expect(rendered.markdown).toContain('ref: company:clay')
     expect(rendered.markdown).toContain('tools: [tool:clay/clay]')
     expect(rendered.markdown).toContain(
-      '- tool:clay/clay — Clay: Enriches people and companies. (agent: native)'
+      '- tool:clay/clay — Clay: Enriches people and companies.'
     )
     expect(rendered.markdown).toContain('- Website: https://clay.example')
   })

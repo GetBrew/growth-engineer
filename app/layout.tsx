@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
+import { Footer } from '@/components/layout/footer'
+import { Navbar } from '@/components/layout/navbar'
 import { JsonLd } from '@/components/seo/json-ld'
 import { SITE } from '@/lib/catalog/definitions'
 import { clientEnv, SITE_ORIGIN } from '@/lib/env'
@@ -8,12 +10,6 @@ import { websiteJsonLd } from '@/lib/seo/structured-data'
 
 import './globals.css'
 
-/**
- * The root layout is a SHELL. Under `cacheComponents: true` it is prerendered
- * once and reused by every route, so nothing here reads request-time data.
- */
-
-// Geist (SIL OFL): the one open family for text; Geist Mono for code.
 const geistSans = Geist({
   subsets: ['latin'],
   variable: '--font-geist-sans',
@@ -58,7 +54,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <body className="min-h-full">
         <JsonLd data={websiteJsonLd(SITE_ORIGIN)} />
-        {children}
+        {/* The chrome lives HERE, not in a route-group layout: the root
+            not-found boundary is serialized into every page's payload, and a
+            not-found that drew its own navbar and footer shipped a second copy
+            of both — and of the ⌘K index — with every page. */}
+        <div className="flex min-h-svh flex-col">
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   )

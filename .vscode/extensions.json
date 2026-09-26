@@ -1,8 +1,11 @@
 {
   "recommendations": ["biomejs.biome"],
-  // ESLint and Prettier would fight the Biome formatter on every save.
+  // ESLint and Prettier would fight the Biome formatter on every save. Both
+  // Prettier extensions are listed: the second one formats on save through
+  // its own path, so disabling only the first still reformats the file.
   "unwantedRecommendations": [
     "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "rvest.vs-code-prettier-eslint"
   ]
 }

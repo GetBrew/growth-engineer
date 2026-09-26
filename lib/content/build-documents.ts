@@ -9,7 +9,7 @@ import type {
   Company,
   Tool,
   Workflow,
-} from '@/lib/catalog/types'
+} from '@/lib/types/catalog'
 
 /**
  * The rendered files, one per company, tool and workflow — THE product. This
@@ -55,7 +55,6 @@ export function buildDocuments(
           ? {}
           : { description: tool.description }),
         access: tool.access,
-        agent: { level: tool.agent.level, reason: tool.agent.reason },
         updatedAt: tool.updatedAt,
       })
     )
@@ -129,7 +128,6 @@ export function buildDocuments(
           key: tool.key,
           name: tool.name,
           summary: tool.summary,
-          agentLevel: tool.agent.level,
         })),
         updatedAt,
       })
