@@ -17,7 +17,7 @@ export type Agent = {
   steps: ReadonlyArray<string>
 }
 
-export const SERVER_URL = '<server URL>'
+const SERVER_URL = '<server URL>'
 
 export const AGENTS = [
   {

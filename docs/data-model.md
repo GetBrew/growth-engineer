@@ -2,8 +2,8 @@
 
 The catalog is a tree of markdown files. This page is the map of that tree —
 every entity, every field, every rule the build enforces, and the values it
-derives. The schemas themselves live in `lib/content/schemas.ts`; the types
-in `lib/catalog/types.ts`.
+derives. The schemas themselves live in `lib/schemas/content.ts`; the types
+in `lib/types/catalog.ts`.
 
 ## Identity
 
@@ -13,7 +13,7 @@ The public `key` is the path, and the path is the URL:
 | --- | --- | --- | --- |
 | Company | `clay` | `companies/clay/company.md` | `/companies/clay` |
 | Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` | `/tools/clay/enrich-contacts` |
-| Workflow | `intent-to-meeting` | `workflows/intent-to-meeting.md` | `/workflows/intent-to-meeting` (`@3` pins a version) |
+| Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` (`@1` pins a version) |
 | Tag | `capability:enrich-contacts` | `tags/capability/enrich-contacts.md` | a filter chip |
 
 A key part is lowercase letters, digits and hyphens, 2–39 characters, never

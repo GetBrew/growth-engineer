@@ -29,7 +29,6 @@ summary: Find recently funded teams, enrich the right buyers, and send a relevan
 author: jdoe
 version: 1
 tags: [motion:outbound, channel:email, capability:enrich-contacts]
-featured: 3
 updated: 2026-09-16
 ---
 
@@ -63,7 +62,7 @@ Optional. Anything else the agent should know, in any markdown.
 | `tags` | yes | At least one `namespace:slug` from `tags/` (motion, channel, capability, category, fit). `has:*` is computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
 | `version` | no | Integer, default 1. Bump it when the steps change materially. |
-| `featured` | no | Editorial rank on `/workflows`; must be unique. Unranked workflows follow by date. |
+| `featured` | no | Editorial rank on `/workflows`, set by maintainers; must be unique. Unranked workflows follow by date. |
 | `aliases`, `status` | no | Old names to redirect; `published` (default) or `deprecated`. |
 
 ### The body

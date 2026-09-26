@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import { ToolsExplorer } from '@/components/catalog/tools-explorer'
 import { HeroBanner } from '@/components/common/hero-banner'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { ToolsSkeleton } from '@/components/skeletons/tools-skeleton'
 import { loadTagChips, loadToolSearchItems } from '@/lib/catalog/loaders'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
@@ -34,9 +32,7 @@ export default function ToolsPage() {
     <>
       <HeroBanner title="Every tool your agent can run" />
       <Page>
-        <Suspense fallback={<ToolsSkeleton />}>
-          <ToolsCatalog />
-        </Suspense>
+        <ToolsCatalog />
       </Page>
     </>
   )

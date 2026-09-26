@@ -26,9 +26,10 @@ template: [`companies/README.md`](companies/README.md),
    them.
 3. `companies/<handle>/tools/<slug>.md` — one file per **function**, named
    after a capability in `tags/capability/`, listing the exact operation for
-   each way in (`mcp: clay_enrich_contacts`, `api: POST /v1/enrich`).
+   each way in (`mcp: acme_enrich_contacts`, `api: POST /v1/enrich`), exactly
+   as the vendor's docs name it.
 
-Then:
+Then, with Node 22+ and pnpm 11 (`corepack enable` gives you the pinned pnpm):
 
 ```bash
 pnpm install
@@ -66,7 +67,8 @@ every tool back to the workflows that use it.
   made-up customers. If a fact is not public, leave the field out.
 
 `pnpm content:check` runs every one of these and lists every problem with
-its file path. The same suite runs in CI on your pull request.
+its file and line. The same suite runs in CI on your pull request (a
+maintainer approves the first run for a first-time contributor).
 
 ## Pull requests
 

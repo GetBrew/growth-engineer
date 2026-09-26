@@ -46,10 +46,10 @@ workflow file lists the tools it uses: the relationship is in both files.
 | Where | Example |
 | --- | --- |
 | Copy prompt button | On every tool and workflow page |
-| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/intent-to-meeting.md`, `/workflows/intent-to-meeting@3.md`, `/companies/clay.md` |
-| Any page, when asked for markdown | `Accept: text/markdown` |
+| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`, `/workflows/funding-signal-outbound@1.md`, `/companies/clay.md` |
+| A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file |
-| MCP (later) | `get` with a ref returns the file |
+| MCP, at `/mcp` | `search` finds files; `get` with a ref returns the file |
 
 `proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`. The
 handler reads the rendered document from the in-memory catalog — the same

@@ -17,7 +17,6 @@ import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { CompanyDetailSkeleton } from '@/components/skeletons/company-detail-skeleton'
 import { buttonVariants } from '@/components/ui/button'
 import { isValidHandle, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
@@ -67,7 +66,7 @@ export default function CompanyPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/companies" label="All companies" />
-      <Suspense fallback={<CompanyDetailSkeleton />}>
+      <Suspense fallback={null}>
         <CompanyDetail params={params} />
       </Suspense>
     </Page>

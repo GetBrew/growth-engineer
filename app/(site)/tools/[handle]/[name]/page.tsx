@@ -23,7 +23,6 @@ import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { ToolDetailSkeleton } from '@/components/skeletons/tool-detail-skeleton'
 import { isValidOwnedKey, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadDocument,
@@ -75,7 +74,7 @@ export default function ToolPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/tools" label="All tools" />
-      <Suspense fallback={<ToolDetailSkeleton />}>
+      <Suspense fallback={null}>
         <ToolDetail params={params} />
       </Suspense>
     </Page>

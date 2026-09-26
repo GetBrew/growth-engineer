@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import { WorkflowsIndex } from '@/components/catalog/workflows-index'
 import { HeroBanner } from '@/components/common/hero-banner'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { WorkflowsSkeleton } from '@/components/skeletons/workflows-skeleton'
 import { loadTagChips, loadWorkflowSearchItems } from '@/lib/catalog/loaders'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
@@ -29,9 +27,7 @@ export default function WorkflowsPage() {
     <>
       <HeroBanner title="Workflows that grow revenue" />
       <Page>
-        <Suspense fallback={<WorkflowsSkeleton />}>
-          <Index />
-        </Suspense>
+        <Index />
       </Page>
     </>
   )

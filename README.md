@@ -53,14 +53,15 @@ companies/ workflows/ tags/  ─▶  lib/content/build-catalog.ts  ─▶  the C
 
 ## For agents
 
-Every page answers `Accept: text/markdown` with its file, or append `.md`:
-`/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`,
-`/companies/clay.md`. `/llms.txt` defines the four words the catalog uses and
+Every company, tool and workflow page answers `Accept: text/markdown` with
+its file, or append `.md`: `/tools/clay/enrich-contacts.md`,
+`/workflows/funding-signal-outbound.md`, `/companies/clay.md`. `/llms.txt` defines the four words the catalog uses and
 links every file with a one-line summary; `/llms-full.txt` is every file in
 one document. Every HTML page declares its file as a `text/markdown`
 alternate and carries schema.org data (a company is an `Organization`, a tool
 a `SoftwareApplication`, a workflow a `HowTo` with one step per step). No
-sign-in, no rate limit, no key. Read-only MCP (`search`, `get`) arrives later.
+sign-in, no rate limit, no key. Any MCP client can connect to `/mcp`
+(Streamable HTTP, read-only): `search` finds files, `get` returns one.
 
 The definitions themselves live in ONE place, `lib/catalog/definitions.ts`,
 and feed the home page, `/llms.txt` and the structured data.
@@ -74,7 +75,7 @@ pnpm content:check       # validate the catalog: every problem with its file pat
 ```
 
 There is no backend and no environment to configure. `.env.example` lists
-the two optional public variables (site origin, logo client id).
+the one optional public variable, the site origin.
 
 | Command | What it does |
 | --- | --- |
@@ -83,19 +84,21 @@ the two optional public variables (site origin, logo client id).
 | `pnpm tsc` / `pnpm lint` | The full gate, at handoff |
 | `pnpm test:run` | The unit suite: goldens, key grammar, search grammar, the content suite |
 | `pnpm build` · `pnpm perf:bundle` | Production build · client bundle ratchet |
-| `pnpm hygiene` | Docs links, content tree, knip, duplicate deps |
+| `pnpm hygiene` | Docs links, the content tree, knip, duplicate deps |
 
 ## The routes
 
 | Route | Shows |
 | --- | --- |
-| `/` | Featured workflows, newest tools, companies |
+| `/` | Connect over MCP; the newest workflows and tools, companies; the definitions |
 | `/companies`, `/companies/[handle]` | The directory by category; a company, its tools, workflows using them |
 | `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
 | `/map`, `/map/[type]/[key]` | The relationship map: what is connected to what, one prerendered page per node |
+| `/contribute`, `/contribute/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
+| `/mcp` | The read-only MCP server (`search`, `get`) — the one dynamic route |
 | `/robots.txt`, `/sitemap.xml`, `…/opengraph-image` | Every crawler allowed (AI crawlers named); every page with its `updated` date; one social card per page, drawn at build |
 
 ## Layout
@@ -103,17 +106,20 @@ the two optional public variables (site origin, logo client id).
 ```
 companies/ workflows/ tags/   THE DATA — see CONTRIBUTING.md
 app/
-  (site)/                     every page: /, companies, tools, workflows, map
+  (site)/                     every page: /, companies, tools, workflows, map, contribute
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
+  mcp/                        the read-only MCP server (lib/mcp/server.ts is the JSON-RPC)
   llms.txt, llms-full.txt     the file index with definitions; the whole corpus
   robots.ts, sitemap.ts       every crawler allowed; every page, with its date
   **/opengraph-image.tsx      the social cards, one per page, drawn at build
 lib/
   content/                    the compiler: read the tree, validate, resolve, derive, render
-  catalog/                    PURE: keys, THE renderer, search grammar, types
+  catalog/                    PURE: keys, THE renderer, search grammar
   catalog/definitions.ts      THE definitions (company, tool, workflow, tag), stated once
   catalog/loaders.ts          what pages read; catalog.ts builds the catalog once per process
   catalog/discovery.ts        what the sitemap and llms.txt read
+  schemas/content.ts          the strict header schemas (zod)
+  types/catalog.ts            the catalog's types
   seo/                        per-page metadata, schema.org builders, the llms preamble
 components/                   site chrome, catalog rows and detail pages, the map, ui primitives
 tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Page } from '@/components/layout/page'
 import { SectionHeading } from '@/components/layout/section-heading'
-import { FocusedNode, MapSkeleton } from '@/components/map/focused'
+import { FocusedNode } from '@/components/map/focused'
 import { parseRef } from '@/lib/catalog/keys'
 import { loadNeighborhood } from '@/lib/catalog/loaders'
 import { mapFocusParams } from '@/lib/catalog/static-params'
@@ -50,7 +50,7 @@ export default function MapFocusPage({ params }: { params: Params }) {
         description="What is connected to what. Every company, tool and workflow, with the edges between them — the one view the catalog pages do not give you."
         title="Relationship map"
       />
-      <Suspense fallback={<MapSkeleton />}>
+      <Suspense fallback={null}>
         <Focused params={params} />
       </Suspense>
     </Page>

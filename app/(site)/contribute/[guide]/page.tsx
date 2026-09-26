@@ -14,7 +14,6 @@ import { PANEL_HEADING } from '@/components/detail/styles'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
-import { Bar } from '@/components/skeletons/parts'
 import { loadSourceExcerpt } from '@/lib/catalog/loaders'
 import { GUIDE_STEPS, type GuideStep } from '@/lib/constants/guide-steps'
 import {
@@ -77,7 +76,7 @@ export default function GuidePage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/contribute" label="Learn" />
-      <Suspense fallback={<GuideSkeleton />}>
+      <Suspense fallback={null}>
         <GuideDetail params={params} />
       </Suspense>
     </Page>
@@ -176,23 +175,6 @@ async function GuideDetail({ params }: { params: Params }) {
             </Link>
           ) : null}
         </aside>
-      </div>
-    </div>
-  )
-}
-
-/** Dimensionally stable: the eyebrow, title and lead, at their real sizes. */
-function GuideSkeleton() {
-  return (
-    <div className="flex flex-col gap-(--space-3xs)">
-      <div className="flex h-4 items-center">
-        <Bar className="h-2.5 w-28" />
-      </div>
-      <div className="flex h-[34.5px] items-center">
-        <Bar className="h-7 w-56" />
-      </div>
-      <div className="flex h-[25.5px] items-center">
-        <Bar className="w-80" />
       </div>
     </div>
   )

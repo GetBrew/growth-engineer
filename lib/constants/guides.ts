@@ -44,7 +44,7 @@ export const GUIDES: ReadonlyArray<Guide> = [
       'Turn the steps you already run into one file any agent can follow.',
     length: 'four-minute',
     intro:
-      'A workflow is up to ten steps, each naming one published tool, written as the result it reaches. This walks through writing one from an empty file to a merged pull request.',
+      'A workflow is up to ten steps, each naming one published tool, written as the result it reaches. These are the moves from an empty file to a merged pull request.',
     note: 'Every step must name a tool that already exists and is published, or the build rejects the file.',
     docPath: 'workflows/README.md',
   },

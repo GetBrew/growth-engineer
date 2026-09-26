@@ -1,6 +1,6 @@
 # Vision
 
-growth.engineer is the agent-friendly marketplace for go-to-market tools and
+growth.engineer is the open-source, agent-friendly catalog of go-to-market tools and
 workflows: where a growth engineer — or their agent — finds what exists, what
 it can do, how to reach it, and what other people have built with it.
 
@@ -31,7 +31,7 @@ That single decision shapes everything else:
   tools inside it.
 - **Agent-readable by construction.** Files are generated from structured
   source files by one render function, so they are consistent, current, and
-  never hand-edited. Any page answers `Accept: text/markdown` with its file;
+  never hand-edited. Every company, tool and workflow page answers `Accept: text/markdown` with its file;
   `/llms.txt` indexes all of them.
 - **Open source, by pull request.** The catalog IS the repository: every
   company, tool and workflow is a markdown file anyone can add or correct,
@@ -43,7 +43,7 @@ That single decision shapes everything else:
 | --- | --- | --- |
 | **Company** | `clay` | A vendor, open-source project or person that makes tools. |
 | **Tool** | `clay/enrich-contacts` | ONE function an agent can call, tied to a specific public API endpoint, MCP tool or CLI subcommand of a company's product. Every way in names its `operation`. A company with three functions has three tools. |
-| **Workflow** | `intent-to-meeting` | Steps across tools that reach a result, written by a person (a GitHub login). Frozen versions (`@3`); the current one renders the file. |
+| **Workflow** | `funding-signal-outbound` | Steps across tools that reach a result, written by a person (a GitHub login). Frozen versions (`@3`); the current one renders the file. |
 | **Growth hack** | `clay-waterfall-order` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
 
 Each company has many tools. Each workflow combines tools from different

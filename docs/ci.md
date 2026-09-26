@@ -1,7 +1,9 @@
 # CI
 
 Five jobs, each proving something a human reviewer cannot reliably check by
-reading a diff.
+reading a diff, and `test`, the one required check, which needs all of them.
+They run on every pull request, including one from a fork: no job needs a
+secret, and the token is read-only.
 
 | Job | Proves |
 | --- | --- |
@@ -55,9 +57,13 @@ failed. One run, the complete list.
 
 ## Why `test` is a separate aggregator job
 
-`test` is the name branch protection requires, and `if: always()` matters:
-without it, a sibling failure makes `test` *skipped*, and a required check
-that is skipped is a required check that a merge sails past.
+`test` is the ONE check branch protection requires, and it `needs` every
+other job — lint, all three typecheck legs, the build and its bundle budget,
+the unit suite and hygiene — so one name covers them all and a new job only
+has to be added to that list. `if: always()` matters: without it a failed
+job makes `test` *skipped*, and a required check that is skipped is one a
+merge sails past. Set it once the repository is public: Settings → Branches
+→ require status checks → `test`.
 
 ## Why `runs-on` reads a variable
 

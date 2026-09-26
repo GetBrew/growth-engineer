@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import { EmptyState } from '@/components/layout/empty-state'
 import { Page } from '@/components/layout/page'
 import { SectionHeading } from '@/components/layout/section-heading'
-import { MapSkeleton } from '@/components/map/focused'
 import { NodePill } from '@/components/map/node'
 import { loadMapOverview } from '@/lib/catalog/loaders'
 import { pageMetadata } from '@/lib/seo/metadata'
@@ -29,9 +27,7 @@ export default function MapPage() {
         description="What is connected to what. Every company, tool and workflow, with the edges between them — the one view the catalog pages do not give you."
         title="Relationship map"
       />
-      <Suspense fallback={<MapSkeleton />}>
-        <Overview />
-      </Suspense>
+      <Overview />
     </Page>
   )
 }

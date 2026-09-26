@@ -19,7 +19,6 @@ import { BackLink } from '@/components/layout/back-link'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { WorkflowDetailSkeleton } from '@/components/skeletons/workflow-detail-skeleton'
 import {
   isValidKeyPart,
   refToFilePath,
@@ -77,7 +76,7 @@ export default function WorkflowPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/workflows" label="All workflows" />
-      <Suspense fallback={<WorkflowDetailSkeleton />}>
+      <Suspense fallback={null}>
         <WorkflowDetail params={params} />
       </Suspense>
     </Page>

@@ -24,9 +24,9 @@
  * the line it is on, counted in the whole file.
  */
 
-export type BodyInput = { name: string; description: string; example?: string }
+type BodyInput = { name: string; description: string; example?: string }
 
-export type BodyStep = {
+type BodyStep = {
   title: string
   tool: string
   via?: string

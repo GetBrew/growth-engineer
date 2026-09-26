@@ -377,9 +377,9 @@ export async function loadNewTools(limit = 12) {
 }
 
 /**
- * The ⌘K index: every company, tool and workflow in one flat list, served
- * prerendered as `/search.json` and fetched by the palette the first time it
- * is needed — then every keystroke is answered in the browser.
+ * The ⌘K index: every company, tool and workflow in one flat list,
+ * prerendered into every page with the site chrome — the palette never
+ * fetches, and every keystroke is answered in the browser.
  */
 export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
   return paletteItems(getCatalog())

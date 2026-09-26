@@ -55,12 +55,3 @@ export function FocusedNode({
     </div>
   )
 }
-
-export function MapSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="h-[520px] w-full animate-pulse rounded-2xl bg-muted"
-    />
-  )
-}

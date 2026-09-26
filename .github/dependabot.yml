@@ -13,7 +13,9 @@ version: 2
 
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    # `/` covers .github/workflows only; the composite setup action pins
+    # actions of its own and needs naming.
+    directories: ['/', '/.github/actions/*']
     schedule:
       interval: monthly
     groups:

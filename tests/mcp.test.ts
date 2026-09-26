@@ -23,6 +23,11 @@ async function body(request: IncomingMessage): Promise<string> {
   return Buffer.concat(chunks).toString('utf8')
 }
 
+const HANDLERS: Record<
+  string,
+  (request: Request) => Response | Promise<Response>
+> = { GET, POST, OPTIONS }
+
 let server: Server
 let endpoint: URL
 
@@ -35,12 +40,8 @@ beforeAll(async () => {
       headers: incoming.headers as Record<string, string>,
       ...(text === undefined ? {} : { body: text }),
     })
-    let handler = GET
-    if (method === 'POST') {
-      handler = POST
-    } else if (method === 'OPTIONS') {
-      handler = OPTIONS
-    }
+    const handler: (request: Request) => Response | Promise<Response> =
+      HANDLERS[method] ?? GET
     const response = await handler(request)
     outgoing.writeHead(response.status, Object.fromEntries(response.headers))
     outgoing.end(Buffer.from(await response.arrayBuffer()))

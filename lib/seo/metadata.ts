@@ -1,11 +1,25 @@
 import type { Metadata } from 'next'
+import { OG_SIZE } from '@/components/seo/og-card'
+import { SITE } from '@/lib/catalog/definitions'
+
+/**
+ * The site's own card (app/opengraph-image.tsx). A page's `openGraph` REPLACES
+ * its parent's rather than merging, so a page without a card of its own must
+ * name this one or it ships no image at all.
+ */
+const SITE_CARD = {
+  url: '/opengraph-image',
+  ...OG_SIZE,
+  alt: SITE.tagline,
+}
 
 /**
  * The metadata every page carries, built one way: a canonical URL, the
  * Open Graph facts (title, description, url — the image comes from the
- * route's `opengraph-image.tsx`), and for a page that IS a file, the
- * `text/markdown` alternate that tells an agent where the file is. Relative
- * paths: the root layout's `metadataBase` makes them absolute.
+ * route's `opengraph-image.tsx`, or the site's card for a page without one),
+ * and for a page that IS a file, the `text/markdown` alternate that tells an
+ * agent where the file is. Relative paths: the root layout's `metadataBase`
+ * makes them absolute.
  *
  * PURE: no environment, no catalog. Twitter cards inherit from Open Graph.
  */
@@ -14,7 +28,10 @@ export function pageMetadata(input: {
   description: string
   /** `/tools/clay/enrich-contacts` */
   path: string
-  /** `/tools/clay/enrich-contacts.md` — only for pages that are a file. */
+  /**
+   * `/tools/clay/enrich-contacts.md` — only for pages that are a file. Those
+   * pages draw their own card, so they do not get the site's.
+   */
   file?: string
   type?: 'website' | 'article'
   /** Thin or navigational pages stay out of the index but keep their links. */
@@ -32,6 +49,7 @@ export function pageMetadata(input: {
       url: input.path,
       title: input.title,
       description: input.description,
+      ...(input.file ? {} : { images: [SITE_CARD] }),
     },
     ...(input.noindex ? { robots: { index: false, follow: true } } : {}),
   }

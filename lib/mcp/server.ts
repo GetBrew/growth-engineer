@@ -123,7 +123,7 @@ function toolError(text: string): ToolResult {
 }
 
 /** A ref, a page path or URL, or a `.md` path or URL → a ref, or null. */
-export function refFrom(input: string, origin: string): Ref | null {
+function refFrom(input: string, origin: string): Ref | null {
   const value = input.trim()
   const direct = parseRef(value)
   if (direct) {

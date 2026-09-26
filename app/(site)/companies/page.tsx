@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import { CompanyDirectory } from '@/components/catalog/company-directory'
 import { HeroBanner } from '@/components/common/hero-banner'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { CompaniesSkeleton } from '@/components/skeletons/companies-skeleton'
 import { loadCompanySearchItems, loadTagChips } from '@/lib/catalog/loaders'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
@@ -29,9 +27,7 @@ export default function CompaniesPage() {
     <>
       <HeroBanner title="The companies behind the tools" />
       <Page>
-        <Suspense fallback={<CompaniesSkeleton />}>
-          <Directory />
-        </Suspense>
+        <Directory />
       </Page>
     </>
   )

@@ -29,7 +29,6 @@ import {
   toggleCommandPalette,
   useCommandPaletteOpen,
 } from '@/lib/stores/command-palette'
-import { preloadSearchIndex, useSearchIndex } from '@/lib/stores/search-index'
 import type { PaletteItem } from '@/lib/types/catalog'
 import { cn } from '@/lib/utils/cn'
 
@@ -95,9 +94,17 @@ const JUMP_TO: ReadonlyArray<Option> = SECTIONS.map((section) => ({
   isMore: true,
 }))
 
-export function CommandPaletteDialog() {
+/**
+ * ⌘K. The index — every company, tool and workflow — is prerendered into the
+ * page with the site chrome, so there is nothing to fetch: every keystroke is
+ * answered in the browser from data already there.
+ */
+export function CommandPaletteDialog({
+  items,
+}: {
+  items: ReadonlyArray<PaletteItem>
+}) {
   const isOpen = useCommandPaletteOpen()
-  const index = useSearchIndex()
   const router = useRouter()
   const listId = useId()
 
@@ -108,17 +115,17 @@ export function CommandPaletteDialog() {
   const hasQuery = query.trim() !== ''
   const groups = useMemo(
     () =>
-      hasQuery && index.status === 'ready'
-        ? groupResults(searchPaletteItems(index.items, { q: query }), query)
+      hasQuery
+        ? groupResults(searchPaletteItems(items, { q: query }), query)
         : [],
-    [hasQuery, index, query]
+    [hasQuery, items, query]
   )
   const options = hasQuery
     ? groups.flatMap((group) => group.options)
     : [...JUMP_TO]
   const active = options[activeIndex]
 
-  // ⌘K / Ctrl+K anywhere; warm the index once the page is idle.
+  // ⌘K / Ctrl+K anywhere.
   useEffect(() => {
     function onKeyDown(event: globalThis.KeyboardEvent) {
       if (
@@ -130,13 +137,7 @@ export function CommandPaletteDialog() {
       }
     }
     window.addEventListener('keydown', onKeyDown)
-    const idle = window.requestIdleCallback?.(() => preloadSearchIndex())
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      if (idle !== undefined) {
-        window.cancelIdleCallback?.(idle)
-      }
-    }
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
   // Back and Forward leave the page the palette was opened on.
@@ -148,7 +149,6 @@ export function CommandPaletteDialog() {
 
   useEffect(() => {
     if (isOpen) {
-      preloadSearchIndex()
       setQuery('')
       setActiveIndex(0)
       inputRef.current?.focus()
@@ -220,14 +220,6 @@ export function CommandPaletteDialog() {
         </div>
       </div>
     )
-  } else if (index.status === 'error') {
-    body = (
-      <p className="type-body px-3 py-10 text-center">
-        Search could not load. Browse the listings instead.
-      </p>
-    )
-  } else if (index.status !== 'ready') {
-    body = <p className="type-body px-3 py-10 text-center">Loading…</p>
   } else if (groups.length === 0) {
     body = (
       <p className="type-body px-3 py-10 text-center">

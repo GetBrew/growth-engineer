@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "packageManager": "pnpm@11.25.0",
-  "description": "growth.engineer — the agent-friendly marketplace for go-to-market tools and workflows. Every tool and workflow is one markdown file any agent can run.",
+  "description": "growth.engineer — the open-source, agent-friendly catalog of go-to-market tools and workflows. Every tool and workflow is one markdown file any agent can run.",
   "engines": {
     "node": ">=22",
     "pnpm": ">=11"
@@ -26,7 +26,7 @@
     "knip": "node scripts/heavy-lock.mjs knip -- knip",
     "docs:check": "node scripts/check-docs.mjs",
     "deps:dedupe:check": "pnpm dedupe --check",
-    "hygiene": "pnpm docs:check && pnpm knip && pnpm deps:dedupe:check",
+    "hygiene": "pnpm docs:check && pnpm content:check && pnpm knip && pnpm deps:dedupe:check",
     "perf:bundle": "node scripts/client-bundle-budget.mjs --mode=check",
     "perf:bundle:snapshot": "node scripts/client-bundle-budget.mjs --mode=snapshot",
     "cache:prune": "node scripts/prune-next-dev-cache.mjs",

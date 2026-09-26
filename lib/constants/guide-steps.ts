@@ -14,7 +14,7 @@ import type { Excerpt } from '@/lib/catalog/source-excerpt'
  * of leaving a stale example behind. Only commands and folder listings are
  * written inline.
  */
-export type GuideSample =
+type GuideSample =
   | { file: string; excerpt?: Excerpt }
   | { caption?: string; code: string }
 
@@ -61,7 +61,7 @@ companies/clay/tools/find-work-emails.md`,
     key: 'access',
     title: 'Map every way in to its exact operation',
     detail:
-      'access points an id from the company’s access/ folder at the precise operation: the MCP tool name, the CLI subcommand, or METHOD /path for an API. The id on the left has to be a file that exists. A published tool needs at least one way in — with none it stays a draft and has no page.',
+      'access maps an id from the company’s access/ folder to the precise operation: the MCP tool name, the CLI subcommand, or METHOD /path for an API, exactly as the vendor’s docs name it. The id on the left has to be a file that exists. A published tool needs at least one way in; until it has one, set status: draft — a draft has no page and no file.',
     sample: { file: 'companies/clay/access/api.md' },
   },
   {

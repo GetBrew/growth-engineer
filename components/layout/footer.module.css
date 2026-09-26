@@ -1,5 +1,5 @@
 /*
- * The heart in the footer credit lifts three dots while you hover it. They
+ * The heart in the footer credit lifts three little hearts while you hover it. They
  * rise rather than scatter, and the heart swells slightly rather than pulsing:
  * a credit line is the quietest thing in the footer, so its animation is too.
  */
@@ -30,9 +30,9 @@
 }
 
 /*
- * The dots sit ABOVE the heart and lift a few pixels; they used to start at
+ * The hearts sit ABOVE the big one and lift a few pixels; they used to start at
  * its centre and fly out, which meant they crossed the heart on the way and
- * read as a smear rather than three dots.
+ * read as a smear rather than three hearts.
  */
 .spark {
   position: absolute;
@@ -45,8 +45,8 @@
 
 /*
  * The group is the whole credit line, so hovering the words sets it off too.
- * The dots rise ONCE and then hold: `forwards` keeps them at the end of the
- * keyframe for as long as the pointer stays, so they read as three dots sitting
+ * The hearts rise ONCE and then hold: `forwards` keeps them at the end of the
+ * keyframe for as long as the pointer stays, so they read as three hearts sitting
  * above the heart rather than something that keeps twitching. They vanish when
  * the hover ends, because the rule stops applying and the base state is
  * `opacity: 0`.

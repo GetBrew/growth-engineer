@@ -100,8 +100,8 @@
   --color-hover: var(--hover);
   --color-surface: var(--surface);
   --spacing-header: var(--header-height);
-  /* Expo-out: fast off the mark, long soft settle. Motion code mirrors it as
-     EXPO_OUT in lib/motion.ts — change both together. */
+  /* Expo-out: fast off the mark, long soft settle. Every CSS animation that
+     settles (the marquees, the terminal, the avatar stack) uses it. */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   /* One family everywhere, code included (the design system rule). */
@@ -178,29 +178,6 @@
   }
 }
 
-/*
- * Spacing scale
- *
- * One ramp, referenced by name, so a distance can be changed in one place.
- * The names describe SIZE, not purpose — a component picks the step its
- * composition needs, because a heading over a padded list, a heading over a
- * card and a heading over its own blurb are three different distances and
- * always were.
- *
- *   3xs  6   a heading to its own one-line blurb
- *   2xs  8
- *   xs  12
- *   sm  16
- *   md  20   a heading to the content under it
- *   lg  24
- *   xl  32   a block to the next block inside one composition
- *   2xl 40   a section to the next
- *   3xl 48
- *   4xl 56   the widest separation on a detail page
- *
- * Values match Tailwind's own steps, so `gap-5` and `gap-(--space-md)` are the
- * same 20px; the token is there to name WHICH 20px this is.
- */
 /*
  * Spacing
  *

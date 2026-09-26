@@ -37,8 +37,9 @@ SYNCHRONOUS reads and memoized (re-read in development when the tree's
 fingerprint changes). Synchronous is load-bearing: inside Next's prerender a
 value that resolves without I/O keeps a route static.
 
-**`proxy.ts`** — one job: the markdown files. A `.md` URL or any page
-requested with `Accept: text/markdown` is rewritten to the file handler.
+**`proxy.ts`** — one job: the markdown files. A `.md` URL, or a company,
+tool or workflow page requested with `Accept: text/markdown`, is rewritten to
+the file handler.
 There is NO auth gate here and no auth provider anywhere; every route is
 public.
 
@@ -49,7 +50,9 @@ and prerender in full; so does every map focus (`/map/<type>/<key>`). The
 listings prerender EVERY item and hand them to a client component
 (`ToolsExplorer`, `CompanyDirectory`, `WorkflowsIndex`) that reads the URL
 with `useSearchParams` and narrows the list in the browser — so no page reads
-`searchParams` on the server and every filter permutation is instant.
+`searchParams` on the server and every filter permutation is instant. Reading
+the URL suspends the prerender, so each listing's Suspense fallback is the
+same listing with no query: the static HTML carries every row and link.
 Filters and search are still links and GET forms: the URL is the state. A
 URL whose only job is to redirect is a route handler (`/tools/[handle]`),
 with a relative `Location` so it prerenders too. Internal navigation is
@@ -67,7 +70,9 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | `/api/markdown/[...path]` — every file, every current pin, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow (+ `@N`) | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
-| `/tools`, `/companies`, `/workflows`, `/map` | fully static (`○`) | every item is prerendered into the page; a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
+| `/tools`, `/companies`, `/workflows` | static shell with every row (`◐`, no server work) | every item is prerendered into the page as the no-query fallback; a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
+| `/map`, `/contribute`, `/contribute/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
+| `/mcp` | on request (`ƒ`) | a POST per tool call; stateless, read-only, the same catalog |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
 answers with a real 308 or a 404. `dynamicParams`, `dynamic` and
@@ -104,7 +109,8 @@ in the name counts double); chips filter on facts each entity carries —
 `has:` from a tool's access, `capability:` from its slug, `category:` from
 its company. Results are ranked by score, then date, then key; a query with
 no words in it (`???`) matches nothing. The ⌘K palette and MCP `search` run
-the same scoring over `/search.json`'s flat index.
+the same scoring over one flat index (`paletteItems`), which every page
+carries prerendered — the palette never fetches.
 
 ## Where to add things
 
@@ -112,7 +118,7 @@ the same scoring over `/search.json`'s flat index.
 | --- | --- |
 | A company, tool, workflow or tag | a file — [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | A page | `app/(site)/…`, sync shell + Suspense child; `generateStaticParams` if it has params; reserve its first segment in `lib/catalog/keys.ts` |
-| A field a file shows | the schema (`lib/content/schemas.ts`), the type, the renderer, its golden fixture, a negative test — in one commit |
+| A field a file shows | the schema (`lib/schemas/content.ts`), the type (`lib/types/catalog.ts`), the renderer, its golden fixture, a negative test — in one commit |
 | A projection | `lib/content/derive.ts`, the one writer |
 | A read | a loader in `lib/catalog/loaders.ts`, and a case in `tests/content.test.ts` |
 | A rule about the content | `build-catalog.ts` / `build-entities.ts`, with a case in `tests/content-schema.test.ts` that FAILS first |

@@ -13,17 +13,21 @@ export function FilterPills({
   top?: number
   moreTitle?: string
 }) {
-  const counted = options.every((option) => option.count !== undefined)
-  const ranked = counted
-    ? [...options].sort(
-        (a, b) =>
-          (b.count ?? 0) - (a.count ?? 0) || a.label.localeCompare(b.label)
-      )
-    : [...options]
-  const shown = ranked.slice(0, top)
-  const rest = counted
-    ? ranked.slice(top).sort((a, b) => a.label.localeCompare(b.label))
-    : ranked.slice(top)
+  // Uncounted options (a sort order like "New") keep their place up front;
+  // counted ones (tags) rank by count, so the pills shown are the busiest and
+  // the rest go under More, alphabetically.
+  const fixed = options.filter((option) => option.count === undefined)
+  const counted = options
+    .filter((option) => option.count !== undefined)
+    .sort(
+      (a, b) =>
+        (b.count ?? 0) - (a.count ?? 0) || a.label.localeCompare(b.label)
+    )
+  const ranked = [...fixed, ...counted]
+  const shown = ranked.slice(0, Math.max(top, fixed.length))
+  const rest = ranked
+    .slice(shown.length)
+    .sort((a, b) => a.label.localeCompare(b.label))
 
   return (
     <div className="flex flex-wrap gap-2">

@@ -85,9 +85,7 @@ export function completeChips(
 type Params = Record<string, string | ReadonlyArray<string> | undefined>
 
 /** A search param's first value, or '' when absent. */
-export function firstParam(
-  value: string | ReadonlyArray<string> | undefined
-): string {
+function firstParam(value: string | ReadonlyArray<string> | undefined): string {
   return (Array.isArray(value) ? value[0] : value) ?? ''
 }
 
