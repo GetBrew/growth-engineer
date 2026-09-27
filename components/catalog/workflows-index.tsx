@@ -7,6 +7,7 @@ import { SectionHeading } from '@/components/layout/section-heading'
 import { CatalogSearch } from '@/components/search/catalog-search'
 import type { FilterOption } from '@/components/search/filter-types'
 import { ListingToolbar } from '@/components/search/listing-toolbar'
+import { TAG_NAMESPACES } from '@/lib/catalog/keys'
 import {
   searchWorkflowItems,
   type WorkflowSearchItem,
@@ -22,13 +23,30 @@ function parseSort(value: string | null): Sort {
   return value === 'new' ? 'new' : 'featured'
 }
 
+/** `motion:outbound` as the query writes it: `?motion=outbound`. */
+function tagParam(tag: string): Record<string, string> {
+  const [namespace = '', slug = ''] = tag.split(':')
+  return tag ? { [namespace]: slug } : {}
+}
+
+/** The one tag the URL filters by, in the grammar every listing uses. */
+function tagFrom(searchParams: URLSearchParams): string {
+  for (const namespace of TAG_NAMESPACES) {
+    const slug = (searchParams.get(namespace) ?? '').trim()
+    if (slug) {
+      return `${namespace}:${slug}`
+    }
+  }
+  return ''
+}
+
 function href(sort: Sort, q: string, tag?: string): string {
   const params = new URLSearchParams()
   if (sort !== 'featured') {
     params.set('sort', sort)
   }
-  if (tag) {
-    params.set('tag', tag)
+  for (const [name, value] of Object.entries(tagParam(tag ?? ''))) {
+    params.set(name, value)
   }
   if (q) {
     params.set('q', q)
@@ -117,7 +135,7 @@ function WorkflowsIndexView({
   params: searchParams,
 }: IndexProps & { params: URLSearchParams }) {
   const sort = parseSort(searchParams.get('sort'))
-  const tag = (searchParams.get('tag') ?? '').trim()
+  const tag = tagFrom(searchParams)
   const q = (searchParams.get('q') ?? '').trim()
   const rows = searchWorkflowItems(workflows, {
     q,
@@ -152,7 +170,7 @@ function WorkflowsIndexView({
               label="Search workflows"
               params={{
                 sort: sort === 'featured' ? undefined : sort,
-                tag: tag || undefined,
+                ...tagParam(tag),
               }}
               placeholder="Search workflows…"
             />

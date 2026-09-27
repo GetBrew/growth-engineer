@@ -133,7 +133,7 @@ function toolMatchesChips(
         hits = item.category ? [item.category.slug] : []
         break
       default:
-        // motion, channel, fit describe workflows; no tool carries them.
+        // motion and channel describe workflows; no tool carries them.
         hits = []
     }
     if (!slugs.some((slug) => hits.includes(slug))) {
