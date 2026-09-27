@@ -156,6 +156,31 @@ describe('content rules', () => {
     }
   )
 
+  test('a summary may start like prose that only looks like markdown', () => {
+    const files = edit(
+      'tool',
+      'summary: Creates records.',
+      'summary: "#1 way to create records."'
+    )
+    expect(problemsOf(files)).toEqual([])
+  })
+
+  test("a company's date counts only the tools its file lists", () => {
+    // A newer DEPRECATED tool: the company file lists published tools only.
+    const files = tree({}, [
+      file(
+        'companies/acme/tools/old-thing.md',
+        '---\nname: Old thing\nsummary: Retired.\ncapability: manage-crm\napi: POST /old\ndocs: https://docs.acme.example/old\nstatus: deprecated\nupdated: 2026-09-25\n---\n'
+      ),
+    ])
+    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    expect(
+      new Date(catalog.documents.get('company:acme')?.updatedAt ?? 0)
+        .toISOString()
+        .slice(0, 10)
+    ).toBe('2026-09-16')
+  })
+
   test('a tool file is named after its function, not its capability', () => {
     const files = tree({}, [
       file('companies/acme/tools/create-record.md', FIXTURE.tool.source),
@@ -443,6 +468,22 @@ describe('content rules', () => {
           'url: https://{sub domain}.acme.example'
         ),
       /company\.md: api\.url: must be a URL; a part that differs per account goes in braces/,
+    ],
+    [
+      'a summary that opens a code fence the file never closes',
+      () =>
+        edit(
+          'tool',
+          'summary: Creates records.',
+          'summary: "~~~ fast lookups"'
+        ),
+      /manage-crm\.md: summary: must be plain prose/,
+    ],
+    [
+      'a tagline that opens an HTML comment',
+      () =>
+        edit('company', 'name: Acme\n', 'name: Acme\ntagline: "<!-- hidden"\n'),
+      /company\.md: tagline: must be plain prose/,
     ],
     [
       'a summary that would open a section in the rendered file',

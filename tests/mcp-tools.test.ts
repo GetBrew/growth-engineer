@@ -293,7 +293,7 @@ describe('get, on a fixture catalog', () => {
       path: 'workflows/old-way.md',
       name: 'old-way',
       source:
-        '---\ntitle: The old way\nsummary: Kept for reference.\nauthor: jdoe\nstatus: deprecated\nupdated: 2026-09-16\n---\n\n## Steps\n\n1. **Create** with [acme/create-record](../companies/acme/tools/create-record.md). Make one.\n\n## Done when\n\n- It exists.\n',
+        '---\ntitle: The old way\nsummary: Kept for reference.\nauthor: jdoe\naliases: [acme]\nstatus: deprecated\nupdated: 2026-09-16\n---\n\n## Steps\n\n1. **Create** with [acme/create-record](../companies/acme/tools/create-record.md). Make one.\n\n## Done when\n\n- It exists.\n',
     },
   ]
   const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
@@ -303,6 +303,11 @@ describe('get, on a fixture catalog', () => {
       const result = call(catalog, 'get', { ref })
       expect(result.structuredContent?.ref, ref).toBe('tool:acme/create-record')
     }
+    // A live key wins over another kind's old one: `acme` is the company,
+    // though a workflow was once called that.
+    expect(call(catalog, 'get', { ref: 'acme' }).structuredContent?.ref).toBe(
+      'company:acme'
+    )
     // Filters follow the rename too.
     expect(
       call(catalog, 'search', { uses: 'acme/old-record' }).isError

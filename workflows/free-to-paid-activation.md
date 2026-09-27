@@ -17,7 +17,7 @@ updated: 2026-09-27
 ## Steps
 
 1. **Find activated free users** with [posthog/run-sql-query](../companies/posthog/tools/run-sql-query.md). List users on the free plan who fired `activation_event` three or more times in the last 14 days.
-2. **Find their customers** with [stripe/list-customers](../companies/stripe/tools/list-customers.md). Look up each user's email and keep their customer ID.
+2. **Find their customers** with [stripe/list-customers](../companies/stripe/tools/list-customers.md). Look up each user's email, as stored and lowercased, and keep every customer ID it returns.
 3. **Skip paying customers** with [stripe/list-subscriptions](../companies/stripe/tools/list-subscriptions.md). Remove anyone whose customer has an active subscription.
 4. **Write the email** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft one email explaining `trial_plan` around what they already did. Show it to the user.
 5. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). After the user approves, send it to the remaining users.

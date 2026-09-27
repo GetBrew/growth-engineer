@@ -18,7 +18,7 @@ updated: 2026-09-27
 ## Steps
 
 1. **Read what changed** with [firecrawl/scrape-url](../companies/firecrawl/tools/scrape-url.md). Fetch the pricing and changelog pages on `competitor_domain` and summarise what changed in the last month in five bullets.
-2. **Find who is comparing** with [g2/browse-product-buyer-intent](../companies/g2/tools/browse-product-buyer-intent.md). From `g2_product_id`, list the companies researching the competitor in the last 30 days (rows whose `left_product_id` is the competitor). Keep those in `watch_list`.
+2. **Find who is comparing** with [g2/browse-product-buyer-intent](../companies/g2/tools/browse-product-buyer-intent.md). From `g2_product_id`, list the last 30 days' activity with the `company_domain` and `left_product_name` dimensions, and keep rows whose `left_product_name` is the competitor. Keep those in `watch_list`.
 3. **Match open deals** with [attio/list-records](../companies/attio/tools/list-records.md). For those accounts, find the records with an open deal. Keep the deal owner and stage.
 4. **Write the comparison** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft one email per account that names a single concrete difference relevant to its stage. Show the drafts to the user.
 

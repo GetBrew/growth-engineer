@@ -26,8 +26,13 @@ const LINE_BREAK = /[\r\n]/
 const line = text.refine((value) => !LINE_BREAK.test(value), {
   message: 'must be one line',
 })
-/** Markdown that would open a block: a heading, quote, list or rule. */
-const BLOCK_START = /^(?:#|>|[-*+]\s|\d+[.)]\s|---|===|```)/
+/**
+ * Markdown that would open a block, as CommonMark reads a line: a heading
+ * (`## `, not `#1`), quote, list item, code fence, HTML block, or a line that
+ * is only a rule.
+ */
+const BLOCK_START =
+  /^(?:#{1,6}(?:\s|$)|>|[-*+](?:\s|$)|\d{1,9}[.)](?:\s|$)|```|~~~|<[A-Za-z!?/]|(?:[-*_=]\s*){3,}$)/
 /** A sentence the file prints as its own paragraph: plain prose, one line. */
 const sentence = line.refine((value) => !BLOCK_START.test(value), {
   message: 'must be plain prose: no heading, quote, list or rule at the start',

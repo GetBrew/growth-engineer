@@ -30,6 +30,6 @@ Notion is an AI workspace for docs, wikis and databases, where teams build Custo
 
 A database holds one or more data sources, and each row of a data source is a page. API requests also send a `Notion-Version` header; `ntn api` adds it for you.
 
-One personal access token works for every way in: the CLI reads it as
+One personal access token works for the CLI and the API: the CLI reads it as
 `NOTION_API_TOKEN` and API requests as `NOTION_API_KEY`, each the name that
 way's docs use.

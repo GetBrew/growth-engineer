@@ -92,13 +92,17 @@ function resolve(input: string, catalog: Catalog): Target | null {
   if (ref) {
     return { kind: 'entity', ...ref }
   }
-  // A bare key: `apollo`, `apollo/enrich-person`, `funding-signal-outbound`,
-  // or an old one that a rename left behind.
-  const found = ENTITY_TYPES.filter(
-    (type) =>
-      catalog.documents.has(formatRef(type, value)) ||
-      catalog.aliases.has(formatRef(type, value))
+  // A bare key: `apollo`, `apollo/enrich-person`, `funding-signal-outbound`
+  // — a live entry first, else an old key a rename left behind.
+  const live = ENTITY_TYPES.filter((type) =>
+    catalog.documents.has(formatRef(type, value))
   )
+  const found =
+    live.length > 0
+      ? live
+      : ENTITY_TYPES.filter((type) =>
+          catalog.aliases.has(formatRef(type, value))
+        )
   const [only] = found
   return found.length === 1 && only
     ? { kind: 'entity', type: only, key: value }

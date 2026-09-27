@@ -1,5 +1,5 @@
 ---
-title: Route high-intent website visitors to their owners
+title: Flag high-intent website visitors to sales
 summary: Identify promising accounts on your site, enrich them, and tell the right owner with useful context.
 author: thedogwiththedataonit
 tags:

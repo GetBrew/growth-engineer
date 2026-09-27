@@ -29,6 +29,10 @@ URL answers with a 308.
 `public/logos/`), `updated` (ISO date) are required. Optional: `tagline`,
 `docs`, `github`, `aliases`, `status` (`published` default, `deprecated`).
 The website is always `https://<domain>`. The body is the description.
+One-line fields (`name`, `title`, `summary`, `tagline`) never hold a line
+break, and a `summary` or `tagline`, printed as its own paragraph, never
+starts with markdown that opens a block (a heading, quote, list, fence, HTML
+or a rule).
 
 ### Ways in — `mcp:`, `cli:`, `api:` in company.md
 
