@@ -52,7 +52,7 @@ workflow file lists the tools it uses: the relationship is in both files.
 | `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`, `/companies/clay.md` |
 | A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file |
-| MCP, at `/mcp` | `search` finds files; `get` with a ref returns the file |
+| MCP, at `/mcp` | `search` finds entries by words and filters; `get` with a ref returns the file (and its links as refs); `get` on a tag lists everything carrying it |
 
 `proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`. The
 handler reads the rendered document from the in-memory catalog — the same

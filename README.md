@@ -62,7 +62,9 @@ one document. Every HTML page declares its file as a `text/markdown`
 alternate and carries schema.org data (a company is an `Organization`, a tool
 a `SoftwareApplication`, a workflow a `HowTo` with one step per step). No
 sign-in, no rate limit, no key. Any MCP client can connect to `/mcp`
-(Streamable HTTP, read-only): `search` finds files, `get` returns one.
+(Streamable HTTP, read-only): `search` finds workflows, tools and
+companies by words and filters; `get` returns a file, or every tool, workflow
+and company carrying a tag.
 
 The definitions themselves live in ONE place, `lib/catalog/definitions.ts`,
 and feed `/llms.txt` and the structured data.
@@ -98,7 +100,7 @@ the one optional public variable, the site origin.
 | `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
 | `/contribute`, `/contribute/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
-| `/mcp` | The read-only MCP server (`search`, `get`) — the one dynamic route |
+| `/mcp` | The read-only MCP server — `search` (words, tags, company, author, the tool a workflow uses) and `get` (a file, or a tag's members) — the one dynamic route |
 | `/robots.txt`, `/sitemap.xml`, `…/opengraph-image` | Every crawler allowed (AI crawlers named); every page with its `updated` date; one social card per page, drawn at build |
 
 ## Layout
@@ -108,7 +110,7 @@ companies/ workflows/ tags.yml  THE DATA — see CONTRIBUTING.md
 app/
   (site)/                     every page: /, companies, tools, workflows, contribute
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
-  mcp/                        the read-only MCP server (lib/mcp/server.ts is the JSON-RPC)
+  mcp/                        the read-only MCP server (lib/mcp/: server.ts is the JSON-RPC, tools.ts the two tools)
   llms.txt, llms-full.txt     the file index with definitions; the whole corpus
   robots.ts, sitemap.ts       every crawler allowed; every page, with its date
   **/opengraph-image.tsx      the social cards, one per page, drawn at build

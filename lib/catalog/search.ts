@@ -6,16 +6,18 @@ import type {
 } from '@/lib/types/catalog'
 import { TAG_NAMESPACES, type TagNamespace } from './keys'
 import { MAX_CHIPS } from './query'
+import { matchWords, queryWords } from './search-words'
 
 /**
  * Search v1, PURE and browser-safe: the same functions run in the build's
  * tests and in the client components that filter a prerendered listing. The
  * GRAMMAR is lib/catalog/query.ts (words + `namespace:slug` chips; OR within
- * a namespace, AND across; partial completion; the canonical URL). This file
- * is the execution: every word must start a token of the item's search text
- * (a hit in the name counts double), and chips filter on the facts each item
- * carries — `has:` from a tool's access, `capability:` from its
- * slug, `category:` from its company.
+ * a namespace, AND across; partial completion; the canonical URL); the WORDS
+ * are read by ./search-words.ts (function words dropped, stems matched by
+ * prefix). This file is the execution for the listings and the palette:
+ * every word must match the item (a hit in the name counts double), and
+ * chips filter on the facts each item carries — `has:` from a tool's
+ * access, `capability:` from its slug, `category:` from its company.
  *
  * Items are the list rows plus the few fields search needs, so a page can
  * ship every item once, prerendered, and answer any filter permutation in
@@ -43,26 +45,14 @@ export type CompanySearchItem = CompanyListItem & {
 
 type Chip = { namespace: TagNamespace; slug: string; key: string }
 
-/** Letters and digits in any script; accents fold away (`Zoë` → `zoe`). */
-const TOKEN = /[^\p{L}\p{N}]+/u
-const COMBINING_MARKS = /\p{M}+/gu
-
-function tokens(text: string): Array<string> {
-  return text
-    .normalize('NFKD')
-    .replace(COMBINING_MARKS, '')
-    .toLowerCase()
-    .split(TOKEN)
-    .filter(Boolean)
-}
-
 /**
- * Words the query asks for, or null when it asked for something that has no
- * words at all (`???`, `—`): that matches nothing, not everything.
+ * The words a listing matches, or null when the query asked for something
+ * with no words at all (`???`, `—`): that matches nothing, not everything.
+ * A kind word ("tools") says which listing, not what to find, so it drops.
  */
-function queryWords(q: string): Array<string> | null {
-  const words = tokens(q)
-  return words.length === 0 && q.trim() !== '' ? null : words
+function listingWords(q: string): Array<string> | null {
+  const read = queryWords(q)
+  return read.isNothing ? null : read.words
 }
 
 /** `capability:enrich-contacts` → chip; anything malformed is dropped. */
@@ -93,7 +83,7 @@ function groupByNamespace(
   return groups
 }
 
-/** 0 = no match; otherwise the sum of word scores (name hits count double). */
+/** 0 = no match; otherwise the weight of a match on EVERY word. */
 function score(
   words: ReadonlyArray<string>,
   name: string,
@@ -102,19 +92,8 @@ function score(
   if (words.length === 0) {
     return 1
   }
-  const nameTokens = tokens(name)
-  const allTokens = tokens(searchText)
-  let total = 0
-  for (const word of words) {
-    if (nameTokens.some((token) => token.startsWith(word))) {
-      total += 2
-    } else if (allTokens.some((token) => token.startsWith(word))) {
-      total += 1
-    } else {
-      return 0
-    }
-  }
-  return total
+  const { matched, weight } = matchWords(words, name, searchText)
+  return matched === words.length ? weight : 0
 }
 
 type Scored<T> = { item: T; score: number; index: number; key: string }
@@ -171,7 +150,7 @@ export function searchToolItems(
 ): { results: Array<ToolSearchItem>; chips: Array<string> } {
   const chips = parseChips(input.chips)
   const groups = groupByNamespace(chips)
-  const words = queryWords(input.q)
+  const words = listingWords(input.q)
   if (words === null) {
     return { results: [], chips: chips.map((chip) => chip.key) }
   }
@@ -197,7 +176,7 @@ export function searchWorkflowItems(
   items: ReadonlyArray<WorkflowSearchItem>,
   input: { q: string; sort: 'featured' | 'new'; tag?: string; limit?: number }
 ): Array<WorkflowSearchItem> {
-  const words = queryWords(input.q)
+  const words = listingWords(input.q)
   if (words === null) {
     return []
   }
@@ -226,7 +205,7 @@ export function searchCompanyItems(
   items: ReadonlyArray<CompanySearchItem>,
   input: { q: string; category?: string; limit?: number }
 ): Array<CompanySearchItem> {
-  const words = queryWords(input.q)
+  const words = listingWords(input.q)
   if (words === null) {
     return []
   }
@@ -257,7 +236,7 @@ export function searchPaletteItems(
   items: ReadonlyArray<PaletteItem>,
   input: { q: string; limit?: number }
 ): Array<PaletteItem> {
-  const words = queryWords(input.q)
+  const words = listingWords(input.q)
   if (words === null) {
     return []
   }

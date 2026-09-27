@@ -98,20 +98,27 @@ The definitions (company, tool, workflow, tag, how to read a file) live in
 structured data import them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
 catalog exactly: every page, every file, nothing invented.
 
-## Search v1 (`lib/catalog/search.ts`)
+## Search (`lib/catalog/search-words.ts`, `lib/catalog/search.ts`)
 
-Pure and browser-safe, over the items a listing prerenders (the list rows
-plus `searchText`); the same functions run in the tests and in the client
-components. The GRAMMAR is `lib/catalog/query.ts`
-(words + `namespace:slug` chips; OR within a namespace, AND across; partial
-chip completion; the canonical URL) and is shared with the search box. The
-EXECUTION: every word must start a token of the entity's search text (a hit
-in the name counts double); chips filter on facts each entity carries —
-`has:` from a tool's access, `capability:` from its slug, `category:` from
-its company. Results are ranked by score, then date, then key; a query with
-no words in it (`???`) matches nothing. The ⌘K palette and MCP `search` run
-the same scoring over one flat index (`paletteItems`), which every page
-carries prerendered — the palette never fetches.
+Pure and browser-safe. The WORDS are read one way everywhere
+(`search-words.ts`): function words ("a", "for", "the") drop, kind words
+("workflow", "tools", "vendor") name what to look for rather than what it
+says, and each word is trimmed to a stem ("enriching" → "enrich") matched as
+a prefix of the entity's search text — its own words plus its tags' labels
+and synonyms; a hit in the name counts double. The GRAMMAR of the listings
+is `lib/catalog/query.ts` (words + `namespace:slug` chips; OR within a
+namespace, AND across; partial chip completion; the canonical URL).
+
+- The listings and the ⌘K palette need EVERY word; they rank by score, then
+  date, then key, over items prerendered into the page — nothing fetches.
+- MCP `search` (`lib/mcp/search-tool.ts`) filters by type, tags, company,
+  the tool a workflow uses, and author; when no entry matches every word it
+  returns the closest matches with `isPartial: true` instead of nothing. MCP
+  `get` returns a file, or — for a tag — everything carrying it. Its answers
+  are composed per call from the catalog; the FILES are never rendered on
+  the request path.
+
+A query with no words in it (`???`) matches nothing.
 
 ## Where to add things
 
