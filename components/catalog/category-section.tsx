@@ -5,7 +5,7 @@ import { Fragment, type ReactNode } from 'react'
 import { EntityLogo } from '@/components/common/entity-logo'
 
 /** How many rows a category shows before the rest fold into "See …". */
-export const CATEGORY_PREVIEW = 6
+const CATEGORY_PREVIEW = 6
 
 /** One row of a category: the row itself, and what "See …" names it by. */
 export type CategoryEntry = {

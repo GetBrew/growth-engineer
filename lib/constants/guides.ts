@@ -6,9 +6,9 @@ import { repoFileUrl } from '@/lib/github'
  * The contribute guides in `/docs`, one per kind of entry someone can add.
  *
  * PURE MODULE: data only. The list page draws these as rows and the detail
- * route generates one page per `id`, so the two cannot disagree about which
- * guides exist. Order is the order they are watched in, which is what the
- * "Next video" link at the foot of each page follows.
+ * route generates one page per `slug`, so the two cannot disagree about which
+ * guides exist. Order is the order they are read in, which is what the
+ * previous and next links at the foot of each page follow.
  */
 export type Guide = {
   id: string
@@ -61,8 +61,8 @@ export const GUIDES: ReadonlyArray<Guide> = [
       'Describe one function your product exposes, and how an agent reaches it.',
     length: 'three-minute',
     intro:
-      'A tool is ONE function an agent calls — one MCP tool, one CLI command, one API endpoint. A product with three functions is three files, each named after its function.',
-    note: 'Its capability must be listed in tags.yml. If none fits, add it there in the same pull request.',
+      'A tool is one function an agent calls — one MCP tool, one CLI command, one API endpoint. A product with three functions is three files.',
+    note: 'Its `capability` must be listed in `tags.yml`. If none fits, add it there in the same pull request.',
     docPath: 'companies/README.md#toolsnamemd',
   },
   {

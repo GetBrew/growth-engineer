@@ -66,15 +66,13 @@ const SPARKS = [
   },
 ] as const
 
-/** A file the site serves (`/llms.txt`), not a page: no RSC prefetch. */
-const FILE = /\.[a-z]+$/
-
 const YEAR = new Date().getFullYear()
 const LINK =
   'type-label rounded-sm text-soft transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground'
 
+/** A page on this site, or another site in a new tab. */
 function FooterLink({ href, label }: { href: string; label: string }) {
-  if (href.startsWith('/') && !FILE.test(href)) {
+  if (href.startsWith('/')) {
     return (
       <Link className={LINK} href={href}>
         {label}
@@ -82,14 +80,8 @@ function FooterLink({ href, label }: { href: string; label: string }) {
     )
   }
 
-  const isExternal = href.startsWith('http')
   return (
-    <a
-      className={LINK}
-      href={href}
-      rel={isExternal ? 'noreferrer' : undefined}
-      target={isExternal ? '_blank' : undefined}
-    >
+    <a className={LINK} href={href} rel="noreferrer" target="_blank">
       {label}
     </a>
   )

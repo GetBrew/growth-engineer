@@ -8,8 +8,7 @@ import { pageMetadata } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = pageMetadata({
   title: 'Docs',
-  description:
-    'How growth.engineer works, and how to add your company, tools and workflows.',
+  description: 'How to add your company, tools and workflows to the catalog.',
   path: '/docs',
 })
 
@@ -29,11 +28,7 @@ const ITEMS: ReadonlyArray<CatalogListItem> = GUIDES.map((guide) => ({
   entity: guide.entity,
 }))
 
-/**
- * Sections of guides, in reading order. "Contribute" is the first; the
- * getting-started pages (what growth.engineer is, connecting over MCP, a first
- * run) join as their own section above it.
- */
+/** The guides, by section, in reading order. */
 export default function DocsPage() {
   return (
     <Page className="flex flex-col gap-(--space-block)">

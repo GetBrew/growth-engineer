@@ -9,7 +9,8 @@
 
 export const SITE = {
   name: 'growth.engineer',
-  tagline: 'Open source GTM tools and workflows, ready for any agent.',
+  tagline:
+    'The open-source catalog of go-to-market tools and workflows, ready for any agent.',
   description:
     'Companies, the tools they make, and workflows that put tools to work. Every tool and workflow is one markdown file any agent can run: the setup, the inputs, the steps and the rules, inline. The catalog itself is markdown in a public repository, built into a static site.',
   repository: 'https://github.com/GetBrew/growth-engineer',
