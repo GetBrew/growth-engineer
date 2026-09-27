@@ -26,10 +26,10 @@ const SITE_CARD = {
 export function pageMetadata(input: {
   title: string
   description: string
-  /** `/tools/clay/enrich-contacts` */
+  /** `/tools/apollo/enrich-person` */
   path: string
   /**
-   * `/tools/clay/enrich-contacts.md` — only for pages that are a file. Those
+   * `/tools/apollo/enrich-person.md` — only for pages that are a file. Those
    * pages draw their own card, so they do not get the site's.
    */
   file?: string

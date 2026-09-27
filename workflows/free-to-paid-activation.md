@@ -6,7 +6,7 @@ tags:
   - motion:plg
   - channel:email
 featured: 8
-updated: 2026-09-16
+updated: 2026-09-27
 ---
 
 ## Inputs
@@ -16,8 +16,8 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Find activated free users** with [posthog/track-product-usage](../companies/posthog/tools/track-product-usage.md). List users on the free plan who fired `activation_event` three or more times in the last 14 days.
-2. **Skip paying customers** with [stripe/track-revenue](../companies/stripe/tools/track-revenue.md). Remove anyone with an active subscription.
+1. **Find activated free users** with [posthog/run-sql-query](../companies/posthog/tools/run-sql-query.md). List users on the free plan who fired `activation_event` three or more times in the last 14 days.
+2. **Skip paying customers** with [stripe/list-subscriptions](../companies/stripe/tools/list-subscriptions.md). Remove anyone with an active subscription.
 3. **Send the sequence** with [brew/send-email](../companies/brew/tools/send-email.md). Draft a two-email sequence explaining `trial_plan` around what they already did. Show it to the user; send after approval.
 
 ## Done when

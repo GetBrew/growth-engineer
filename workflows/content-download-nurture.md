@@ -6,7 +6,7 @@ tags:
   - motion:inbound
   - channel:email
 featured: 5
-updated: 2026-09-16
+updated: 2026-09-27
 ---
 
 ## Inputs
@@ -16,9 +16,9 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Pull downloads** with [hubspot/manage-crm](../companies/hubspot/tools/manage-crm.md). List contacts who downloaded `content_asset` within `follow_up_window`. Keep name, company and email.
-2. **Write follow-ups** with [brew/write-copy](../companies/brew/tools/write-copy.md). Draft one email per contact that references a specific section of the asset. Show the drafts to the user; send only after approval.
-3. **Log the send** with [notion/manage-docs](../companies/notion/tools/manage-docs.md). Append one row per sent email to the nurture log database with contact, asset and date.
+1. **Pull downloads** with [hubspot/search-crm-records](../companies/hubspot/tools/search-crm-records.md). List contacts who downloaded `content_asset` within `follow_up_window`. Keep name, company and email.
+2. **Write follow-ups** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft one email per contact that references a specific section of the asset. Show the drafts to the user; send only after approval.
+3. **Log the send** with [notion/create-page](../companies/notion/tools/create-page.md). Append one row per sent email to the nurture log database with contact, asset and date.
 
 ## Done when
 

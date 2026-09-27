@@ -34,7 +34,7 @@ export type Catalog = {
   workflows: ReadonlyMap<string, Workflow>
   /** Curated tags from tags.yml plus the derived `has:*`. */
   tags: ReadonlyMap<string, Tag>
-  /** By ref: `tool:clay/enrich-contacts`. */
+  /** By ref: `tool:apollo/enrich-person`. */
   documents: ReadonlyMap<string, CatalogDocument>
   /** `${type}:${oldKey}` → the current key. */
   aliases: ReadonlyMap<string, string>

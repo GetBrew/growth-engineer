@@ -4,9 +4,9 @@ import {
   accessBody,
   accessHeading,
   orderAccess,
-  selectWorkflowAccess,
+  type SetupTool,
   serverUrlLine,
-  singleAccessSetup,
+  workflowSetup,
 } from './render-access'
 import { yamlList, yamlScalar } from './render-header'
 
@@ -24,7 +24,7 @@ import { yamlList, yamlScalar } from './render-header'
  *   - the file tells the agent to check access before running anything
  *   - Rules come last and nobody can edit them
  *   - a deprecated file says so, in its header and under its title
- *   - tool files stay under ~60 lines, workflow files under ~120, ≤ 10 steps
+ *   - tool files stay under ~80 lines, workflow files under ~150, ≤ 10 steps
  *
  * PURE MODULE: type-only imports, deterministic for a given `now`. The
  * golden tests reproduce the design doc's example files byte for byte.
@@ -47,13 +47,7 @@ export type ToolFileInput = {
   updatedAt: number
 }
 
-type WorkflowFileTool = {
-  key: string
-  name: string
-  /** Who makes it: two vendors' "Enrich contacts" must read differently. */
-  companyName: string
-  access: ReadonlyArray<Access>
-}
+type WorkflowFileTool = SetupTool
 
 type WorkflowFileStep = {
   title: string
@@ -99,8 +93,8 @@ export type RenderedDocument = {
   lineCount: number
 }
 
-export const TOOL_FILE_MAX_LINES = 60
-export const WORKFLOW_FILE_MAX_LINES = 120
+export const TOOL_FILE_MAX_LINES = 80
+export const WORKFLOW_FILE_MAX_LINES = 150
 export const MAX_WORKFLOW_STEPS = 10
 
 /** Immutable. Always the last section; nobody can edit these lines. */
@@ -173,7 +167,11 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     lines.push('', '## Set up', '', 'Use the first option your agent supports.')
     for (const access of ordered) {
       lines.push('', `### ${accessHeading(access)}`, '')
-      lines.push(...accessBody(access, tool.key, { includeDocs: true }))
+      lines.push(
+        ...accessBody([{ access }], tool.companyKey, {
+          includeDocs: true,
+        })
+      )
       const serverUrl = serverUrlLine(access)
       if (serverUrl) {
         lines.push('', serverUrl)
@@ -209,45 +207,6 @@ function inputsSection(inputs: WorkflowFileInput['inputs']): Array<string> {
       const example = input.example ? `, e.g. ${input.example}` : ''
       return `- \`${input.name}\`: ${input.description}${example}`
     }),
-  ]
-}
-
-/** One tool's setup: its best one or two options. */
-function toolSetup(tool: WorkflowFileTool): Array<string> {
-  const selected = selectWorkflowAccess(tool.access)
-  const heading = [
-    '',
-    `### ${tool.name} (${tool.companyName}, ${formatRef('tool', tool.key)})`,
-    '',
-  ]
-  if (selected.length === 0) {
-    return [
-      ...heading,
-      'No documented way in yet. Ask the user how they reach this tool.',
-    ]
-  }
-  const [only] = selected
-  if (selected.length === 1 && only) {
-    return [...heading, ...singleAccessSetup(only, tool.key)]
-  }
-  const options = selected.flatMap((access) => [
-    '',
-    `#### ${accessHeading(access)}`,
-    '',
-    ...accessBody(access, tool.key, { includeDocs: false }),
-  ])
-  return [...heading, 'Use the first option your agent supports.', ...options]
-}
-
-function setupSection(tools: ReadonlyArray<WorkflowFileTool>): Array<string> {
-  return [
-    '',
-    '## Set up',
-    ...tools.flatMap(toolSetup),
-    '',
-    tools.length > 1
-      ? 'Make one read-only call to each tool to confirm access.'
-      : 'Make one read-only call to confirm access.',
   ]
 }
 
@@ -319,7 +278,7 @@ export function renderWorkflowDocument(
       ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user.`
       : 'Set up the tools below, then run the steps in order for the user.',
     ...inputsSection(workflow.inputs),
-    ...setupSection(usedTools),
+    ...workflowSetup(usedTools),
     ...stepsSection(workflow.steps, toolsByKey, soleTool !== undefined),
   ]
 

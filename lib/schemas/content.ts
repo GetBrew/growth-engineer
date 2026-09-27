@@ -26,6 +26,24 @@ const line = text.refine((value) => !LINE_BREAK.test(value), {
   message: 'must be one line',
 })
 const url = z.url({ protocol: /^https?$/, hostname: z.regexes.domain })
+/** `{subdomain}`: the part of a way's URL that differs per account. */
+const PLACEHOLDER = /\{[A-Za-z][A-Za-z0-9_-]*\}/g
+const STRAY = /[{}\s]/
+/**
+ * A way's URL. A host that differs per account keeps the placeholder the
+ * vendor's docs print, in braces — `https://{subdomain}.zendesk.com` — and
+ * the company's description says where the value comes from.
+ */
+const wayUrl = text.refine(
+  (value) => {
+    const filled = value.replace(PLACEHOLDER, 'account.example')
+    return !STRAY.test(filled) && url.safeParse(filled).success
+  },
+  {
+    message:
+      'must be a URL; a part that differs per account goes in braces, like `https://{subdomain}.zendesk.com`',
+  }
+)
 const isoDate = z.iso.date()
 const keyPart = text.refine(isValidKeyPart, {
   message:
@@ -36,7 +54,7 @@ const handle = text.refine(isValidHandle, {
     'must be a valid, unreserved handle (lowercase letters, digits, hyphens)',
 })
 const ownedKey = text.refine(isValidOwnedKey, {
-  message: 'must be `<handle>/<slug>`, like `clay/enrich-contacts`',
+  message: 'must be `<handle>/<slug>`, like `apollo/enrich-person`',
 })
 const githubLogin = text.refine(isValidGithubLogin, {
   message:
@@ -100,7 +118,7 @@ const mcpWay = z
   .strictObject({
     ...wayCommon,
     /** A remote server. */
-    url: url.optional(),
+    url: wayUrl.optional(),
     /** A local server, started with this command. */
     command: z
       .string()
@@ -141,7 +159,7 @@ const apiWay = z
   .strictObject({
     ...wayCommon,
     /** The base URL every call's path follows. */
-    url,
+    url: wayUrl,
     /** `X-Api-Key`, or a name plus scheme: `Authorization: Basic`. */
     header: z
       .string()
@@ -261,7 +279,7 @@ export const workflowBodySchema = z.strictObject({
     .array(
       z.strictObject({
         title: text,
-        /** A tool key: `clay/enrich-contacts`. */
+        /** A tool key: `apollo/enrich-person`. */
         tool: ownedKey,
         instruction: text,
       })

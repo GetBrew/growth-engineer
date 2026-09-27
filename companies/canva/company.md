@@ -2,14 +2,28 @@
 name: Canva
 domain: canva.com
 category: design
-tagline: Create, review and edit designs without a designer in the loop.
-docs: https://www.canva.dev/docs/connect
+tagline: Online visual suite for designing presentations, social posts, videos and other marketing assets.
+docs: https://www.canva.dev/docs/apps/
+github: https://github.com/canva-sdks
 logo: canva.jpg
+mcp:
+  url: https://mcp.canva.com/mcp
+  auth: oauth
+  docs: https://www.canva.dev/docs/apps/mcp/
+cli:
+  install: npm install -g @canva/cli@latest
+  binary: canva
+  auth: oauth
+  docs: https://www.canva.dev/docs/apps/canva-cli/
 api:
   url: https://api.canva.com/rest/v1
   auth: oauth
-  docs: https://www.canva.dev/docs/connect
-updated: 2026-09-16
+  docs: https://www.canva.dev/docs/apps/rest-apis/
+updated: 2026-09-26
 ---
 
-Canva is a cloud-based design platform that helps individuals and teams create professional graphics, presentations, videos, documents, and marketing assets.
+Canva is an online visual communication and collaboration platform. Its MCP
+server lets an AI assistant generate, edit, search and export a user's
+designs; its REST APIs, also reachable through `canva api` in the Canva CLI,
+let an app create, autofill, resize and export designs on the user's behalf.
+Both act as a signed-in Canva user, and some calls need a paid Canva plan.

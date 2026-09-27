@@ -11,8 +11,8 @@ The public `key` is the path, and the path is the URL:
 
 | Entity | Key | Path | URL |
 | --- | --- | --- | --- |
-| Company | `clay` | `companies/clay/company.md` | `/companies/clay` |
-| Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` (named after the function) | `/tools/clay/enrich-contacts` |
+| Company | `apollo` | `companies/apollo/company.md` | `/companies/apollo` |
+| Tool | `apollo/enrich-person` | `companies/apollo/tools/enrich-person.md` (named after the function) | `/tools/apollo/enrich-person` |
 | Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` |
 | Tag | `capability:enrich-contacts` | an entry in `tags.yml` | a filter chip |
 
@@ -81,7 +81,7 @@ so the source reads on GitHub the way it reads on the site
 | Section | Entries | Becomes |
 | --- | --- | --- |
 | `## Inputs` (optional) | ``- `name`: description, e.g. example`` | `inputs`: `{ name (snake_case), description, example? }` |
-| `## Steps` (1–10) | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). Instruction.`` — a link to the tool's source file | `steps`: `{ title, tool, instruction }` |
+| `## Steps` (1–10) | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). Instruction.`` — a link to the tool's source file | `steps`: `{ title, tool, instruction }` |
 | `## Done when` (≥ 1) | `- A check.` | `doneWhen` |
 | `## Notes` (optional) | free markdown; `###` and smaller headings, none named like a section the file writes | `notes` |
 

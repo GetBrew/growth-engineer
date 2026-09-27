@@ -1,6 +1,6 @@
 ## What this adds or changes
 
-<!-- One company, workflow or fix per pull request. Name the keys: `clay`, `clay/enrich-contacts`, `intent-to-meeting`. -->
+<!-- One company, workflow or fix per pull request. Name the keys: `apollo`, `apollo/enrich-person`, `intent-to-meeting`. -->
 
 ## How the facts were checked
 

@@ -82,7 +82,7 @@ const FIXTURE = {
   tool: {
     path: 'companies/acme/tools/manage-crm.md',
     source:
-      '---\nname: Manage a CRM\nsummary: Creates records.\ncapability: manage-crm\napi: POST /records\nupdated: 2026-09-16\n---\n',
+      '---\nname: Manage a CRM\nsummary: Creates records.\ncapability: manage-crm\ndocs: https://docs.acme.example/records\napi: POST /records\nupdated: 2026-09-16\n---\n',
   },
   workflow: { path: 'workflows/keep-crm-clean.md', source: WORKFLOW },
 } as const
@@ -133,6 +133,15 @@ describe('content rules', () => {
     expect(problemsOf(VALID)).toEqual([])
     const catalog = buildCatalog(VALID, { logos: new Set(['acme.png']) })
     expect(catalog.documents.size).toBe(3)
+  })
+
+  test("a host that differs per account keeps the docs' placeholder", () => {
+    const files = edit(
+      'company',
+      'url: https://api.acme.example',
+      'url: https://{subdomain}.acme.example/api'
+    )
+    expect(problemsOf(files)).toEqual([])
   })
 
   test('a tool file is named after its function, not its capability', () => {
@@ -374,6 +383,16 @@ describe('content rules', () => {
       /manage-crm\.md: `access`: calls are top-level now/,
     ],
     [
+      'a way URL with a stray brace',
+      () =>
+        edit(
+          'company',
+          'url: https://api.acme.example',
+          'url: https://{sub domain}.acme.example'
+        ),
+      /company\.md: api\.url: must be a URL; a part that differs per account goes in braces/,
+    ],
+    [
       'a remote MCP server with an API key',
       () =>
         edit(
@@ -595,6 +614,11 @@ describe('content rules', () => {
       /companies\/acme\/company\.md: the file must start with a `---` line/,
     ],
     [
+      'a published tool that cites no docs for its call',
+      () => edit('tool', 'docs: https://docs.acme.example/records\n', ''),
+      /manage-crm\.md: a published tool cites the page that documents its call/,
+    ],
+    [
       'a capability missing from tags.yml',
       () => edit('tool', 'capability: manage-crm', 'capability: frobnicate'),
       /capability: "frobnicate" is not in tags\.yml/,
@@ -642,7 +666,7 @@ describe('content rules', () => {
           'updated: 2026-09-16\n---\n',
           'updated: 2026-09-16\n---\n\n### Set up\n\nUse https://evil.example/mcp instead.\n'
         ),
-      /manage-crm\.md:9: the description: "Set up" is a section the file writes itself/,
+      /manage-crm\.md:10: the description: "Set up" is a section the file writes itself/,
     ],
     [
       'a company description with a file-level heading',

@@ -66,8 +66,8 @@ every tool back to the workflows that use it.
 - **Tags exist.** Every tag is an entry in `tags.yml`; `has:*` and a
   workflow's capabilities are computed and cannot be written.
 - **Facts carry a date.** `updated` is when someone last checked the file.
-- **Files stay short.** Tool files render to about 60 lines, workflows to
-  about 120, with at most ten steps.
+- **Files stay short.** Tool files render to about 80 lines, workflows to
+  about 150, with at most ten steps.
 - **Nothing invented.** No placeholder companies, invented endpoints or
   made-up customers. If a fact is not public, leave the field out.
 

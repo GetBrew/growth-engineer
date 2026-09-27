@@ -251,7 +251,7 @@ describe('get, on a fixture catalog', () => {
       handle: 'acme',
       slug: 'create-record',
       source:
-        '---\nname: Create a record\nsummary: Creates one record.\ncapability: manage-crm\napi: POST /records\naliases: [acme/old-record]\nupdated: 2026-09-16\n---\n',
+        '---\nname: Create a record\nsummary: Creates one record.\ncapability: manage-crm\ndocs: https://docs.acme.example/records\napi: POST /records\naliases: [acme/old-record]\nupdated: 2026-09-16\n---\n',
     },
     {
       kind: 'tool',

@@ -34,7 +34,7 @@ export const getArgs = z.strictObject({
     .min(1)
     .max(300)
     .describe(
-      'A ref from search (`tool:clay/enrich-contacts`, `workflow:funding-signal-outbound`, `company:clay`), a tag (`capability:enrich-contacts`), or a page or .md URL.'
+      'A ref from search (`tool:apollo/enrich-person`, `workflow:funding-signal-outbound`, `company:apollo`), a tag (`capability:enrich-contacts`), or a page or .md URL.'
     ),
 })
 
@@ -87,7 +87,7 @@ function resolve(input: string, catalog: Catalog): Target | null {
   if (ref) {
     return { kind: 'entity', ...ref }
   }
-  // A bare key: `clay`, `clay/enrich-contacts`, `funding-signal-outbound`.
+  // A bare key: `apollo`, `apollo/enrich-person`, `funding-signal-outbound`.
   const found = ENTITY_TYPES.filter((type) =>
     catalog.documents.has(formatRef(type, value))
   )

@@ -8,7 +8,7 @@ and the routing table into the deep-dive docs. CI caps it at 200 lines
 
 An open-source catalog of **companies**, the **tools** they make, and
 **workflows** that put tools to work. A COMPANY makes many TOOLS; a tool is
-ONE function an agent can call (`clay/enrich-contacts`), tied to a specific
+ONE function an agent can call (`apollo/enrich-person`), tied to a specific
 MCP tool, CLI subcommand or API endpoint — not the product. A WORKFLOW is
 several tools in order with the instructions that reach a result, and a growth
 hack IS a workflow, not a second kind. **Every tool and workflow is ONE
@@ -72,18 +72,18 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   the build adds setup and rules.
 - The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
   flat YAML header, setup picks the best way in (official MCP → CLI → API →
-  community; tool files list every option, workflow files ≤ 2 per tool),
-  inputs in backticks, ≤ 10 steps, Rules last and immutable,
-  tool ≈ 60 lines, workflow ≈ 120. Change the format and the golden fixtures
-  in `tests/fixtures/markdown/` in the same commit.
+  community; tool files list every option, workflow files ≤ 2 per tool, each
+  company's ways once), inputs in backticks, ≤ 10 steps, Rules last and
+  immutable, tool ≈ 80 lines, workflow ≈ 150. Change the format and the
+  golden fixtures in `tests/fixtures/markdown/` in the same commit.
 - A file's `updated` date is the newest ENTITY date of every file that fed
   it (tool ← company, workflows; workflow ← tools, their companies).
 
 ### Keys and refs
 
-- Public identity is the `key` (`clay`, `clay/enrich-contacts`,
+- Public identity is the `key` (`apollo`, `apollo/enrich-person`,
   `funding-signal-outbound`), and the key IS the path:
-  `companies/clay/`, `companies/clay/tools/enrich-contacts.md`,
+  `companies/apollo/`, `companies/apollo/tools/enrich-person.md`,
   `workflows/funding-signal-outbound.md` (FLAT — no folders; the workflow's
   `author` is a GitHub login in its header, never a company). Keys are never
   authored in a header.

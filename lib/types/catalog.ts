@@ -168,7 +168,7 @@ export type TagChip = {
 
 /** One rendered file: what `.md` URLs, the Copy button and `/llms.txt` serve. */
 export type CatalogDocument = {
-  /** `tool:clay/enrich-contacts` */
+  /** `tool:apollo/enrich-person` */
   ref: string
   entityType: EntityType
   markdown: string

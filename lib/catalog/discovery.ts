@@ -105,9 +105,9 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
 /** One line of `/llms.txt`: a file, named and summarized. */
 export type LlmsEntry = {
   title: string
-  /** `/tools/clay/enrich-contacts` */
+  /** `/tools/apollo/enrich-person` */
   path: string
-  /** `/tools/clay/enrich-contacts.md` */
+  /** `/tools/apollo/enrich-person.md` */
   file: string
   summary: string
 }

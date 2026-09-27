@@ -85,7 +85,7 @@ export default function proxy(req: NextRequest) {
  */
 export const config = {
   matcher: [
-    // A file: `/tools/clay/enrich-contacts.md`.
+    // A file: `/tools/apollo/enrich-person.md`.
     '/(.+\\.md)',
     // A page asked for as markdown (an agent, `curl -H 'Accept: text/markdown'`).
     {

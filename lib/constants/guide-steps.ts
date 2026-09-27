@@ -42,11 +42,11 @@ const TOOL_STEPS: ReadonlyArray<GuideStep> = [
     key: 'one-function',
     title: 'Create one file per function',
     detail:
-      'A tool is ONE thing an agent calls — one MCP tool, one CLI command, or one API endpoint — and its file is named after that function. Clay enriching contacts, building an audience and finding work emails is three files, not one product page. The path is the key, and the key is the URL.',
+      'A tool is ONE thing an agent calls — one MCP tool, one CLI command, or one API endpoint — and its file is named after that function. Apollo enriching a person, searching for people and enriching a company is three files, not one product page. The path is the key, and the key is the URL.',
     sample: {
-      code: `companies/clay/tools/enrich-contacts.md
-companies/clay/tools/build-audience.md
-companies/clay/tools/find-work-emails.md`,
+      code: `companies/apollo/tools/enrich-person.md
+companies/apollo/tools/search-people.md
+companies/apollo/tools/enrich-company.md`,
     },
   },
   {
@@ -54,7 +54,7 @@ companies/clay/tools/find-work-emails.md`,
     title: 'Write the header',
     detail:
       'A YAML header between --- lines, then an optional markdown body that describes the function. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. The summary is one sentence saying what the function does, in words someone can act on.',
-    sample: { file: 'companies/clay/tools/enrich-contacts.md' },
+    sample: { file: 'companies/apollo/tools/enrich-person.md' },
   },
   {
     key: 'calls',
@@ -77,7 +77,7 @@ companies/clay/tools/find-work-emails.md`,
     sample: {
       code: `pnpm install
 pnpm content:check
-pnpm dev   # then open /tools/clay/enrich-contacts`,
+pnpm dev   # then open /tools/apollo/enrich-person`,
     },
   },
   {
@@ -153,7 +153,7 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     detail:
       'Lowercase letters, digits and hyphens, 2–39 characters, and not a reserved word such as tools, workflows or map. It becomes your company URL and the first half of every tool key, and it is permanent — a rename only ever redirects.',
     sample: {
-      code: `companies/clay/
+      code: `companies/apollo/
   company.md
   tools/enrich-contacts.md`,
     },
@@ -163,7 +163,7 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     title: 'Write company.md',
     detail:
       'Name, bare domain with no scheme, a category listed in tags.yml, a logo file you add to public/logos/, and the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly.',
-    sample: { file: 'companies/clay/company.md' },
+    sample: { file: 'companies/apollo/company.md' },
   },
   {
     key: 'ways',
@@ -178,9 +178,9 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     detail:
       'Every function an agent can call gets its own file under tools/, named after the function and naming its exact call on each way in. That is the "Add a tool" guide, repeated once per function.',
     sample: {
-      code: `companies/clay/tools/enrich-contacts.md
-companies/clay/tools/build-audience.md
-companies/clay/tools/find-work-emails.md`,
+      code: `companies/apollo/tools/enrich-person.md
+companies/apollo/tools/search-people.md
+companies/apollo/tools/enrich-company.md`,
     },
   },
   {
@@ -190,7 +190,7 @@ companies/clay/tools/find-work-emails.md`,
     sample: {
       code: `pnpm install
 pnpm content:check
-pnpm dev   # then open /companies/clay`,
+pnpm dev   # then open /companies/apollo`,
     },
   },
   {

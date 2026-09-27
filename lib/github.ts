@@ -19,8 +19,8 @@ export function repoFileUrl(path: string): string {
 /**
  * The SOURCE file behind a page, relative to the repo root. Not the same as
  * `refToFilePath`, which is the rendered `.md` URL this site serves: a tool
- * renders at `/tools/clay/enrich-contacts.md` but is WRITTEN at
- * `companies/clay/tools/enrich-contacts.md`. The key carries both, so neither
+ * renders at `/tools/apollo/enrich-person.md` but is WRITTEN at
+ * `companies/apollo/tools/enrich-person.md`. The key carries both, so neither
  * path has to be stored.
  */
 function sourceFilePath(ref: { type: EntityType; key: string }): string {

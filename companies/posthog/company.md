@@ -2,16 +2,30 @@
 name: PostHog
 domain: posthog.com
 category: product-analytics
-tagline: Product analytics, session replay and feature flags, self-serve.
+tagline: Product analytics, session replay, feature flags and experiments on one platform.
 docs: https://posthog.com/docs
 github: https://github.com/PostHog/posthog
 logo: posthog.jpg
-api:
-  url: https://us.posthog.com/api
+mcp:
+  url: https://mcp.posthog.com/mcp
+  auth: oauth
+  docs: https://posthog.com/docs/model-context-protocol
+cli:
+  install: npm install -g @posthog/cli@latest
+  binary: posthog-cli
   auth: api_key
-  env: POSTHOG_API_KEY
+  env: POSTHOG_CLI_API_KEY
+  keyUrl: https://app.posthog.com/settings/user-api-keys?preset=mcp_server
+  docs: https://posthog.com/docs/cli
+api:
+  url: https://us.posthog.com
+  auth: api_key
+  env: POSTHOG_PERSONAL_API_KEY
+  keyUrl: https://us.posthog.com/settings/user-api-keys
   docs: https://posthog.com/docs/api
-updated: 2026-09-16
+updated: 2026-09-26
 ---
 
-PostHog is a product analytics platform that provides self-driving product capabilities.
+PostHog is a product platform that combines product and web analytics, session replay, feature flags, experiments, surveys, error tracking and a CDP in one place.
+
+The API URL above is US Cloud; EU Cloud projects use `https://eu.posthog.com`. The hosted MCP server routes to the right region from the account you sign in with.

@@ -255,7 +255,8 @@ describe('structured data', () => {
   })
 
   test('a tool is a SoftwareApplication with its file as an alternate encoding', () => {
-    const tool = catalog.tools.get('clay/enrich-contacts')
+    const [key] = catalog.order.toolsNew
+    const tool = key ? catalog.tools.get(key) : undefined
     const company = tool ? catalog.companies.get(tool.companyKey) : undefined
     if (!(tool && company)) {
       throw new Error('the seed tool is missing')
@@ -273,13 +274,13 @@ describe('structured data', () => {
     expect(graph[1]?.encoding).toEqual({
       '@type': 'MediaObject',
       encodingFormat: 'text/markdown',
-      contentUrl: `${origin}/tools/clay/enrich-contacts.md`,
+      contentUrl: `${origin}/tools/${tool.key}.md`,
     })
     const crumbs = graph[2]?.itemListElement as Array<{ item: string }>
     expect(crumbs.map((crumb) => crumb.item)).toEqual([
       `${origin}/tools`,
-      `${origin}/companies/clay`,
-      `${origin}/tools/clay/enrich-contacts`,
+      `${origin}/companies/${company.key}`,
+      `${origin}/tools/${tool.key}`,
     ])
   })
 

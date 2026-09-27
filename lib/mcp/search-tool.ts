@@ -53,7 +53,7 @@ export function searchArgs(tagKeys: ReadonlyArray<string>) {
       .max(80)
       .optional()
       .describe(
-        'A company handle (`clay`): the company, its tools, and the workflows that use them.'
+        'A company handle (`apollo`): the company, its tools, and the workflows that use them.'
       ),
     uses: z
       .string()
@@ -62,7 +62,7 @@ export function searchArgs(tagKeys: ReadonlyArray<string>) {
       .max(120)
       .optional()
       .describe(
-        'A tool key (`clay/enrich-contacts`): the workflows that use it.'
+        'A tool key (`apollo/enrich-person`): the workflows that use it.'
       ),
     author: z
       .string()

@@ -13,8 +13,8 @@ Brought to you by [Brew](https://brew.new). MIT licensed.
 ## The catalog is the repo
 
 ```
-companies/<handle>/company.md        who the company is, its ways in → /companies/clay
-companies/<handle>/tools/<name>.md   each function an agent calls  → /tools/clay/enrich-contacts
+companies/<handle>/company.md        who the company is, its ways in → /companies/apollo
+companies/<handle>/tools/<name>.md   each function an agent calls  → /tools/apollo/enrich-person
 workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
 tags.yml                             the vocabulary                → capability, motion, channel, category
 ```
@@ -55,8 +55,8 @@ companies/ workflows/ tags.yml ─▶ lib/content/build-catalog.ts  ─▶  the 
 ## For agents
 
 Every company, tool and workflow page answers `Accept: text/markdown` with
-its file, or append `.md`: `/tools/clay/enrich-contacts.md`,
-`/workflows/funding-signal-outbound.md`, `/companies/clay.md`. `/llms.txt` defines the four words the catalog uses and
+its file, or append `.md`: `/tools/apollo/enrich-person.md`,
+`/workflows/funding-signal-outbound.md`, `/companies/apollo.md`. `/llms.txt` defines the four words the catalog uses and
 links every file with a one-line summary; `/llms-full.txt` is every file in
 one document. Every HTML page declares its file as a `text/markdown`
 alternate and carries schema.org data (a company is an `Organization`, a tool

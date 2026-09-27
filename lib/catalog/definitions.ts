@@ -33,7 +33,7 @@ export type Definition = {
 export const DEFINITIONS: ReadonlyArray<Definition> = [
   {
     term: 'Company',
-    example: 'clay',
+    example: 'apollo',
     definition: 'A vendor, open-source project or person that makes tools.',
     detail:
       'Named by a permanent handle that is its URL and the first half of every tool key. A company lists the ways in it offers — MCP server, CLI, API — once, and its tools point at them.',
@@ -41,7 +41,7 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
   },
   {
     term: 'Tool',
-    example: 'clay/enrich-contacts',
+    example: 'apollo/enrich-person',
     definition:
       'ONE function an agent can call, tied to a specific MCP tool, CLI subcommand or API endpoint.',
     detail:

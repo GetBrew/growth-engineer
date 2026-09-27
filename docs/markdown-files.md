@@ -17,14 +17,14 @@ names the tools, and appends the rules.
 | Files are generated, never hand-edited. | One render function builds each file from the source files at build time. When a tool's MCP URL changes, every workflow file that uses it is rebuilt on the next deploy. |
 | Files work in any agent. | Plain markdown, a short flat YAML header, no agent-specific syntax. MCP servers appear in the common `mcpServers` JSON shape with the URL spelled out too. |
 | Everything needed to run is in the file. | Setup, inputs, steps and finish checks are inline. Links are only for getting keys or reading more. |
-| Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool. |
+| Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool, and set each company's way up once, listing every call on it. |
 | Inputs are named, not templated. | `target_accounts` appears in backticks and the file tells the agent to ask the user for it. No template engine. |
 | The file tells the agent to check access first. | After setup, one read-only call to each tool before any step runs. |
 | Rules always come last, and nobody can edit them. | Only the listed tools; ask before sending, spending or changing anything; never print keys. |
 | The header parses as written. | Every value an author wrote is quoted when it has to be (`yamlScalar`, `lib/catalog/render-header.ts`), so a title with a colon or a login like `true` reads back exactly, and no value can add a field. |
 | Deprecated says so. | `status: deprecated` in the header and one warning line under the title; an agent asks the user before using it. |
 | Prose never poses as structure. | A description or the Notes may use `###` and smaller headings only, never one named like a section the file writes (Set up, Steps, Rules…). |
-| Files stay short. | Tool files under ~60 lines; workflow files under ~120, at most 10 steps. |
+| Files stay short. | Tool files under ~80 lines; workflow files under ~150, at most 10 steps. |
 
 ## Layout
 
@@ -49,7 +49,7 @@ workflow file lists the tools it uses: the relationship is in both files.
 | Where | Example |
 | --- | --- |
 | Copy prompt button | On every tool and workflow page |
-| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`, `/companies/clay.md` |
+| `.md` URL | `/tools/apollo/enrich-person.md`, `/workflows/funding-signal-outbound.md`, `/companies/apollo.md` |
 | A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file |
 | MCP, at `/mcp` | `search` finds entries by words and filters; `get` with a ref returns the file (and its links as refs); `get` on a tag lists everything carrying it |

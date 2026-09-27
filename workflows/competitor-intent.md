@@ -6,7 +6,7 @@ tags:
   - motion:outbound
   - channel:email
 featured: 3
-updated: 2026-09-16
+updated: 2026-09-27
 ---
 
 ## Inputs
@@ -16,9 +16,9 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Read what changed** with [firecrawl/scrape-web](../companies/firecrawl/tools/scrape-web.md). Fetch the pricing and changelog pages on `competitor_domain` and summarise what changed in the last month in five bullets.
-2. **Match open deals** with [attio/manage-crm](../companies/attio/tools/manage-crm.md). Find records in `watch_list` with an open deal. Keep the deal owner and stage.
-3. **Write the comparison** with [brew/write-copy](../companies/brew/tools/write-copy.md). Draft one email per account that names a single concrete difference relevant to its stage. Show the drafts to the user; send only after approval.
+1. **Read what changed** with [firecrawl/scrape-url](../companies/firecrawl/tools/scrape-url.md). Fetch the pricing and changelog pages on `competitor_domain` and summarise what changed in the last month in five bullets.
+2. **Match open deals** with [attio/list-records](../companies/attio/tools/list-records.md). Find records in `watch_list` with an open deal. Keep the deal owner and stage.
+3. **Write the comparison** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft one email per account that names a single concrete difference relevant to its stage. Show the drafts to the user; send only after approval.
 
 ## Done when
 

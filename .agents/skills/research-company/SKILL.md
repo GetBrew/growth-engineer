@@ -38,10 +38,12 @@ organization. Never blogs, directories, marketplaces or third-party servers.
   - Record the remote `url` (or local `command`), the auth, and the tool names exactly
     as the vendor lists them. A remote server that takes an API key can't be written
     yet: note it and use the API.
+  - Never write a URL that carries a secret (a per-user MCP link with a token in it).
 - **API.** From the API reference: the base `url`, the auth (`none`, `oauth`,
   `api_key` with the `env` var — the docs' name, else `<BRAND>_API_KEY` — and the
   `header` when it isn't `Authorization: Bearer`), and the `keyUrl` where a key is
-  created.
+  created. A host that differs per account keeps the docs' placeholder in braces
+  (`https://{subdomain}.zendesk.com/api/v2`); the description says where it comes from.
 - **CLI.** From the CLI docs: the `install` command and the `binary`.
 
 ## 3. Choose up to five functions
@@ -56,7 +58,9 @@ organization. Never blogs, directories, marketplaces or third-party servers.
   MCP tool name, the CLI command (starting with the binary), `METHOD /path` for the
   API — and `docs:`, the page that names the call. Prefer functions reachable over
   MCP.
-- Two tools that would share one call are one tool.
+- Two tools whose calls are all the same are one tool. A generic MCP tool that
+  takes the endpoint as an argument (`stripe_api_read`) may serve several tools
+  whose API calls differ; the body says which arguments to pass.
 
 ## 4. Write the files
 

@@ -140,6 +140,12 @@ function resolveAccess(
       'a published tool needs at least one call — `mcp:`, `cli:` or `api:` — or `status: draft` until it has one'
     )
   }
+  if (data.status === 'published' && !data.docs) {
+    problems.add(
+      file.path,
+      'a published tool cites the page that documents its call: add `docs:` — or `status: draft` until one does'
+    )
+  }
   return access
 }
 
@@ -168,9 +174,17 @@ function toTool(
     status: data.status === 'deprecated' ? 'deprecated' : 'published',
     updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
+    // A tag's synonyms describe what the tag is about. The category is the
+    // company's, so a tool takes only its label: every tool of a "data
+    // provider" must not answer to "enrichment".
     searchText: searchTextOf(
-      [data.name, company.name, data.summary],
-      tags,
+      [
+        data.name,
+        company.name,
+        data.summary,
+        tagMap.get(`category:${company.category}`)?.label,
+      ],
+      tags.filter((key) => !key.startsWith('category:')),
       tagMap
     ),
   }

@@ -9,8 +9,8 @@ import type {
 
 /**
  * THE edges, written once. Every relation a page, a rendered file, search or
- * MCP `get` shows is read from this map — keyed by ref (`company:clay`,
- * `tool:clay/enrich-contacts`, `workflow:x`) or tag key (`capability:x`),
+ * MCP `get` shows is read from this map — keyed by ref (`company:apollo`,
+ * `tool:apollo/enrich-person`, `workflow:x`) or tag key (`capability:x`),
  * which never collide: entity types and tag namespaces are distinct words.
  *
  * Published entries only, in listing order (tools by key, workflows featured

@@ -1,8 +1,8 @@
 # companies/
 
 One folder per company, named by its **handle** — the permanent key that
-becomes its URL (`/companies/clay`) and the first half of every tool key
-(`clay/enrich-contacts`). Lowercase letters, digits and hyphens; 2–39
+becomes its URL (`/companies/apollo`) and the first half of every tool key
+(`apollo/enrich-person`). Lowercase letters, digits and hyphens; 2–39
 characters; not a reserved word (`tools`, `workflows`, `map`, …).
 
 ```
@@ -81,6 +81,9 @@ below. Each way says how it authenticates:
   gets one (`keyUrl`) — a file never holds a key.
 - A remote MCP server that takes an API key can't be set up from a file yet;
   list its API instead.
+- A host that differs per account keeps the placeholder the docs print, in
+  braces: `url: https://{subdomain}.zendesk.com/api/v2`. The description
+  says where the value comes from.
 - `docs` links the way's own documentation. `maintainer: <who>` marks a
   community-run way; without it, the way is the vendor's own.
 

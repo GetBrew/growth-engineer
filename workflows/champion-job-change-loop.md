@@ -7,7 +7,7 @@ tags:
   - channel:linkedin
   - channel:email
 featured: 10
-updated: 2026-09-16
+updated: 2026-09-27
 ---
 
 ## Inputs
@@ -16,9 +16,10 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Detect the move** with [apollo/enrich-contacts](../companies/apollo/tools/enrich-contacts.md). For each person in `champion_list`, find their current company and title. Keep only people who moved in the last 6 months.
-2. **Size the new company** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). For each new company, add size, industry and funding stage.
-3. **Open a deal** with [attio/manage-crm](../companies/attio/tools/manage-crm.md). Create a deal on the new company with the champion as the contact and the previous relationship in the notes.
+1. **Detect the move** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). For each person in `champion_list`, find their current company and title. Keep only people who moved in the last 6 months.
+2. **Size the new company** with [clay/run-routine](../companies/clay/tools/run-routine.md). For each new company, add size, industry and funding stage.
+3. **Open a deal** with [attio/create-record](../companies/attio/tools/create-record.md). Create a deal on the new company with the champion as the contact.
+4. **Note the history** with [attio/create-note](../companies/attio/tools/create-note.md). Add a note to each deal describing the previous relationship.
 
 ## Done when
 

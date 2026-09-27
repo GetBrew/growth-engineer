@@ -264,6 +264,72 @@ describe('setup picks the best way in', () => {
     expect(rendered.markdown).not.toContain('- Docs:')
   })
 
+  test("a company's ways are set up once, naming every call on them", () => {
+    const search: Access = { ...clayMcp, operation: 'clay_search_people' }
+    const rendered = renderWorkflowDocument({
+      ...intentToMeeting,
+      tools: [
+        {
+          key: 'clay/enrich-contacts',
+          name: 'Enrich contacts',
+          companyName: 'Clay',
+          access: [clayApi, clayMcp],
+        },
+        {
+          key: 'clay/search-people',
+          name: 'Search people',
+          companyName: 'Clay',
+          // No API: its call shows under the MCP server only.
+          access: [search],
+        },
+      ],
+      steps: [
+        { title: 'Find', toolKey: 'clay/search-people', instruction: 'Find.' },
+        {
+          title: 'Enrich',
+          toolKey: 'clay/enrich-contacts',
+          instruction: 'Add.',
+        },
+        { title: 'Again', toolKey: 'clay/search-people', instruction: 'More.' },
+      ],
+    }).markdown
+    const setup = rendered.slice(
+      rendered.indexOf('## Set up'),
+      rendered.indexOf('## Steps')
+    )
+    expect(setup).toBe(
+      [
+        '## Set up',
+        '',
+        '### Clay (tool:clay/search-people, tool:clay/enrich-contacts)',
+        '',
+        'Use the first option your agent supports.',
+        '',
+        '#### MCP (official, remote)',
+        '',
+        "Add this server to your agent's MCP settings, then sign in when asked.",
+        '',
+        '```json',
+        '{ "mcpServers": { "clay": { "url": "https://mcp.clay.example/mcp" } } }',
+        '```',
+        '',
+        '- Search people: call the MCP tool `clay_search_people`',
+        '- Enrich contacts: call the MCP tool `clay_enrich_contacts`',
+        '',
+        '#### API (official)',
+        '',
+        '- Base URL: https://api.clay.example/v1',
+        '- Enrich contacts: `POST /enrich-contacts`',
+        '- Auth: send the header `Authorization: Bearer $CLAY_API_KEY`',
+        '- Get a key: https://app.clay.example/settings/api',
+        '',
+        'Make one read-only call to each tool to confirm access.',
+        '',
+        '',
+      ].join('\n')
+    )
+  })
+
   test('a community option names its maintainer', () => {
     const rendered = renderToolDocument({ ...clay, access: [communityCli] })
     expect(rendered.markdown).toContain('### CLI (community)')
