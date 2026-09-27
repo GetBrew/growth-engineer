@@ -3,7 +3,7 @@
 One folder per company, named by its **handle** — the permanent key that
 becomes its URL (`/companies/apollo`) and the first half of every tool key
 (`apollo/enrich-person`). Lowercase letters, digits and hyphens; 2–39
-characters; not a reserved word (`tools`, `workflows`, `map`, …).
+characters; not a reserved word (`tools`, `workflows`, `mcp`, …).
 
 ```
 companies/<handle>/
@@ -50,7 +50,9 @@ updated: 2026-09-16
 ---
 
 One or two paragraphs on what the company does. Optional. This is the
-description on the company page and in the company's file.
+description on the company page and in the company's file. It may use `###`
+and smaller headings, never one named like a section the file writes (Tools,
+Links, Set up, Rules…), and never a `---` or `===` underline.
 ```
 
 | Field | Required | Notes |
@@ -78,11 +80,12 @@ below. Each way says how it authenticates:
 
 - `auth` is `none`, `oauth` or `api_key`. An API key names the environment
   variable it goes in (`env: ACME_API_KEY`) and, optionally, where a person
-  gets one (`keyUrl`) — a file never holds a key.
+  gets one (`keyUrl`) — a file never holds a key. Only `api_key` takes `env`
+  and `keyUrl`.
 - A remote MCP server that takes an API key can't be set up from a file yet;
   list its API instead.
 - A host that differs per account keeps the placeholder the docs print, in
-  braces: `url: https://{subdomain}.zendesk.com/api/v2`. The description
+  braces (in a way's `url` only): `url: https://{subdomain}.zendesk.com/api/v2`. The description
   says where the value comes from.
 - Basic auth is `header: "Authorization: Basic"`, and the variable holds the
   base64 of the pair the docs define (`<key>:`, `<email>:<token>`); the
@@ -115,8 +118,11 @@ Optional longer description, shown on the tool page and in the file.
   binary (`acme people enrich`).
 - `capability` puts the tool on a shelf with every other vendor's version of
   the same job; add one to `tags.yml` in the same pull request if none fits.
-- A published tool needs at least one call. Until it has one, set
-  `status: draft` — a draft has no page and no file.
+- A published tool needs at least one call and `docs:`, the page that names
+  it. Until it has both, set `status: draft` — a draft has no page and no
+  file. A company whose tools are all drafts has no page either.
+- The body follows the company description's heading rules. A tool or
+  company file renders to at most 80 lines.
 - `aliases` lists old keys to redirect; `status` is `published`,
   `deprecated` or `draft`.
 

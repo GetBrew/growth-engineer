@@ -64,8 +64,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 ### The markdown file
 
 - ONE render path: [`lib/catalog/render-markdown.ts`](lib/catalog/render-markdown.ts)
-  (pure) called only by [`lib/content/build-documents.ts`](lib/content/build-documents.ts)
-  at build time. Nothing renders on the request path; a rendered file is
+  (and `render-tag.ts` for tags; pure), called only by
+  [`lib/content/build-documents.ts`](lib/content/build-documents.ts) at build time. Nothing renders on the request path; a rendered file is
   never hand-edited. A SOURCE file is a YAML header of facts plus a markdown
   body a person can read on GitHub: a workflow's inputs, steps and checks
   are body sections ([`lib/content/workflow-body.ts`](lib/content/workflow-body.ts));
@@ -103,13 +103,13 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   problem is reported at once (`ContentErrors`): strict schemas (unknown
   fields rejected), reserved handles, every step's tool resolves and is
   published, tags exist, aliases never shadow a live key, a published tool
-  has ≥ 1 call on a declared way in, logos exist. A new rule ships with a
+  has ≥ 1 call on a declared way in and `docs:`, logos exist. Line caps are
+  checked by `pnpm content:check`. A new rule ships with a
   negative test in `tests/content-schema.test.ts` — a guard is not done
   until it has FAILED.
-- PROJECTIONS (every entity's tags, tag counts, `searchText`, `toolCount`)
-  are computed in `lib/content/derive.ts`; the EDGES in
-  `lib/content/build-relations.ts`, read through `relationsOf` — one writer
-  each, never authored in a file. The workflow ↔ tool relationship is
+- PROJECTIONS (tags, `searchText`) are computed in `lib/content/derive.ts`;
+  the EDGES and tag counts in `lib/content/build-relations.ts`, read through
+  `relationsOf` — one writer each, never authored in a file. The workflow ↔ tool relationship is
   written into BOTH rendered files (`tools:` / `workflows:`) and both pages.
 - The pure half of `lib/catalog/*` (keys, renderer, search grammar) imports
   nothing from `node:`, `server-only` or `lib/content` — it runs in the proxy
@@ -142,7 +142,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
   No page reads `searchParams` on the server.
-  The one dynamic route is `/mcp` (POST); the proxy runs only for `.md`.
+  The one dynamic route is `/mcp` (POST); the proxy runs only for `.md` files
+  and `Accept: text/markdown`. A detail page says `export const instant = false`.
 - NOTHING LOADS: no skeletons, no spinners, no fetch after load, no
   `<Suspense>` in a page. A page renders its data directly and a page with
   params awaits them itself: every known key is in `generateStaticParams`,

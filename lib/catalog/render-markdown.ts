@@ -14,7 +14,7 @@ import { yamlList, yamlScalar } from './render-header'
  * THE render function. Every company, tool and workflow renders to one
  * markdown file from structured fields; this module is the only place that
  * knows what those files look like. Pages, the Copy button, `.md` URLs, MCP
- * `get` and `/llms.txt` all read the stored result (`documents` table).
+ * `get` and `/llms.txt` all read the stored result (`catalog.documents`).
  *
  * The contract (docs/markdown-files.md):
  *   - plain markdown with a short, flat YAML header; no agent-specific syntax

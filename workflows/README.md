@@ -85,7 +85,7 @@ A long entry can wrap onto the next line; keep each entry to one paragraph.
 - Inputs in backticks (`target_segment`), never `{{templates}}`.
 - Ask before anything that sends, spends or changes data. The rendered file
   adds these rules itself; do not duplicate them.
-- Keep the whole file under about 120 lines when rendered.
+- Keep the whole file under 150 lines when rendered.
 
 ## Checking your work
 

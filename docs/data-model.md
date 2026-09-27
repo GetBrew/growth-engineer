@@ -18,7 +18,7 @@ The public `key` is the path, and the path is the URL:
 
 A key part is lowercase letters, digits and hyphens, 2–39 characters, never
 starting or ending with a hyphen. A company handle is one part that is not a
-reserved route word (`tools`, `workflows`, `map`, …;
+reserved route word (`tools`, `workflows`, `mcp`, …;
 `lib/catalog/keys.ts`). Keys are never written in a header and never change
 after publishing: a rename lists the old key under `aliases:`, and the old
 URL answers with a 308.
@@ -49,7 +49,7 @@ A tool is ONE function, and its file is named after it. `name`, `summary`,
 `capability` (a `capability:` entry in `tags.yml`) and `updated` are
 required. The calls are top-level: `mcp:` (the tool name), `cli:` (starting
 with the company's binary) and `api:` (`METHOD /path`), each on a way the
-company declares; a published tool needs at least one. `docs` is the page
+company declares; a published tool needs at least one, and `docs:`. `docs` is the page
 that names the call. `status` is `published` (default), `deprecated`, or
 `draft` (no page, no file, not listed). `aliases` lists old keys. The body
 is the description.
@@ -89,7 +89,7 @@ A step names its tool by a link to the tool's source file (the link must
 point at that file). Every step's tool must be a published tool. Any other
 heading, text
 outside a section, or a header field that belongs in the body is an error
-with its line number.
+(with its line number when it is in the body).
 
 ## Tags — `tags.yml`
 

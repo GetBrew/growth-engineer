@@ -37,8 +37,10 @@ export default async function Page({ params }: { params: Params }) {
 }
 ```
 
-`next dev` flags a blocking route (`experimental.instantInsights`), which is
-why that setting is pinned rather than left to the framework default.
+`next dev` flags a page that reads params outside `<Suspense>`
+(`experimental.instantInsights`, pinned rather than left to the framework
+default). A detail page answers with `export const instant = false`: it may
+block on an unknown key, and it never shows a fallback.
 
 **Never `export const dynamic`, `revalidate` or `dynamicParams`.** Cache
 Components rejects them at build.
@@ -61,9 +63,10 @@ twenty links cost one request.
 Listings never read the URL on the server: they prerender every item and a
 client component narrows the list from `useSearchParams`, so `/tools?has=mcp`
 is the same static page as `/tools` with a different filter applied in the
-browser. The map is one prerendered page per node. `pnpm build` prints `○`
+browser. `pnpm build` prints `○`
 or `●` for every page, `◐` only for the on-demand fallbacks of unknown keys,
-and `ƒ` only for `/mcp` (plus the proxy, which runs for `.md` requests only).
+and `ƒ` only for `/mcp` (plus the proxy, which runs only for `.md` files,
+`Accept: text/markdown` requests and malformed paths).
 
 ## 3. The bundle budget — the ratchet
 

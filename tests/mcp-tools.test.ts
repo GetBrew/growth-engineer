@@ -217,6 +217,23 @@ describe('get, on the real catalog', () => {
     expect(byUrl.structuredContent?.ref).toBe('capability:enrich-contacts')
   })
 
+  test('every ref the tool descriptions give as an example is real', () => {
+    const response = handleMessage(
+      { jsonrpc: '2.0', id: 1, method: 'tools/list' },
+      { catalog, origin: ORIGIN }
+    )
+    const text = JSON.stringify(response)
+    const refs = [
+      ...text.matchAll(
+        /`((?:tool|workflow|company|capability|category|channel|motion|has):[a-z0-9/-]+)`/g
+      ),
+    ].map((match) => match[1] ?? '')
+    expect(refs.length).toBeGreaterThan(2)
+    for (const ref of refs) {
+      expect(call(catalog, 'get', { ref }).isError, ref).toBeFalsy()
+    }
+  })
+
   test('takes a page URL, a .md path or a bare key', () => {
     const key = catalog.order.workflowsFeatured[0] ?? ''
     for (const ref of [

@@ -20,8 +20,9 @@ report instead; the caller merges and checks the batch.
   handle rules in `companies/README.md`.
 - If `companies/<handle>/` exists, you are updating it: re-verify every fact.
   Rename a tool file whose name isn't its function (`enrich-contacts.md` →
-  `enrich-person.md`) and report the rename; delete a tool whose call doesn't exist
-  and report it.
+  `enrich-person.md`), list the old key under `aliases:` so its URL redirects,
+  and report the rename; delete a tool whose call doesn't exist and report it —
+  the caller relinks any workflow step that used it.
 
 ## 2. Find how an agent connects
 

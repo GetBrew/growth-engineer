@@ -7,7 +7,7 @@ companies/ workflows/ tags.yml ─▶ lib/content/read-tree.ts ──▶ lib/con
    (the source: markdown          (the ONLY fs reader)          (pure: validate, resolve,       (in memory, once
     files, by pull request)                                      derive, render)                 per process)
                                                                        │
-                                     lib/catalog/render-markdown.ts ◀──┘ the ONE render path; golden-tested
+                     lib/catalog/render-markdown.ts, render-tag.ts ◀──┘ the ONE render path; golden-tested
 
 agent / browser ─▶ proxy.ts ──────────▶ app/(site)/… ────────▶ lib/catalog/loaders.ts ──▶ the Catalog
                     │  .md URL or          (Server Components,    (every read; async,
@@ -22,8 +22,9 @@ agent / browser ─▶ proxy.ts ──────────▶ app/(site)/…
 Keys are paths; headers are strict YAML; bodies are prose. The community
 edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
-**The compiler** (`lib/content/`) — `read-tree.ts` walks the three
-directories and is the only module that touches the filesystem.
+**The compiler** (`lib/content/`) — `read-tree.ts` walks `companies/` and
+`workflows/`, reads `tags.yml`, lists `public/logos/`, and is the only
+module that touches the filesystem.
 `build-catalog.ts` runs one builder per kind (`build-tags`,
 `build-companies`, `build-tools`, `build-workflows`): each parses its files
 against a strict schema (`lib/schemas/content.ts`, zod, unknown fields
@@ -90,7 +91,7 @@ stated once:
 | Audience | Reads | Source |
 | --- | --- | --- |
 | Search engines | canonical URL, Open Graph, the social card, schema.org JSON-LD (`Organization`, `SoftwareApplication`, `HowTo`, `CollectionPage`, `BreadcrumbList`), `/sitemap.xml` with per-page `lastmod`, `/robots.txt` | `lib/seo/metadata.ts`, `lib/seo/structured-data.ts`, `app/sitemap.ts`, `app/robots.ts` |
-| Answer engines and AI crawlers | the same, plus `/llms.txt` (llmstxt.org: definitions, then every file with a summary) and `/llms-full.txt` (every file in one document); every AI crawler is named in `/robots.txt` | `lib/seo/llms.ts`, `lib/catalog/discovery.ts` |
+| Answer engines and AI crawlers | the same, plus `/llms.txt` (llmstxt.org: definitions, then every file with a summary) and `/llms-full.txt` (every company, tool and workflow file in one document); every AI crawler is named in `/robots.txt` | `lib/seo/llms.ts`, `lib/catalog/discovery.ts` |
 | Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the read-only MCP server at `/mcp` (`search`, `get`) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
 
 The definitions (company, tool, workflow, tag, how to read a file) live in

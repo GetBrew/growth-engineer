@@ -17,7 +17,7 @@ import { matchWords, queryWords } from './search-words'
  * prefix). This file is the execution for the listings and the palette:
  * every word must match the item (a hit in the name counts double), and
  * chips filter on the facts each item carries — `has:` from a tool's
- * access, `capability:` from its slug, `category:` from its company.
+ * access, `capability:` from its header, `category:` from its company.
  *
  * Items are the list rows plus the few fields search needs, so a page can
  * ship every item once, prerendered, and answer any filter permutation in

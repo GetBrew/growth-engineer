@@ -16,7 +16,8 @@ import { MAX_WORKFLOW_STEPS } from '@/lib/catalog/render-markdown'
  *
  * Keys are never authored — a company's handle is its folder, a tool's slug
  * is its file name — so the schemas describe FIELDS only. Cross-file rules
- * (does this tool exist, does that access id exist) live in build-catalog.ts.
+ * (does this tool exist, does its company declare that way in) live in
+ * lib/content/build-*.ts.
  */
 
 const text = z.string().trim().min(1, 'must not be empty')

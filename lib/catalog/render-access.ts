@@ -14,7 +14,7 @@ import { formatRef } from './keys'
  * EVERY WAY IN NAMES ITS OPERATION. A tool is one function, so setup is not
  * finished when the agent can reach the product — it is finished when the
  * agent knows the exact call. The operation line is what turns "you have Clay
- * connected" into "call `clay_enrich_person`".
+ * connected" into "call `apollo_people_match`".
  *
  * A way in belongs to the COMPANY, so a workflow using several of one
  * company's tools sets the way up once and lists every call on it.

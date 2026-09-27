@@ -175,7 +175,7 @@ jobs:
         continue-on-error: true
         run: pnpm docs:check
 
-      - name: Content tree (companies/, workflows/, tags/)
+      - name: Content tree (companies/, workflows/, tags.yml)
         id: content
         continue-on-error: true
         run: pnpm content:check

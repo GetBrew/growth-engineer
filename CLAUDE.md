@@ -14,7 +14,7 @@ Quick orientation (full rules in `AGENTS.md`):
   renders through `lib/catalog/render-markdown.ts` at build time; rendered
   files are never hand-edited; the format is golden-tested.
 - **Keys are permanent** and they ARE the paths (`apollo`,
-  `apollo/enrich-person`, `intent-to-meeting`); `workflows/` is flat and a
+  `apollo/enrich-person`, `funding-signal-outbound`); `workflows/` is flat and a
   workflow's `author` is a GitHub login; a rename adds the old key under
   `aliases:`.
 - **Validation is proportional**: `pnpm exec biome check --write <touched

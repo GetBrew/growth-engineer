@@ -58,9 +58,10 @@ every tool back to the workflows that use it.
 
 - **Keys are permanent.** A folder or file name is the key and the URL.
   Rename by adding the old key to `aliases`; the old URL redirects.
-- **A tool is one function** with at least one way in. No way in yet? Set
-  `status: draft`; it has no page until it does, and a workflow that
-  needs it waits as a draft too.
+- **A tool is one function** with at least one call on a way in, and
+  `docs:`, the page that names the call. Not there yet? Set `status: draft`;
+  it has no page until it is, and a workflow that needs it waits as a draft
+  too.
 - **Steps resolve.** Every step links a tool file that exists and is
   published.
 - **Tags exist.** Every tag is an entry in `tags.yml`; `has:*` and a
@@ -72,7 +73,7 @@ every tool back to the workflows that use it.
   made-up customers. If a fact is not public, leave the field out.
 
 `pnpm content:check` runs every one of these and lists every problem with
-its file and line. The same suite runs in CI on your pull request (a
+its file (and line, for a problem in the body). The same suite runs in CI on your pull request (a
 maintainer approves the first run for a first-time contributor).
 
 ## Pull requests
@@ -88,5 +89,6 @@ maintainer approves the first run for a first-time contributor).
 
 The app is Next.js with a build-time catalog compiler; there is no backend.
 [`AGENTS.md`](AGENTS.md) holds the engineering invariants and the validation
-ladder (`pnpm check` while editing, `pnpm tsc` and `pnpm lint` at handoff),
+ladder (Biome on the files you touch while editing, `pnpm check` once per
+change, `pnpm tsc` and `pnpm lint` at handoff),
 and routes to the deeper docs under [`docs/`](docs/).

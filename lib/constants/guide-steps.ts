@@ -26,7 +26,7 @@ export type GuideStep = {
 }
 
 const CHECK_DETAIL =
-  'One command parses every file, resolves every reference and renders the result. It reports every problem at once, each with the file and line that caused it. The same checks run again in CI on your pull request.'
+  'One command parses every file, resolves every reference and renders the result. It reports every problem at once, each with the file that caused it (and the line, for a problem in the body). The same checks run again in CI on your pull request.'
 
 const PR_DETAIL =
   'One company, tool or workflow per pull request keeps the review quick. Say what you added and how you checked the facts. Maintainers review for accuracy, not for style — the build owns style.'
@@ -60,7 +60,7 @@ companies/apollo/tools/enrich-company.md`,
     key: 'calls',
     title: 'Name the call on each way in',
     detail:
-      'mcp:, cli: and api: name the exact call on each way in your company.md declares: the MCP tool name, the CLI command (starting with the binary), or METHOD /path for an API — exactly as the vendor’s docs print it, with docs: pointing at the page that names it. A published tool needs at least one call; until it has one, set status: draft — a draft has no page and no file.',
+      'mcp:, cli: and api: name the exact call on each way in your company.md declares: the MCP tool name, the CLI command (starting with the binary), or METHOD /path for an API — exactly as the vendor’s docs print it, with docs: pointing at the page that names it. A published tool needs at least one call and a docs: page; until it has both, set status: draft — a draft has no page and no file.',
     sample: { file: 'companies/stripe/company.md', excerpt: 'header' },
   },
   {
@@ -151,11 +151,11 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     key: 'handle',
     title: 'Choose the handle',
     detail:
-      'Lowercase letters, digits and hyphens, 2–39 characters, and not a reserved word such as tools, workflows or map. It becomes your company URL and the first half of every tool key, and it is permanent — a rename only ever redirects.',
+      'Lowercase letters, digits and hyphens, 2–39 characters, and not a reserved word such as tools, workflows or mcp. It becomes your company URL and the first half of every tool key, and it is permanent — a rename only ever redirects.',
     sample: {
       code: `companies/apollo/
   company.md
-  tools/enrich-contacts.md`,
+  tools/enrich-person.md`,
     },
   },
   {

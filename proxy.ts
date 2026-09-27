@@ -5,7 +5,7 @@ import { filePathToRef, filePathToTagKey } from '@/lib/catalog/keys'
  * `proxy.ts` is what Next 16 calls the file that used to be `middleware.ts`.
  * It runs before every matched request.
  *
- * ONE JOB: serve the markdown files. `/tools/clay/clay.md`, and a page
+ * ONE JOB: serve the markdown files. `/tools/apollo/enrich-person.md`, and a page
  * requested with `Accept: text/markdown`, is rewritten to the file handler —
  * agents fetch files with no session, and on Vercel the proxy runs ahead of
  * the CDN cache, which does not key on `Vary`, so agents must be diverted

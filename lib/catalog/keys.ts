@@ -5,8 +5,8 @@
  * URL, so nothing else identifies a record. A ref is `${type}:${key}`, and it
  * is what agents pass around.
  *
- *   company    clay
- *   tool       clay/clay                  a company's only tool uses its product name
+ *   company    apollo
+ *   tool       apollo/enrich-person       named after the function it performs
  *   workflow   funding-signal-outbound    the author (a GitHub login) is in the file
  *   tag        capability:enrich-contacts
  *
@@ -136,7 +136,7 @@ export type Ref = {
   key: string
 }
 
-/** `tool:clay/clay` → `{ type: 'tool', key: 'clay/clay' }`; anything malformed → null. */
+/** `tool:apollo/enrich-person` → `{ type: 'tool', key: 'apollo/enrich-person' }`; anything malformed → null. */
 export function parseRef(value: string): Ref | null {
   const separator = value.indexOf(':')
   if (separator === -1) {
@@ -161,18 +161,18 @@ const PATH_PREFIX: Record<EntityType, string> = {
   workflow: '/workflows',
 }
 
-/** The page for a ref: `/tools/clay/clay`. */
+/** The page for a ref: `/tools/apollo/enrich-person`. */
 export function refToPath(ref: Ref): string {
   return `${PATH_PREFIX[ref.type]}/${ref.key}`
 }
 
-/** The file for a ref: `/tools/clay/clay.md`, `/workflows/intent-to-meeting.md`. */
+/** The file for a ref: `/tools/apollo/enrich-person.md`, `/workflows/funding-signal-outbound.md`. */
 export function refToFilePath(ref: Ref): string {
   return `${refToPath(ref)}.md`
 }
 
 /**
- * `/tools/clay/clay.md` → the ref it names, or null. Accepts the three
+ * `/tools/apollo/enrich-person.md` → the ref it names, or null. Accepts the three
  * top-level prefixes; rejects everything else, so the route handler never
  * looks up a path that cannot be a file.
  */
