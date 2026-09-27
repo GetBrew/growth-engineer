@@ -8,5 +8,3 @@ cli: sf data create record
 api: POST /services/data/vXX.X/sobjects/sObject/
 updated: 2026-09-26
 ---
-
-Replace `sObject` with the object's API name, such as `Lead`, and send the field values in the body; the call fails if a required field is missing. Every call runs as the signed-in user, within their object permissions and field-level security.

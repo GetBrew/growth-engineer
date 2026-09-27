@@ -7,7 +7,3 @@ cli: make-cli scenarios list
 api: GET /scenarios
 updated: 2026-09-27
 ---
-
-Pass `teamId` or `organizationId` on the API, and `--team-id` on the CLI. Read
-the inputs a scenario expects with `make-cli scenarios interface` or
-`GET /scenarios/{scenarioId}/interface` before running it.

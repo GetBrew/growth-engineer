@@ -8,5 +8,3 @@ cli: gh search code
 api: GET /search/code
 updated: 2026-09-26
 ---
-
-Qualifiers such as `org:`, `language:`, `filename:` and `extension:` narrow the match. The REST endpoint requires authentication and allows 10 requests per minute.

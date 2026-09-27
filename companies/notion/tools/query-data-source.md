@@ -8,5 +8,3 @@ cli: ntn datasources query <data-source-id>
 api: POST /v1/data_sources/{data_source_id}/query
 updated: 2026-09-26
 ---
-
-`notion-query-data-sources` can also run SQL across data sources or run a saved view. SQL is unlimited on Business and Enterprise plans with Notion AI; on other plans, rows mode and single-data-source SQL share a per-workspace allowance.

@@ -7,6 +7,3 @@ cli: crustdata company enrich
 api: POST /company/enrich
 updated: 2026-09-26
 ---
-
-Pass `fields` to pick only the data groups you need and keep the response
-small.

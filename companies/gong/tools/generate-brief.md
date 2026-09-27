@@ -7,9 +7,3 @@ mcp: generate_brief
 api: GET /v2/entities/get-brief
 updated: 2026-09-27
 ---
-
-A brief takes no question. On the MCP server, accounts and deals can be found
-by name, but a contact needs its CRM contact ID. Over the API, pass the
-`briefName` of a brief set up in Agent Studio under AI Briefer, with
-`crmEntityType`, `crmEntityId`, `workspaceId` and `timePeriod`. Each brief
-consumes Gong credits, and briefs with more open-ended sections consume more.

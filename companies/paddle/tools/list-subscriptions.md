@@ -7,8 +7,3 @@ mcp: execute
 api: GET /subscriptions
 updated: 2026-09-27
 ---
-
-`status` takes `active`, `canceled`, `past_due`, `paused` or `trialing`, as a
-comma-separated list; `customer_id` and `price_id` narrow it further. Follow
-`meta.pagination.next` for the next page. On the MCP server, run it with
-`execute`.

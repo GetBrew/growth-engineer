@@ -6,8 +6,3 @@ docs: https://www.twilio.com/docs/segment/connections/sources/catalog/libraries/
 api: POST /v1/track
 updated: 2026-09-27
 ---
-
-Send `event`, `userId` or `anonymousId`, and optional `properties`; a request
-can be up to 32 KB. Segment deduplicates on `messageId`, so give every event a
-unique one under 100 characters. `SEGMENT_API_KEY` holds the base64 of the
-source's write key followed by a colon.

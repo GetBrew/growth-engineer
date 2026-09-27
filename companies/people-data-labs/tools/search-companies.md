@@ -6,6 +6,3 @@ docs: https://docs.peopledatalabs.com/docs/reference-company-search-api
 api: POST /v5/company/search
 updated: 2026-09-27
 ---
-
-Send either `query` (Elasticsearch) or `sql`. Each record returned costs one
-credit, so set `size` (1 to 100, default 1) and page with `scroll_token`.

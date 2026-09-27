@@ -7,7 +7,3 @@ mcp: clickup_update_task
 api: PUT /v2/task/{task_id}
 updated: 2026-09-27
 ---
-
-Statuses differ per List and must match exactly: confirm them with
-`clickup_get_task` and `expand_statuses: true`. On the API, change assignees
-with an `assignees` object holding `add` and `rem` arrays of user ids.

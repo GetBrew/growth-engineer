@@ -7,7 +7,3 @@ mcp: autofill-design
 api: POST /autofills
 updated: 2026-09-26
 ---
-
-Needs a user on a plan with autofill, such as Canva Pro, Teams or
-Enterprise. Read the template's fields first with its dataset, then poll the
-job for the finished design.

@@ -6,7 +6,8 @@ tag's file lists everything carrying it. This is the contract the renderers
 (`lib/catalog/render-markdown.ts`, and `render-tag.ts` for tags) implement
 and the goldens in `tests/fixtures/markdown/` pin. The SOURCE files under
 `companies/` and `workflows/` are the input to that renderer: a YAML header
-of facts and a markdown body a person reads on GitHub. A workflow's body is
+of facts and, for a company or a workflow, a markdown body a person reads on
+GitHub (a tool file is its header alone). A workflow's body is
 already written in this format — its inputs, steps and checks — so the
 source and the file read alike; the renderer adds the setup for each tool,
 names the tools, and appends the rules.
@@ -24,7 +25,7 @@ names the tools, and appends the rules.
 | Rules always come last, and nobody can edit them. | Only the listed tools; ask before sending, spending or changing anything; never print keys. |
 | The header parses as written. | Every value an author wrote is quoted when it has to be (`yamlScalar`, `lib/catalog/render-header.ts`), so a title with a colon or a login like `true` reads back exactly, and no value can add a field. |
 | Deprecated says so. | `status: deprecated` in the header and one warning line under the title; an agent asks the user before using it. |
-| Prose never poses as structure. | A description or the Notes may use `###` and smaller headings only, never one named like a section the file writes (Set up, Steps, Rules…). |
+| Prose never poses as structure. | A company's description or a workflow's Notes may use `###` and smaller headings only, never one named like a section the file writes (Set up, Steps, Rules…). |
 | Files stay short. | Tool files under ~80 lines; workflow files under ~150, at most 10 steps. |
 
 ## Layout

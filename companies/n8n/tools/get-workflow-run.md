@@ -8,7 +8,3 @@ cli: n8n-cli execution get
 api: GET /executions/{executionId}
 updated: 2026-09-27
 ---
-
-It returns metadata only unless you pass `includeData`. The MCP tool also needs
-the `workflowId`, and takes `nodeNames` or `truncateData` to keep the returned
-data small.

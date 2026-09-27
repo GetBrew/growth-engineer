@@ -6,9 +6,3 @@ docs: https://docs.customer.io/integrations/api/app/tag/send-messages/triggerBro
 api: POST /v1/campaigns/{broadcast_id}/triggers
 updated: 2026-09-27
 ---
-
-Set the broadcast up in Customer.io first. It reaches only people already in
-the workspace: unknown recipients fail the request unless you set
-`email_ignore_missing` or `id_ignore_missing` to `true`. Reference `data` in
-the message as `{{trigger.<key>}}`. This endpoint allows one request every 10
-seconds.

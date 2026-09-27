@@ -7,11 +7,3 @@ mcp: web_search_exa
 api: POST /search
 updated: 2026-09-27
 ---
-
-Set `category` to `company` or `people` to find company pages and
-professional profiles, and `type` to trade speed for depth, from `instant` to
-`deep-reasoning`. Ask for page content in the same call with `contents`. The
-MCP tool keeps a smaller set of options; for domain, date and category
-filters, list `web_search_advanced_exa` in the server URL's `tools`
-parameter, along with every other tool you want, since the list replaces the
-defaults.

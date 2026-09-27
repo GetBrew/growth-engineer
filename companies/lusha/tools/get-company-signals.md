@@ -6,8 +6,3 @@ docs: https://docs.lusha.com/mcp-docs
 mcp: signals_companies_search
 updated: 2026-09-27
 ---
-
-List the valid signal types first with `signals_company_filters`, which costs
-no credits. Signals cover the last six months by default, and each signal
-returned costs credits, so run it on a shortlist. For companies you already
-have Lusha IDs for, use `signals_companies_get`.

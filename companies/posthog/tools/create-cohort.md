@@ -8,5 +8,3 @@ cli: posthog-cli api call cohorts-create
 api: POST /api/projects/:project_id/cohorts/
 updated: 2026-09-26
 ---
-
-Needs a personal API key with the `cohort:write` scope.

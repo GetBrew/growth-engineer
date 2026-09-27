@@ -8,6 +8,3 @@ cli: canva api exports create
 api: POST /exports
 updated: 2026-09-26
 ---
-
-Use the download links right away and don't store them: API links last 24
-hours.

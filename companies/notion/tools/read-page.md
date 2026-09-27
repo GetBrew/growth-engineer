@@ -7,5 +7,3 @@ mcp: notion-fetch
 api: GET /v1/pages/{page_id}/markdown
 updated: 2026-09-26
 ---
-
-`notion-fetch` also reads a database, data source or saved view by its URL or ID.

@@ -11,5 +11,3 @@ aliases:
   - posthog/track-intent
 updated: 2026-09-26
 ---
-
-Over the API, send the SQL as `{"query": {"kind": "HogQLQuery", "query": "..."}}` with a personal API key that has the `query:read` scope. A query returns up to 100 rows by default and up to 50,000 with an explicit `LIMIT`; the endpoint is for ad-hoc analysis, not bulk export.

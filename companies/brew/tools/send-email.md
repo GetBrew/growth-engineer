@@ -8,8 +8,3 @@ cli: brew-cli emails send
 api: POST /v1/sends
 updated: 2026-09-26
 ---
-
-Always pass an idempotency key. On OAuth and organization MCP connections a
-real send first returns `confirmation_required`; call again with
-`confirmed: true` once the user approves. Every recipient of a marketing
-send must have opted in: Brew does not permit cold outreach.

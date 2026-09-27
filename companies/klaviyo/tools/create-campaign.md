@@ -8,7 +8,3 @@ cli: klaviyo campaigns create
 api: POST /api/campaigns
 updated: 2026-09-27
 ---
-
-`name`, `audiences.included` and the `campaign-messages` are required; the
-send strategy defaults to immediate. Give an email message its content by
-assigning a template to it (`assign_template_to_campaign_message`).

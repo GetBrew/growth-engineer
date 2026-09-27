@@ -8,8 +8,3 @@ cli: acli jira workitem comment create
 api: POST /rest/api/3/issue/{issueIdOrKey}/comment
 updated: 2026-09-27
 ---
-
-On the API the comment `body` is Atlassian Document Format; the CLI takes
-`--key` and a plain-text or ADF `--body`, and can comment on every work item a
-`--jql` query matches. `addOrEditJiraIssueComment` also edits an existing
-comment.

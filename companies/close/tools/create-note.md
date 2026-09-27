@@ -7,6 +7,3 @@ mcp: create_note
 api: POST /activity/note/
 updated: 2026-09-27
 ---
-
-`lead_id` is required. Send the text as plain `note` or rich-text
-`note_html`, and set `pinned` to pin the note on the lead.

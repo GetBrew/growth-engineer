@@ -6,5 +6,3 @@ docs: https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webina
 api: GET /past_webinars/{webinarId}/absentees
 updated: 2026-09-26
 ---
-
-Pass `occurrence_id` for one occurrence of a recurring webinar, and page with `next_page_token`. Needs a Pro or higher plan with the Webinar add-on.

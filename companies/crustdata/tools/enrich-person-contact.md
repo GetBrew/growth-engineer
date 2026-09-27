@@ -7,6 +7,3 @@ cli: crustdata person contacts
 api: POST /person/contact/enrich
 updated: 2026-09-26
 ---
-
-Pass one identifier type per request. Pass `fields` such as
-`contact.business_emails` to request only the contact data you need.

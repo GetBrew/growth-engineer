@@ -7,6 +7,3 @@ mcp: create-note
 api: POST /v2/notes
 updated: 2026-09-26
 ---
-
-Name the record with `parent_object` (such as `people`) and
-`parent_record_id`. The title is plain text only.

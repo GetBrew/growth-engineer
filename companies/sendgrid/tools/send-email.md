@@ -7,8 +7,3 @@ cli: twilio email:send
 api: POST /v3/mail/send
 updated: 2026-09-27
 ---
-
-Each object in `personalizations` is one envelope: its recipients and how
-their message is handled. On the CLI, `twilio email:set` saves a default
-sender and subject, and `twilio email:send` takes `--to`, `--text`,
-`--subject`, `--from` and `--attachment`.

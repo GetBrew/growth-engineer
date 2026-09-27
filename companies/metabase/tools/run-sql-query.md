@@ -6,5 +6,3 @@ docs: https://www.metabase.com/docs/latest/ai/mcp
 mcp: execute_sql
 updated: 2026-09-27
 ---
-
-Needs native-query permission on the target database.

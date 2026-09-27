@@ -10,6 +10,3 @@ aliases:
   - brew/write-copy
 updated: 2026-09-26
 ---
-
-Usage-metered in credits, and the brand must be ready first. Pass
-`emailVersionId` to a send or an automation to pin the exact version.

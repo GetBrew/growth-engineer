@@ -74,7 +74,7 @@ enrich-company.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'A YAML header between `---` lines, then an optional markdown body that describes the function. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. The `summary` is one sentence saying what the function does.',
+      'A tool file is a YAML header between `---` lines and nothing else. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. The `summary` is one sentence saying what the function does.',
     sample: { file: 'companies/apollo/tools/enrich-person.md' },
   },
   {

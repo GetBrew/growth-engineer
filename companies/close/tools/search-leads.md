@@ -7,9 +7,3 @@ mcp: search
 api: POST /data/search/
 updated: 2026-09-27
 ---
-
-The MCP tool takes a plain-language query and returns each match's label,
-preview, ID and URL, plus a cursor for `paginate_search`. The API takes a JSON
-`query` of `object_type` and `field_condition` clauses and returns only IDs
-unless you pass `_fields`. To get a query's JSON, build the filter on the
-Leads page in Close and choose Copy Filters.

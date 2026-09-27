@@ -8,5 +8,3 @@ cli: stripe coupons create
 api: POST /v1/coupons
 updated: 2026-09-26
 ---
-
-Set `percent_off`, or `amount_off` with `currency`. `duration` is `once`, `repeating` (with `duration_in_months`) or `forever`, and `max_redemptions` and `redeem_by` cap how it is used. On the MCP server this method runs through the generic `stripe_api_write` tool.

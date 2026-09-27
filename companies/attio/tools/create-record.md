@@ -7,5 +7,3 @@ mcp: create-record
 api: POST /v2/objects/{object}/records
 updated: 2026-09-26
 ---
-
-To update the existing record instead of failing on a conflict, upsert it.

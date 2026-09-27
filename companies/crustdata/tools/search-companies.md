@@ -7,6 +7,3 @@ cli: crustdata company search
 api: POST /company/search
 updated: 2026-09-26
 ---
-
-Up to 100 results per page. Pages cost credits, so follow `next_cursor`
-only as far as you need.

@@ -55,8 +55,9 @@ required. The calls are top-level: `mcp:` (the tool name), `cli:` (starting
 with the company's binary) and `api:` (`METHOD /path`), each on a way the
 company declares; a published tool needs at least one, and `docs:`. `docs` is the page
 that names the call. `status` is `published` (default), `deprecated`, or
-`draft` (no page, no file, not listed). `aliases` lists old keys. The body
-is the description.
+`draft` (no page, no file, not listed). `aliases` lists old keys. There is
+no body: `summary` says what the call does, and anything after the header
+is an error.
 
 ## Workflows — `workflows/<name>.md` (flat)
 

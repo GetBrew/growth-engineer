@@ -7,7 +7,3 @@ mcp: resize-design
 api: POST /resizes
 updated: 2026-09-26
 ---
-
-Needs a user on a plan with premium features, such as Canva Pro; Free users
-get a limited trial. Canva docs, emails and Canva Code designs can't be
-resized.

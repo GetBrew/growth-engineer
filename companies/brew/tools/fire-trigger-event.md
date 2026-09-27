@@ -8,6 +8,3 @@ cli: brew-cli automations triggers fire
 api: POST /v1/automations/triggers/{triggerEventId}/fire
 updated: 2026-09-26
 ---
-
-For event-driven lifecycle and transactional email. Always pass an
-idempotency key, such as the event name, user id and event timestamp.

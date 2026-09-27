@@ -8,5 +8,3 @@ cli: slack api chat.scheduleMessage
 api: POST /chat.scheduleMessage
 updated: 2026-09-26
 ---
-
-Needs the `chat:write` scope. `post_at` can be at most 120 days ahead.

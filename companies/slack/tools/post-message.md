@@ -10,5 +10,3 @@ aliases:
   - slack/route-alerts
 updated: 2026-09-26
 ---
-
-Needs the `chat:write` scope. Pass `thread_ts` to reply in a thread. Over MCP, `slack_send_message` posts as the signed-in user; the API and CLI post as the app's bot.

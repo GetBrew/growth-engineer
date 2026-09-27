@@ -10,5 +10,3 @@ aliases:
   - firecrawl/scrape-web
 updated: 2026-09-26
 ---
-
-For structured fields from a known page, request the JSON format with a prompt or schema; Firecrawl points here in place of its deprecated Extract MCP tool.

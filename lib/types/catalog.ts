@@ -82,7 +82,6 @@ export type Tool = {
   companyKey: string
   name: string
   summary: string
-  description?: string
   /** A `capability:` slug from tags.yml; the key names the function. */
   capability: string
   /** The page that documents the call. */

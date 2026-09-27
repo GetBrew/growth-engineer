@@ -7,5 +7,3 @@ mcp: Create-Cohort
 cli: mp cohorts create
 updated: 2026-09-26
 ---
-
-Over MCP, `Describe-Cohort-Schema` documents the structure of a cohort definition.

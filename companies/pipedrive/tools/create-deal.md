@@ -7,7 +7,3 @@ mcp: addDeal
 api: POST /api/v2/deals
 updated: 2026-09-27
 ---
-
-Only `title` is required. Place the deal with `pipeline_id` and `stage_id`,
-and link it with `person_id` and `org_id`. Custom fields go in
-`custom_fields`, keyed by each field's 40-character hash.

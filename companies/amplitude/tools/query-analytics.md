@@ -8,7 +8,3 @@ aliases:
   - amplitude/track-product-usage
 updated: 2026-09-27
 ---
-
-Call `get_amplitude_context` with the project id first, so the query uses the
-project's time zone and metric definitions. The tool works in two modes:
-discover what can be queried, then execute the query.

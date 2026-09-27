@@ -6,5 +6,3 @@ docs: https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-car
 api: POST /cards
 updated: 2026-09-26
 ---
-
-`idList` is required. Parameters can go in the query string or a JSON body.

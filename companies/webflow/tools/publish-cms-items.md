@@ -8,8 +8,3 @@ cli: webflow cms items publish
 api: POST /collections/{collection_id}/items/publish
 updated: 2026-09-27
 ---
-
-On the MCP server, use the `publish_collection_items` action of
-`data_cms_tool` with `collection_id` and the `itemIds`; the CLI takes
-`--collection` and a comma-separated `--items` list. Publishing a draft item
-sets its `isDraft` to `false`.

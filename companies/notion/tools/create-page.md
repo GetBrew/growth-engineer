@@ -10,5 +10,3 @@ aliases:
   - notion/manage-docs
 updated: 2026-09-26
 ---
-
-To add a row to a database, set the parent to its data source and match the data source's property schema. `notion-create-pages` can create several pages in one call.

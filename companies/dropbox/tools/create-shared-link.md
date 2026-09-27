@@ -6,5 +6,3 @@ docs: https://docs.dropboxapi.com/dropbox-api/api-reference/user-endpoints/shari
 api: POST /2/sharing/create_shared_link_with_settings
 updated: 2026-09-26
 ---
-
-With no settings the link is public by default, though team and shared-folder settings can change the resolved visibility. Requires the `sharing.write` scope.

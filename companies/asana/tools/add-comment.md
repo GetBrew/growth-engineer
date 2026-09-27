@@ -7,6 +7,3 @@ mcp: add_comment
 api: POST /tasks/{task_gid}/stories
 updated: 2026-09-26
 ---
-
-On the API a comment is a story on the task; the endpoint only creates
-comment stories.

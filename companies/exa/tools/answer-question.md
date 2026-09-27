@@ -6,7 +6,3 @@ docs: https://exa.ai/docs/reference/answer
 api: POST /answer
 updated: 2026-09-27
 ---
-
-Specific questions get a direct answer and open-ended ones a detailed summary
-with citations. Pass `outputSchema` for a structured answer, and use Exa
-Agent for research that needs many searches.

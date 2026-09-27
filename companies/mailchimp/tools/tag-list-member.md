@@ -6,7 +6,3 @@ docs: https://mailchimp.com/developer/marketing/api/list-member-tags/add-or-remo
 api: POST /lists/{list_id}/members/{subscriber_hash}/tags
 updated: 2026-09-27
 ---
-
-Pass each tag as `{ "name": ..., "status": "active" }` to add it or
-`"inactive"` to remove it. Set `is_syncing` to `true` to keep automations
-based on these tags from firing.

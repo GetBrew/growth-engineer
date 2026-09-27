@@ -9,5 +9,3 @@ aliases:
   - zoom/host-meetings
 updated: 2026-09-26
 ---
-
-For user-level apps, pass `me` instead of a user ID. Share only the `join_url`; the `start_url` is for the host and, for regular users, expires after two hours. The call allows 100 requests per meeting host per day.

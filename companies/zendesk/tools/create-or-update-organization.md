@@ -6,7 +6,3 @@ docs: https://developer.zendesk.com/api-reference/ticketing/organizations/organi
 api: POST /api/v2/organizations/create_or_update
 updated: 2026-09-27
 ---
-
-Pass `id` or `external_id` to update an existing organization: the name is
-never used for matching, and without either one an existing name returns a
-duplicate error. Agents can call it, with restrictions on some actions.

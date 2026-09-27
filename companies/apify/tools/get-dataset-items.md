@@ -8,7 +8,3 @@ cli: apify datasets get-items
 api: GET /datasets/{datasetId}/items
 updated: 2026-09-27
 ---
-
-Pass the dataset ID the run returned (`defaultDatasetId` on the run object)
-and page with `limit` and `offset`. The API and the CLI can also return the
-items as CSV, JSONL, XLSX and other formats.

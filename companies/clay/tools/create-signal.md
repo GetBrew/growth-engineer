@@ -6,7 +6,3 @@ docs: https://github.com/clay-run/agent-plugins/blob/main/clay/skills/signals/SK
 cli: clay signals create
 updated: 2026-09-26
 ---
-
-A signal watches a table view or Audiences segments. Run
-`clay signals create --help` for the supported types and each one's input
-shape; custom and web intent signals are set up in the Clay app.

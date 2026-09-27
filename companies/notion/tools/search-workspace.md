@@ -8,5 +8,3 @@ cli: ntn api v1/search
 api: POST /v1/search
 updated: 2026-09-26
 ---
-
-The API matches the titles of pages and data sources the token can reach; `notion-search` also searches page content and, with Notion AI, connected sources.

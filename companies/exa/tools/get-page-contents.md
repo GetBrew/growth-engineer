@@ -7,7 +7,3 @@ mcp: web_fetch_exa
 api: POST /contents
 updated: 2026-09-27
 ---
-
-Set `maxAgeHours` to 0 to fetch fresh content instead of cached content. To
-read a site's other pages too, set `subpages` and name the ones you want with
-`subpageTarget`.
