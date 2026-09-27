@@ -203,14 +203,6 @@ describe('markdown files — goldens from the design doc', () => {
     const rendered = renderWorkflowDocument(waterfall)
     expect(rendered.markdown).toBe(golden('single-tool-workflow'))
   })
-
-  test('the hash changes when the file changes, and only then', () => {
-    const a = renderToolDocument(clay)
-    const b = renderToolDocument(clay)
-    const c = renderToolDocument({ ...clay, summary: 'Something else.' })
-    expect(a.hash).toBe(b.hash)
-    expect(a.hash).not.toBe(c.hash)
-  })
 })
 
 describe('setup picks the best way in', () => {
@@ -233,13 +225,9 @@ describe('setup picks the best way in', () => {
   })
 
   test('a workflow shows at most two options per tool', () => {
-    expect(
-      selectWorkflowAccess([communityCli, clayApi, clayMcp], undefined)
-    ).toHaveLength(2)
-  })
-
-  test("a step's `via` picks that one option", () => {
-    expect(selectWorkflowAccess([clayMcp, clayApi], 'api')).toEqual([clayApi])
+    expect(selectWorkflowAccess([communityCli, clayApi, clayMcp])).toHaveLength(
+      2
+    )
   })
 
   test('two options render under sub-headings with the first-supported line', () => {

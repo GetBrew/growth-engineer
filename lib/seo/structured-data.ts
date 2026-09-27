@@ -90,12 +90,7 @@ export function companyJsonLd(origin: string, company: Company): JsonLd {
         ...(company.description || company.tagline
           ? { description: company.description ?? company.tagline }
           : {}),
-        ...(company.founded ? { foundingDate: String(company.founded) } : {}),
-        sameAs: [
-          company.links.github,
-          company.links.linkedin,
-          company.links.x,
-        ].filter((link): link is string => typeof link === 'string'),
+        ...(company.links.github ? { sameAs: [company.links.github] } : {}),
       },
       {
         '@type': 'WebPage',
@@ -145,10 +140,7 @@ export function toolJsonLd(
           if (entry.type === 'api') {
             return [entry.baseUrl]
           }
-          if (entry.type === 'mcp') {
-            return entry.url ? [entry.url] : []
-          }
-          return entry.repoUrl ? [entry.repoUrl] : []
+          return entry.type === 'mcp' && entry.url ? [entry.url] : []
         }),
         ...(tool.access.some((entry) => entry.docsUrl)
           ? {

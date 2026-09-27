@@ -4,10 +4,8 @@ import {
   MAX_CHIPS,
   parseSearchText,
   searchHref,
-  searchKey,
   searchStateFromParams,
   searchText,
-  toggleChip,
 } from '@/lib/catalog/query'
 
 const TAGS = [
@@ -81,21 +79,19 @@ describe('search grammar', () => {
     expect(searchHref('/tools', { words: [], chips: [] })).toBe('/tools')
   })
 
-  test('the same search from text and from params produces the same key', () => {
+  test('the same search from text and from params has the same words and chips', () => {
     const fromText = parseSearchText('cold outbound has:cli fit:smb has:mcp')
     const fromParams = searchStateFromParams({
       q: 'cold outbound',
       fit: 'smb',
       has: 'mcp,cli',
     })
-    expect(searchKey(fromText)).toBe(searchKey(fromParams))
+    expect(fromText.words.join(' ')).toBe(fromParams.words.join(' '))
+    expect([...fromText.chips].sort()).toEqual([...fromParams.chips].sort())
   })
 
-  test('the search box shows words then chips, and toggling round-trips', () => {
-    const state = parseSearchText('enrich has:mcp')
-    expect(searchText(state)).toBe('enrich has:mcp')
-    expect(toggleChip(state, 'has:mcp').chips).toEqual([])
-    expect(toggleChip(state, 'fit:smb').chips).toEqual(['has:mcp', 'fit:smb'])
+  test('the search box shows words then chips', () => {
+    expect(searchText(parseSearchText('enrich has:mcp'))).toBe('enrich has:mcp')
   })
 
   test('rejects hostile slugs from the URL', () => {

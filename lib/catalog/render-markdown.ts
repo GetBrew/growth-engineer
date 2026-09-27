@@ -1,5 +1,4 @@
-import type { Access, AccessType } from '@/lib/types/catalog'
-import { fnv1a } from './hash'
+import type { Access } from '@/lib/types/catalog'
 import { formatRef } from './keys'
 import {
   accessBody,
@@ -50,7 +49,6 @@ type WorkflowFileTool = {
 type WorkflowFileStep = {
   title: string
   toolKey: string
-  via?: AccessType
   instruction: string
 }
 
@@ -85,7 +83,6 @@ export type CompanyFileInput = {
 
 export type RenderedDocument = {
   markdown: string
-  hash: string
   lineCount: number
 }
 
@@ -118,7 +115,6 @@ function finish(lines: ReadonlyArray<string>): RenderedDocument {
   const markdown = `${lines.join('\n').replace(BLANK_RUNS, '\n\n').trimEnd()}\n`
   return {
     markdown,
-    hash: fnv1a(markdown),
     lineCount: markdown.trimEnd().split('\n').length,
   }
 }
@@ -189,13 +185,9 @@ function inputsSection(inputs: WorkflowFileInput['inputs']): Array<string> {
   ]
 }
 
-/** One tool's setup: the step's `via` if any, else the best one or two options. */
-function toolSetup(
-  tool: WorkflowFileTool,
-  steps: ReadonlyArray<WorkflowFileStep>
-): Array<string> {
-  const via = steps.find((step) => step.toolKey === tool.key && step.via)?.via
-  const selected = selectWorkflowAccess(tool.access, via)
+/** One tool's setup: its best one or two options. */
+function toolSetup(tool: WorkflowFileTool): Array<string> {
+  const selected = selectWorkflowAccess(tool.access)
   const heading = ['', `### ${tool.name} (${formatRef('tool', tool.key)})`, '']
   if (selected.length === 0) {
     return [
@@ -216,14 +208,11 @@ function toolSetup(
   return [...heading, 'Use the first option your agent supports.', ...options]
 }
 
-function setupSection(
-  tools: ReadonlyArray<WorkflowFileTool>,
-  steps: ReadonlyArray<WorkflowFileStep>
-): Array<string> {
+function setupSection(tools: ReadonlyArray<WorkflowFileTool>): Array<string> {
   return [
     '',
     '## Set up',
-    ...tools.flatMap((tool) => toolSetup(tool, steps)),
+    ...tools.flatMap(toolSetup),
     '',
     tools.length > 1
       ? 'Make one read-only call to each tool to confirm access.'
@@ -288,7 +277,7 @@ export function renderWorkflowDocument(
       ? `Set up ${soleTool.name}, then run the steps in order for the user.`
       : 'Set up the tools below, then run the steps in order for the user.',
     ...inputsSection(workflow.inputs),
-    ...setupSection(usedTools, workflow.steps),
+    ...setupSection(usedTools),
     ...stepsSection(workflow.steps, toolNames, soleTool !== undefined),
   ]
 

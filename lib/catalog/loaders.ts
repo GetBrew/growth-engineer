@@ -126,46 +126,25 @@ export async function resolveAlias(entityType: EntityType, key: string) {
 
 /* ─────────────────────────────────── lists ───────────────────────────────── */
 
-/** Published companies in name order, optionally one category, with category and ways in. */
-export async function loadCompanies(
-  limit = MAX_LIST,
-  category?: string,
-  includeCategory = true
-) {
+/** Published companies in name order, as rows without their category. */
+export async function loadCompanies(limit = MAX_LIST) {
   const catalog = getCatalog()
-  if (category && !catalog.tags.has(`category:${category}`)) {
-    return []
-  }
   return catalog.order.companies
+    .slice(0, Math.min(limit, MAX_LIST))
     .flatMap((key) => {
       const company = catalog.companies.get(key)
-      return company && (!category || company.category === category)
-        ? [company]
-        : []
+      return company ? [companyListItem(catalog, company, false)] : []
     })
-    .slice(0, Math.min(limit, MAX_LIST))
-    .map((company) => companyListItem(catalog, company, includeCategory))
 }
 
-/** Featured (editorial rank, then newest) or New, optionally within one tag. */
-export async function loadWorkflows(
-  sort: 'featured' | 'new',
-  limit = 30,
-  tag?: string
-) {
+/** Featured (editorial rank, then newest) or New. */
+export async function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
   const catalog = getCatalog()
-  if (tag && !catalog.tags.has(tag)) {
-    return []
-  }
   const order =
     sort === 'new'
       ? catalog.order.workflowsNew
       : catalog.order.workflowsFeatured
-  return workflowRows(
-    order.filter(
-      (key) => !tag || catalog.workflows.get(key)?.tags.includes(tag)
-    )
-  ).slice(0, Math.min(limit, MAX_LIST))
+  return workflowRows(order.slice(0, Math.min(limit, MAX_LIST)))
 }
 
 /* ──────────────────────────── listing payloads ───────────────────────────── */

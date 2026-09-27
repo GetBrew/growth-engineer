@@ -39,7 +39,7 @@ updated: 2026-09-16
 ## Steps
 
 1. **Find funded companies** with [clay/build-audience](../companies/clay/tools/build-audience.md). List companies matching `target_segment` that announced a round in the last 30 days.
-2. **Write emails** with [brew/write-copy](../companies/brew/tools/write-copy.md) via MCP. Draft a three-sentence email per contact. Show the drafts to the user.
+2. **Write emails** with [brew/write-copy](../companies/brew/tools/write-copy.md). Draft a three-sentence email per contact. Show the drafts to the user.
 
 ## Done when
 
@@ -71,7 +71,7 @@ heading is caught instead of silently dropped.
 | Section | Required | Each entry |
 | --- | --- | --- |
 | `## Inputs` | no | ``- `name`: what it is, e.g. an example`` — the name in snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
-| `## Steps` | yes, 1–10 | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). What to do.`` — the tool is a published tool's key (`<handle>/<slug>`), as a link to its file `../companies/<handle>/tools/<slug>.md` (GitHub follows it) or as a code span. Add `via MCP`, `via CLI` or `via API` after the tool to use that way in; the tool must have it. |
+| `## Steps` | yes, 1–10 | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<slug>.md`, named by its key (`<handle>/<slug>`). GitHub follows it; the file shows each tool's best one or two ways in. |
 | `## Done when` | yes | `- A check that means the job is finished.` |
 | `## Notes` | no | Free markdown, to the end of the file. |
 

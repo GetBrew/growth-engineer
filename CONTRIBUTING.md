@@ -56,8 +56,8 @@ every tool back to the workflows that use it.
   Rename by adding the old key to `aliases`; the old URL redirects.
 - **A tool is one function** with at least one way in. No way in yet? Set
   `status: draft`; it has no page until it does.
-- **Steps resolve.** Every `tool` in a workflow exists and is published; a
-  `via` names a way in that tool actually has.
+- **Steps resolve.** Every step links a tool file that exists and is
+  published.
 - **Tags exist.** Every tag names a file under `tags/`; `has:*` is computed
   and cannot be written.
 - **Facts carry a date.** `updated` is when someone last checked the file.

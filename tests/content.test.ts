@@ -174,7 +174,6 @@ describe('the content tree', () => {
     const tree = readContentTree()
     const again = buildCatalog(tree.files, { logos: tree.logos })
     for (const [ref, document] of catalog.documents) {
-      expect(again.documents.get(ref)?.hash, ref).toBe(document.hash)
       expect(again.documents.get(ref)?.markdown, ref).toBe(document.markdown)
     }
   })

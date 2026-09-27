@@ -26,11 +26,9 @@ URL answers with a 308.
 ## Companies — `companies/<handle>/company.md`
 
 `name`, `domain`, `category` (a `tags/category/` slug), `logo` (a file under
-`public/logos/`), `updated` (ISO date) are required. Optional: `kind`
-(`vendor` default, `open_source`, `individual`), `tagline`, `website`
-(defaults to `https://<domain>`), `docs`, `github`, `linkedin`, `x`,
-`founded` (year), `headquarters`, `aliases`, `status` (`published` default,
-`deprecated`). The body is the description.
+`public/logos/`), `updated` (ISO date) are required. Optional: `tagline`,
+`docs`, `github`, `aliases`, `status` (`published` default, `deprecated`).
+The website is always `https://<domain>`. The body is the description.
 
 ## Ways in — `companies/<handle>/access/<id>.md`
 
@@ -41,9 +39,9 @@ selfServe, envVar?, header?, keyUrl? }`; `docsUrl` is optional.
 
 | Type | Fields |
 | --- | --- |
-| `mcp` | `transport: remote` with `url`, or `local` with `command`; `repoUrl?` |
-| `cli` | `installCommand`, `binary`, `repoUrl?` |
-| `api` | `baseUrl`, `openApiUrl?` |
+| `mcp` | `transport: remote` with `url`, or `local` with `command` |
+| `cli` | `installCommand`, `binary` |
+| `api` | `baseUrl` |
 
 ## Tools — `companies/<handle>/tools/<slug>.md`
 
@@ -71,13 +69,13 @@ so the source reads on GitHub the way it reads on the site
 | Section | Entries | Becomes |
 | --- | --- | --- |
 | `## Inputs` (optional) | ``- `name`: description, e.g. example`` | `inputs`: `{ name (snake_case), description, example? }` |
-| `## Steps` (1–10) | ``1. **Title** with `handle/slug` via MCP. Instruction.`` — the tool may instead be a link to its file, `../companies/<handle>/tools/<slug>.md` | `steps`: `{ title, tool, via?, instruction }` |
+| `## Steps` (1–10) | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). Instruction.`` — a link to the tool's source file | `steps`: `{ title, tool, instruction }` |
 | `## Done when` (≥ 1) | `- A check.` | `doneWhen` |
 | `## Notes` (optional) | free markdown | `notes` |
 
-A step names its tool by key, as a code span or as a link to the tool's
-source file (the link must point at that file). Every step's tool must be a
-published tool; `via` must be a way in that tool has. Any other heading, text
+A step names its tool by a link to the tool's source file (the link must
+point at that file). Every step's tool must be a published tool. Any other
+heading, text
 outside a section, or a header field that belongs in the body is an error
 with its line number.
 
@@ -105,7 +103,7 @@ Every problem is reported at once, with its file path
 (`pnpm content:check`): unknown header fields; malformed dates, URLs and env
 var names; reserved or malformed handles and slugs; a tool slug that is not a
 capability; an access id with no file; a published tool with no way in; a
-step naming an unknown or draft tool; a `via` the tool lacks; an unknown or
+step naming an unknown or draft tool; an unknown or
 derived tag; an unknown category; a missing logo; an alias that shadows a
 live key or is claimed twice; two workflows with the same `featured` rank;
 more than ten steps. `tests/content-schema.test.ts` proves each one fails.

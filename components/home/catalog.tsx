@@ -19,7 +19,7 @@ export async function HomeCatalog() {
   const [workflows, tools, companies] = await Promise.all([
     loadWorkflows('new', PREVIEW),
     loadNewTools(PREVIEW),
-    loadCompanies(PREVIEW, undefined, false),
+    loadCompanies(PREVIEW),
   ])
 
   const workflowItems = workflows.map(workflowListItem)
@@ -33,7 +33,6 @@ export async function HomeCatalog() {
     logo: {
       name: company.name,
       logoUrl: company.logoUrl,
-      domain: company.domain,
     },
     description: company.description ?? company.tagline,
   }))

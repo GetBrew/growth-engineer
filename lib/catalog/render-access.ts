@@ -1,5 +1,5 @@
 import { ACCESS_RANK } from '@/lib/constants/catalog'
-import type { Access, AccessType } from '@/lib/types/catalog'
+import type { Access } from '@/lib/types/catalog'
 
 /**
  * How a WAY IN renders inside a file: the MCP block, the CLI install, the API
@@ -8,7 +8,7 @@ import type { Access, AccessType } from '@/lib/types/catalog'
  *
  * "Setup picks the best way in": official MCP, then CLI, then API, then the
  * community options in the same order. Tool files list every option;
- * workflow files show at most two per tool, or the one a step asks for.
+ * workflow files show at most two per tool.
  *
  * EVERY WAY IN NAMES ITS OPERATION. A tool is one function, so setup is not
  * finished when the agent can reach the product — it is finished when the
@@ -29,19 +29,11 @@ export function orderAccess(access: ReadonlyArray<Access>): Array<Access> {
   )
 }
 
-/** A workflow shows the way in a step asks for (`via`), else the best two. */
+/** A workflow shows each tool's best two ways in. */
 export function selectWorkflowAccess(
-  access: ReadonlyArray<Access>,
-  via: AccessType | undefined
+  access: ReadonlyArray<Access>
 ): Array<Access> {
-  const ordered = orderAccess(access)
-  if (via) {
-    const preferred = ordered.find((entry) => entry.type === via)
-    if (preferred) {
-      return [preferred]
-    }
-  }
-  return ordered.slice(0, 2)
+  return orderAccess(access).slice(0, 2)
 }
 
 /**

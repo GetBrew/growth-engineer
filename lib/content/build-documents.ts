@@ -34,7 +34,7 @@ export function buildDocuments(
     entityType: CatalogDocument['entityType'],
     key: string,
     updatedAt: number,
-    rendered: { markdown: string; hash: string; lineCount: number }
+    rendered: { markdown: string; lineCount: number }
   ) => {
     const ref = formatRef(entityType, key)
     documents.set(ref, { ref, entityType, updatedAt, ...rendered })
@@ -87,7 +87,6 @@ export function buildDocuments(
         steps: workflow.steps.map((step) => ({
           title: step.title,
           toolKey: step.toolKey,
-          ...(step.via ? { via: step.via } : {}),
           instruction: step.instruction,
         })),
         doneWhen: workflow.doneWhen,

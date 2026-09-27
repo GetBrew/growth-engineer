@@ -72,8 +72,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   the build adds setup and rules.
 - The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
   flat YAML header, setup picks the best way in (official MCP → CLI → API →
-  community; tool files list every option, workflow files ≤ 2 per tool or the
-  step's `via`), inputs in backticks, ≤ 10 steps, Rules last and immutable,
+  community; tool files list every option, workflow files ≤ 2 per tool),
+  inputs in backticks, ≤ 10 steps, Rules last and immutable,
   tool ≈ 60 lines, workflow ≈ 120. Change the format and the golden fixtures
   in `tests/fixtures/markdown/` in the same commit.
 - A file's `updated` date is the newest of its inputs: a workflow file
@@ -102,7 +102,7 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - Every rule is enforced at build with the offending file's path, and every
   problem is reported at once (`ContentErrors`): strict schemas (unknown
   fields rejected), reserved handles, every step's tool resolves and is
-  published, `via` names a way in the tool has, tags exist, aliases never
+  published, tags exist, aliases never
   shadow a live key, a published tool has ≥ 1 way in, logos exist. A new rule
   ships with a negative test in `tests/content-schema.test.ts` — a guard is
   not done until it has FAILED.

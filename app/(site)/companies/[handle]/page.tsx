@@ -1,4 +1,3 @@
-import { Linkedin01Icon, NewTwitterIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
@@ -32,9 +31,6 @@ import { companyJsonLd } from '@/lib/seo/structured-data'
 import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ handle: string }>
-
-const SOCIAL =
-  'focus-ring grid size-8 place-items-center rounded-full text-subtle transition-colors hover:bg-hover hover:text-foreground'
 
 export function generateStaticParams() {
   return companyParams()
@@ -91,11 +87,6 @@ async function CompanyDetail({ params }: { params: Params }) {
     notFound()
   }
 
-  const facts = [
-    company.headquarters,
-    company.founded ? `Founded ${company.founded}` : undefined,
-  ].filter((fact): fact is string => Boolean(fact))
-
   return (
     <div className="flex flex-col">
       <JsonLd data={companyJsonLd(SITE_ORIGIN, company)} />
@@ -116,76 +107,33 @@ async function CompanyDetail({ params }: { params: Params }) {
               title={company.name}
             />
             <ViewSourceButton entityKey={company.key} type="company" />
-            {company.links.website ? (
-              <a
-                className={buttonVariants({ size: 'pill', variant: 'outline' })}
-                href={company.links.website}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <HugeiconsIcon
-                  aria-hidden="true"
-                  icon={LINK_ICON.website}
-                  size={16}
-                  strokeWidth={1.8}
-                />
-                Website
-              </a>
-            ) : null}
-            <div className="flex items-center gap-0.5">
-              {company.links.x ? (
-                <a
-                  aria-label={`${company.name} on X`}
-                  className={SOCIAL}
-                  href={company.links.x}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <HugeiconsIcon
-                    aria-hidden="true"
-                    icon={NewTwitterIcon}
-                    size={15}
-                    strokeWidth={1.8}
-                  />
-                </a>
-              ) : null}
-              {company.links.linkedin ? (
-                <a
-                  aria-label={`${company.name} on LinkedIn`}
-                  className={SOCIAL}
-                  href={company.links.linkedin}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <HugeiconsIcon
-                    aria-hidden="true"
-                    icon={Linkedin01Icon}
-                    size={16}
-                    strokeWidth={1.8}
-                  />
-                </a>
-              ) : null}
-            </div>
+            <a
+              className={buttonVariants({ size: 'pill', variant: 'outline' })}
+              href={company.links.website}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <HugeiconsIcon
+                aria-hidden="true"
+                icon={LINK_ICON.website}
+                size={16}
+                strokeWidth={1.8}
+              />
+              Website
+            </a>
           </div>
         </div>
 
-        {facts.length > 0 || company.status === 'deprecated' ? (
+        {company.status === 'deprecated' ? (
           <div className="mt-6 flex flex-wrap items-center gap-1.5">
-            {facts.map((fact) => (
-              <span className={META_CHIP} key={fact}>
-                {fact}
-              </span>
-            ))}
-            {company.status === 'deprecated' ? (
-              <span
-                className={cn(
-                  META_CHIP,
-                  'border-foreground/20 bg-hover text-soft'
-                )}
-              >
-                Deprecated
-              </span>
-            ) : null}
+            <span
+              className={cn(
+                META_CHIP,
+                'border-foreground/20 bg-hover text-soft'
+              )}
+            >
+              Deprecated
+            </span>
           </div>
         ) : null}
       </header>

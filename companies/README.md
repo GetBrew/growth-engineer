@@ -28,14 +28,9 @@ name: Acme
 domain: acme.example
 category: data-provider          # a slug from tags/category/
 tagline: Enrich people and companies from one API.
-website: https://www.acme.example   # optional; defaults to https://<domain>
 docs: https://docs.acme.example  # optional
 github: https://github.com/acme  # optional
-linkedin: https://www.linkedin.com/company/acme   # optional
-x: https://x.com/acme            # optional
 logo: acme.png                   # a file you add under public/logos/
-founded: 2017                    # optional
-headquarters: New York, NY       # optional
 status: published                # or deprecated (still visible, with a warning)
 updated: 2026-09-16
 ---
@@ -51,8 +46,7 @@ description on the company page and in the company's file.
 | `category` | yes | Must exist as `tags/category/<slug>.md`. |
 | `logo` | yes | File name under `public/logos/`; svg, png, jpg or webp, at most 32 KB — an SVG, or 128px square. It is served as is. |
 | `updated` | yes | `YYYY-MM-DD` — the day these facts were last checked. |
-| `tagline`, `website`, `docs`, `github`, `linkedin`, `x`, `founded`, `headquarters` | no | Shown when present. |
-| `kind` | no | `vendor` (default), `open_source` or `individual`. |
+| `tagline`, `docs`, `github` | no | Shown when present. The website is always `https://<domain>`. |
 | `aliases` | no | Old handles that should redirect here after a rename. |
 | `status` | no | `published` (default) or `deprecated`. |
 
@@ -77,9 +71,9 @@ docsUrl: https://docs.acme.example/mcp
 
 | `type` | Type-specific fields |
 | --- | --- |
-| `mcp` | `transport` (`remote` needs `url`; `local` needs `command`, e.g. `npx -y vendor-mcp`), `repoUrl?` |
-| `cli` | `installCommand` (`brew install gh`), `binary` (`gh`), `repoUrl?` |
-| `api` | `baseUrl`, `openApiUrl?` |
+| `mcp` | `transport` (`remote` needs `url`; `local` needs `command`, e.g. `npx -y vendor-mcp`) |
+| `cli` | `installCommand` (`brew install gh`), `binary` (`gh`) |
+| `api` | `baseUrl` |
 
 `auth` is the same shape for every type: `method`, `selfServe`, and for
 `api_key` the `envVar` the agent should set (`ACME_API_KEY`), the `header`

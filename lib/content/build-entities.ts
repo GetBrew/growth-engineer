@@ -52,7 +52,6 @@ function toAccess(option: AccessFrontmatter, operation: string): Access {
         transport: option.transport,
         ...(option.url ? { url: option.url } : {}),
         ...(option.command ? { command: option.command } : {}),
-        ...(option.repoUrl ? { repoUrl: option.repoUrl } : {}),
       }
     case 'cli':
       return {
@@ -60,14 +59,12 @@ function toAccess(option: AccessFrontmatter, operation: string): Access {
         ...common,
         installCommand: option.installCommand,
         binary: option.binary,
-        ...(option.repoUrl ? { repoUrl: option.repoUrl } : {}),
       }
     default:
       return {
         type: 'api',
         ...common,
         baseUrl: option.baseUrl,
-        ...(option.openApiUrl ? { openApiUrl: option.openApiUrl } : {}),
       }
   }
 }
@@ -233,7 +230,7 @@ function resolveTags(
   return resolved
 }
 
-/** Every step names a published tool, and a `via` the tool actually offers. */
+/** Every step names a published tool. */
 function checkSteps(
   file: WorkflowFile,
   parsed: ParsedWorkflow,
@@ -242,20 +239,10 @@ function checkSteps(
 ): void {
   for (const [index, step] of parsed.data.steps.entries()) {
     const line = parsed.stepLines[index]
-    const tool = tools.get(step.tool)
-    if (!tool) {
+    if (!tools.has(step.tool)) {
       problems.add(
         file.path,
         `step ${index + 1}: "${step.tool}" is not a published tool (companies/<handle>/tools/<slug>.md)`,
-        line
-      )
-    } else if (
-      step.via &&
-      !tool.access.some((entry) => entry.type === step.via)
-    ) {
-      problems.add(
-        file.path,
-        `step ${index + 1}: ${step.tool} has no ${step.via.toUpperCase()} way in`,
         line
       )
     }
@@ -281,7 +268,6 @@ function toWorkflow(
     key: stepKey(step.title),
     title: step.title,
     toolKey: step.tool,
-    ...(step.via ? { via: step.via } : {}),
     instruction: step.instruction,
   }))
   const toolKeys = distinctToolKeys(steps)

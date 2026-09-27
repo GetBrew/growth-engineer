@@ -112,7 +112,7 @@ describe('content rules', () => {
       () =>
         workflow(
           '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
-          '`acme/nope`'
+          '[acme/nope](../companies/acme/tools/nope.md)'
         ),
       /workflows\/keep-crm-clean\.md:11: step 1: "acme\/nope" is not a published tool/,
     ],
@@ -132,7 +132,7 @@ describe('content rules', () => {
       () =>
         workflow(
           '1. **Dedupe** with',
-          `${'1. **Step** with `acme/manage-crm`. Do it.\n'.repeat(10)}1. **Dedupe** with`
+          `${'1. **Step** with [acme/manage-crm](../companies/acme/tools/manage-crm.md). Do it.\n'.repeat(10)}1. **Dedupe** with`
         ),
       /steps: a workflow has at most 10 steps/,
     ],
@@ -231,14 +231,18 @@ describe('content rules', () => {
       /companies\/acme\/company\.md: updated:/,
     ],
     [
-      'a `via` the tool does not offer',
+      'a retired `via` on a step',
       () => workflow('manage-crm.md).', 'manage-crm.md) via MCP.'),
-      /keep-crm-clean\.md:11: step 1: acme\/manage-crm has no MCP way in/,
+      /keep-crm-clean\.md:11: a step reads/,
     ],
     [
-      'a `via` that is not a way in',
-      () => workflow('manage-crm.md).', 'manage-crm.md) via FAX.'),
-      /keep-crm-clean\.md:11: step 1: via: must be MCP, CLI or API/,
+      'a step naming its tool in a code span',
+      () =>
+        workflow(
+          '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
+          '`acme/manage-crm`'
+        ),
+      /keep-crm-clean\.md:11: a step reads/,
     ],
     [
       'a workflow with no author',

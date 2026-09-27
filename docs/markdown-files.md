@@ -17,7 +17,7 @@ names the tools, and appends the rules.
 | Files are generated, never hand-edited. | One render function builds each file from the source files at build time. When a tool's MCP URL changes, every workflow file that uses it is rebuilt on the next deploy. |
 | Files work in any agent. | Plain markdown, a short flat YAML header, no agent-specific syntax. MCP servers appear in the common `mcpServers` JSON shape with the URL spelled out too. |
 | Everything needed to run is in the file. | Setup, inputs, steps and finish checks are inline. Links are only for getting keys or reading more. |
-| Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool, or the one a step asks for (`via`). |
+| Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool. |
 | Inputs are named, not templated. | `target_accounts` appears in backticks and the file tells the agent to ask the user for it. No template engine. |
 | The file tells the agent to check access first. | After setup, one read-only call to each tool before any step runs. |
 | Rules always come last, and nobody can edit them. | Only the listed tools; ask before sending, spending or changing anything; never print keys. |

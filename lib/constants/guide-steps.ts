@@ -120,7 +120,7 @@ workflows/competitor-intent.md`,
     key: 'steps',
     title: 'Write one to ten steps',
     detail:
-      'Under ## Steps, a numbered list: the step’s title in bold, “with” the tool it uses — a published tool’s key, linked to its file — then what to do with it. Say what to do, not how the tool works: the tool’s own file already covers setup. Add “via MCP”, “via CLI” or “via API” after the tool when a step needs that way in. The build links every step to its tool, and every tool page back to the workflows that use it.',
+      'Under ## Steps, a numbered list: the step’s title in bold, “with” the tool it uses — a published tool’s key, linked to its file — then what to do with it. Say what to do, not how the tool works: the tool’s own file already covers setup. The build links every step to its tool, and every tool page back to the workflows that use it.',
     sample: { file: WORKFLOW, excerpt: '## Steps' },
   },
   {

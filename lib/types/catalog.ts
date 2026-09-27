@@ -25,12 +25,6 @@ export type Auth = {
   selfServe: boolean
 }
 
-type AccessHealth = {
-  ok: boolean
-  checkedAt: number
-  failingSince?: number
-}
-
 type AccessCommon = {
   /** false = community-maintained. */
   official: boolean
@@ -40,7 +34,6 @@ type AccessCommon = {
   operation: string
   auth: Auth
   docsUrl?: string
-  health?: AccessHealth
 }
 
 export type Access =
@@ -49,15 +42,13 @@ export type Access =
       transport: 'remote' | 'local'
       url?: string
       command?: string
-      repoUrl?: string
     })
   | (AccessCommon & {
       type: 'cli'
       installCommand: string
       binary: string
-      repoUrl?: string
     })
-  | (AccessCommon & { type: 'api'; baseUrl: string; openApiUrl?: string })
+  | (AccessCommon & { type: 'api'; baseUrl: string })
 
 /* ─────────────────────────────────── entities ───────────────────────────── */
 
@@ -67,7 +58,6 @@ type Status = 'published' | 'deprecated'
 export type Company = {
   key: string
   name: string
-  kind: 'vendor' | 'open_source' | 'individual'
   domain: string
   /** The `category:*` tag slug the directory groups by. */
   category: string
@@ -75,14 +65,11 @@ export type Company = {
   description?: string
   logo?: { url: string }
   links: {
-    website?: string
+    /** `https://<domain>`. */
+    website: string
     docs?: string
     github?: string
-    linkedin?: string
-    x?: string
   }
-  founded?: number
-  headquarters?: string
   status: Status
   /** From the file's `updated` date, at UTC midnight. */
   updatedAt: number
@@ -118,8 +105,6 @@ export type WorkflowStep = {
   key: string
   title: string
   toolKey: string
-  /** Preferred way in; absent = the best available. */
-  via?: AccessType
   instruction: string
 }
 
@@ -175,7 +160,6 @@ export type CatalogDocument = {
   ref: string
   entityType: EntityType
   markdown: string
-  hash: string
   lineCount: number
   updatedAt: number
 }
@@ -196,18 +180,16 @@ export type ToolListItem = {
   category?: Category
 }
 
-/** What the directory needs from a company: the summary plus its ways in. */
+/** What the directory needs from a company. */
 export type CompanyListItem = {
   company: {
     key: string
     name: string
     tagline?: string
     description?: string
-    domain?: string
     logoUrl?: string
   }
   category?: Category
-  access: ReadonlyArray<AccessType>
 }
 
 /** What a list row needs from a workflow: the workflow plus its tools' companies. */
@@ -217,13 +199,11 @@ export type WorkflowListItem = {
     title: string
     author: string
     summary?: string
-    toolCount: number
   }
   tools: ReadonlyArray<{
     companyKey: string
     companyName: string
     logoUrl?: string
-    access: ReadonlyArray<AccessType>
   }>
 }
 

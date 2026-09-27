@@ -46,7 +46,6 @@ const status = z.enum(['published', 'deprecated'])
 
 export const companySchema = z.strictObject({
   name: text,
-  kind: z.enum(['vendor', 'open_source', 'individual']).default('vendor'),
   domain: z
     .string()
     .trim()
@@ -54,11 +53,8 @@ export const companySchema = z.strictObject({
   /** A `tags/category/<slug>.md` slug. */
   category: keyPart,
   tagline: text.optional(),
-  website: url.optional(),
   docs: url.optional(),
   github: url.optional(),
-  linkedin: url.optional(),
-  x: url.optional(),
   /** A file under public/logos. */
   logo: z
     .string()
@@ -66,8 +62,6 @@ export const companySchema = z.strictObject({
       /^[a-z0-9-]+\.(png|jpg|jpeg|svg|webp)$/,
       'must name a file under public/logos, like `clay.png`'
     ),
-  founded: z.int().min(1800).max(2100).optional(),
-  headquarters: text.optional(),
   aliases: z.array(handle).default([]),
   status: status.default('published'),
   updated: isoDate,
@@ -104,20 +98,17 @@ export const accessSchema = z
       transport: z.enum(['remote', 'local']),
       url: url.optional(),
       command: text.optional(),
-      repoUrl: url.optional(),
     }),
     z.strictObject({
       type: z.literal('cli'),
       ...accessCommon,
       installCommand: text,
       binary: text,
-      repoUrl: url.optional(),
     }),
     z.strictObject({
       type: z.literal('api'),
       ...accessCommon,
       baseUrl: url,
-      openApiUrl: url.optional(),
     }),
   ])
   .superRefine((value, context) => {
@@ -205,11 +196,6 @@ export const workflowBodySchema = z.strictObject({
         title: text,
         /** A tool key: `clay/enrich-contacts`. */
         tool: ownedKey,
-        via: z
-          .enum(['mcp', 'cli', 'api'], {
-            error: 'must be MCP, CLI or API',
-          })
-          .optional(),
         instruction: text,
       })
     )
