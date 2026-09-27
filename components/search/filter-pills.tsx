@@ -29,8 +29,11 @@ export function FilterPills({
     .slice(shown.length)
     .sort((a, b) => a.label.localeCompare(b.label))
 
+  // Phones get one sideways-scrolling row that runs to the screen's edges
+  // (the -mx/px pair cancels the page gutter) instead of pills wrapping into
+  // ragged lines; py keeps the focus ring inside the scroll box.
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="scrollbar-none flex flex-wrap gap-2 max-sm:-mx-4 max-sm:-my-1 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4 max-sm:py-1">
       {all ? (
         <PillLink active={all.active} href={all.href}>
           All

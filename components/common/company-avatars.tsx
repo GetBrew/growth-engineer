@@ -16,8 +16,8 @@ export type CompanyAvatar = {
 }
 
 const SIZE = {
-  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11', image: 'p-2' },
-  sm: { stack: '[&>*+*]:-ml-1.5', avatar: 'size-7', image: 'p-1.5' },
+  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11', image: 'p-1.5' },
+  sm: { stack: '[&>*+*]:-ml-1.5', avatar: 'size-7', image: 'p-1' },
 } as const
 
 const LIFT =

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { GUIDES } from '@/lib/constants/guides'
+import { GUIDES, guidePath } from '@/lib/constants/guides'
 import type { CatalogDocument } from '@/lib/types/catalog'
 import { getCatalog } from './catalog'
 import {
@@ -73,10 +73,10 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       changeFrequency: 'weekly',
       priority: 0.5,
     },
-    // How to contribute: no entity date behind them, so no lastmod.
-    { path: '/contribute', changeFrequency: 'monthly', priority: 0.5 },
+    // The docs: no entity date behind them, so no lastmod.
+    { path: '/docs', changeFrequency: 'monthly', priority: 0.5 },
     ...GUIDES.map((guide) => ({
-      path: `/contribute/${guide.id}`,
+      path: guidePath(guide),
       changeFrequency: 'monthly' as const,
       priority: 0.4,
     })),

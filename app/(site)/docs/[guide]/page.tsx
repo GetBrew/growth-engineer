@@ -1,7 +1,10 @@
+import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { CodeText } from '@/components/contribute/code-text'
 import {
   GuideSteps,
   type ResolvedGuideStep,
@@ -19,16 +22,20 @@ import { GUIDE_STEPS, type GuideStep } from '@/lib/constants/guide-steps'
 import {
   findGuide,
   GUIDES,
+  type Guide,
   guideDocUrl,
   guideMarkdown,
+  guidePath,
   nextGuide,
+  previousGuide,
 } from '@/lib/constants/guides'
 import { pageMetadata } from '@/lib/seo/metadata'
+import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ guide: string }>
 
 export function generateStaticParams() {
-  return GUIDES.map((guide) => ({ guide: guide.id }))
+  return GUIDES.map((guide) => ({ guide: guide.slug }))
 }
 
 export async function generateMetadata({
@@ -42,7 +49,7 @@ export async function generateMetadata({
     ? pageMetadata({
         title: found.title,
         description: found.summary,
-        path: `/contribute/${found.id}`,
+        path: guidePath(found),
       })
     : {}
 }
@@ -58,7 +65,7 @@ async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
       ...rest,
       sample: {
         caption: sample.file,
-        code: await loadSourceExcerpt(sample.file, sample.excerpt),
+        code: await loadSourceExcerpt(sample.file, sample.excerpt, sample.omit),
       },
     }
   }
@@ -75,7 +82,7 @@ async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
 export default function GuidePage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
-      <BackLink href="/contribute" label="Learn" />
+      <BackLink href="/docs" label="Docs" />
       <Suspense fallback={null}>
         <GuideDetail params={params} />
       </Suspense>
@@ -95,6 +102,7 @@ async function GuideDetail({ params }: { params: Params }) {
   const steps = await Promise.all(
     (GUIDE_STEPS[found.id] ?? []).map(resolveStep)
   )
+  const previous = previousGuide(found.id)
   const next = nextGuide(found.id)
 
   return (
@@ -133,7 +141,7 @@ async function GuideDetail({ params }: { params: Params }) {
             <p className="type-body">{found.intro}</p>
             <p className="type-body rounded-2xl border border-dashed bg-surface px-4 py-3">
               <b className="type-emphasis text-foreground">Note. </b>
-              {found.note}
+              <CodeText text={found.note} />
             </p>
           </div>
 
@@ -141,7 +149,10 @@ async function GuideDetail({ params }: { params: Params }) {
         </section>
 
         <aside className="flex flex-col gap-(--space-md) lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
-          <section className="flex flex-col gap-(--space-xs)">
+          {/* The step list is for jumping around a long page beside it; on a
+              phone it would sit under the steps it lists, so it is desktop
+              only. The previous and next guides show everywhere. */}
+          <section className="hidden flex-col gap-(--space-xs) lg:flex">
             <h2 className={PANEL_HEADING}>In this guide</h2>
             <ol className="flex flex-col rounded-2xl border bg-background p-2">
               {steps.map((step, index) => (
@@ -160,22 +171,66 @@ async function GuideDetail({ params }: { params: Params }) {
             </ol>
           </section>
 
-          {next ? (
-            <Link
-              className="focus-ring flex items-center justify-between gap-4 rounded-2xl border px-4 py-3.5 transition-colors hover:bg-hover"
-              href={`/contribute/${next.id}`}
+          {previous || next ? (
+            <nav
+              aria-label="More guides"
+              className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1"
             >
-              <span className="flex min-w-0 flex-col">
-                <span className="type-label text-faint">
-                  {next.loomId ? 'Next video' : 'Next guide'}
-                </span>
-                <span className="type-item truncate">{next.title}</span>
-              </span>
-              <span className="type-control shrink-0 text-soft">→</span>
-            </Link>
+              {previous ? (
+                <GuideLink direction="previous" guide={previous} />
+              ) : null}
+              {next ? <GuideLink direction="next" guide={next} /> : null}
+            </nav>
           ) : null}
         </aside>
       </div>
     </div>
+  )
+}
+
+/**
+ * The previous and next guides: the same card, text always left-aligned, and
+ * the back link's chevron on the side it leads to — left for previous, the
+ * far right for next.
+ */
+function GuideLink({
+  guide,
+  direction,
+}: {
+  guide: Guide
+  direction: 'previous' | 'next'
+}) {
+  const noun = guide.loomId ? 'video' : 'guide'
+  const isNext = direction === 'next'
+  const icon = (
+    <HugeiconsIcon
+      aria-hidden="true"
+      className={cn(
+        'shrink-0 text-soft transition-colors group-hover/guide:text-foreground',
+        isNext && 'order-last'
+      )}
+      icon={isNext ? ArrowRight01Icon : ArrowLeft01Icon}
+      size={16}
+      strokeWidth={1.8}
+    />
+  )
+  return (
+    <Link
+      className={cn(
+        'group/guide focus-ring flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-colors hover:bg-hover',
+        // The next guide sits on the right on a two-column row.
+        isNext && 'sm:col-start-2 lg:col-start-auto'
+      )}
+      href={guidePath(guide)}
+      rel={isNext ? 'next' : 'prev'}
+    >
+      {icon}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="type-label text-faint">
+          {isNext ? `Next ${noun}` : `Previous ${noun}`}
+        </span>
+        <span className="type-item truncate">{guide.title}</span>
+      </span>
+    </Link>
   )
 }

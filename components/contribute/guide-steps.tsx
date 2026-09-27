@@ -1,9 +1,10 @@
+import { CodeText } from '@/components/contribute/code-text'
 import { CopyButton } from '@/components/contribute/copy-button'
 import type { GuideStep } from '@/lib/constants/guide-steps'
 
 /** A step with its sample resolved: a quoted file, or a command. */
 export type ResolvedGuideStep = Omit<GuideStep, 'sample'> & {
-  sample?: { caption?: string; code: string }
+  sample?: { caption: string; code: string }
 }
 
 /**
@@ -33,22 +34,26 @@ export function GuideSteps({
               {step.title}
             </h3>
 
-            <p className="type-body">{step.detail}</p>
+            <p className="type-body">
+              <CodeText text={step.detail} />
+            </p>
 
             {step.sample ? (
               <figure className="mt-1 overflow-hidden rounded-xl border bg-surface">
-                {/* The bar is always there, because the copy button lives in
-                    it; a sample with no file to name just leaves it blank. */}
+                {/* Every sample names itself — the file it is quoted from, the
+                    folder it lists, or "Terminal" — beside its copy button. */}
                 <figcaption className="flex items-center justify-between gap-3 border-b py-1.5 pr-1.5 pl-4">
                   <span className="type-label min-w-0 truncate font-mono text-faint">
                     {step.sample.caption}
                   </span>
                   <CopyButton
-                    label={step.sample.caption ?? step.title}
+                    label={step.sample.caption}
                     text={step.sample.code}
                   />
                 </figcaption>
-                <pre className="type-label overflow-x-auto p-4 font-mono text-soft leading-6">
+                {/* Long lines wrap instead of hiding past the edge; the copy
+                    button still copies them as written. */}
+                <pre className="type-label whitespace-pre-wrap break-words p-4 font-mono text-soft leading-6">
                   <code>{step.sample.code}</code>
                 </pre>
               </figure>

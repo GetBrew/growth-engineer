@@ -4,31 +4,24 @@ import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import { SITE } from '@/lib/catalog/definitions'
 import { SECTIONS } from '@/lib/constants/sections'
-import { GITHUB_URL } from '@/lib/github'
 import { BrandLockup } from './brand'
 import { BrewLink } from './brew-link'
 import styles from './footer.module.css'
 
-// Three columns of equal weight. Explore holds every listing plus the map
-// and the two files an agent reads first; Contribute points at the guide for
-// each kind of file (each guide links on to its README on GitHub).
+// Three columns of equal weight. Explore holds every listing; Contribute
+// points at the guide for each kind of file (each guide links on to its
+// README on GitHub).
 const COLUMNS = [
   {
     heading: 'Explore',
-    links: [
-      ...SECTIONS.map((section) => [section.label, section.href] as const),
-      ['Relationship map', '/map'],
-      ['llms.txt', '/llms.txt'],
-      ['llms-full.txt', '/llms-full.txt'],
-    ],
+    links: SECTIONS.map((section) => [section.label, section.href] as const),
   },
   {
     heading: 'Contribute',
     links: [
-      ['Add a workflow', '/contribute/workflow'],
-      ['Add a tool', '/contribute/tool'],
-      ['Add your company', '/contribute/company'],
-      ['Source on GitHub', GITHUB_URL],
+      ['Add a workflow', '/docs/add-a-workflow'],
+      ['Add a tool', '/docs/add-a-tool'],
+      ['Add your company', '/docs/add-your-company'],
     ],
   },
   {
@@ -110,7 +103,9 @@ export function Footer() {
           <div className="flex max-w-xl flex-col items-start gap-6">
             <div className="flex flex-col gap-3">
               <BrandLockup />
-              <p className="type-body max-w-sm text-soft">{SITE.tagline}</p>
+              <p className="type-body max-w-sm text-balance text-soft">
+                {SITE.tagline}
+              </p>
             </div>
           </div>
 

@@ -9,11 +9,10 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
-import { useState } from 'react'
-import { buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { useCopy } from '@/lib/hooks/use-copy'
 import {
   AGENTS,
-  type Agent,
   aiPrompt,
   closeSteps,
   openSteps,
@@ -21,7 +20,6 @@ import {
   useSelectedAgent,
   useStepsOpen,
 } from '@/lib/stores/agents'
-import { cn } from '@/lib/utils/cn'
 import { McpStepsDialog } from './mcp-steps-dialog'
 
 /**
@@ -30,10 +28,13 @@ import { McpStepsDialog } from './mcp-steps-dialog'
  * `/mcp` (app/mcp/route.ts), passed from the server so it is the origin the
  * page was built for — never a hardcoded host.
  */
+/** The previous / next agent arrows: quiet until hovered. */
+const NAV = 'rounded-lg text-faint hover:bg-hover hover:text-foreground'
+
 export function McpCard({ url }: { url: string }) {
   const agent = useSelectedAgent()
-  const [copied, setCopied] = useState(false)
-  const [copiedPrompt, setCopiedPrompt] = useState(false)
+  const urlCopy = useCopy()
+  const prompt = useCopy()
   const showSteps = useStepsOpen()
 
   function step(by: number) {
@@ -44,28 +45,6 @@ export function McpCard({ url }: { url: string }) {
     }
   }
 
-  async function copyPrompt(current: Agent) {
-    const didCopy = await navigator.clipboard
-      .writeText(aiPrompt(current, url))
-      .then(() => true)
-      .catch(() => false)
-    if (didCopy) {
-      setCopiedPrompt(true)
-      window.setTimeout(() => setCopiedPrompt(false), 1800)
-    }
-  }
-
-  async function copy() {
-    const didCopy = await navigator.clipboard
-      .writeText(url)
-      .then(() => true)
-      .catch(() => false)
-    if (didCopy) {
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
-    }
-  }
-
   return (
     <div className="flex w-full max-w-[26rem] flex-col gap-4 rounded-3xl border border-border bg-background p-5 lg:shrink-0">
       <div className="flex items-center justify-between gap-3">
@@ -73,19 +52,21 @@ export function McpCard({ url }: { url: string }) {
           Connect with {agent.headline ?? agent.name}
         </span>
         <div className="flex shrink-0 items-center gap-1">
-          <button
+          <Button
             aria-label="Previous agent"
-            className="focus-ring grid size-7 place-items-center rounded-lg text-faint transition-colors duration-200 hover:bg-hover hover:text-foreground"
+            className={NAV}
             onClick={() => step(-1)}
-            type="button"
+            size="icon-sm"
+            variant="ghost"
           >
             <HugeiconsIcon
               aria-hidden="true"
+              className="size-[15px]"
               icon={ArrowLeft01Icon}
               size={15}
               strokeWidth={2}
             />
-          </button>
+          </Button>
 
           <span className="entity-shadow grid size-8 shrink-0 place-items-center overflow-hidden rounded-xl border bg-background">
             <Image
@@ -99,19 +80,21 @@ export function McpCard({ url }: { url: string }) {
             />
           </span>
 
-          <button
+          <Button
             aria-label="Next agent"
-            className="focus-ring grid size-7 place-items-center rounded-lg text-faint transition-colors duration-200 hover:bg-hover hover:text-foreground"
+            className={NAV}
             onClick={() => step(1)}
-            type="button"
+            size="icon-sm"
+            variant="ghost"
           >
             <HugeiconsIcon
               aria-hidden="true"
+              className="size-[15px]"
               icon={ArrowRight01Icon}
               size={15}
               strokeWidth={2}
             />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -123,53 +106,51 @@ export function McpCard({ url }: { url: string }) {
             </span>
 
             <div className="flex shrink-0 items-center gap-1.5">
-              <button
-                className={cn(
-                  buttonVariants({ variant: 'secondary', size: 'xs' }),
-                  'rounded-full'
-                )}
-                onClick={() => copyPrompt(agent)}
-                type="button"
+              <Button
+                className="rounded-full"
+                onClick={() => prompt.copy(aiPrompt(agent, url))}
+                size="xs"
+                variant="secondary"
               >
                 <HugeiconsIcon
                   aria-hidden="true"
-                  icon={copiedPrompt ? Tick02Icon : SparklesIcon}
+                  icon={prompt.copied ? Tick02Icon : SparklesIcon}
                   size={12}
                   strokeWidth={1.8}
                 />
-                {copiedPrompt ? 'Copied' : 'Prompt'}
-              </button>
+                {prompt.copied ? 'Copied' : 'Prompt'}
+              </Button>
 
-              <button
-                className={cn(
-                  buttonVariants({ variant: 'secondary', size: 'xs' }),
-                  'rounded-full'
-                )}
+              <Button
+                className="rounded-full"
                 onClick={openSteps}
-                type="button"
+                size="xs"
+                variant="secondary"
               >
                 Manual
-              </button>
+              </Button>
             </div>
           </div>
 
           <div className="flex items-center gap-2 rounded-2xl bg-muted px-3.5 py-2.5">
             <code className="type-label min-w-0 flex-1 truncate">{url}</code>
-            <button
-              className="focus-ring grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors duration-200 hover:text-foreground"
-              onClick={copy}
-              type="button"
+            <Button
+              className="rounded-lg text-muted-foreground hover:bg-transparent hover:text-foreground"
+              onClick={() => urlCopy.copy(url)}
+              size="icon-sm"
+              variant="ghost"
             >
               <HugeiconsIcon
                 aria-hidden="true"
-                icon={copied ? Tick02Icon : Copy01Icon}
+                className="size-[15px]"
+                icon={urlCopy.copied ? Tick02Icon : Copy01Icon}
                 size={15}
                 strokeWidth={1.8}
               />
               <span className="sr-only">
-                {copied ? 'Copied' : 'Copy the server URL'}
+                {urlCopy.copied ? 'Copied' : 'Copy the server URL'}
               </span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

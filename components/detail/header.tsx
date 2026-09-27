@@ -2,9 +2,9 @@ import { LinkSquare02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { ACCESS_CHIP } from '@/components/detail/styles'
 import { DetailDescription } from '@/components/detail/summary'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge, badgeVariants } from '@/components/ui/badge'
 import { cn } from '@/lib/utils/cn'
 
 export const DETAIL_DATE = new Intl.DateTimeFormat('en-US', {
@@ -64,10 +64,6 @@ type DetailTag = {
   emphasis?: boolean
 }
 
-const TAG = 'type-meta inline-flex h-6 items-center rounded-full border px-2.5'
-const TAG_HOVER =
-  'focus-ring transition-colors duration-200 hover:border-foreground/20 hover:text-foreground'
-
 export function DetailHeader({
   byline,
   title,
@@ -95,46 +91,51 @@ export function DetailHeader({
       <header>
         {byline}
 
-        <div className="mt-3 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-x-8">
-          <div className="flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-2 sm:col-start-1 sm:row-start-1">
+        {/* The actions join the title's row only from lg: on a tablet they
+            squeezed the title into a column a few words wide. */}
+        <div className="mt-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-x-8">
+          <div className="flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-2 lg:col-start-1 lg:row-start-1">
             <h1 className="type-page-title text-balance">{title}</h1>
           </div>
 
-          <div className="max-w-3xl sm:col-start-1 sm:row-start-2">
+          <div className="max-w-3xl lg:col-start-1 lg:row-start-2">
             {description ? <DetailDescription text={description} /> : null}
           </div>
 
-          <div className="mt-6 flex shrink-0 flex-wrap items-center gap-2 sm:col-start-2 sm:row-span-2 sm:row-start-1 sm:mt-0">
+          <div className="mt-6 flex shrink-0 items-center gap-2 max-lg:-ml-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0">
             {actions}
           </div>
         </div>
       </header>
 
       {hasTags || hasSideMeta ? (
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-1.5">
+        // Side by side only from lg, like the actions above: on a tablet both
+        // halves wrapped, leaving a tag and a chip stranded on lines of their own.
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
             {tags.map((tag) => {
-              const className = tag.emphasis
-                ? cn(TAG, 'border-foreground/20 bg-hover text-soft')
-                : TAG
+              const variant = tag.emphasis ? 'emphasis' : 'plain'
               return tag.href ? (
                 <Link
-                  className={cn(className, TAG_HOVER)}
+                  className={badgeVariants({ variant, interactive: true })}
                   href={tag.href}
                   key={tag.label}
                 >
                   {tag.label}
                 </Link>
               ) : (
-                <span className={className} key={tag.label}>
+                <Badge key={tag.label} variant={variant}>
                   {tag.label}
-                </span>
+                </Badge>
               )
             })}
 
             {links.map((link) => (
               <a
-                className={cn(TAG, TAG_HOVER, 'flex items-center gap-1.5')}
+                className={cn(
+                  badgeVariants({ variant: 'plain', interactive: true }),
+                  'gap-1.5'
+                )}
                 href={link.href}
                 key={link.label}
                 rel="noreferrer"
@@ -162,20 +163,22 @@ export function DetailHeader({
           </div>
 
           {hasSideMeta ? (
-            <div className="type-label flex flex-wrap items-center gap-1.5 text-subtle sm:ml-auto">
+            <div className="type-label flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 text-subtle">
               {dates.map((date) => (
-                <span className="mr-2" key={date}>
-                  {date}
-                </span>
+                <span key={date}>{date}</span>
               ))}
+              {/* One unit, so a narrow screen wraps the whole group rather
+                  than leaving its last chip alone on a line. */}
               {available.length > 0 ? (
-                <span className="mr-1">Available as</span>
-              ) : null}
-              {available.map((item) => (
-                <span className={ACCESS_CHIP} key={item}>
-                  {item}
+                <span className="flex items-center gap-1.5 whitespace-nowrap">
+                  <span className="mr-1">Available as</span>
+                  {available.map((item) => (
+                    <Badge key={item} size="label" variant="access">
+                      {item}
+                    </Badge>
+                  ))}
                 </span>
-              ))}
+              ) : null}
             </div>
           ) : null}
         </div>

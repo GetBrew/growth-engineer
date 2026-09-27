@@ -165,9 +165,23 @@ function ToolsExplorerView({
     chips: state.chips,
   })
   const categoryGroups = groupByCategory(results)
+  // Counted like /companies' pills, so FilterPills shows the busiest few and
+  // puts the rest under More: an option with no count is always shown, which
+  // laid every category out as a wall of pills.
+  const toolsPerCategory = new Map(
+    groupByCategory(tools).map((group) => [
+      group.category.slug,
+      group.cards.length,
+    ])
+  )
   const categoryOptions = tags
-    .filter((tag) => tag.namespace === 'category' && tag.counts.companies > 0)
-    .map((tag) => ({ key: tag.key, label: tag.label }))
+    .filter((tag) => tag.namespace === 'category')
+    .map((tag) => ({
+      key: tag.key,
+      label: tag.label,
+      count: toolsPerCategory.get(tag.slug) ?? 0,
+    }))
+    .filter((option) => option.count > 0)
   const isExpanded = params.view === 'all'
   const selectedCategories = tags.filter(
     (tag) => tag.namespace === 'category' && state.chips.includes(tag.key)

@@ -8,8 +8,15 @@ import {
   SparklesIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useEffect, useRef, useState } from 'react'
 import { buttonVariants } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useCopy } from '@/lib/hooks/use-copy'
+import { cn } from '@/lib/utils/cn'
 
 export function OpenInAgentMenu({
   markdown,
@@ -20,31 +27,7 @@ export function OpenInAgentMenu({
   filePath: string
   title: string
 }) {
-  const [open, setOpen] = useState(false)
-  const container = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    const onPointerDown = (event: PointerEvent) => {
-      if (!container.current?.contains(event.target as Node)) {
-        setOpen(false)
-      }
-    }
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onEscape)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onEscape)
-    }
-  }, [open])
-
+  const { copy } = useCopy()
   const prompt = encodeURIComponent(
     `Set up and run this for me:\n\n${markdown}`
   )
@@ -52,85 +35,55 @@ export function OpenInAgentMenu({
     { label: 'Open in ChatGPT', href: `https://chatgpt.com/?q=${prompt}` },
     { label: 'Open in Claude', href: `https://claude.ai/new?q=${prompt}` },
   ]
-  const itemClass =
-    'type-control flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-soft hover:bg-hover hover:text-foreground'
-
-  function copyForAgent() {
-    navigator.clipboard.writeText(markdown).catch(() => undefined)
-    setOpen(false)
-  }
 
   return (
-    <div className="relative" ref={container}>
-      <button
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className={buttonVariants({ size: 'pill' })}
-        onClick={() => setOpen((value) => !value)}
-        type="button"
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={cn(
+          buttonVariants({ size: 'pill' }),
+          // On phones the primary action takes the rest of the row.
+          'group/explore max-sm:flex-1'
+        )}
       >
         <HugeiconsIcon
-          icon={SparklesIcon}
           aria-hidden="true"
           className="size-4"
+          icon={SparklesIcon}
         />
         Explore with AI
         <HugeiconsIcon
-          icon={ArrowDown01Icon}
           aria-hidden="true"
-          className={`size-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
+          className="size-3.5 transition-transform group-data-popup-open/explore:rotate-180"
+          icon={ArrowDown01Icon}
         />
-      </button>
-      {open ? (
-        <div
-          className="floating-panel absolute top-13 right-0 z-30 w-72 rounded-2xl p-2.5"
-          role="menu"
-        >
-          {agents.map((agent) => (
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-72" sideOffset={12}>
+        {agents.map((agent) => (
+          <DropdownMenuItem
+            key={agent.label}
+            render={<a href={agent.href} rel="noreferrer" target="_blank" />}
+          >
+            <HugeiconsIcon aria-hidden="true" icon={LinkSquare02Icon} />
+            {agent.label}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuItem onClick={() => copy(markdown)}>
+          <HugeiconsIcon aria-hidden="true" icon={Copy01Icon} />
+          Copy for any agent
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          render={
             <a
-              className={itemClass}
-              href={agent.href}
-              key={agent.label}
-              rel="noreferrer"
-              role="menuitem"
-              target="_blank"
-            >
-              <HugeiconsIcon
-                icon={LinkSquare02Icon}
-                aria-hidden="true"
-                className="size-4"
-              />
-              {agent.label}
-            </a>
-          ))}
-          <button
-            className={itemClass}
-            onClick={copyForAgent}
-            role="menuitem"
-            type="button"
-          >
-            <HugeiconsIcon
-              icon={Copy01Icon}
-              aria-hidden="true"
-              className="size-4"
+              download={`${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`}
+              href={filePath}
             />
-            Copy for any agent
-          </button>
-          <a
-            className={itemClass}
-            download={`${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`}
-            href={filePath}
-            role="menuitem"
-          >
-            <HugeiconsIcon
-              icon={Download01Icon}
-              aria-hidden="true"
-              className="size-4"
-            />
-            Download .md
-          </a>
-        </div>
-      ) : null}
-    </div>
+          }
+        >
+          <HugeiconsIcon aria-hidden="true" icon={Download01Icon} />
+          Download .md
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

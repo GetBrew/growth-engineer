@@ -12,6 +12,15 @@ export const DETAIL_ACTION_ICON_ONLY = cn(
   'text-soft hover:text-foreground'
 )
 
+/**
+ * A labelled action that is a bare icon on phones, the size of Share. Pair it
+ * with a label wrapped in `max-sm:sr-only`, so it keeps its name.
+ */
+export const HEADER_ACTION_COLLAPSING = cn(
+  DETAIL_ACTION,
+  'max-sm:w-10 max-sm:px-0'
+)
+
 export const LINK_ICON = {
   website: Globe02Icon,
   docs: Book02Icon,
@@ -20,9 +29,3 @@ export const LINK_ICON = {
 export const DETAIL_ACTION_ICON = 16
 
 export const PANEL_HEADING = 'type-category flex min-h-10 items-center'
-
-export const ACCESS_CHIP =
-  'type-label flex h-6 shrink-0 items-center rounded-full border bg-hover px-2.5 text-subtle'
-
-export const META_CHIP =
-  'type-meta flex h-6 shrink-0 items-center rounded-full border px-2.5'

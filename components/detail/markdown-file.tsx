@@ -6,16 +6,18 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { type ReactNode, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   DETAIL_ACTION,
   DETAIL_ACTION_ICON,
   PANEL_HEADING,
 } from '@/components/detail/styles'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useCopy } from '@/lib/hooks/use-copy'
 import { cn } from '@/lib/utils/cn'
 
 const VIEW = 'px-5 pt-4 pb-5 sm:px-6 sm:pb-6'
+const ACTION = cn(DETAIL_ACTION, 'max-sm:px-2.5')
 
 /**
  * The file, two ways — its page and its markdown — with Copy and Download.
@@ -31,18 +33,7 @@ export function MarkdownFile({
   fileName: string
   preview: ReactNode
 }) {
-  const [copied, setCopied] = useState(false)
-
-  async function copy() {
-    const didCopy = await navigator.clipboard
-      .writeText(markdown)
-      .then(() => true)
-      .catch(() => false)
-    if (didCopy) {
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
-    }
-  }
+  const { copied, copy } = useCopy()
 
   function download() {
     const url = URL.createObjectURL(
@@ -58,12 +49,14 @@ export function MarkdownFile({
 
   return (
     <Tabs className="gap-3" defaultValue="preview">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:flex-nowrap sm:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <h2 className={cn(PANEL_HEADING, 'min-w-0')}>
-            <span className="truncate">{fileName}</span>
-          </h2>
+      {/* Phones give the name its own row, then the tabs with icon-only
+          actions beside them; from sm up it is one row again. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <h2 className={cn(PANEL_HEADING, 'min-w-0')}>
+          <span className="truncate">{fileName}</span>
+        </h2>
 
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
           <TabsList className="h-9 shrink-0 p-0.5">
             <TabsTrigger className="h-8 px-3" value="preview">
               Preview
@@ -72,27 +65,33 @@ export function MarkdownFile({
               Markdown
             </TabsTrigger>
           </TabsList>
-        </div>
 
-        <div className="-mr-3 flex shrink-0 items-center">
-          <button className={DETAIL_ACTION} onClick={copy} type="button">
-            <HugeiconsIcon
-              aria-hidden="true"
-              icon={copied ? Tick02Icon : Copy01Icon}
-              size={DETAIL_ACTION_ICON}
-              strokeWidth={1.8}
-            />
-            {copied ? 'Copied' : 'Copy'}
-          </button>
-          <button className={DETAIL_ACTION} onClick={download} type="button">
-            <HugeiconsIcon
-              aria-hidden="true"
-              icon={CodeSquareIcon}
-              size={DETAIL_ACTION_ICON}
-              strokeWidth={1.8}
-            />
-            Download
-          </button>
+          <div className="-mr-3 flex shrink-0 items-center">
+            <button
+              className={ACTION}
+              onClick={() => copy(markdown)}
+              type="button"
+            >
+              <HugeiconsIcon
+                aria-hidden="true"
+                icon={copied ? Tick02Icon : Copy01Icon}
+                size={DETAIL_ACTION_ICON}
+                strokeWidth={1.8}
+              />
+              <span className="max-sm:sr-only">
+                {copied ? 'Copied' : 'Copy'}
+              </span>
+            </button>
+            <button className={ACTION} onClick={download} type="button">
+              <HugeiconsIcon
+                aria-hidden="true"
+                icon={CodeSquareIcon}
+                size={DETAIL_ACTION_ICON}
+                strokeWidth={1.8}
+              />
+              <span className="max-sm:sr-only">Download</span>
+            </button>
+          </div>
         </div>
       </div>
 

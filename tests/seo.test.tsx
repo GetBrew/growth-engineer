@@ -15,7 +15,7 @@ import {
   isValidOwnedKey,
   isValidTagKey,
 } from '@/lib/catalog/keys'
-import { GUIDES } from '@/lib/constants/guides'
+import { GUIDES, guidePath } from '@/lib/constants/guides'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
 import {
@@ -105,10 +105,10 @@ describe('sitemap.xml', () => {
     for (const key of catalog.workflows.keys()) {
       expect(urls).toContain(`${SITE_ORIGIN}/workflows/${key}`)
     }
-    // The home page, three listings, the map, /contribute and each guide.
-    expect(urls).toContain(`${SITE_ORIGIN}/contribute`)
+    // The home page, three listings, the map, /docs and each guide.
+    expect(urls).toContain(`${SITE_ORIGIN}/docs`)
     for (const guide of GUIDES) {
-      expect(urls).toContain(`${SITE_ORIGIN}/contribute/${guide.id}`)
+      expect(urls).toContain(`${SITE_ORIGIN}${guidePath(guide)}`)
     }
     expect(urls.length).toBe(
       6 +

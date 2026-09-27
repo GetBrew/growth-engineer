@@ -2,7 +2,6 @@
 
 import { Share08Icon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useState } from 'react'
 import {
   DETAIL_ACTION_ICON,
   DETAIL_ACTION_ICON_ONLY,
@@ -13,9 +12,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useCopy } from '@/lib/hooks/use-copy'
 
 export function ShareButton({ title, text }: { title: string; text?: string }) {
-  const [copied, setCopied] = useState(false)
+  const { copied, copy } = useCopy()
   const label = copied ? 'Link copied' : 'Share'
 
   async function share() {
@@ -24,14 +24,7 @@ export function ShareButton({ title, text }: { title: string; text?: string }) {
       await navigator.share({ title, text, url }).catch(() => undefined)
       return
     }
-    const didCopy = await navigator.clipboard
-      .writeText(url)
-      .then(() => true)
-      .catch(() => false)
-    if (didCopy) {
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
-    }
+    await copy(url)
   }
 
   return (

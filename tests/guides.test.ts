@@ -31,18 +31,37 @@ describe('contribute guides', () => {
         return
       }
       if ('file' in sample) {
-        const text = await loadSourceExcerpt(sample.file, sample.excerpt)
+        const text = await loadSourceExcerpt(
+          sample.file,
+          sample.excerpt,
+          sample.omit
+        )
         expect(text.trim().length).toBeGreaterThan(0)
         return
       }
+      // A listing is captioned by its folder; each line is a file in it.
+      const folder = sample.caption.endsWith('/') ? sample.caption : ''
       for (const line of sample.code.split('\n')) {
-        const path = line.trim()
+        const path = `${folder}${line.trim()}`
         if (/^(companies|workflows|tags)\/\S+\.md$/.test(path)) {
           expect(getSourceFile(path), path).toBeDefined()
         }
       }
     }
   )
+
+  test('a header can leave out fields, and a missing one fails loudly', () => {
+    const source = '---\ntitle: x\nfeatured: 1\ntags:\n  - a:b\n---\n'
+    expect(sourceExcerpt('x.md', source, 'header', ['featured'])).toBe(
+      '---\ntitle: x\ntags:\n  - a:b\n---'
+    )
+    expect(sourceExcerpt('x.md', source, 'header', ['tags'])).toBe(
+      '---\ntitle: x\nfeatured: 1\n---'
+    )
+    expect(() => sourceExcerpt('x.md', source, 'header', ['nope'])).toThrow(
+      /no "nope" field/
+    )
+  })
 
   test('a missing section fails loudly', () => {
     expect(() =>

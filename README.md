@@ -96,7 +96,7 @@ the one optional public variable, the site origin.
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
 | `/map`, `/map/[type]/[key]` | The relationship map: what is connected to what, one prerendered page per node |
-| `/contribute`, `/contribute/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository |
+| `/docs`, `/docs/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository (`/contribute/*` redirects here) |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
 | `/mcp` | The read-only MCP server (`search`, `get`) — the one dynamic route |
 | `/robots.txt`, `/sitemap.xml`, `…/opengraph-image` | Every crawler allowed (AI crawlers named); every page with its `updated` date; one social card per page, drawn at build |
@@ -106,7 +106,7 @@ the one optional public variable, the site origin.
 ```
 companies/ workflows/ tags/   THE DATA — see CONTRIBUTING.md
 app/
-  (site)/                     every page: /, companies, tools, workflows, map, contribute
+  (site)/                     every page: /, companies, tools, workflows, map, docs
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
   mcp/                        the read-only MCP server (lib/mcp/server.ts is the JSON-RPC)
   llms.txt, llms-full.txt     the file index with definitions; the whole corpus
