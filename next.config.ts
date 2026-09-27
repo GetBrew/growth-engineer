@@ -5,10 +5,10 @@ const nextConfig: NextConfig = {
   agentRules: false,
 
   /**
-   * Cache Components: every route gets a prerendered static shell and streams
-   * request-time data into it. The rule this imposes — every request-time read
-   * inside a `<Suspense>` child, never at the top of an async page — and the
-   * catalog's caching contract live in docs/architecture.md.
+   * Cache Components: every route is prerendered. Pages read their data
+   * directly, with no `<Suspense>` — nothing loads — and detail pages, which
+   * await their params, say `export const instant = false`. The caching
+   * contract lives in docs/architecture.md.
    */
   cacheComponents: true,
   partialPrefetching: true,
@@ -67,9 +67,10 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       // Workflows used to live at `/workflows/<owner>/<name>`; the key is one
-      // part now and the author lives in the file. Old links keep working.
+      // part now and the author lives in the file. Old links keep working —
+      // but never a workflow's own social card, `/workflows/<name>/opengraph-image-…`.
       {
-        source: '/workflows/:owner/:name',
+        source: '/workflows/:owner/:name((?!opengraph-image)[^/]+)',
         destination: '/workflows/:name',
         permanent: true,
       },
