@@ -19,9 +19,6 @@ function file(path: string, source: string): ContentFile {
     return { kind: 'workflow', path, name, source }
   }
   const handle = parts[1] ?? ''
-  if (parts[2] === 'access') {
-    return { kind: 'access', path, handle, id: name, source }
-  }
   if (parts[2] === 'tools') {
     return { kind: 'tool', path, handle, slug: name, source }
   }
@@ -67,18 +64,25 @@ const FIXTURE = {
   tags: { path: 'tags.yml', source: TAGS },
   company: {
     path: 'companies/acme/company.md',
-    source:
-      '---\nname: Acme\ndomain: acme.example\ncategory: crm\nlogo: acme.png\nupdated: 2026-09-16\n---\n',
-  },
-  access: {
-    path: 'companies/acme/access/api.md',
-    source:
-      '---\ntype: api\nofficial: true\nbaseUrl: https://api.acme.example\nauth:\n  method: api_key\n  envVar: ACME_API_KEY\n  selfServe: true\n---\n',
+    source: [
+      '---',
+      'name: Acme',
+      'domain: acme.example',
+      'category: crm',
+      'logo: acme.png',
+      'api:',
+      '  url: https://api.acme.example',
+      '  auth: api_key',
+      '  env: ACME_API_KEY',
+      'updated: 2026-09-16',
+      '---',
+      '',
+    ].join('\n'),
   },
   tool: {
     path: 'companies/acme/tools/manage-crm.md',
     source:
-      '---\nname: Manage a CRM\nsummary: Creates records. Acme does this.\naccess:\n  api: POST /records\nupdated: 2026-09-16\n---\n',
+      '---\nname: Manage a CRM\nsummary: Creates records.\ncapability: manage-crm\napi: POST /records\nupdated: 2026-09-16\n---\n',
   },
   workflow: { path: 'workflows/keep-crm-clean.md', source: WORKFLOW },
 } as const
@@ -129,6 +133,17 @@ describe('content rules', () => {
     expect(problemsOf(VALID)).toEqual([])
     const catalog = buildCatalog(VALID, { logos: new Set(['acme.png']) })
     expect(catalog.documents.size).toBe(3)
+  })
+
+  test('a tool file is named after its function, not its capability', () => {
+    const files = tree({}, [
+      file('companies/acme/tools/create-record.md', FIXTURE.tool.source),
+    ])
+    expect(problemsOf(files)).toEqual([])
+    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    expect(catalog.tools.get('acme/create-record')?.capability).toBe(
+      'manage-crm'
+    )
   })
 
   test('tags are computed onto every entity; nobody writes them twice', () => {
@@ -205,18 +220,18 @@ describe('content rules', () => {
       /companies\/tools\/company\.md: "tools" is not a usable handle/,
     ],
     [
-      'an unknown access id',
-      () => edit('tool', '  api: POST', '  mcp: POST'),
-      /access "mcp" is not a file under companies\/acme\/access\//,
+      'a call on a way the company does not declare',
+      () => edit('tool', 'api: POST /records', 'mcp: create_record'),
+      /companies\/acme\/tools\/manage-crm\.md: mcp: companies\/acme\/company\.md declares no mcp way in/,
     ],
     [
-      'a published tool with no way in',
-      () => edit('tool', 'access:\n  api: POST /records\n', ''),
-      /a published tool needs at least one way in/,
+      'a published tool with no call',
+      () => edit('tool', 'api: POST /records\n', ''),
+      /a published tool needs at least one call/,
     ],
     [
       'a workflow using a draft tool',
-      () => edit('tool', 'access:\n  api: POST /records\n', 'status: draft\n'),
+      () => edit('tool', 'api: POST /records\n', 'status: draft\n'),
       /step 1: "acme\/manage-crm" is not a published tool/,
     ],
     [
@@ -225,7 +240,106 @@ describe('content rules', () => {
         tree({}, [
           file('companies/acme/tools/Manage_CRM.md', FIXTURE.tool.source),
         ]),
-      /"Manage_CRM" is not a valid tool slug/,
+      /"Manage_CRM" is not a valid tool name/,
+    ],
+    [
+      'an API call that is not METHOD /path',
+      () => edit('tool', 'api: POST /records', 'api: records'),
+      /manage-crm\.md: api: must be `METHOD \/path`/,
+    ],
+    [
+      'an MCP call that is not a tool name',
+      () =>
+        tree(
+          {
+            company: FIXTURE.company.source.replace(
+              'api:\n',
+              'mcp:\n  url: https://mcp.acme.example\n  auth: oauth\napi:\n'
+            ),
+            tool: FIXTURE.tool.source.replace(
+              'api: POST /records',
+              'mcp: create a record'
+            ),
+          },
+          []
+        ),
+      /manage-crm\.md: mcp: must be an MCP tool name/,
+    ],
+    [
+      'a CLI call that does not start with the binary',
+      () =>
+        tree({
+          company: FIXTURE.company.source.replace(
+            'api:\n',
+            'cli:\n  install: npm i -g acme\n  binary: acme\n  auth: oauth\napi:\n'
+          ),
+          tool: FIXTURE.tool.source.replace(
+            'api: POST /records',
+            'cli: other records create'
+          ),
+        }),
+      /cli: "other records create" must start with the company's binary, `acme `/,
+    ],
+    [
+      'a tool still written the old way, with `access:`',
+      () =>
+        edit('tool', 'api: POST /records\n', 'access:\n  api: POST /records\n'),
+      /manage-crm\.md: `access`: calls are top-level now/,
+    ],
+    [
+      'a remote MCP server with an API key',
+      () =>
+        edit(
+          'company',
+          'api:\n',
+          'mcp:\n  url: https://mcp.acme.example\n  auth: api_key\n  env: ACME_API_KEY\napi:\n'
+        ),
+      /company\.md: mcp\.auth: a remote MCP server with an API key/,
+    ],
+    [
+      'an MCP server with both a url and a command',
+      () =>
+        edit(
+          'company',
+          'api:\n',
+          'mcp:\n  url: https://mcp.acme.example\n  command: npx -y acme-mcp\n  auth: oauth\napi:\n'
+        ),
+      /company\.md: mcp\.url: an MCP server has exactly one of `url` \(remote\) or `command` \(local\)/,
+    ],
+    [
+      'an MCP command with quotes',
+      () =>
+        edit(
+          'company',
+          'api:\n',
+          "mcp:\n  command: npx -y 'acme mcp'\n  auth: oauth\napi:\n"
+        ),
+      /company\.md: mcp\.command: must be a plain command/,
+    ],
+    [
+      'an API key with nowhere to live',
+      () => edit('company', '  env: ACME_API_KEY\n', ''),
+      /company\.md: api\.env: an API key needs the environment variable/,
+    ],
+    [
+      'an env var on a way that is not an API key',
+      () =>
+        edit(
+          'company',
+          'api:\n',
+          'cli:\n  install: npm i -g acme\n  binary: acme\n  auth: oauth\n  env: ACME_TOKEN\napi:\n'
+        ),
+      /company\.md: cli\.env: only `auth: api_key` takes `env` and `keyUrl`/,
+    ],
+    [
+      'a header on an MCP way',
+      () =>
+        edit(
+          'company',
+          'api:\n',
+          'mcp:\n  url: https://mcp.acme.example\n  auth: oauth\n  header: X-Api-Key\napi:\n'
+        ),
+      /company\.md: mcp: Unrecognized key: "header"/,
     ],
     [
       'a workflow tag missing from tags.yml',
@@ -394,12 +508,9 @@ describe('content rules', () => {
       /companies\/acme\/company\.md: the file must start with a `---` line/,
     ],
     [
-      'a tool whose slug is not a capability',
-      () =>
-        tree({}, [
-          file('companies/acme/tools/frobnicate.md', FIXTURE.tool.source),
-        ]),
-      /"frobnicate" is not a capability/,
+      'a capability missing from tags.yml',
+      () => edit('tool', 'capability: manage-crm', 'capability: frobnicate'),
+      /capability: "frobnicate" is not in tags\.yml/,
     ],
     [
       'a logo that is not under public/logos',

@@ -7,9 +7,8 @@ import type { ContentProblem } from './errors'
  * THE FILESYSTEM: everything after this point works on `ContentFile`s, so the
  * build is testable with in-memory fixtures and the pages never read a file.
  *
- *   companies/<handle>/company.md
- *   companies/<handle>/access/<id>.md
- *   companies/<handle>/tools/<slug>.md
+ *   companies/<handle>/company.md     (the company and its ways in)
+ *   companies/<handle>/tools/<name>.md
  *   workflows/<name>.md              (flat: the author is in the file)
  *   tags.yml                         (the whole vocabulary, one file)
  *
@@ -19,7 +18,6 @@ import type { ContentProblem } from './errors'
 
 export type ContentFile =
   | { kind: 'company'; path: string; handle: string; source: string }
-  | { kind: 'access'; path: string; handle: string; id: string; source: string }
   | { kind: 'tool'; path: string; handle: string; slug: string; source: string }
   | { kind: 'workflow'; path: string; name: string; source: string }
   | { kind: 'tags'; path: string; source: string }
@@ -132,34 +130,23 @@ function walkCompany(walk: Walk, handle: string): void {
         handle,
         source: walk.read(relative),
       })
-    } else if (
-      (entry === 'access' || entry === 'tools') &&
-      walk.isDirectory(relative)
-    ) {
+    } else if (entry === 'tools' && walk.isDirectory(relative)) {
       for (const file of walk.markdownFiles(relative)) {
-        walk.files.push(
-          entry === 'access'
-            ? {
-                kind: 'access',
-                path: file.relative,
-                handle,
-                id: file.name,
-                source: walk.read(file.relative),
-              }
-            : {
-                kind: 'tool',
-                path: file.relative,
-                handle,
-                slug: file.name,
-                source: walk.read(file.relative),
-              }
-        )
+        walk.files.push({
+          kind: 'tool',
+          path: file.relative,
+          handle,
+          slug: file.name,
+          source: walk.read(file.relative),
+        })
       }
-    } else {
+    } else if (entry === 'access') {
       walk.reject(
         relative,
-        'a company folder holds company.md, access/ and tools/ only'
+        'ways in live in company.md now, under `mcp:`, `cli:` and `api:` in its header'
       )
+    } else {
+      walk.reject(relative, 'a company folder holds company.md and tools/ only')
     }
   }
 }

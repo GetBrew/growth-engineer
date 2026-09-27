@@ -12,7 +12,7 @@ The public `key` is the path, and the path is the URL:
 | Entity | Key | Path | URL |
 | --- | --- | --- | --- |
 | Company | `clay` | `companies/clay/company.md` | `/companies/clay` |
-| Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` | `/tools/clay/enrich-contacts` |
+| Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` (named after the function) | `/tools/clay/enrich-contacts` |
 | Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` |
 | Tag | `capability:enrich-contacts` | an entry in `tags.yml` | a filter chip |
 
@@ -30,27 +30,29 @@ URL answers with a 308.
 `docs`, `github`, `aliases`, `status` (`published` default, `deprecated`).
 The website is always `https://<domain>`. The body is the description.
 
-## Ways in — `companies/<handle>/access/<id>.md`
+### Ways in — `mcp:`, `cli:`, `api:` in company.md
 
-One file per way in, shared by every tool of the company that lists it.
-`type` is `mcp`, `cli` or `api`; `official` is a boolean and a community
-option names its `maintainer`; `auth` is `{ method: none | api_key | oauth,
-selfServe, envVar?, header?, keyUrl? }`; `docsUrl` is optional.
+How an agent reaches the company, at most one of each, shared by all its
+tools. Every way has `auth` (`none`, `oauth`, `api_key`), optional `docs`,
+and `maintainer` when community-run (absent = official). An API key names
+its `env` var (required) and optionally a `keyUrl`.
 
-| Type | Fields |
+| Way | Fields |
 | --- | --- |
-| `mcp` | `transport: remote` with `url`, or `local` with `command` |
-| `cli` | `installCommand`, `binary` |
-| `api` | `baseUrl` |
+| `mcp` | exactly one of `url` (remote) or `command` (local; plain words, no quotes); a remote server with `api_key` is refused |
+| `cli` | `install`, `binary` |
+| `api` | `url` (the base), `header?` (`X-Api-Key`, `Authorization: Basic`) |
 
-## Tools — `companies/<handle>/tools/<slug>.md`
+## Tools — `companies/<handle>/tools/<name>.md`
 
-A tool is ONE function. The slug is a capability (a `capability:` entry in `tags.yml`
-must exist). `name`, `summary`, `updated` are required. `access` maps an
-access id to the **operation** — the MCP tool name, the CLI subcommand, or
-`METHOD /path` — and a published tool needs at least one. `status` is
-`published` (default), `deprecated`, or `draft` (no page, no file, not
-listed). `aliases` lists old slugs. The body is the description.
+A tool is ONE function, and its file is named after it. `name`, `summary`,
+`capability` (a `capability:` entry in `tags.yml`) and `updated` are
+required. The calls are top-level: `mcp:` (the tool name), `cli:` (starting
+with the company's binary) and `api:` (`METHOD /path`), each on a way the
+company declares; a published tool needs at least one. `docs` is the page
+that names the call. `status` is `published` (default), `deprecated`, or
+`draft` (no page, no file, not listed). `aliases` lists old keys. The body
+is the description.
 
 ## Workflows — `workflows/<name>.md` (flat)
 
@@ -109,8 +111,10 @@ offers that way.
 
 Every problem is reported at once, with its file path
 (`pnpm content:check`): unknown header fields; malformed dates, URLs and env
-var names; reserved or malformed handles and slugs; a tool slug that is not a
-capability; an access id with no file; a published tool with no way in; a
+var names; reserved or malformed handles and names; a capability or category
+missing from `tags.yml`; a call on a way the company does not declare, or in
+the wrong shape; an MCP way with both or neither of `url` and `command`; an
+API key with no `env`; a published tool with no call; a
 step naming an unknown or draft tool; an unknown or
 derived tag; an unknown category; a missing logo; an alias that shadows a
 live key or is claimed twice; two workflows with the same `featured` rank;

@@ -36,13 +36,13 @@ const TOOL_STEPS: ReadonlyArray<GuideStep> = [
     key: 'capability',
     title: 'Pick the capability it performs',
     detail:
-      'The file name is the capability, and it must already be listed under capability: in tags.yml, the one file that holds every tag. Look there first. If nothing fits what your function does, add an entry — a label and a few synonyms — in the same pull request.',
+      'capability: puts your function on a shelf next to every other vendor’s version of the same job, so it must be listed under capability: in tags.yml, the one file that holds every tag. Look there first. If nothing fits what your function does, add an entry — a label and a few synonyms — in the same pull request.',
   },
   {
     key: 'one-function',
     title: 'Create one file per function',
     detail:
-      'A tool is ONE thing an agent calls — one MCP tool, one CLI subcommand, or one API endpoint. Clay enriching contacts, building an audience and finding work emails is three files, not one product page. The path is the key, and the key is the URL.',
+      'A tool is ONE thing an agent calls — one MCP tool, one CLI command, or one API endpoint — and its file is named after that function. Clay enriching contacts, building an audience and finding work emails is three files, not one product page. The path is the key, and the key is the URL.',
     sample: {
       code: `companies/clay/tools/enrich-contacts.md
 companies/clay/tools/build-audience.md
@@ -57,11 +57,11 @@ companies/clay/tools/find-work-emails.md`,
     sample: { file: 'companies/clay/tools/enrich-contacts.md' },
   },
   {
-    key: 'access',
-    title: 'Map every way in to its exact operation',
+    key: 'calls',
+    title: 'Name the call on each way in',
     detail:
-      'access maps an id from the company’s access/ folder to the precise operation: the MCP tool name, the CLI subcommand, or METHOD /path for an API, exactly as the vendor’s docs name it. The id on the left has to be a file that exists. A published tool needs at least one way in; until it has one, set status: draft — a draft has no page and no file.',
-    sample: { file: 'companies/clay/access/api.md' },
+      'mcp:, cli: and api: name the exact call on each way in your company.md declares: the MCP tool name, the CLI command (starting with the binary), or METHOD /path for an API — exactly as the vendor’s docs print it, with docs: pointing at the page that names it. A published tool needs at least one call; until it has one, set status: draft — a draft has no page and no file.',
+    sample: { file: 'companies/stripe/company.md', excerpt: 'header' },
   },
   {
     key: 'updated',
@@ -155,7 +155,6 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     sample: {
       code: `companies/clay/
   company.md
-  access/api.md
   tools/enrich-contacts.md`,
     },
   },
@@ -167,17 +166,17 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     sample: { file: 'companies/clay/company.md' },
   },
   {
-    key: 'access',
-    title: 'Add one file per way in',
+    key: 'ways',
+    title: 'Say how an agent reaches you',
     detail:
-      'Each file under access/ is one door into your product: the MCP server, the CLI, the API. The file name is the id your tools refer to. Say how it authenticates and whether someone can sign up for it themselves; community-maintained options say who maintains them.',
-    sample: { file: 'companies/clay/access/api.md' },
+      'In the same header, mcp:, cli: and api: describe each door into your product, once, for every tool to share: the MCP server’s URL or command, the CLI’s install command and binary, the API’s base URL — each with how it authenticates. An API key names the environment variable it goes in, never the key. Community-run doors say who maintains them.',
+    sample: { file: 'companies/stripe/company.md', excerpt: 'header' },
   },
   {
     key: 'tools',
     title: 'Add one file per function',
     detail:
-      'Every function an agent can call gets its own file under tools/, named after a capability and naming the exact operation for each way in. That is the "Add a tool" guide, repeated once per function.',
+      'Every function an agent can call gets its own file under tools/, named after the function and naming its exact call on each way in. That is the "Add a tool" guide, repeated once per function.',
     sample: {
       code: `companies/clay/tools/enrich-contacts.md
 companies/clay/tools/build-audience.md

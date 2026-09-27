@@ -5,6 +5,10 @@ category: design
 tagline: Create, review and edit designs without a designer in the loop.
 docs: https://www.canva.dev/docs/connect
 logo: canva.jpg
+api:
+  url: https://api.canva.com/rest/v1
+  auth: oauth
+  docs: https://www.canva.dev/docs/connect
 updated: 2026-09-16
 ---
 

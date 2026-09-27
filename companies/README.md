@@ -7,9 +7,8 @@ characters; not a reserved word (`tools`, `workflows`, `map`, …).
 
 ```
 companies/<handle>/
-  company.md            who they are: name, domain, category, links, description
-  access/<id>.md        one WAY IN per file: the MCP server, the CLI, the API
-  tools/<slug>.md       one FUNCTION per file: what an agent calls, and the exact operation per way in
+  company.md            who they are, and how an agent reaches them: the MCP server, the CLI, the API
+  tools/<name>.md       one FUNCTION per file: the call on each way in, and where it is documented
 ```
 
 Every file is a YAML header between `---` lines, then an optional markdown
@@ -20,7 +19,7 @@ the file's path instead of vanishing.
 
 The templates below describe a made-up company, Acme; copy one and replace
 every value with your own. For real, published examples, open any folder
-beside this README (`companies/clay/`, `companies/brew/`).
+beside this README (`companies/stripe/`, `companies/brew/`).
 
 ```markdown
 ---
@@ -31,6 +30,21 @@ tagline: Enrich people and companies from one API.
 docs: https://docs.acme.example  # optional
 github: https://github.com/acme  # optional
 logo: acme.png                   # a file you add under public/logos/
+mcp:                             # optional: the MCP server
+  url: https://mcp.acme.example/mcp   # or `command: npx -y acme-mcp` for a local one
+  auth: oauth                    # none | oauth | api_key
+  docs: https://docs.acme.example/mcp
+cli:                             # optional: the command-line tool
+  install: npm install -g acme-cli
+  binary: acme
+  auth: oauth
+api:                             # optional: the HTTP API
+  url: https://api.acme.example
+  auth: api_key
+  env: ACME_API_KEY              # where the key goes; required with api_key
+  header: X-Api-Key              # optional; defaults to Authorization: Bearer
+  keyUrl: https://app.acme.example/settings/api   # optional
+  docs: https://docs.acme.example/api
 status: published                # or deprecated (still visible, with a warning)
 updated: 2026-09-16
 ---
@@ -42,69 +56,62 @@ description on the company page and in the company's file.
 | Field | Required | Notes |
 | --- | --- | --- |
 | `name` | yes | Display name. |
-| `domain` | yes | Bare domain, no scheme. |
+| `domain` | yes | Bare domain, no scheme. The website is always `https://<domain>`. |
 | `category` | yes | Must be a `category:` entry in `tags.yml`. |
 | `logo` | yes | File name under `public/logos/`; svg, png, jpg or webp, at most 32 KB — an SVG, or 128px square. It is served as is. |
 | `updated` | yes | `YYYY-MM-DD` — the day these facts were last checked. |
-| `tagline`, `docs`, `github` | no | Shown when present. The website is always `https://<domain>`. |
+| `tagline`, `docs`, `github` | no | Shown when present. |
+| `mcp`, `cli`, `api` | no | The ways in, at most one of each — see below. |
 | `aliases` | no | Old handles that should redirect here after a rename. |
 | `status` | no | `published` (default) or `deprecated`. |
 
-## access/\<id\>.md
+### Ways in: `mcp`, `cli`, `api`
 
-A **way in** the company offers, shared by every tool of theirs that lists
-it. The file name is the id a tool refers to; use `mcp`, `cli`, `api`, and a
-suffix for a second option of the same type (`mcp-community`).
+How an agent reaches the company, written once and shared by every tool
+below. Each way says how it authenticates:
 
-```markdown
----
-type: mcp                        # mcp | cli | api
-official: true                   # false = community-maintained; then set maintainer
-transport: remote                # mcp only: remote | local
-url: https://mcp.acme.example/mcp   # remote mcp
-auth:
-  method: oauth                  # none | api_key | oauth
-  selfServe: true                # false = needs a sales call or approval
-docsUrl: https://docs.acme.example/mcp
----
-```
-
-| `type` | Type-specific fields |
+| Way | Fields |
 | --- | --- |
-| `mcp` | `transport` (`remote` needs `url`; `local` needs `command`, e.g. `npx -y vendor-mcp`) |
-| `cli` | `installCommand` (`brew install gh`), `binary` (`gh`) |
-| `api` | `baseUrl` |
+| `mcp` | exactly one of `url` (a remote server) or `command` (a local one, like `npx -y vendor-mcp`: plain words, no quotes) |
+| `cli` | `install` (`brew install gh`) and `binary` (`gh`) |
+| `api` | `url` (the base every call's path follows); `header` when the key is not sent as `Authorization: Bearer` |
 
-`auth` is the same shape for every type: `method`, `selfServe`, and for
-`api_key` the `envVar` the agent should set (`ACME_API_KEY`), the `header`
-when it is not `Authorization: Bearer`, and `keyUrl` where a person gets one.
-The markdown body is optional and shown on the web only.
+- `auth` is `none`, `oauth` or `api_key`. An API key names the environment
+  variable it goes in (`env: ACME_API_KEY`) and, optionally, where a person
+  gets one (`keyUrl`) — a file never holds a key.
+- A remote MCP server that takes an API key can't be set up from a file yet;
+  list its API instead.
+- `docs` links the way's own documentation. `maintainer: <who>` marks a
+  community-run way; without it, the way is the vendor's own.
 
-## tools/\<slug\>.md
+## tools/\<name\>.md
 
-**A tool is ONE function** — one thing an agent calls. The slug is the
-capability it performs and must be a `capability:` entry in `tags.yml`
-(`enrich-contacts`, `send-email`, …); add the capability in the same pull
-request if none fits. A product with three functions is three files.
+**A tool is ONE function** — one thing an agent calls. Name the file after
+the function (`find-work-emails.md`, `create-payment-link.md`); the key is
+`<handle>/<name>`. A product with three functions is three files.
 
 ```markdown
 ---
-name: Enrich contacts
-summary: Adds firmographic and person data to a contact or account.
-access:
-  mcp: acme_enrich_contacts      # <access id>: the exact operation for that way in
-  api: POST /v1/enrich
+name: Enrich a person
+summary: Returns work email, title and company for one person.
+capability: enrich-contacts      # a capability from tags.yml
+docs: https://docs.acme.example/api/people/enrich   # the page that names the call
+mcp: enrich_person               # the MCP tool name, as the server lists it
+api: POST /v1/people/enrich      # METHOD /path, as the API reference prints it
 updated: 2026-09-16
 ---
 
 Optional longer description, shown on the tool page and in the file.
 ```
 
-- `access` maps an id from `access/` to the **operation**: the MCP tool name,
-  the CLI subcommand, or `METHOD /path` for an API — exactly as the vendor's
-  docs name it. A published tool needs at least one; until it has one, set
-  `status: draft` (a draft has no page and no file).
-- `aliases` lists old slugs to redirect; `status` is `published`,
+- Each call — `mcp:`, `cli:`, `api:` — must be a way `company.md` declares,
+  written exactly as the vendor's docs print it. A CLI call starts with the
+  binary (`acme people enrich`).
+- `capability` puts the tool on a shelf with every other vendor's version of
+  the same job; add one to `tags.yml` in the same pull request if none fits.
+- A published tool needs at least one call. Until it has one, set
+  `status: draft` — a draft has no page and no file.
+- `aliases` lists old keys to redirect; `status` is `published`,
   `deprecated` or `draft`.
 
 ## Checking your work

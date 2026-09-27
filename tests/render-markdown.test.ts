@@ -36,7 +36,7 @@ const clayMcp: Access = {
   transport: 'remote',
   url: 'https://mcp.clay.example/mcp',
   operation: 'clay_enrich_contacts',
-  auth: { method: 'oauth', selfServe: true },
+  auth: { method: 'oauth' },
 }
 
 const clayApi: Access = {
@@ -49,7 +49,6 @@ const clayApi: Access = {
     method: 'api_key',
     envVar: 'CLAY_API_KEY',
     keyUrl: 'https://app.clay.example/settings/api',
-    selfServe: true,
   },
 }
 
@@ -60,6 +59,12 @@ const clay: ToolFileInput = {
   name: 'Enrich contacts',
   companyKey: 'clay',
   workflows: [],
+  tags: [
+    'has:mcp',
+    'capability:enrich-contacts',
+    'has:api',
+    'category:data-provider',
+  ],
   summary:
     'Adds firmographic and person data to a contact or account. Clay does this.',
   // API first on purpose: the renderer must reorder to MCP-first.
@@ -77,7 +82,6 @@ const apolloApi: Access = {
     envVar: 'APOLLO_API_KEY',
     header: 'X-Api-Key',
     keyUrl: 'https://app.apollo.example/settings/api',
-    selfServe: true,
   },
 }
 
@@ -87,7 +91,7 @@ const brewMcp: Access = {
   transport: 'remote',
   url: 'https://mcp.brew.example/mcp',
   operation: 'brew_send_email',
-  auth: { method: 'none', selfServe: true },
+  auth: { method: 'none' },
 }
 
 const intentToMeeting: WorkflowFileInput = {
@@ -213,7 +217,7 @@ describe('setup picks the best way in', () => {
     installCommand: 'npm install -g clay-cli',
     binary: 'clay',
     operation: 'clay enrich-contacts',
-    auth: { method: 'api_key', envVar: 'CLAY_API_KEY', selfServe: true },
+    auth: { method: 'api_key', envVar: 'CLAY_API_KEY' },
   }
 
   test('official first, then community; MCP, CLI, API within each', () => {
@@ -288,6 +292,7 @@ describe('company file', () => {
     const rendered = renderCompanyDocument({
       key: 'clay',
       name: 'Clay',
+      tags: ['category:data-provider'],
       tagline: 'Enrich accounts before you send.',
       links: { website: 'https://clay.example' },
       tools: [
@@ -301,6 +306,7 @@ describe('company file', () => {
     })
     expect(rendered.markdown).toContain('ref: company:clay')
     expect(rendered.markdown).toContain('tools: [tool:clay/clay]')
+    expect(rendered.markdown).toContain('tags: [category:data-provider]')
     expect(rendered.markdown).toContain(
       '- tool:clay/clay — Clay: Enriches people and companies.'
     )

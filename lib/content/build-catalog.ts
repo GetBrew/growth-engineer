@@ -1,9 +1,3 @@
-import { isValidHandle } from '@/lib/catalog/keys'
-import {
-  accessSchema,
-  type CompanyFrontmatter,
-  companySchema,
-} from '@/lib/schemas/content'
 import type {
   CatalogDocument,
   Company,
@@ -13,26 +7,24 @@ import type {
   Workflow,
 } from '@/lib/types/catalog'
 import { buildAliases } from './build-aliases'
+import { buildCompanies } from './build-companies'
 import { buildDocuments } from './build-documents'
-import {
-  type AccessOptions,
-  buildTools,
-  buildWorkflows,
-} from './build-entities'
 import { buildRelations } from './build-relations'
 import { buildTags } from './build-tags'
-import { companyTags, dateToMs, searchTextOf } from './derive'
+import { buildTools } from './build-tools'
+import { buildWorkflows } from './build-workflows'
+import { companyTags, searchTextOf } from './derive'
 import { type ContentProblem, ProblemList } from './errors'
-import { parseFile } from './parse-file'
 import type { ContentFile } from './read-tree'
 
 /**
  * Source files → the catalog. PURE: takes the files, returns the graph, and
  * throws ONE `ContentErrors` listing every problem it found — a contributor
- * fixes a pull request in one pass. Keys come from paths; references are
- * resolved here and in ./build-entities.ts; projections are computed in
- * ./derive.ts; the edges in ./build-relations.ts; the files an agent fetches
- * are rendered last, in ./build-documents.ts.
+ * fixes a pull request in one pass. Keys come from paths; each kind is
+ * parsed and resolved in its own builder (./build-tags.ts,
+ * ./build-companies.ts, ./build-tools.ts, ./build-workflows.ts); projections
+ * are computed in ./derive.ts; the edges in ./build-relations.ts; the files
+ * an agent fetches are rendered last, in ./build-documents.ts.
  */
 
 export type Catalog = {
@@ -64,8 +56,6 @@ export type BuildOptions = {
   problems?: ReadonlyArray<ContentProblem>
 }
 
-const ACCESS_ID = /^[a-z0-9][a-z0-9-]*$/
-
 function byKey<T extends { key: string }>(a: T, b: T): number {
   return a.key.localeCompare(b.key)
 }
@@ -75,106 +65,6 @@ function newestFirst<T extends { key: string; updatedAt: number }>(
   b: T
 ): number {
   return b.updatedAt - a.updatedAt || a.key.localeCompare(b.key)
-}
-
-type CompanyFile = ContentFile & { kind: 'company' }
-
-/** The company as its file states it; its tags and search text wait for its tools (assemble). */
-function toCompany(
-  file: CompanyFile,
-  parsed: { data: CompanyFrontmatter; body: string }
-): Company {
-  const { data, body } = parsed
-  return {
-    key: file.handle,
-    name: data.name,
-    domain: data.domain,
-    category: data.category,
-    ...(data.tagline ? { tagline: data.tagline } : {}),
-    ...(body ? { description: body } : {}),
-    logo: { url: `/logos/${data.logo}` },
-    links: {
-      website: `https://${data.domain}`,
-      ...(data.docs ? { docs: data.docs } : {}),
-      ...(data.github ? { github: data.github } : {}),
-    },
-    status: data.status,
-    updatedAt: dateToMs(data.updated),
-    aliases: data.aliases,
-    tags: [],
-    searchText: '',
-  }
-}
-
-function buildCompanies(
-  files: ReadonlyArray<ContentFile>,
-  tags: ReadonlyMap<string, Tag>,
-  logos: ReadonlySet<string> | undefined,
-  problems: ProblemList
-): Map<string, Company> {
-  const companies = new Map<string, Company>()
-  for (const file of files) {
-    if (file.kind !== 'company') {
-      continue
-    }
-    if (!isValidHandle(file.handle)) {
-      problems.add(
-        file.path,
-        `"${file.handle}" is not a usable handle: lowercase letters, digits and hyphens, and not a reserved word`
-      )
-      continue
-    }
-    const parsed = parseFile(file, companySchema, problems)
-    if (!parsed) {
-      continue
-    }
-    if (!tags.has(`category:${parsed.data.category}`)) {
-      problems.add(
-        file.path,
-        `category "${parsed.data.category}" is not in tags.yml`
-      )
-    }
-    if (logos && !logos.has(parsed.data.logo)) {
-      problems.add(
-        file.path,
-        `logo "${parsed.data.logo}" is not under public/logos/`
-      )
-    }
-    companies.set(file.handle, toCompany(file, parsed))
-  }
-  return companies
-}
-
-function buildAccessOptions(
-  files: ReadonlyArray<ContentFile>,
-  companyFolders: ReadonlySet<string>,
-  problems: ProblemList
-): AccessOptions {
-  const options: AccessOptions = new Map()
-  for (const file of files) {
-    if (file.kind !== 'access') {
-      continue
-    }
-    if (!companyFolders.has(file.handle)) {
-      problems.add(file.path, `companies/${file.handle}/ has no company.md`)
-      continue
-    }
-    if (!ACCESS_ID.test(file.id)) {
-      problems.add(
-        file.path,
-        `"${file.id}" is not a valid access id: lowercase letters, digits and hyphens (mcp, cli, api, mcp-community…)`
-      )
-      continue
-    }
-    const parsed = parseFile(file, accessSchema, problems)
-    if (!parsed) {
-      continue
-    }
-    const forCompany = options.get(file.handle) ?? new Map()
-    forCompany.set(file.id, parsed.data)
-    options.set(file.handle, forCompany)
-  }
-  return options
 }
 
 /** Featured rank first (1 before 2), then the unranked, newest first. */
@@ -266,16 +156,13 @@ export function buildCatalog(
     problems.add(problem.file, problem.message)
   }
   const tags = buildTags(files, problems)
-  const companies = buildCompanies(files, tags, options.logos, problems)
-  const companyFolders = new Set(
-    files.flatMap((file) => (file.kind === 'company' ? [file.handle] : []))
-  )
-  const accessOptions = buildAccessOptions(files, companyFolders, problems)
-  const tools = buildTools(
+  const { companies, ways } = buildCompanies(
     files,
-    { companies, companyFolders, accessOptions, tags },
+    tags,
+    options.logos,
     problems
   )
+  const tools = buildTools(files, { companies, ways, tags }, problems)
   const workflows = buildWorkflows(files, { tools, tags }, problems)
   const aliases = buildAliases({ companies, tools, workflows }, problems)
   problems.throwIfAny()

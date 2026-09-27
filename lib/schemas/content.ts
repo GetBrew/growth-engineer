@@ -42,6 +42,112 @@ const tagKey = text.refine(isValidTagKey, {
 })
 const status = z.enum(['published', 'deprecated'])
 
+/* ──────────────────────────────── ways in ───────────────────────────────── */
+/* How an agent reaches a company, written once in its company.md: at most
+ * one MCP server, one CLI and one API. Each of the company's tools then
+ * names its call on each of them. */
+
+const envVar = z
+  .string()
+  .regex(
+    /^[A-Z][A-Z0-9_]*$/,
+    'must look like an environment variable, `CLAY_API_KEY`'
+  )
+
+/** A command an agent can split on spaces: no quotes, no shell syntax. */
+const ARGV = /^[^\s'"`\\$|&;<>(){}]+(?: [^\s'"`\\$|&;<>(){}]+)*$/
+
+const wayCommon = {
+  auth: z.enum(['none', 'api_key', 'oauth']),
+  /** Where the key goes: required with `api_key`, refused otherwise. */
+  env: envVar.optional(),
+  /** Where a person gets a key; `api_key` only. */
+  keyUrl: url.optional(),
+  docs: url.optional(),
+  /** Absent = official; a community-run way names who runs it. */
+  maintainer: text.optional(),
+}
+
+type WayAuth = {
+  auth: 'none' | 'api_key' | 'oauth'
+  env?: string | undefined
+  keyUrl?: string | undefined
+}
+
+function authRules(value: WayAuth, context: z.RefinementCtx): void {
+  if (value.auth === 'api_key' && !value.env) {
+    context.addIssue({
+      code: 'custom',
+      path: ['env'],
+      message: 'an API key needs the environment variable it goes in',
+    })
+  }
+  if (value.auth !== 'api_key' && (value.env || value.keyUrl)) {
+    context.addIssue({
+      code: 'custom',
+      path: [value.env ? 'env' : 'keyUrl'],
+      message: 'only `auth: api_key` takes `env` and `keyUrl`',
+    })
+  }
+}
+
+const mcpWay = z
+  .strictObject({
+    ...wayCommon,
+    /** A remote server. */
+    url: url.optional(),
+    /** A local server, started with this command. */
+    command: z
+      .string()
+      .regex(ARGV, 'must be a plain command, like `npx -y vendor-mcp`')
+      .optional(),
+  })
+  .superRefine((value, context) => {
+    if (Boolean(value.url) === Boolean(value.command)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['url'],
+        message:
+          'an MCP server has exactly one of `url` (remote) or `command` (local)',
+      })
+    }
+    if (value.url && value.auth === 'api_key') {
+      context.addIssue({
+        code: 'custom',
+        path: ['auth'],
+        message:
+          'a remote MCP server with an API key cannot be set up from a file yet; use `oauth` or `none`, or list its API instead',
+      })
+    }
+    authRules(value, context)
+  })
+
+const cliWay = z
+  .strictObject({
+    ...wayCommon,
+    install: text,
+    binary: z
+      .string()
+      .regex(/^[a-z0-9][a-z0-9._-]*$/, 'must be the command name, like `gh`'),
+  })
+  .superRefine(authRules)
+
+const apiWay = z
+  .strictObject({
+    ...wayCommon,
+    /** The base URL every call's path follows. */
+    url,
+    /** `X-Api-Key`, or a name plus scheme: `Authorization: Basic`. */
+    header: z
+      .string()
+      .regex(
+        /^[A-Za-z][A-Za-z0-9-]*(?:: [A-Za-z]+)?$/,
+        'must be a header name, optionally with a scheme: `X-Api-Key`, `Authorization: Bearer`'
+      )
+      .optional(),
+  })
+  .superRefine(authRules)
+
 /* ────────────────────────────────── company ─────────────────────────────── */
 
 export const companySchema = z.strictObject({
@@ -62,89 +168,43 @@ export const companySchema = z.strictObject({
       /^[a-z0-9-]+\.(png|jpg|jpeg|svg|webp)$/,
       'must name a file under public/logos, like `clay.png`'
     ),
+  mcp: mcpWay.optional(),
+  cli: cliWay.optional(),
+  api: apiWay.optional(),
   aliases: z.array(handle).default([]),
   status: status.default('published'),
   updated: isoDate,
 })
-
-/* ─────────────────────────────────── access ─────────────────────────────── */
-
-const auth = z.strictObject({
-  method: z.enum(['none', 'api_key', 'oauth']),
-  envVar: z
-    .string()
-    .regex(
-      /^[A-Z][A-Z0-9_]*$/,
-      'must look like an environment variable, `CLAY_API_KEY`'
-    )
-    .optional(),
-  header: text.optional(),
-  keyUrl: url.optional(),
-  selfServe: z.boolean(),
-})
-
-const accessCommon = {
-  official: z.boolean(),
-  maintainer: text.optional(),
-  auth,
-  docsUrl: url.optional(),
-}
-
-export const accessSchema = z
-  .discriminatedUnion('type', [
-    z.strictObject({
-      type: z.literal('mcp'),
-      ...accessCommon,
-      transport: z.enum(['remote', 'local']),
-      url: url.optional(),
-      command: text.optional(),
-    }),
-    z.strictObject({
-      type: z.literal('cli'),
-      ...accessCommon,
-      installCommand: text,
-      binary: text,
-    }),
-    z.strictObject({
-      type: z.literal('api'),
-      ...accessCommon,
-      baseUrl: url,
-    }),
-  ])
-  .superRefine((value, context) => {
-    if (!(value.official || value.maintainer)) {
-      context.addIssue({
-        code: 'custom',
-        path: ['maintainer'],
-        message: 'a community option must name its maintainer',
-      })
-    }
-    if (value.type === 'mcp' && value.transport === 'remote' && !value.url) {
-      context.addIssue({
-        code: 'custom',
-        path: ['url'],
-        message: 'a remote MCP server needs its `url`',
-      })
-    }
-    if (value.type === 'mcp' && value.transport === 'local' && !value.command) {
-      context.addIssue({
-        code: 'custom',
-        path: ['command'],
-        message:
-          'a local MCP server needs its `command`, like `npx -y vendor-mcp`',
-      })
-    }
-  })
 
 /* ──────────────────────────────────── tool ──────────────────────────────── */
 
 export const toolSchema = z.strictObject({
   name: text,
   summary: text,
-  /** `{ <access id>: <operation> }` — the exact call, per way in. */
-  access: z.record(z.string(), text).default({}),
+  /** A `capability:` slug from tags.yml. */
+  capability: keyPart,
+  /** The page that documents the call. */
+  docs: url.optional(),
+  /** The MCP tool name, as the server lists it. */
+  mcp: z
+    .string()
+    .regex(
+      /^[A-Za-z0-9_.\-/]{1,128}$/,
+      'must be an MCP tool name, like `create_payment_link`'
+    )
+    .optional(),
+  /** The command, starting with the company's CLI binary. */
+  cli: text.optional(),
+  /** `METHOD /path`, as the API reference prints it. */
+  api: z
+    .string()
+    .regex(
+      /^(GET|POST|PUT|PATCH|DELETE) \/\S*$/,
+      'must be `METHOD /path`, like `POST /v1/payment_links`'
+    )
+    .optional(),
   aliases: z.array(ownedKey).default([]),
-  /** A draft is allowed to have no way in; it has no page and no file. */
+  /** A draft is allowed to have no call; it has no page and no file. */
   status: z.enum(['published', 'deprecated', 'draft']).default('published'),
   updated: isoDate,
 })
@@ -229,7 +289,10 @@ export const tagsFileSchema = z.strictObject({
 })
 
 export type CompanyFrontmatter = z.infer<typeof companySchema>
-export type AccessFrontmatter = z.infer<typeof accessSchema>
+export type CompanyWays = Pick<
+  z.infer<typeof companySchema>,
+  'mcp' | 'cli' | 'api'
+>
 export type ToolFrontmatter = z.infer<typeof toolSchema>
 /** Everything a workflow file says: its header plus its body's fields. */
 export type WorkflowFrontmatter = z.infer<typeof workflowHeaderSchema> &

@@ -46,7 +46,7 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
       'ONE function an agent can call, tied to a specific MCP tool, CLI subcommand or API endpoint.',
     detail:
       'Not the product: a product with three functions is three tools. Every way in names the exact operation an agent calls.',
-    path: 'companies/<handle>/tools/<slug>.md',
+    path: 'companies/<handle>/tools/<name>.md',
   },
   {
     term: 'Workflow',

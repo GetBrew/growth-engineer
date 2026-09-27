@@ -13,24 +13,22 @@ import type { EntityType, TagNamespace } from '@/lib/catalog/keys'
 
 export type AccessType = 'mcp' | 'cli' | 'api'
 
-export type Auth = {
-  method: 'none' | 'api_key' | 'oauth'
-  /** "CLAY_API_KEY": named in the markdown file, never its value. */
-  envVar?: string
-  /** "Authorization: Bearer", "X-Api-Key"; absent = "Authorization: Bearer". */
-  header?: string
-  /** Where the user gets a key. */
-  keyUrl?: string
-  /** false = needs a sales call or approval. */
-  selfServe: boolean
-}
+/**
+ * How a way in authenticates. An API key always names the environment
+ * variable it lives in, so a file can say where to put it without ever
+ * holding it; `header` is for an API only.
+ */
+export type Auth =
+  | { method: 'none' }
+  | { method: 'oauth' }
+  | { method: 'api_key'; envVar: string; header?: string; keyUrl?: string }
 
 type AccessCommon = {
-  /** false = community-maintained. */
+  /** Derived: a way with no `maintainer` is the vendor's own. */
   official: boolean
-  /** Handle or name when not official. */
+  /** Who runs a community way. */
   maintainer?: string
-  /** THE OPERATION: MCP tool name, CLI subcommand or API endpoint. */
+  /** THE OPERATION: MCP tool name, CLI command or API endpoint. */
   operation: string
   auth: Auth
   docsUrl?: string
@@ -85,8 +83,10 @@ export type Tool = {
   name: string
   summary: string
   description?: string
-  /** The capability slug — the second half of the key. */
+  /** A `capability:` slug from tags.yml; the key names the function. */
   capability: string
+  /** The page that documents the call. */
+  docs?: string
   access: ReadonlyArray<Access>
   /** Computed: its capability, its company's category, one `has:<type>` per way in. */
   tags: ReadonlyArray<string>

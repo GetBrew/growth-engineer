@@ -75,8 +75,7 @@ function authHeaderLine(access: Access): string | null {
       // "X-Api-Key". A bare name gets its colon; a scheme already has one.
       const header = auth.header ?? 'Authorization: Bearer'
       const separator = header.includes(':') ? '' : ':'
-      const variable = auth.envVar ?? 'API_KEY'
-      return `- Auth: send the header \`${header}${separator} $${variable}\``
+      return `- Auth: send the header \`${header}${separator} $${auth.envVar}\``
     }
     case 'oauth':
       return '- Auth: OAuth; sign in when the agent asks'
@@ -88,7 +87,9 @@ function authHeaderLine(access: Access): string | null {
 }
 
 function keyLine(access: Access): string | null {
-  return access.auth.keyUrl ? `- Get a key: ${access.auth.keyUrl}` : null
+  return access.auth.method === 'api_key' && access.auth.keyUrl
+    ? `- Get a key: ${access.auth.keyUrl}`
+    : null
 }
 
 function mcpSetupSentence(access: Extract<Access, { type: 'mcp' }>): string {
@@ -99,7 +100,7 @@ function mcpSetupSentence(access: Extract<Access, { type: 'mcp' }>): string {
 }
 
 function envVarLine(access: Access): string | null {
-  if (access.auth.method !== 'api_key' || !access.auth.envVar) {
+  if (access.auth.method !== 'api_key') {
     return null
   }
   const suffix = access.auth.keyUrl ? ` (get a key: ${access.auth.keyUrl})` : ''

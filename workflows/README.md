@@ -11,7 +11,7 @@ Keys never change once published; to rename, add the old name under
 
 A workflow is **several tools in order with the instructions that reach a
 result**. A growth hack is a workflow — there is no second kind. Every step
-names one published tool (`companies/<handle>/tools/<slug>.md`), so every
+names one published tool (`companies/<handle>/tools/<name>.md`), so every
 workflow is built from defined tools, and every tool page lists the
 workflows that use it — the build links both directions.
 
@@ -71,7 +71,7 @@ heading is caught instead of silently dropped.
 | Section | Required | Each entry |
 | --- | --- | --- |
 | `## Inputs` | no | ``- `name`: what it is, e.g. an example`` — the name in snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
-| `## Steps` | yes, 1–10 | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<slug>.md`, named by its key (`<handle>/<slug>`). GitHub follows it; the file shows each tool's best one or two ways in. |
+| `## Steps` | yes, 1–10 | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. |
 | `## Done when` | yes | `- A check that means the job is finished.` |
 | `## Notes` | no | Free markdown, to the end of the file. |
 

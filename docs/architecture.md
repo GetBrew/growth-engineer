@@ -17,17 +17,19 @@ agent / browser ─▶ proxy.ts ──────────▶ app/(site)/…
 
 ## Layers
 
-**The source tree** — `companies/<handle>/{company.md, access/*.md,
-tools/*.md}`, `workflows/<name>.md` (flat; the author is a GitHub login in the header), `tags.yml`.
+**The source tree** — `companies/<handle>/{company.md, tools/*.md}`,
+`workflows/<name>.md` (flat; the author is a GitHub login in the header), `tags.yml`.
 Keys are paths; headers are strict YAML; bodies are prose. The community
 edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
 **The compiler** (`lib/content/`) — `read-tree.ts` walks the three
 directories and is the only module that touches the filesystem.
-`build-catalog.ts` and `build-entities.ts` parse each file against its
-schema (`schemas.ts`, zod, unknown fields rejected), resolve every reference
-(a tool's access ids, a workflow's tools and tags, aliases) and collect every
-problem into one `ContentErrors` with file paths. `derive.ts` computes the
+`build-catalog.ts` runs one builder per kind (`build-tags`,
+`build-companies`, `build-tools`, `build-workflows`): each parses its files
+against a strict schema (`lib/schemas/content.ts`, zod, unknown fields
+rejected), resolves every reference (a tool's calls on its company's ways
+in, a workflow's tools and tags, aliases) and collects every problem into
+one `ContentErrors` with file paths. `build-relations.ts` writes the edges. `derive.ts` computes the
 projections that used to be database columns; `build-documents.ts` renders
 the files. The result is a `Catalog`: maps by key, the rendered documents by
 ref, the alias map, the edges, the listing orders.

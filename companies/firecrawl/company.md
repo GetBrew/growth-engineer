@@ -6,6 +6,15 @@ tagline: Turn any URL into clean, LLM-ready markdown or structured data.
 docs: https://docs.firecrawl.dev
 github: https://github.com/mendableai/firecrawl
 logo: firecrawl.svg
+mcp:
+  command: npx -y firecrawl-mcp
+  auth: api_key
+  env: FIRECRAWL_API_KEY
+api:
+  url: https://api.firecrawl.dev/v1
+  auth: api_key
+  env: FIRECRAWL_API_KEY
+  docs: https://docs.firecrawl.dev
 updated: 2026-09-16
 ---
 

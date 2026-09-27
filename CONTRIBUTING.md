@@ -6,9 +6,8 @@ this repository. Adding your company, a tool, or a workflow is a pull request
 that adds files. The site is built from them.
 
 ```
-companies/<handle>/company.md        who the company is
-companies/<handle>/access/<id>.md    each way in: MCP server, CLI, API
-companies/<handle>/tools/<slug>.md   each function an agent can call
+companies/<handle>/company.md        who the company is, and its ways in: MCP server, CLI, API
+companies/<handle>/tools/<name>.md   each function an agent can call
 workflows/<name>.md                  steps across tools that reach a result (flat; the author is your GitHub login)
 tags.yml                             the vocabulary (capability, motion, channel, category)
 ```
@@ -18,17 +17,16 @@ template: [`companies/README.md`](companies/README.md),
 [`workflows/README.md`](workflows/README.md); the vocabulary explains itself
 at the top of [`tags.yml`](tags.yml).
 
-## Add your company in three files
+## Add your company
 
 1. `companies/<handle>/company.md` — name, domain, category, logo, a short
-   description. Put the logo under `public/logos/`.
-2. `companies/<handle>/access/<id>.md` — one file per way in. Official MCP
-   first, then CLI, then API; community-maintained options say who maintains
-   them.
-3. `companies/<handle>/tools/<slug>.md` — one file per **function**, named
-   after a capability in `tags.yml`, listing the exact operation for
-   each way in (`mcp: acme_enrich_contacts`, `api: POST /v1/enrich`), exactly
-   as the vendor's docs name it.
+   description, and how an agent reaches you: `mcp:`, `cli:` and `api:` in
+   the header, each with its auth. Put the logo under `public/logos/`.
+2. `companies/<handle>/tools/<name>.md` — one file per **function**, named
+   after it, with its `capability:` from `tags.yml`, the exact call on each
+   way in (`mcp: enrich_person`, `api: POST /v1/people/enrich`) exactly as
+   the vendor's docs print it, and `docs:` pointing at the page that names
+   the call.
 
 Then, with Node 22+ and pnpm 11 (`corepack enable` gives you the pinned pnpm):
 

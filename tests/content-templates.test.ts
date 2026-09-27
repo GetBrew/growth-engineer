@@ -6,12 +6,7 @@ import { getCatalog } from '@/lib/catalog/catalog'
 import { ProblemList } from '@/lib/content/errors'
 import { splitFrontmatter } from '@/lib/content/frontmatter'
 import { parseWorkflowFile } from '@/lib/content/parse-workflow'
-import {
-  accessSchema,
-  companySchema,
-  formatIssues,
-  toolSchema,
-} from '@/lib/schemas/content'
+import { companySchema, formatIssues, toolSchema } from '@/lib/schemas/content'
 import { REPO_ROOT } from './helpers/source-files'
 
 /**
@@ -35,13 +30,10 @@ function templates(): Array<{ file: string; index: number; source: string }> {
   })
 }
 
-type Kind = 'access' | 'workflow' | 'company' | 'tool'
+type Kind = 'workflow' | 'company' | 'tool'
 
 /** Which file kind a template documents, from the header fields it carries. */
 function kindOf(data: Record<string, unknown>): Kind {
-  if ('type' in data && 'auth' in data) {
-    return 'access'
-  }
   if ('author' in data) {
     return 'workflow'
   }
@@ -52,7 +44,6 @@ function kindOf(data: Record<string, unknown>): Kind {
 }
 
 const SCHEMAS: Record<Exclude<Kind, 'workflow'>, z.ZodType> = {
-  access: accessSchema,
   company: companySchema,
   tool: toolSchema,
 }
@@ -81,7 +72,7 @@ describe('README templates', () => {
   test('every folder README carries at least one template', () => {
     const files = new Set(found.map((template) => template.file))
     expect([...files].sort()).toEqual([...READMES].sort())
-    expect(found.length).toBeGreaterThanOrEqual(4)
+    expect(found.length).toBeGreaterThanOrEqual(3)
   })
 
   test.each(found)('$file template #$index parses', ({ file, source }) => {
@@ -114,6 +105,6 @@ describe('README templates', () => {
         kindOf(splitFrontmatter(template.file, template.source).data)
       )
     )
-    expect([...kinds].sort()).toEqual(['access', 'company', 'tool', 'workflow'])
+    expect([...kinds].sort()).toEqual(['company', 'tool', 'workflow'])
   })
 })

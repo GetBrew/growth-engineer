@@ -4,6 +4,7 @@ name: Enrich contacts
 company: company:clay
 workflows: []
 access: [mcp, api]
+tags: [capability:enrich-contacts, category:data-provider, has:api, has:mcp]
 updated: 2026-09-16
 ---
 

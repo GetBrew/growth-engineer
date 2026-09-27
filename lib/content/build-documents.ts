@@ -51,10 +51,12 @@ export function buildDocuments(
         companyKey: tool.companyKey,
         workflows:
           inputs.relations.get(formatRef('tool', tool.key))?.workflows ?? [],
+        tags: tool.tags,
         summary: tool.summary,
         ...(tool.description === undefined
           ? {}
           : { description: tool.description }),
+        ...(tool.docs === undefined ? {} : { docs: tool.docs }),
         access: tool.access,
         updatedAt: tool.updatedAt,
       })
@@ -115,6 +117,7 @@ export function buildDocuments(
       renderCompanyDocument({
         key: company.key,
         name: company.name,
+        tags: company.tags,
         ...(company.tagline === undefined ? {} : { tagline: company.tagline }),
         ...(company.description === undefined
           ? {}

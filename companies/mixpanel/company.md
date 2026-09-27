@@ -5,6 +5,12 @@ category: product-analytics
 tagline: Conversion and retention analytics on product events.
 docs: https://developer.mixpanel.com
 logo: mixpanel.jpg
+api:
+  url: https://mixpanel.com/api
+  auth: api_key
+  env: MIXPANEL_SERVICE_ACCOUNT
+  header: "Authorization: Basic"
+  docs: https://developer.mixpanel.com
 updated: 2026-09-16
 ---
 

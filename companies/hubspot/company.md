@@ -5,6 +5,11 @@ category: crm
 tagline: CRM, marketing and sales tooling for teams that want one system.
 docs: https://developers.hubspot.com
 logo: hubspot.png
+api:
+  url: https://api.hubapi.com
+  auth: api_key
+  env: HUBSPOT_ACCESS_TOKEN
+  docs: https://developers.hubspot.com
 updated: 2026-09-16
 ---
 

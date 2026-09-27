@@ -13,23 +13,23 @@ Brought to you by [Brew](https://brew.new). MIT licensed.
 ## The catalog is the repo
 
 ```
-companies/<handle>/company.md        who the company is            → /companies/clay
-companies/<handle>/access/<id>.md    each way in: MCP, CLI, API    (shared by the company's tools)
-companies/<handle>/tools/<slug>.md   each function an agent calls  → /tools/clay/enrich-contacts
+companies/<handle>/company.md        who the company is, its ways in → /companies/clay
+companies/<handle>/tools/<name>.md   each function an agent calls  → /tools/clay/enrich-contacts
 workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
 tags.yml                             the vocabulary                → capability, motion, channel, category
 ```
 
 - A **company** is a folder named by its permanent handle.
 - A **tool is ONE function** — one thing an agent calls, tied to a specific
-  MCP tool, CLI subcommand or API endpoint. A product with three functions is
-  three files. Its slug is a capability from `tags.yml`.
+  MCP tool, CLI command or API endpoint. A product with three functions is
+  three files, each named after its function and shelved under a capability
+  from `tags.yml`.
 - A **workflow** is up to ten steps, each naming one tool, phrased as the
   result it reaches, written by a person (`author:` is a GitHub login). A
   growth hack is a workflow; there is no second kind. The build links every
   workflow to its tools and every tool to the workflows that use it.
 
-Adding your company is three files and a pull request:
+Adding your company is a `company.md`, one file per function, and a pull request:
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Each folder's README has the full
 field reference: [`companies/`](companies/README.md),
 [`workflows/`](workflows/README.md), and the vocabulary in

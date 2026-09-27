@@ -102,10 +102,10 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - Every rule is enforced at build with the offending file's path, and every
   problem is reported at once (`ContentErrors`): strict schemas (unknown
   fields rejected), reserved handles, every step's tool resolves and is
-  published, tags exist, aliases never
-  shadow a live key, a published tool has ≥ 1 way in, logos exist. A new rule
-  ships with a negative test in `tests/content-schema.test.ts` — a guard is
-  not done until it has FAILED.
+  published, tags exist, aliases never shadow a live key, a published tool
+  has ≥ 1 call on a declared way in, logos exist. A new rule ships with a
+  negative test in `tests/content-schema.test.ts` — a guard is not done
+  until it has FAILED.
 - PROJECTIONS (every entity's tags, tag counts, `searchText`, `toolCount`)
   are computed in `lib/content/derive.ts`; the EDGES in
   `lib/content/build-relations.ts`, read through `relationsOf` — one writer

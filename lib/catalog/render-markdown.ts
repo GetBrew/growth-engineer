@@ -34,8 +34,12 @@ export type ToolFileInput = {
   companyKey: string
   /** Keys of the workflows whose steps use this tool — the file links back. */
   workflows: ReadonlyArray<string>
+  /** Computed tag keys: capability, category, ways in. */
+  tags: ReadonlyArray<string>
   summary: string
   description?: string
+  /** The page that documents the call. */
+  docs?: string
   access: ReadonlyArray<Access>
   updatedAt: number
 }
@@ -70,6 +74,8 @@ export type WorkflowFileInput = {
 export type CompanyFileInput = {
   key: string
   name: string
+  /** Computed tag keys: category, and its tools' capabilities and ways in. */
+  tags: ReadonlyArray<string>
   tagline?: string
   description?: string
   links: { website?: string; docs?: string }
@@ -131,6 +137,8 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     `company: ${formatRef('company', tool.companyKey)}`,
     `workflows: ${list(tool.workflows.map((key) => formatRef('workflow', key)))}`,
     `access: ${list(accessTypes)}`,
+    `tags: ${list([...tool.tags].sort())}`,
+    ...(tool.docs ? [`docs: ${tool.docs}`] : []),
     `updated: ${isoDate(tool.updatedAt)}`,
     '---',
     '',
@@ -306,6 +314,7 @@ export function renderCompanyDocument(
     `ref: ${formatRef('company', company.key)}`,
     `name: ${company.name}`,
     `tools: ${list(company.tools.map((tool) => formatRef('tool', tool.key)))}`,
+    `tags: ${list([...company.tags].sort())}`,
     `updated: ${isoDate(company.updatedAt)}`,
     '---',
     '',

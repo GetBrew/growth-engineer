@@ -26,7 +26,6 @@ describe('the content tree walk', () => {
   test('places every file kind and skips the folder READMEs', () => {
     write('companies/README.md')
     write('companies/acme/company.md')
-    write('companies/acme/access/api.md')
     write('companies/acme/tools/manage-crm.md')
     write('workflows/README.md')
     write('workflows/keep-crm-clean.md')
@@ -38,7 +37,6 @@ describe('the content tree walk', () => {
     expect(
       tree.files.map((file) => `${file.kind}:${file.path}`).sort()
     ).toEqual([
-      'access:companies/acme/access/api.md',
       'company:companies/acme/company.md',
       'tags:tags.yml',
       'tool:companies/acme/tools/manage-crm.md',
@@ -59,6 +57,21 @@ describe('the content tree walk', () => {
       ])
     )
     rmSync(path.join(root, 'public/logos/huge.png'))
+  })
+
+  test('rejects a leftover access/ folder: ways in live in company.md now', () => {
+    write('companies/acme/access/api.md')
+    const problems = readContentTree(root).problems.map(
+      (problem) => `${problem.file}: ${problem.message}`
+    )
+    expect(problems).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(
+          /^companies\/acme\/access: ways in live in company\.md now/
+        ),
+      ])
+    )
+    rmSync(path.join(root, 'companies/acme/access'), { recursive: true })
   })
 
   test('rejects a leftover tags/ folder: the vocabulary is one file now', () => {
