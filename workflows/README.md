@@ -34,17 +34,18 @@ updated: 2026-09-16
 ## Inputs
 
 - `target_segment`: the kind of company to watch, e.g. Series A B2B SaaS in the US
-- `sender_email`: the address emails are sent from
+- `campaign_id`: the lemlist campaign that sends the emails, e.g. cam_123
 
 ## Steps
 
 1. **Find funded companies** with [clay/search-people-and-companies](../companies/clay/tools/search-people-and-companies.md). List companies matching `target_segment` that announced a round in the last 30 days.
-2. **Write emails** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft a three-sentence email per contact. Show the drafts to the user.
+2. **Write emails** with [anthropic/create-message](../companies/anthropic/tools/create-message.md). Draft a three-sentence email per contact. Show the drafts to the user.
+3. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each contact to `campaign_id`.
 
 ## Done when
 
 - Every funded company has a contact, or a note explaining why not.
-- Approved emails are sent, and the user has a summary table.
+- Every approved contact is in the campaign, and the user has a summary table.
 
 ## Notes
 
