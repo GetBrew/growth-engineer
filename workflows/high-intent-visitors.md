@@ -6,9 +6,6 @@ tags:
   - motion:midbound
   - channel:website
   - channel:chat
-  - capability:track-intent
-  - capability:enrich-contacts
-  - capability:route-alerts
 featured: 4
 updated: 2026-09-16
 ---

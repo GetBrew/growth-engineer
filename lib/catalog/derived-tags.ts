@@ -3,7 +3,7 @@ import type { AccessType } from '@/lib/types/catalog'
 /**
  * The DERIVED tag namespace. `has:*` is each way in a tool offers, computed
  * from its access facts at build time. These are constants, not files under
- * tags/, so no contributor has to remember to tag a tool with what its own
+ * tags.yml, so no contributor has to remember to tag a tool with what its own
  * access already says.
  */
 
@@ -12,7 +12,6 @@ export type DerivedTag = {
   slug: AccessType
   label: string
   synonyms: ReadonlyArray<string>
-  description: string
 }
 
 export const DERIVED_TAGS: ReadonlyArray<DerivedTag> = [
@@ -21,21 +20,18 @@ export const DERIVED_TAGS: ReadonlyArray<DerivedTag> = [
     slug: 'mcp',
     label: 'Has MCP',
     synonyms: ['mcp'],
-    description: 'Reachable over the Model Context Protocol.',
   },
   {
     namespace: 'has',
     slug: 'cli',
     label: 'Has CLI',
     synonyms: ['cli'],
-    description: 'Reachable from a command line.',
   },
   {
     namespace: 'has',
     slug: 'api',
     label: 'Has API',
     synonyms: ['api'],
-    description: 'Reachable over HTTP.',
   },
 ]
 

@@ -6,9 +6,6 @@ tags:
   - motion:midbound
   - channel:chat
   - channel:email
-  - capability:track-product-usage
-  - capability:route-alerts
-  - capability:write-copy
 featured: 9
 updated: 2026-09-16
 ---

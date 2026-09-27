@@ -58,7 +58,7 @@ Optional. Anything else the agent should know, in any markdown.
 | `title` | yes | Phrased as the result. |
 | `summary` | yes | One sentence. |
 | `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
-| `tags` | yes | At least one `namespace:slug` from `tags/` (motion, channel, capability, category, fit). `has:*` is computed, never listed. |
+| `tags` | no | The `motion:` and `channel:` entries from `tags.yml` it serves. Its capabilities come from its tools, and `has:*` from their ways in — both computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
 | `featured` | no | Editorial rank on `/workflows`, set by maintainers; must be unique. Unranked workflows follow by date. |
 | `aliases`, `status` | no | Old names to redirect; `published` (default) or `deprecated`. |

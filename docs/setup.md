@@ -20,7 +20,7 @@ metadata print. Copy it to `.env.local` only if you need to change it.
 pnpm dev                 # http://localhost:3000
 ```
 
-The catalog is read from `companies/`, `workflows/` and `tags/` when the
+The catalog is read from `companies/`, `workflows/` and `tags.yml` when the
 first page renders. In development it is re-read whenever a content file
 changes, so an edit shows on the next refresh (content files are not modules,
 so there is no hot reload).
@@ -38,7 +38,7 @@ Then `pnpm validate` once, to see every gate green before changing anything.
 
 ## 4. Change a fact
 
-Edit the file under `companies/`, `workflows/` or `tags/` — never a rendered
+Edit the file under `companies/` or `workflows/`, or `tags.yml` — never a rendered
 file, never the app. [`CONTRIBUTING.md`](../CONTRIBUTING.md) and the folder
 READMEs have the field reference and templates.
 
@@ -53,5 +53,5 @@ READMEs have the field reference and templates.
 - **Preview deployments** need nothing extra: each builds its branch's tree.
 - **Function bundles**: every page prerenders; only an unknown key on a
   detail route and the `/mcp` endpoint read the tree at request time, so
-  `next.config.ts` traces `companies/`, `workflows/` and `tags/` into every
+  `next.config.ts` traces `companies/`, `workflows/` and `tags.yml` into every
   serverless bundle (`outputFileTracingIncludes`).

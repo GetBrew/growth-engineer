@@ -5,9 +5,6 @@ author: thedogwiththedataonit
 tags:
   - motion:outbound
   - channel:email
-  - capability:enrich-contacts
-  - capability:find-work-emails
-  - capability:send-email
 featured: 1
 updated: 2026-09-16
 ---

@@ -11,7 +11,7 @@ import type { ContentProblem } from './errors'
  *   companies/<handle>/access/<id>.md
  *   companies/<handle>/tools/<slug>.md
  *   workflows/<name>.md              (flat: the author is in the file)
- *   tags/<namespace>/<slug>.md
+ *   tags.yml                         (the whole vocabulary, one file)
  *
  * A README.md at the top of each tree documents it and is skipped. Any other
  * file or directory is a mistake, reported with its path.
@@ -22,13 +22,10 @@ export type ContentFile =
   | { kind: 'access'; path: string; handle: string; id: string; source: string }
   | { kind: 'tool'; path: string; handle: string; slug: string; source: string }
   | { kind: 'workflow'; path: string; name: string; source: string }
-  | {
-      kind: 'tag'
-      path: string
-      namespace: string
-      slug: string
-      source: string
-    }
+  | { kind: 'tags'; path: string; source: string }
+
+/** The vocabulary: every tag, one file at the root. */
+export const TAGS_FILE = 'tags.yml'
 
 export type ContentTree = {
   files: Array<ContentFile>
@@ -73,6 +70,14 @@ class Walk {
   isDirectory(relative: string): boolean {
     try {
       return statSync(path.join(this.root, relative)).isDirectory()
+    } catch {
+      return false
+    }
+  }
+
+  isFile(relative: string): boolean {
+    try {
+      return statSync(path.join(this.root, relative)).isFile()
     } catch {
       return false
     }
@@ -186,18 +191,6 @@ function walkWorkflows(walk: Walk): void {
   }
 }
 
-function walkTags(walk: Walk, namespace: string): void {
-  for (const file of walk.markdownFiles(path.join('tags', namespace))) {
-    walk.files.push({
-      kind: 'tag',
-      path: file.relative,
-      namespace,
-      slug: file.name,
-      source: walk.read(file.relative),
-    })
-  }
-}
-
 export function readContentTree(root = process.cwd()): ContentTree {
   const walk = new Walk(root)
   for (const handle of walk.folders(
@@ -207,11 +200,18 @@ export function readContentTree(root = process.cwd()): ContentTree {
     walkCompany(walk, handle)
   }
   walkWorkflows(walk)
-  for (const namespace of walk.folders(
-    'tags',
-    'tags/ holds one folder per namespace'
-  )) {
-    walkTags(walk, namespace)
+  if (walk.isDirectory('tags')) {
+    walk.reject(
+      'tags',
+      `tags live in one file now, ${TAGS_FILE} at the root; move each entry there`
+    )
+  }
+  if (walk.isFile(TAGS_FILE)) {
+    walk.files.push({
+      kind: 'tags',
+      path: TAGS_FILE,
+      source: walk.read(TAGS_FILE),
+    })
   }
   const logoDir = path.join('public', 'logos')
   const logos = new Set(walk.entries(logoDir))

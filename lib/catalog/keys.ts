@@ -26,15 +26,9 @@ export const TAG_NAMESPACES = [
   'motion',
   'channel',
   'category',
-  'fit',
   'has',
 ] as const
 export type TagNamespace = (typeof TAG_NAMESPACES)[number]
-
-/** Namespaces the system computes; nobody can propose tags in them. */
-export const DERIVED_TAG_NAMESPACES: ReadonlySet<TagNamespace> = new Set([
-  'has',
-])
 
 /**
  * One key part: lowercase letters, digits and hyphens, 2–39 characters,

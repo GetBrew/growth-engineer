@@ -63,7 +63,9 @@ describe('key grammar', () => {
 
   test('tag keys are namespace:slug within the managed namespaces', () => {
     expect(isValidTagKey('capability:enrich-contacts')).toBe(true)
-    expect(isValidTagKey('fit:smb')).toBe(true)
+    expect(isValidTagKey('channel:email')).toBe(true)
+    // `fit` is gone: the vocabulary is capability, motion, channel, category.
+    expect(isValidTagKey('fit:smb')).toBe(false)
     expect(isValidTagKey('price:cheap')).toBe(false)
     expect(isValidTagKey('capability')).toBe(false)
   })

@@ -7,6 +7,7 @@ import {
 import type {
   CatalogDocument,
   Company,
+  Relations,
   Tool,
   Workflow,
 } from '@/lib/types/catalog'
@@ -22,8 +23,7 @@ export type DocumentInputs = {
   companies: ReadonlyMap<string, Company>
   tools: ReadonlyMap<string, Tool>
   workflows: ReadonlyMap<string, Workflow>
-  toolsByCompany: ReadonlyMap<string, ReadonlyArray<string>>
-  workflowsByTool: ReadonlyMap<string, ReadonlyArray<string>>
+  relations: ReadonlyMap<string, Relations>
 }
 
 export function buildDocuments(
@@ -49,7 +49,8 @@ export function buildDocuments(
         key: tool.key,
         name: tool.name,
         companyKey: tool.companyKey,
-        workflows: inputs.workflowsByTool.get(tool.key) ?? [],
+        workflows:
+          inputs.relations.get(formatRef('tool', tool.key))?.workflows ?? [],
         summary: tool.summary,
         ...(tool.description === undefined
           ? {}
@@ -97,12 +98,12 @@ export function buildDocuments(
   }
 
   for (const company of inputs.companies.values()) {
-    const tools = (inputs.toolsByCompany.get(company.key) ?? []).flatMap(
-      (key) => {
-        const tool = inputs.tools.get(key)
-        return tool?.status === 'published' ? [tool] : []
-      }
-    )
+    const tools = (
+      inputs.relations.get(formatRef('company', company.key))?.tools ?? []
+    ).flatMap((key) => {
+      const tool = inputs.tools.get(key)
+      return tool ? [tool] : []
+    })
     const updatedAt = Math.max(
       company.updatedAt,
       ...tools.map((tool) => tool.updatedAt)

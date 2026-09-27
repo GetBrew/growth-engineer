@@ -30,8 +30,7 @@ describe('the content tree walk', () => {
     write('companies/acme/tools/manage-crm.md')
     write('workflows/README.md')
     write('workflows/keep-crm-clean.md')
-    write('tags/README.md')
-    write('tags/capability/manage-crm.md')
+    write('tags.yml', 'capability:\n  manage-crm:\n    label: Manage a CRM\n')
     write('public/logos/acme.png', 'png')
 
     const tree = readContentTree(root)
@@ -41,7 +40,7 @@ describe('the content tree walk', () => {
     ).toEqual([
       'access:companies/acme/access/api.md',
       'company:companies/acme/company.md',
-      'tag:tags/capability/manage-crm.md',
+      'tags:tags.yml',
       'tool:companies/acme/tools/manage-crm.md',
       'workflow:workflows/keep-crm-clean.md',
     ])
@@ -60,6 +59,19 @@ describe('the content tree walk', () => {
       ])
     )
     rmSync(path.join(root, 'public/logos/huge.png'))
+  })
+
+  test('rejects a leftover tags/ folder: the vocabulary is one file now', () => {
+    write('tags/capability/manage-crm.md')
+    const problems = readContentTree(root).problems.map(
+      (problem) => `${problem.file}: ${problem.message}`
+    )
+    expect(problems).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^tags: tags live in one file now, tags\.yml/),
+      ])
+    )
+    rmSync(path.join(root, 'tags'), { recursive: true })
   })
 
   test('rejects a nested workflow folder, a stray file and a misplaced folder', () => {

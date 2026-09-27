@@ -59,7 +59,7 @@ build. A renamed key answers with a real 308.
 ## The render path
 
 ```
-companies/ workflows/ tags/  (source files, by pull request)
+companies/ workflows/ tags.yml  (source files, by pull request)
   → lib/content/build-catalog.ts                          validate, resolve, derive
   → lib/content/build-documents.ts                        the ONE caller of the renderer
   → lib/catalog/render-markdown.ts                        pure; goldens

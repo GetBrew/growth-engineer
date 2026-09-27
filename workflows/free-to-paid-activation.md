@@ -5,9 +5,6 @@ author: thedogwiththedataonit
 tags:
   - motion:plg
   - channel:email
-  - capability:track-product-usage
-  - capability:collect-payments
-  - capability:send-email
 featured: 8
 updated: 2026-09-16
 ---

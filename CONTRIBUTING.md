@@ -10,12 +10,13 @@ companies/<handle>/company.md        who the company is
 companies/<handle>/access/<id>.md    each way in: MCP server, CLI, API
 companies/<handle>/tools/<slug>.md   each function an agent can call
 workflows/<name>.md                  steps across tools that reach a result (flat; the author is your GitHub login)
-tags/<namespace>/<slug>.md           the vocabulary (capability, motion, channel, category, fit)
+tags.yml                             the vocabulary (capability, motion, channel, category)
 ```
 
 Each folder has a README with the full field reference and a copy-paste
 template: [`companies/README.md`](companies/README.md),
-[`workflows/README.md`](workflows/README.md), [`tags/README.md`](tags/README.md).
+[`workflows/README.md`](workflows/README.md); the vocabulary explains itself
+at the top of [`tags.yml`](tags.yml).
 
 ## Add your company in three files
 
@@ -25,7 +26,7 @@ template: [`companies/README.md`](companies/README.md),
    first, then CLI, then API; community-maintained options say who maintains
    them.
 3. `companies/<handle>/tools/<slug>.md` — one file per **function**, named
-   after a capability in `tags/capability/`, listing the exact operation for
+   after a capability in `tags.yml`, listing the exact operation for
    each way in (`mcp: acme_enrich_contacts`, `api: POST /v1/enrich`), exactly
    as the vendor's docs name it.
 
@@ -58,8 +59,8 @@ every tool back to the workflows that use it.
   `status: draft`; it has no page until it does.
 - **Steps resolve.** Every step links a tool file that exists and is
   published.
-- **Tags exist.** Every tag names a file under `tags/`; `has:*` is computed
-  and cannot be written.
+- **Tags exist.** Every tag is an entry in `tags.yml`; `has:*` and a
+  workflow's capabilities are computed and cannot be written.
 - **Facts carry a date.** `updated` is when someone last checked the file.
 - **Files stay short.** Tool files render to about 60 lines, workflows to
   about 120, with at most ten steps.

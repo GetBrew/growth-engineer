@@ -7,7 +7,7 @@ This file is intentionally a thin pointer so the two cannot drift.
 Quick orientation (full rules in `AGENTS.md`):
 
 - **The catalog is the repository.** Companies, tools and workflows are
-  markdown files under `companies/`, `workflows/` and `tags/`; to change a
+  markdown files under `companies/` and `workflows/`, plus `tags.yml`; to change a
   fact, change the file ([`CONTRIBUTING.md`](CONTRIBUTING.md)). There is no
   backend.
 - **The rendered markdown file is the product.** Every tool and workflow

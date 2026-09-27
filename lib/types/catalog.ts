@@ -74,6 +74,8 @@ export type Company = {
   /** From the file's `updated` date, at UTC midnight. */
   updatedAt: number
   aliases: ReadonlyArray<string>
+  /** Computed: its category, plus the ways in and capabilities of its published tools. */
+  tags: ReadonlyArray<string>
   searchText: string
 }
 
@@ -86,7 +88,7 @@ export type Tool = {
   /** The capability slug — the second half of the key. */
   capability: string
   access: ReadonlyArray<Access>
-  /** Derived tag keys: one `has:<type>` per way in. */
+  /** Computed: its capability, its company's category, one `has:<type>` per way in. */
   tags: ReadonlyArray<string>
   status: Status
   updatedAt: number
@@ -115,7 +117,7 @@ export type Workflow = {
   author: string
   title: string
   summary: string
-  /** Curated tag keys: `motion:outbound`, `channel:email`, `capability:*`. */
+  /** Computed: its motion and channel tags, its tools' capabilities, and the `has:*` every tool shares. */
   tags: ReadonlyArray<string>
   inputs: ReadonlyArray<WorkflowInput>
   steps: ReadonlyArray<WorkflowStep>
@@ -139,10 +141,20 @@ export type Tag = {
   slug: string
   label: string
   synonyms: ReadonlyArray<string>
-  description: string
-  /** `has:*` is computed from tools, never authored. */
-  derived: boolean
+  /** Published companies, tools and workflows carrying it. */
   counts: { companies: number; tools: number; workflows: number }
+}
+
+/**
+ * What one entry is linked to, by key: the companies, tools and workflows one
+ * edge away, and its tags. Published entries only, except the ones an entry
+ * names itself (a workflow's tools, a tool's company).
+ */
+export type Relations = {
+  companies: ReadonlyArray<string>
+  tools: ReadonlyArray<string>
+  workflows: ReadonlyArray<string>
+  tags: ReadonlyArray<string>
 }
 
 /** A tag as a filter chip: what a listing needs to draw and count it. */

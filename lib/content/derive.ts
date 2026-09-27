@@ -1,4 +1,5 @@
-import type { Company, Tag, Tool, Workflow } from '@/lib/types/catalog'
+import { derivedTagKeys } from '@/lib/catalog/derived-tags'
+import type { AccessType, Tag } from '@/lib/types/catalog'
 
 /**
  * The projections: values that used to be database columns rewritten by a
@@ -19,63 +20,6 @@ export function slugify(title: string): string {
     .replace(/^-|-$/g, '')
 }
 
-/** What the search box can find a company by: everything its row shows. */
-export function companySearchText(
-  company: { name: string; tagline?: string; description?: string },
-  category: Tag | undefined
-): string {
-  return [
-    company.name,
-    company.tagline ?? '',
-    company.description ?? '',
-    category?.label ?? '',
-    ...(category?.synonyms ?? []),
-  ].join(' ')
-}
-
-/** What the search box can find a tool by: its own words plus the capability vocabulary. */
-export function toolSearchText(
-  tool: { name: string; summary: string },
-  companyName: string,
-  capability: Tag | undefined,
-  /**
-   * The ways in — `mcp`, `cli`, `api`. Without them, typing "mcp" finds
-   * nothing: an access type appears in no name, summary or capability, so the
-   * one word people reach for first matched the whole catalog's silence.
-   */
-  accessTypes: ReadonlyArray<string> = []
-): string {
-  return [
-    tool.name,
-    companyName,
-    tool.summary,
-    capability?.label ?? '',
-    ...(capability?.synonyms ?? []),
-    ...accessTypes,
-  ].join(' ')
-}
-
-/** What the search box can find a workflow by. */
-export function workflowSearchText(
-  workflow: {
-    title: string
-    summary: string
-    author: string
-    toolKeys: ReadonlyArray<string>
-  },
-  tags: ReadonlyArray<Tag>
-): string {
-  return [
-    workflow.title,
-    workflow.summary,
-    workflow.author,
-    // Both halves of each tool key: `clay/enrich-contacts` finds the workflow
-    // by "clay" as well as by "enrich" — its rows show the vendor's logo.
-    ...workflow.toolKeys.flatMap((key) => key.split('/')),
-    ...tags.flatMap((tag) => [tag.label, ...tag.synonyms]),
-  ].join(' ')
-}
-
 /** Distinct tool keys in first-use order — the `tools:` header line. */
 export function distinctToolKeys(
   steps: ReadonlyArray<{ toolKey: string }>
@@ -83,43 +27,81 @@ export function distinctToolKeys(
   return [...new Set(steps.map((step) => step.toolKey))]
 }
 
+/* ────────────────────────────── computed tags ────────────────────────────── */
+/* Every entity carries its full tag list, so every filter is one membership
+ * test: a tool is found by its company's category, a workflow by its tools'
+ * capabilities, without anyone writing those tags twice. */
+
+/** A tool: its capability, its company's category, and one `has:*` per way in. */
+export function toolTags(
+  tool: { capability: string; access: ReadonlyArray<{ type: AccessType }> },
+  companyCategory: string
+): Array<string> {
+  return [
+    `capability:${tool.capability}`,
+    `category:${companyCategory}`,
+    ...derivedTagKeys(tool),
+  ]
+}
+
+/** A company: its category, then the ways in and capabilities of its published tools. */
+export function companyTags(
+  category: string,
+  tools: ReadonlyArray<{
+    capability: string
+    access: ReadonlyArray<{ type: AccessType }>
+  }>
+): Array<string> {
+  return [
+    ...new Set([
+      `category:${category}`,
+      ...tools.flatMap(derivedTagKeys),
+      ...tools.map((tool) => `capability:${tool.capability}`),
+    ]),
+  ]
+}
+
 /**
- * Tag counts: companies by category, tools by capability and derived tags,
- * workflows by their curated tags. Published entities only — a deprecated
- * listing is reachable by key but no longer counted in the chips.
+ * A workflow: its authored motion and channel tags, its tools' capabilities,
+ * and `has:<way>` when EVERY tool offers that way — so `has:mcp` finds the
+ * workflows an agent can run over MCP alone.
  */
-export function tagCounts(
-  tags: ReadonlyMap<string, Tag>,
-  companies: Iterable<Company>,
-  tools: Iterable<Tool>,
-  workflows: Iterable<Workflow>
-): void {
-  const bump = (key: string, field: keyof Tag['counts']) => {
-    const tag = tags.get(key)
-    if (tag) {
-      tag.counts[field] += 1
-    }
-  }
-  for (const company of companies) {
-    if (company.status === 'published') {
-      bump(`category:${company.category}`, 'companies')
-    }
-  }
-  for (const tool of tools) {
-    if (tool.status !== 'published') {
-      continue
-    }
-    bump(`capability:${tool.capability}`, 'tools')
-    for (const key of tool.tags) {
-      bump(key, 'tools')
-    }
-  }
-  for (const workflow of workflows) {
-    if (workflow.status !== 'published') {
-      continue
-    }
-    for (const key of workflow.tags) {
-      bump(key, 'workflows')
-    }
-  }
+export function workflowTags(
+  authored: ReadonlyArray<string>,
+  tools: ReadonlyArray<{
+    capability: string
+    access: ReadonlyArray<{ type: AccessType }>
+  }>
+): Array<string> {
+  const shared = tools.length
+    ? derivedTagKeys(tools[0] ?? { access: [] }).filter((key) =>
+        tools.every((tool) => derivedTagKeys(tool).includes(key))
+      )
+    : []
+  return [
+    ...new Set([
+      ...authored,
+      ...tools.map((tool) => `capability:${tool.capability}`),
+      ...shared,
+    ]),
+  ]
+}
+
+/**
+ * What search finds an entity by: its own words plus the label and synonyms
+ * of every tag it carries — "enrichment" finds every tool that enriches, and
+ * "mcp" every tool with an MCP way in.
+ */
+export function searchTextOf(
+  words: ReadonlyArray<string | undefined>,
+  tagKeys: ReadonlyArray<string>,
+  tags: ReadonlyMap<string, Tag>
+): string {
+  return [
+    ...words.filter((word): word is string => Boolean(word)),
+    ...tagKeys.flatMap((key) => {
+      const tag = tags.get(key)
+      return tag ? [tag.label, ...tag.synonyms] : []
+    }),
+  ].join(' ')
 }

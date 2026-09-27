@@ -3,7 +3,7 @@
 One request, end to end, and where each decision is allowed to live.
 
 ```
-companies/ workflows/ tags/ ──▶ lib/content/read-tree.ts ──▶ lib/content/build-catalog.ts ──▶ the Catalog
+companies/ workflows/ tags.yml ─▶ lib/content/read-tree.ts ──▶ lib/content/build-catalog.ts ──▶ the Catalog
    (the source: markdown          (the ONLY fs reader)          (pure: validate, resolve,       (in memory, once
     files, by pull request)                                      derive, render)                 per process)
                                                                        │
@@ -18,7 +18,7 @@ agent / browser ─▶ proxy.ts ──────────▶ app/(site)/…
 ## Layers
 
 **The source tree** — `companies/<handle>/{company.md, access/*.md,
-tools/*.md}`, `workflows/<name>.md` (flat; the author is a GitHub login in the header), `tags/<namespace>/<slug>.md`.
+tools/*.md}`, `workflows/<name>.md` (flat; the author is a GitHub login in the header), `tags.yml`.
 Keys are paths; headers are strict YAML; bodies are prose. The community
 edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 

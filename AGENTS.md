@@ -16,11 +16,11 @@ generated markdown file any agent can run; copying it is the product action.**
 Reads are public; agents fetch files with no sign-in.
 
 **THE CATALOG IS THE REPOSITORY.** Every entry is a markdown file under
-`companies/`, `workflows/` and `tags/`; the site is built from them, and
+`companies/` and `workflows/`, plus the vocabulary in `tags.yml`; the site is built from them, and
 the community contributes by pull request. To add or change catalog data,
 read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the folder READMEs
 ([`companies/`](companies/README.md), [`workflows/`](workflows/README.md),
-[`tags/`](tags/README.md)); never edit a rendered file or the app to change
+[`tags.yml`](tags.yml)); never edit a rendered file or the app to change
 a fact. Vision: [`docs/vision.md`](docs/vision.md). File schema:
 [`docs/data-model.md`](docs/data-model.md).
 
@@ -36,7 +36,7 @@ route is public; the only environment is one optional `NEXT_PUBLIC_SITE_URL`.
 - **While editing**: `pnpm exec biome check --write <all touched files>` once
   per unit of work, in ONE call (every invocation loads the whole project).
   Plus `pnpm test:run tests/<exact file>` for the behavior you touched.
-- **Touched catalog data** (`companies/`, `workflows/`, `tags/`):
+- **Touched catalog data** (`companies/`, `workflows/`, `tags.yml`):
   `pnpm content:check` — every problem, with its file path.
 - **Once per unit of work**: `pnpm check` (Biome + `tsgo`). Not per patch.
 - **Final handoff**: `pnpm tsc` then `pnpm lint`. Touched the renderer: the
@@ -106,9 +106,10 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   shadow a live key, a published tool has ≥ 1 way in, logos exist. A new rule
   ships with a negative test in `tests/content-schema.test.ts` — a guard is
   not done until it has FAILED.
-- PROJECTIONS (`has:*` tags, tag counts, `searchText`, `toolCount`, the
-  edges) are computed in `lib/content/derive.ts` and `build-catalog.ts` — one
-  writer each, never authored in a file. The workflow ↔ tool relationship is
+- PROJECTIONS (every entity's tags, tag counts, `searchText`, `toolCount`)
+  are computed in `lib/content/derive.ts`; the EDGES in
+  `lib/content/build-relations.ts`, read through `relationsOf` — one writer
+  each, never authored in a file. The workflow ↔ tool relationship is
   written into BOTH rendered files (`tools:` / `workflows:`) and both pages.
 - The pure half of `lib/catalog/*` (keys, renderer, search grammar) imports
   nothing from `node:`, `server-only` or `lib/content` — it runs in the proxy
@@ -186,7 +187,7 @@ same batch; `pnpm docs:check` fails on a broken link or this file over cap.
 
 | Topic | Doc |
 | --- | --- |
-| Adding a company, tool, workflow or tag | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`companies/README.md`](companies/README.md), [`workflows/README.md`](workflows/README.md), [`tags/README.md`](tags/README.md) |
+| Adding a company, tool, workflow or tag | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`companies/README.md`](companies/README.md), [`workflows/README.md`](workflows/README.md), [`tags.yml`](tags.yml) |
 | Product vision, phases, what is not in v1 | [`docs/vision.md`](docs/vision.md) |
 | The file schema: every field, every rule, the projections | [`docs/data-model.md`](docs/data-model.md) |
 | The rendered markdown file contract and where files are served | [`docs/markdown-files.md`](docs/markdown-files.md) |

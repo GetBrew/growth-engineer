@@ -1,20 +1,13 @@
-import { DERIVED_TAGS } from '@/lib/catalog/derived-tags'
-import {
-  DERIVED_TAG_NAMESPACES,
-  isValidHandle,
-  isValidKeyPart,
-  TAG_NAMESPACES,
-  type TagNamespace,
-} from '@/lib/catalog/keys'
+import { isValidHandle } from '@/lib/catalog/keys'
 import {
   accessSchema,
   type CompanyFrontmatter,
   companySchema,
-  tagSchema,
 } from '@/lib/schemas/content'
 import type {
   CatalogDocument,
   Company,
+  Relations,
   Tag,
   Tool,
   Workflow,
@@ -26,7 +19,9 @@ import {
   buildTools,
   buildWorkflows,
 } from './build-entities'
-import { companySearchText, dateToMs, tagCounts } from './derive'
+import { buildRelations } from './build-relations'
+import { buildTags } from './build-tags'
+import { companyTags, dateToMs, searchTextOf } from './derive'
 import { type ContentProblem, ProblemList } from './errors'
 import { parseFile } from './parse-file'
 import type { ContentFile } from './read-tree'
@@ -36,8 +31,8 @@ import type { ContentFile } from './read-tree'
  * throws ONE `ContentErrors` listing every problem it found — a contributor
  * fixes a pull request in one pass. Keys come from paths; references are
  * resolved here and in ./build-entities.ts; projections are computed in
- * ./derive.ts; the files an agent fetches are rendered last, in
- * ./build-documents.ts.
+ * ./derive.ts; the edges in ./build-relations.ts; the files an agent fetches
+ * are rendered last, in ./build-documents.ts.
  */
 
 export type Catalog = {
@@ -45,15 +40,14 @@ export type Catalog = {
   companies: ReadonlyMap<string, Company>
   tools: ReadonlyMap<string, Tool>
   workflows: ReadonlyMap<string, Workflow>
-  /** Curated tags from tags/ plus the derived `has:*`. */
+  /** Curated tags from tags.yml plus the derived `has:*`. */
   tags: ReadonlyMap<string, Tag>
   /** By ref: `tool:clay/enrich-contacts`. */
   documents: ReadonlyMap<string, CatalogDocument>
   /** `${type}:${oldKey}` → the current key. */
   aliases: ReadonlyMap<string, string>
-  toolsByCompany: ReadonlyMap<string, ReadonlyArray<string>>
-  workflowsByTool: ReadonlyMap<string, ReadonlyArray<string>>
-  workflowsByCompany: ReadonlyMap<string, ReadonlyArray<string>>
+  /** By ref or tag key: what each entry is linked to (./build-relations.ts). */
+  relations: ReadonlyMap<string, Relations>
   /** Listing orders, published entities only. */
   order: {
     toolsNew: ReadonlyArray<string>
@@ -71,9 +65,6 @@ export type BuildOptions = {
 }
 
 const ACCESS_ID = /^[a-z0-9][a-z0-9-]*$/
-const CURATED_NAMESPACES = TAG_NAMESPACES.filter(
-  (namespace) => !DERIVED_TAG_NAMESPACES.has(namespace)
-)
 
 function byKey<T extends { key: string }>(a: T, b: T): number {
   return a.key.localeCompare(b.key)
@@ -86,74 +77,12 @@ function newestFirst<T extends { key: string; updatedAt: number }>(
   return b.updatedAt - a.updatedAt || a.key.localeCompare(b.key)
 }
 
-function emptyCounts(): Tag['counts'] {
-  return { companies: 0, tools: 0, workflows: 0 }
-}
-
-/** Why a tag file cannot be accepted, or null when its path is fine. */
-function tagPathProblem(file: ContentFile & { kind: 'tag' }): string | null {
-  if (DERIVED_TAG_NAMESPACES.has(file.namespace as TagNamespace)) {
-    return `${file.namespace}:* tags are computed from each tool's access, never written as files`
-  }
-  if (!(CURATED_NAMESPACES as ReadonlyArray<string>).includes(file.namespace)) {
-    return `unknown namespace "${file.namespace}"; tags live under ${CURATED_NAMESPACES.join(', ')}`
-  }
-  if (!isValidKeyPart(file.slug)) {
-    return `"${file.slug}" is not a valid slug`
-  }
-  return null
-}
-
-function buildTags(
-  files: ReadonlyArray<ContentFile>,
-  problems: ProblemList
-): Map<string, Tag> {
-  const tags = new Map<string, Tag>()
-  for (const file of files) {
-    if (file.kind !== 'tag') {
-      continue
-    }
-    const pathProblem = tagPathProblem(file)
-    if (pathProblem) {
-      problems.add(file.path, pathProblem)
-      continue
-    }
-    const parsed = parseFile(file, tagSchema, problems)
-    if (!parsed) {
-      continue
-    }
-    if (!parsed.body) {
-      problems.add(
-        file.path,
-        'describe the tag in one sentence under the header'
-      )
-      continue
-    }
-    const key = `${file.namespace}:${file.slug}`
-    tags.set(key, {
-      key,
-      namespace: file.namespace as TagNamespace,
-      slug: file.slug,
-      label: parsed.data.label,
-      synonyms: parsed.data.synonyms,
-      description: parsed.body,
-      derived: false,
-      counts: emptyCounts(),
-    })
-  }
-  for (const derived of DERIVED_TAGS) {
-    const key = `${derived.namespace}:${derived.slug}`
-    tags.set(key, { ...derived, key, derived: true, counts: emptyCounts() })
-  }
-  return tags
-}
-
 type CompanyFile = ContentFile & { kind: 'company' }
 
+/** The company as its file states it; its tags and search text wait for its tools (assemble). */
 function toCompany(
   file: CompanyFile,
-  parsed: { data: CompanyFrontmatter; body: string },
-  category: Tag | undefined
+  parsed: { data: CompanyFrontmatter; body: string }
 ): Company {
   const { data, body } = parsed
   return {
@@ -172,10 +101,8 @@ function toCompany(
     status: data.status,
     updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
-    searchText: companySearchText(
-      { ...data, ...(body ? { description: body } : {}) },
-      category
-    ),
+    tags: [],
+    searchText: '',
   }
 }
 
@@ -201,11 +128,10 @@ function buildCompanies(
     if (!parsed) {
       continue
     }
-    const category = tags.get(`category:${parsed.data.category}`)
-    if (!category) {
+    if (!tags.has(`category:${parsed.data.category}`)) {
       problems.add(
         file.path,
-        `category "${parsed.data.category}" is not a file under tags/category/`
+        `category "${parsed.data.category}" is not in tags.yml`
       )
     }
     if (logos && !logos.has(parsed.data.logo)) {
@@ -214,7 +140,7 @@ function buildCompanies(
         `logo "${parsed.data.logo}" is not under public/logos/`
       )
     }
-    companies.set(file.handle, toCompany(file, parsed, category))
+    companies.set(file.handle, toCompany(file, parsed))
   }
   return companies
 }
@@ -251,19 +177,6 @@ function buildAccessOptions(
   return options
 }
 
-function groupKeys<T extends { key: string }>(
-  entities: Iterable<T>,
-  by: (entity: T) => ReadonlyArray<string>
-): Map<string, Array<string>> {
-  const groups = new Map<string, Array<string>>()
-  for (const entity of entities) {
-    for (const group of by(entity)) {
-      groups.set(group, [...(groups.get(group) ?? []), entity.key])
-    }
-  }
-  return groups
-}
-
 /** Featured rank first (1 before 2), then the unranked, newest first. */
 function featuredFirst(workflows: ReadonlyArray<Workflow>): Array<Workflow> {
   return [...workflows].sort(
@@ -273,7 +186,32 @@ function featuredFirst(workflows: ReadonlyArray<Workflow>): Array<Workflow> {
   )
 }
 
-/** The edges and listing orders, once every reference has resolved. */
+/** A company's tags and search text, once its tools are known. */
+function withTools(
+  companies: ReadonlyMap<string, Company>,
+  tools: ReadonlyMap<string, Tool>,
+  tags: ReadonlyMap<string, Tag>
+): Map<string, Company> {
+  const published = [...tools.values()].filter(
+    (tool) => tool.status === 'published'
+  )
+  return new Map(
+    [...companies].map(([key, company]) => {
+      const tagKeys = companyTags(
+        company.category,
+        published.filter((tool) => tool.companyKey === key)
+      )
+      const searchText = searchTextOf(
+        [company.name, company.tagline, company.description],
+        tagKeys,
+        tags
+      )
+      return [key, { ...company, tags: tagKeys, searchText }]
+    })
+  )
+}
+
+/** The edges, the listing orders and the files, once every reference has resolved. */
 function assemble(entities: {
   companies: Map<string, Company>
   tools: Map<string, Tool>
@@ -281,48 +219,41 @@ function assemble(entities: {
   tags: Map<string, Tag>
   aliases: Map<string, string>
 }): Catalog {
-  const { companies, tools, workflows, tags, aliases } = entities
+  const { tools, workflows, tags, aliases } = entities
+  const companies = withTools(entities.companies, tools, tags)
   const published = <T extends { status: 'published' | 'deprecated' }>(
     values: Iterable<T>
   ) => [...values].filter((entity) => entity.status === 'published')
-  const featured = featuredFirst(published(workflows.values()))
-  const toolsByCompany = groupKeys([...tools.values()].sort(byKey), (tool) => [
-    tool.companyKey,
-  ])
-  const workflowsByTool = groupKeys(featured, (workflow) => workflow.toolKeys)
-  tagCounts(tags, companies.values(), tools.values(), workflows.values())
+  const order = {
+    toolsNew: published(tools.values())
+      .sort(newestFirst)
+      .map((tool) => tool.key),
+    workflowsFeatured: featuredFirst(published(workflows.values())).map(
+      (workflow) => workflow.key
+    ),
+    workflowsNew: published(workflows.values())
+      .sort(newestFirst)
+      .map((workflow) => workflow.key),
+    companies: published(companies.values())
+      .sort((a, b) => a.name.localeCompare(b.name) || byKey(a, b))
+      .map((company) => company.key),
+  }
+  const relations = buildRelations({
+    companies,
+    tools,
+    workflows,
+    tags,
+    order,
+  })
   return {
     companies,
     tools,
     workflows,
     tags,
-    documents: buildDocuments({
-      companies,
-      tools,
-      workflows,
-      toolsByCompany,
-      workflowsByTool,
-    }),
+    documents: buildDocuments({ companies, tools, workflows, relations }),
     aliases,
-    toolsByCompany,
-    workflowsByTool,
-    workflowsByCompany: groupKeys(featured, (workflow) => [
-      ...new Set(
-        workflow.toolKeys.map((key) => tools.get(key)?.companyKey ?? '')
-      ),
-    ]),
-    order: {
-      toolsNew: published(tools.values())
-        .sort(newestFirst)
-        .map((tool) => tool.key),
-      workflowsFeatured: featured.map((workflow) => workflow.key),
-      workflowsNew: published(workflows.values())
-        .sort(newestFirst)
-        .map((workflow) => workflow.key),
-      companies: published(companies.values())
-        .sort((a, b) => a.name.localeCompare(b.name) || byKey(a, b))
-        .map((company) => company.key),
-    },
+    relations,
+    order,
   }
 }
 

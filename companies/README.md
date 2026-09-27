@@ -26,7 +26,7 @@ beside this README (`companies/clay/`, `companies/brew/`).
 ---
 name: Acme
 domain: acme.example
-category: data-provider          # a slug from tags/category/
+category: data-provider          # a category from tags.yml
 tagline: Enrich people and companies from one API.
 docs: https://docs.acme.example  # optional
 github: https://github.com/acme  # optional
@@ -43,7 +43,7 @@ description on the company page and in the company's file.
 | --- | --- | --- |
 | `name` | yes | Display name. |
 | `domain` | yes | Bare domain, no scheme. |
-| `category` | yes | Must exist as `tags/category/<slug>.md`. |
+| `category` | yes | Must be a `category:` entry in `tags.yml`. |
 | `logo` | yes | File name under `public/logos/`; svg, png, jpg or webp, at most 32 KB — an SVG, or 128px square. It is served as is. |
 | `updated` | yes | `YYYY-MM-DD` — the day these facts were last checked. |
 | `tagline`, `docs`, `github` | no | Shown when present. The website is always `https://<domain>`. |
@@ -83,7 +83,7 @@ The markdown body is optional and shown on the web only.
 ## tools/\<slug\>.md
 
 **A tool is ONE function** — one thing an agent calls. The slug is the
-capability it performs and must be a file under `tags/capability/`
+capability it performs and must be a `capability:` entry in `tags.yml`
 (`enrich-contacts`, `send-email`, …); add the capability in the same pull
 request if none fits. A product with three functions is three files.
 

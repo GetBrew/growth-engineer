@@ -6,9 +6,6 @@ tags:
   - motion:midbound
   - motion:plg
   - channel:email
-  - capability:track-product-usage
-  - capability:manage-crm
-  - capability:send-email
 featured: 7
 updated: 2026-09-16
 ---

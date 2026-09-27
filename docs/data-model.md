@@ -14,7 +14,7 @@ The public `key` is the path, and the path is the URL:
 | Company | `clay` | `companies/clay/company.md` | `/companies/clay` |
 | Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` | `/tools/clay/enrich-contacts` |
 | Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` |
-| Tag | `capability:enrich-contacts` | `tags/capability/enrich-contacts.md` | a filter chip |
+| Tag | `capability:enrich-contacts` | an entry in `tags.yml` | a filter chip |
 
 A key part is lowercase letters, digits and hyphens, 2–39 characters, never
 starting or ending with a hyphen. A company handle is one part that is not a
@@ -25,7 +25,7 @@ URL answers with a 308.
 
 ## Companies — `companies/<handle>/company.md`
 
-`name`, `domain`, `category` (a `tags/category/` slug), `logo` (a file under
+`name`, `domain`, `category` (a `category:` entry in `tags.yml`), `logo` (a file under
 `public/logos/`), `updated` (ISO date) are required. Optional: `tagline`,
 `docs`, `github`, `aliases`, `status` (`published` default, `deprecated`).
 The website is always `https://<domain>`. The body is the description.
@@ -45,7 +45,7 @@ selfServe, envVar?, header?, keyUrl? }`; `docsUrl` is optional.
 
 ## Tools — `companies/<handle>/tools/<slug>.md`
 
-A tool is ONE function. The slug is a capability (`tags/capability/<slug>.md`
+A tool is ONE function. The slug is a capability (a `capability:` entry in `tags.yml`
 must exist). `name`, `summary`, `updated` are required. `access` maps an
 access id to the **operation** — the MCP tool name, the CLI subcommand, or
 `METHOD /path` — and a published tool needs at least one. `status` is
@@ -79,23 +79,31 @@ heading, text
 outside a section, or a header field that belongs in the body is an error
 with its line number.
 
-## Tags — `tags/<namespace>/<slug>.md`
+## Tags — `tags.yml`
 
-`label` is required; `synonyms` feed search; the body is the required
-description. Namespaces: `capability` (what a tool does), `motion`,
-`channel`, `category` (of a company), `fit`. One namespace is DERIVED and
-never files: `has:<type>`, computed from each tool's access.
+One file holds the whole vocabulary: `<namespace>: { <slug>: { label,
+synonyms? } }`. `label` is required; `synonyms` feed search. Namespaces:
+`capability` (what a tool does), `category` (of a company), `channel` and
+`motion` (of a workflow). One namespace is DERIVED and never written:
+`has:<type>`, computed from each tool's ways in.
+
+Every entity carries the tags it earns, computed at build: a tool its
+capability, its company's category and its ways in; a company its category
+and its published tools' capabilities and ways in; a workflow its motion and
+channel tags, its tools' capabilities, and `has:<type>` when every tool
+offers that way.
 
 ## What the build derives (never authored)
 
 | Projection | From | Where |
 | --- | --- | --- |
-| `has:*` tags on a tool | access | `derived-tags.ts` |
-| tag `counts` | published entities | `derive.ts` |
-| `searchText` | name, summary, company, tag labels and synonyms | `derive.ts` |
-| `toolKeys`, `toolCount`, workflow ↔ tool ↔ company edges — written into both rendered files (`tools:` / `workflows:`) | steps | `build-entities.ts`, `build-catalog.ts`, `build-documents.ts` |
+| every entity's `tags` (capability, category, `has:*`) | its file, its company, its tools | `derive.ts` |
+| `searchText` | its words plus its tags' labels and synonyms | `derive.ts` |
+| `toolKeys`, `toolCount` | steps | `build-entities.ts` |
+| the edges: company ↔ tools ↔ workflows, tag members — written into both rendered files (`tools:` / `workflows:`) | tool folders, step links, tags | `build-relations.ts`, read through `relationsOf` |
+| tag `counts` | the tag's members | `build-relations.ts` |
 | listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
-| the rendered files, their hash and line count | everything above | `build-documents.ts` |
+| the rendered files and their line count | everything above | `build-documents.ts` |
 
 ## Rules the build enforces
 

@@ -5,9 +5,6 @@ author: thedogwiththedataonit
 tags:
   - motion:inbound
   - channel:email
-  - capability:manage-crm
-  - capability:send-email
-  - capability:manage-docs
 featured: 5
 updated: 2026-09-16
 ---

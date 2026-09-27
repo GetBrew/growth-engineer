@@ -54,7 +54,7 @@ describe('definitions', () => {
     expect(isValidTagKey(tag?.example ?? '')).toBe(true)
     for (const entry of DEFINITIONS) {
       expect(entry.definition.endsWith('.')).toBe(true)
-      expect(entry.path).toMatch(/\.md$/)
+      expect(entry.path).toMatch(/\.(md|yml)$/)
     }
   })
 

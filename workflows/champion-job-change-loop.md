@@ -6,9 +6,6 @@ tags:
   - motion:outbound
   - channel:linkedin
   - channel:email
-  - capability:find-work-emails
-  - capability:enrich-contacts
-  - capability:manage-crm
 featured: 10
 updated: 2026-09-16
 ---

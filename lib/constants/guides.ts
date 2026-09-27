@@ -57,7 +57,7 @@ export const GUIDES: ReadonlyArray<Guide> = [
     length: 'three-minute',
     intro:
       'A tool is ONE function an agent calls — one MCP tool, one CLI subcommand, one API endpoint. A product with three functions is three files.',
-    note: 'The file name must be a capability that already exists under tags/capability/. If none fits, add it in the same pull request.',
+    note: 'The file name must be a capability listed in tags.yml. If none fits, add it there in the same pull request.',
     docPath: 'companies/README.md#toolsslugmd',
   },
   {

@@ -5,9 +5,6 @@ author: thedogwiththedataonit
 tags:
   - motion:outbound
   - channel:email
-  - capability:scrape-web
-  - capability:manage-crm
-  - capability:write-copy
 featured: 3
 updated: 2026-09-16
 ---

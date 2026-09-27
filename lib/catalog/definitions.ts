@@ -63,8 +63,8 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
     definition:
       'A word from the managed vocabulary that companies, tools and workflows are filtered by.',
     detail:
-      'Five curated namespaces — capability, motion, channel, category, fit — plus one derived from each tool’s access: has (its ways in).',
-    path: 'tags/<namespace>/<slug>.md',
+      'Four curated namespaces — capability, motion, channel, category — plus one derived from each tool’s access: has (its ways in). Every entry carries the tags it earns: a workflow its tools’ capabilities, a company its tools’ ways in.',
+    path: 'tags.yml',
   },
 ]
 

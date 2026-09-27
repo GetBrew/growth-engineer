@@ -36,7 +36,9 @@ const nextConfig: NextConfig = {
     '/': [
       './companies/**/*',
       './workflows/**/*',
-      './tags/**/*',
+      './tags.yml',
+      // The logo check reads the folder (lib/content/read-tree.ts).
+      './public/logos/**/*',
       // The social cards' type (lib/seo/og-font.ts).
       './assets/**/*',
     ],

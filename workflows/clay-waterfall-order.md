@@ -2,8 +2,6 @@
 title: Find more work emails by ordering providers by hit rate
 summary: Sample first, then run the waterfall in the order that actually finds emails for your list.
 author: thedogwiththedataonit
-tags:
-  - capability:find-work-emails
 featured: 11
 updated: 2026-09-16
 ---

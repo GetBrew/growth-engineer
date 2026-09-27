@@ -18,6 +18,7 @@ import {
   workflowListItem,
   workflowSearchItem,
 } from './lists'
+import { relationsOf } from './relations'
 import { type Excerpt, sourceExcerpt } from './source-excerpt'
 
 /**
@@ -94,10 +95,12 @@ export async function loadToolsByCompany(
   companyKey: string
 ): Promise<Array<Tool>> {
   const catalog = getCatalog()
-  return (catalog.toolsByCompany.get(companyKey) ?? []).flatMap((key) => {
-    const tool = catalog.tools.get(key)
-    return tool?.status === 'published' ? [tool] : []
-  })
+  return relationsOf(catalog, formatRef('company', companyKey)).tools.flatMap(
+    (key) => {
+      const tool = catalog.tools.get(key)
+      return tool ? [tool] : []
+    }
+  )
 }
 
 function workflowRows(keys: ReadonlyArray<string>): Array<WorkflowListItem> {
@@ -110,12 +113,16 @@ function workflowRows(keys: ReadonlyArray<string>): Array<WorkflowListItem> {
 
 /** Published workflows using a tool, featured first. */
 export async function loadWorkflowsByTool(toolKey: string) {
-  return workflowRows(getCatalog().workflowsByTool.get(toolKey) ?? [])
+  return workflowRows(
+    relationsOf(getCatalog(), formatRef('tool', toolKey)).workflows
+  )
 }
 
 /** Published workflows using any of a company's tools, featured first. */
 export async function loadWorkflowsByCompany(companyKey: string) {
-  return workflowRows(getCatalog().workflowsByCompany.get(companyKey) ?? [])
+  return workflowRows(
+    relationsOf(getCatalog(), formatRef('company', companyKey)).workflows
+  )
 }
 
 /** An old key → its current one, or null. */

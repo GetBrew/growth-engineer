@@ -10,6 +10,7 @@ import {
   refToFilePath,
   refToPath,
 } from './keys'
+import { relationsOf } from './relations'
 
 /**
  * What the discovery surfaces read: the sitemap, `/llms.txt` and
@@ -153,7 +154,8 @@ export async function loadLlmsIndex(): Promise<
         type: 'company' as const,
         key: company.key,
       }
-      const toolCount = (catalog.toolsByCompany.get(company.key) ?? []).length
+      const toolCount = relationsOf(catalog, formatRef('company', company.key))
+        .tools.length
       const summary =
         company.tagline ??
         (company.description

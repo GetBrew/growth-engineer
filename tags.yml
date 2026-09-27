@@ -1,0 +1,167 @@
+# The catalog vocabulary: every tag, in one file. The key is
+# <namespace>:<slug> (capability:enrich-contacts).
+#
+#   capability  what a tool does. Every tool names one (`capability:` in its
+#               header); a workflow gets its tools' capabilities automatically.
+#   category    what kind of company it is (`category:` in company.md).
+#   channel     where a workflow reaches people (`tags:` in its header).
+#   motion      which go-to-market motion a workflow serves (`tags:` too).
+#
+# One more namespace is computed, never written here: has:mcp|cli|api, the
+# ways in. `label` is what the site shows; `synonyms` feed search, so
+# "enrichment" finds every tool that enriches. Slugs are lowercase letters,
+# digits and hyphens. Reuse a tag whenever it fits: shared words are what
+# make three vendors comparable. Add a new one in the same pull request as
+# the first file that needs it.
+
+capability:
+  authenticate-users:
+    label: Authenticate users
+    synonyms: [auth, authentication, login, sign up]
+  build-audience:
+    label: Build audiences
+    synonyms: [audience, audiences, list building, prospecting, segments]
+  classify-signals:
+    label: Classify signals
+    synonyms: [classification, scoring, triage]
+  collect-payments:
+    label: Collect payments
+    synonyms: [payments, billing, subscriptions, checkout]
+  design-assets:
+    label: Design assets
+    synonyms: [design, graphics, creative, mockups]
+  enrich-contacts:
+    label: Enrich contacts
+    synonyms: [enrich, enrichment, data enrichment, contact data]
+  find-work-emails:
+    label: Find work emails
+    synonyms: [email finder, find emails, work email, email lookup]
+  host-meetings:
+    label: Host meetings
+    synonyms: [meetings, video calls, webinars]
+  manage-code:
+    label: Manage code
+    synonyms: [code, repositories, pull requests, issues]
+  manage-crm:
+    label: Manage a CRM
+    synonyms: [crm, pipeline, deals, contacts]
+  manage-docs:
+    label: Manage docs
+    synonyms: [docs, notes, wiki, knowledge base]
+  manage-tasks:
+    label: Manage tasks
+    synonyms: [tasks, projects, tickets]
+  research-accounts:
+    label: Research accounts
+    synonyms: [research, account research, company research]
+  route-alerts:
+    label: Route alerts
+    synonyms: [alerts, notifications, routing, notify]
+  scrape-web:
+    label: Scrape the web
+    synonyms: [scraping, crawl, crawler, web data]
+  send-email:
+    label: Send email
+    synonyms: [sequencer, email sending, sending, campaigns]
+  store-files:
+    label: Store files
+    synonyms: [files, storage, documents]
+  track-intent:
+    label: Track intent
+    synonyms: [intent, intent data, buying signals, signals]
+  track-product-usage:
+    label: Track product usage
+    synonyms: [product analytics, usage, events, behavior]
+  track-revenue:
+    label: Track revenue
+    synonyms: [revenue, mrr, arr, invoices]
+  write-copy:
+    label: Write copy
+    synonyms: [copywriting, drafting, generate text, llm]
+
+category:
+  ai-model:
+    label: AI model
+    synonyms: [llm, ai, model, copilot]
+  auth:
+    label: Auth
+    synonyms: [auth, identity]
+  code:
+    label: Code
+    synonyms: [code, git, repositories]
+  crm:
+    label: CRM
+    synonyms: [crm, pipeline]
+  data-provider:
+    label: Data provider
+    synonyms: [data, enrichment provider, contact database]
+  design:
+    label: Design
+    synonyms: [design tool, creative]
+  docs:
+    label: Docs
+    synonyms: [docs, wiki, notes]
+  email:
+    label: Email platform
+    synonyms: [email platform, esp, sequencer]
+  intent:
+    label: Intent
+    synonyms: [intent data, signals]
+  messaging:
+    label: Messaging
+    synonyms: [messaging, chat, notifications]
+  payments:
+    label: Payments
+    synonyms: [payments, billing]
+  product-analytics:
+    label: Product analytics
+    synonyms: [analytics, product analytics, bi]
+  project-management:
+    label: Project management
+    synonyms: [project management, tasks]
+  scraper:
+    label: Scraper
+    synonyms: [scraper, crawler, web data]
+  storage:
+    label: Storage
+    synonyms: [storage, files]
+  video:
+    label: Video
+    synonyms: [video, meetings, webinars]
+
+channel:
+  ads:
+    label: Ads
+    synonyms: [ads, paid, advertising]
+  chat:
+    label: Chat
+    synonyms: [chat, slack, teams, messaging]
+  email:
+    label: Email
+    synonyms: [email]
+  linkedin:
+    label: LinkedIn
+    synonyms: [linkedin]
+  phone:
+    label: Phone
+    synonyms: [phone, calls, dialer]
+  website:
+    label: Website
+    synonyms: [website, web, landing page]
+
+motion:
+  abm:
+    label: Account-based
+    synonyms: [abm, account based, named accounts]
+  inbound:
+    label: Inbound
+    synonyms: [inbound, warm inbound, leads]
+  midbound:
+    label: Midbound
+    synonyms: [midbound, website visitors, product signals, expansion]
+  outbound:
+    label: Outbound
+    synonyms: [outbound, cold, cold outbound, cold email]
+  plg:
+    label: Product-led
+    synonyms: [plg, product led, self serve]

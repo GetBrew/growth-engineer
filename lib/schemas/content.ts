@@ -50,7 +50,7 @@ export const companySchema = z.strictObject({
     .string()
     .trim()
     .regex(z.regexes.domain, 'must be a bare domain like `clay.com`'),
-  /** A `tags/category/<slug>.md` slug. */
+  /** A `category:` slug from tags.yml. */
   category: keyPart,
   tagline: text.optional(),
   docs: url.optional(),
@@ -162,7 +162,8 @@ export const workflowHeaderSchema = z.strictObject({
   summary: text,
   /** The GitHub login of the person who wrote it. */
   author: githubLogin,
-  tags: z.array(tagKey).min(1, 'give the workflow at least one tag'),
+  /** Motion and channel tags; capabilities come from the tools. */
+  tags: z.array(tagKey).default([]),
   featured: z.int().min(1).optional(),
   aliases: z.array(keyPart).default([]),
   status: status.default('published'),
@@ -209,11 +210,22 @@ export const workflowBodySchema = z.strictObject({
     .min(1, 'add a `## Done when` section with at least one check'),
 })
 
-/* ──────────────────────────────────── tag ───────────────────────────────── */
+/* ─────────────────────────────────── tags.yml ───────────────────────────── */
 
-export const tagSchema = z.strictObject({
+const tagEntry = z.strictObject({
   label: text,
   synonyms: z.array(text).default([]),
+})
+
+/** A namespace: slug → entry. Slugs are checked in build-tags.ts. */
+const tagNamespace = z.record(z.string(), tagEntry).default({})
+
+/** The curated namespaces; `has:*` is computed and never written. */
+export const tagsFileSchema = z.strictObject({
+  capability: tagNamespace,
+  category: tagNamespace,
+  channel: tagNamespace,
+  motion: tagNamespace,
 })
 
 export type CompanyFrontmatter = z.infer<typeof companySchema>

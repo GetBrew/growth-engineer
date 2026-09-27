@@ -17,13 +17,13 @@ companies/<handle>/company.md        who the company is            → /companie
 companies/<handle>/access/<id>.md    each way in: MCP, CLI, API    (shared by the company's tools)
 companies/<handle>/tools/<slug>.md   each function an agent calls  → /tools/clay/enrich-contacts
 workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
-tags/<namespace>/<slug>.md           the vocabulary                → capability, motion, channel, category, fit
+tags.yml                             the vocabulary                → capability, motion, channel, category
 ```
 
 - A **company** is a folder named by its permanent handle.
 - A **tool is ONE function** — one thing an agent calls, tied to a specific
   MCP tool, CLI subcommand or API endpoint. A product with three functions is
-  three files. Its slug is a capability from `tags/capability/`.
+  three files. Its slug is a capability from `tags.yml`.
 - A **workflow** is up to ten steps, each naming one tool, phrased as the
   result it reaches, written by a person (`author:` is a GitHub login). A
   growth hack is a workflow; there is no second kind. The build links every
@@ -32,7 +32,8 @@ tags/<namespace>/<slug>.md           the vocabulary                → capabilit
 Adding your company is three files and a pull request:
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Each folder's README has the full
 field reference: [`companies/`](companies/README.md),
-[`workflows/`](workflows/README.md), [`tags/`](tags/README.md).
+[`workflows/`](workflows/README.md), and the vocabulary in
+[`tags.yml`](tags.yml).
 
 ## How a file becomes the product
 
@@ -45,7 +46,7 @@ golden-tested byte for byte. Nothing renders at request time; nobody
 hand-edits a rendered file. A deploy is the publish.
 
 ```
-companies/ workflows/ tags/  ─▶  lib/content/build-catalog.ts  ─▶  the Catalog (in memory)
+companies/ workflows/ tags.yml ─▶ lib/content/build-catalog.ts  ─▶  the Catalog (in memory)
                                         │                              ├▶ pages (prerendered)
                                         └▶ lib/catalog/render-markdown ├▶ /…/*.md files (prerendered)
                                                                        └▶ /llms.txt
@@ -103,7 +104,7 @@ the one optional public variable, the site origin.
 ## Layout
 
 ```
-companies/ workflows/ tags/   THE DATA — see CONTRIBUTING.md
+companies/ workflows/ tags.yml  THE DATA — see CONTRIBUTING.md
 app/
   (site)/                     every page: /, companies, tools, workflows, contribute
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)

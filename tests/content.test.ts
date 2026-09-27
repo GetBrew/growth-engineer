@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, test } from 'vitest'
+import { parse } from 'yaml'
 import { parseRef } from '@/lib/catalog/keys'
 import {
   companySearchItem,
   toolSearchItem,
   workflowSearchItem,
 } from '@/lib/catalog/lists'
+import { relationsOf } from '@/lib/catalog/relations'
 import {
   TOOL_FILE_MAX_LINES,
   WORKFLOW_FILE_MAX_LINES,
@@ -19,7 +21,7 @@ import { readContentTree } from '@/lib/content/read-tree'
 
 /**
  * THE CONTENT SUITE (`pnpm content:check`): the real tree under companies/,
- * workflows/ and tags/ builds, and answers every question a page asks. This
+ * workflows/ and tags.yml builds, and answers every question a page asks. This
  * is what CI runs on a contributor's pull request, so a bad file fails here
  * with its path, not in a deploy.
  */
@@ -48,7 +50,16 @@ describe('the content tree', () => {
     expect(catalog.companies.size).toBe(files('company'))
     expect(catalog.tools.size).toBe(files('tool') - drafts)
     expect(catalog.workflows.size).toBe(files('workflow'))
-    expect(catalog.tags.size).toBe(files('tag') + 3)
+    // Every tags.yml entry, plus the three derived `has:*`.
+    const vocabulary = parse(
+      tree.files.find((file) => file.kind === 'tags')?.source ?? '',
+      { schema: 'core' }
+    ) as Record<string, Record<string, unknown>>
+    const entries = Object.values(vocabulary).reduce(
+      (sum, namespace) => sum + Object.keys(namespace).length,
+      0
+    )
+    expect(catalog.tags.size).toBe(entries + 3)
     expect(catalog.companies.size).toBeGreaterThanOrEqual(25)
     expect(catalog.tools.size).toBeGreaterThanOrEqual(37)
     expect(catalog.workflows.size).toBeGreaterThanOrEqual(12)
@@ -63,7 +74,12 @@ describe('the content tree', () => {
     const tool = catalog.tools.get('clay/enrich-contacts')
     expect(tool?.companyKey).toBe('clay')
     expect(tool?.name).toBe('Enrich contacts')
-    expect(tool?.tags).toEqual(['has:api'])
+    // Its tags are computed: the capability, its company's category, its ways in.
+    expect(tool?.tags).toEqual([
+      'capability:enrich-contacts',
+      'category:data-provider',
+      'has:api',
+    ])
     // Every way in names the exact call — that is what makes it one function.
     expect(tool?.access.every((entry) => entry.operation.length > 0)).toBe(true)
     // The product is not a listing: there is no `clay/clay`.
@@ -71,7 +87,7 @@ describe('the content tree', () => {
   })
 
   test('one company lists many tools, in key order', () => {
-    expect(catalog.toolsByCompany.get('clay')).toEqual([
+    expect(relationsOf(catalog, 'company:clay').tools).toEqual([
       'clay/build-audience',
       'clay/enrich-contacts',
       'clay/find-work-emails',
@@ -108,7 +124,7 @@ describe('the content tree', () => {
           true
         )
         expect(
-          catalog.workflowsByTool.get(toolKey),
+          relationsOf(catalog, `tool:${toolKey}`).workflows,
           `${toolKey} ← ${workflow.key}`
         ).toContain(workflow.key)
       }
@@ -123,8 +139,9 @@ describe('the content tree', () => {
         expect(toolFile, toolKey).toContain(`workflow:${workflow.key}`)
       }
     }
-    for (const [toolKey, workflowKeys] of catalog.workflowsByTool) {
-      for (const workflowKey of workflowKeys) {
+    for (const toolKey of catalog.tools.keys()) {
+      for (const workflowKey of relationsOf(catalog, `tool:${toolKey}`)
+        .workflows) {
         expect(
           catalog.workflows.get(workflowKey)?.toolKeys,
           `${toolKey} ← ${workflowKey}`
@@ -133,7 +150,7 @@ describe('the content tree', () => {
     }
     // A tool no workflow uses says so, in the same header line.
     const unused = [...catalog.tools.keys()].find(
-      (key) => !catalog.workflowsByTool.has(key)
+      (key) => relationsOf(catalog, `tool:${key}`).workflows.length === 0
     )
     expect(unused).toBeDefined()
     expect(catalog.documents.get(`tool:${unused}`)?.markdown).toContain(
@@ -143,11 +160,21 @@ describe('the content tree', () => {
 
   test('workflows are reachable from the tools and companies they use', () => {
     expect(
-      (catalog.workflowsByTool.get('brew/write-copy') ?? []).length
+      relationsOf(catalog, 'tool:brew/write-copy').workflows.length
     ).toBeGreaterThan(3)
-    expect(catalog.workflowsByCompany.get('clay')).toContain(
+    expect(relationsOf(catalog, 'company:clay').workflows).toContain(
       'clay-waterfall-order'
     )
+    // A workflow's capabilities are its tools' capabilities, never typed twice.
+    for (const workflow of catalog.workflows.values()) {
+      const capabilities = workflow.toolKeys.map(
+        (key) => `capability:${catalog.tools.get(key)?.capability}`
+      )
+      expect(
+        workflow.tags.filter((tag) => tag.startsWith('capability:')).sort(),
+        workflow.key
+      ).toEqual([...new Set(capabilities)].sort())
+    }
   })
 
   test('every file is rendered, within its line cap, and reachable by ref', () => {
@@ -305,8 +332,16 @@ describe('the content tree', () => {
     const has = [...catalog.tags.values()].filter(
       (tag) => tag.namespace === 'has'
     )
-    expect(has.every((tag) => tag.derived)).toBe(true)
     expect(has.map((tag) => tag.slug).sort()).toEqual(['api', 'cli', 'mcp'])
+    // A tag's count is the length of its relations: one writer for both.
+    for (const tag of catalog.tags.values()) {
+      const members = relationsOf(catalog, tag.key)
+      expect(tag.counts, tag.key).toEqual({
+        companies: members.companies.length,
+        tools: members.tools.length,
+        workflows: members.workflows.length,
+      })
+    }
     expect(
       catalog.tags.get('category:data-provider')?.counts.companies
     ).toBeGreaterThan(0)

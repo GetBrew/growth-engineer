@@ -150,7 +150,7 @@ export function toolJsonLd(
               },
             }
           : {}),
-        keywords: [tool.capability, ...tool.tags].join(', '),
+        keywords: tool.tags.join(', '),
         dateModified: new Date(tool.updatedAt).toISOString(),
       },
       {

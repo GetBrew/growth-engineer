@@ -36,8 +36,7 @@ const TOOL_STEPS: ReadonlyArray<GuideStep> = [
     key: 'capability',
     title: 'Pick the capability it performs',
     detail:
-      'The file name is the capability, and it must already exist as a file under tags/capability/. Look there first. If nothing fits what your function does, add the capability file in the same pull request.',
-    sample: { file: 'tags/capability/enrich-contacts.md' },
+      'The file name is the capability, and it must already be listed under capability: in tags.yml, the one file that holds every tag. Look there first. If nothing fits what your function does, add an entry — a label and a few synonyms — in the same pull request.',
   },
   {
     key: 'one-function',
@@ -106,7 +105,7 @@ workflows/competitor-intent.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'Phrase the title as the result it reaches, not the tools it uses. The summary is one sentence. author is your GitHub login — workflows are by people, not companies, so the page shows your avatar and links to your profile. Tag it with at least one namespace:slug that exists under tags/.',
+      'Phrase the title as the result it reaches, not the tools it uses. The summary is one sentence. author is your GitHub login — workflows are by people, not companies, so the page shows your avatar and links to your profile. Tag it with the motion and channel it serves (motion:outbound, channel:email) from tags.yml; the capabilities come from its tools.',
     sample: { file: WORKFLOW, excerpt: 'header' },
   },
   {
@@ -164,7 +163,7 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     key: 'company',
     title: 'Write company.md',
     detail:
-      'Name, bare domain with no scheme, a category that exists under tags/category/, a logo file you add to public/logos/, and the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly.',
+      'Name, bare domain with no scheme, a category listed in tags.yml, a logo file you add to public/logos/, and the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly.',
     sample: { file: 'companies/clay/company.md' },
   },
   {

@@ -12,8 +12,8 @@ const TAGS = [
   'capability:enrich-contacts',
   'capability:find-work-emails',
   'motion:outbound',
-  'fit:smb',
-  'fit:enterprise',
+  'channel:smb',
+  'channel:enterprise',
   'has:mcp',
   'has:cli',
 ]
@@ -21,10 +21,10 @@ const TAGS = [
 describe('search grammar', () => {
   test('splits words from chips, keeps unknown namespaces as words', () => {
     expect(
-      parseSearchText('enrich linkedin fit:smb has:mcp price:cheap')
+      parseSearchText('enrich linkedin channel:smb has:mcp price:cheap')
     ).toEqual({
       words: ['enrich', 'linkedin', 'price:cheap'],
-      chips: ['fit:smb', 'has:mcp'],
+      chips: ['channel:smb', 'has:mcp'],
     })
   })
 
@@ -39,9 +39,11 @@ describe('search grammar', () => {
   })
 
   test('a partial chip completes itself; an impossible one is reported', () => {
-    expect(completeChips(['fit:sm', 'has:mcp', 'fit:xyz'], TAGS)).toEqual({
-      chips: ['fit:smb', 'has:mcp'],
-      unknown: ['fit:xyz'],
+    expect(
+      completeChips(['channel:sm', 'has:mcp', 'channel:xyz'], TAGS)
+    ).toEqual({
+      chips: ['channel:smb', 'has:mcp'],
+      unknown: ['channel:xyz'],
     })
   })
 
@@ -51,15 +53,17 @@ describe('search grammar', () => {
       chips: ['has:cli'],
       unknown: ['capability:'],
     })
-    expect(completeChips(['fit:'], [...TAGS, 'fit:smb-saas']).unknown).toEqual([
-      'fit:',
-    ])
-    expect(completeChips(['fit:smb'], [...TAGS, 'fit:smb-saas']).chips).toEqual(
-      ['fit:smb']
-    )
-    expect(completeChips(['fit:sm'], [...TAGS, 'fit:smb-saas'])).toEqual({
+    expect(
+      completeChips(['channel:'], [...TAGS, 'channel:smb-saas']).unknown
+    ).toEqual(['channel:'])
+    expect(
+      completeChips(['channel:smb'], [...TAGS, 'channel:smb-saas']).chips
+    ).toEqual(['channel:smb'])
+    expect(
+      completeChips(['channel:sm'], [...TAGS, 'channel:smb-saas'])
+    ).toEqual({
       chips: [],
-      unknown: ['fit:sm'],
+      unknown: ['channel:sm'],
     })
   })
 
@@ -67,23 +71,25 @@ describe('search grammar', () => {
     const state = searchStateFromParams({
       has: 'mcp,cli',
       q: 'cold outbound',
-      fit: 'smb',
+      channel: 'smb',
     })
     expect(state).toEqual({
       words: ['cold', 'outbound'],
-      chips: ['fit:smb', 'has:mcp', 'has:cli'],
+      chips: ['channel:smb', 'has:mcp', 'has:cli'],
     })
     expect(searchHref('/tools', state)).toBe(
-      '/tools?q=cold+outbound&fit=smb&has=mcp,cli'
+      '/tools?q=cold+outbound&channel=smb&has=mcp,cli'
     )
     expect(searchHref('/tools', { words: [], chips: [] })).toBe('/tools')
   })
 
   test('the same search from text and from params has the same words and chips', () => {
-    const fromText = parseSearchText('cold outbound has:cli fit:smb has:mcp')
+    const fromText = parseSearchText(
+      'cold outbound has:cli channel:smb has:mcp'
+    )
     const fromParams = searchStateFromParams({
       q: 'cold outbound',
-      fit: 'smb',
+      channel: 'smb',
       has: 'mcp,cli',
     })
     expect(fromText.words.join(' ')).toBe(fromParams.words.join(' '))

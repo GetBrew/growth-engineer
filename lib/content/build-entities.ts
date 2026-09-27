@@ -1,9 +1,4 @@
-import { derivedTagKeys } from '@/lib/catalog/derived-tags'
-import {
-  DERIVED_TAG_NAMESPACES,
-  isValidKeyPart,
-  isValidOwnedKey,
-} from '@/lib/catalog/keys'
+import { isValidKeyPart, isValidOwnedKey } from '@/lib/catalog/keys'
 import {
   type AccessFrontmatter,
   type ToolFrontmatter,
@@ -13,9 +8,10 @@ import type { Access, Company, Tag, Tool, Workflow } from '@/lib/types/catalog'
 import {
   dateToMs,
   distinctToolKeys,
+  searchTextOf,
   slugify,
-  toolSearchText,
-  workflowSearchText,
+  toolTags,
+  workflowTags,
 } from './derive'
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
@@ -110,32 +106,30 @@ function toTool(
   file: ToolFile,
   parsed: { data: ToolFrontmatter; body: string },
   company: Company,
-  capability: Tag | undefined,
+  tagMap: ReadonlyMap<string, Tag>,
   access: ReadonlyArray<Access>
 ): Tool {
   const { data, body } = parsed
-  const updatedAt = dateToMs(data.updated)
-  const tool: Tool = {
+  const capability = file.slug
+  const tags = toolTags({ capability, access }, company.category)
+  return {
     key: `${file.handle}/${file.slug}`,
     companyKey: file.handle,
     name: data.name,
     summary: data.summary,
     ...(body ? { description: body } : {}),
-    capability: file.slug,
+    capability,
     access,
-    tags: [],
+    tags,
     status: data.status === 'deprecated' ? 'deprecated' : 'published',
-    updatedAt,
+    updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
-    searchText: toolSearchText(
-      data,
-      company.name,
-      capability,
-      access.map((entry) => entry.type)
+    searchText: searchTextOf(
+      [data.name, company.name, data.summary],
+      tags,
+      tagMap
     ),
   }
-  tool.tags = derivedTagKeys(tool)
-  return tool
 }
 
 /** Why a tool file cannot be placed, or null when its path is fine. */
@@ -177,11 +171,10 @@ export function buildTools(
     if (!(parsed && company)) {
       continue
     }
-    const capability = context.tags.get(`capability:${file.slug}`)
-    if (!capability) {
+    if (!context.tags.has(`capability:${file.slug}`)) {
       problems.add(
         file.path,
-        `"${file.slug}" is not a capability: a tool is ONE function, named after a slug in tags/capability/ — add the capability in the same pull request if none fits`
+        `"${file.slug}" is not a capability: a tool is ONE function, named after a capability in tags.yml — add the capability in the same pull request if none fits`
       )
     }
     const access = resolveAccess(
@@ -191,7 +184,7 @@ export function buildTools(
       problems
     )
     if (parsed.data.status !== 'draft') {
-      const tool = toTool(file, parsed, company, capability, access)
+      const tool = toTool(file, parsed, company, context.tags, access)
       tools.set(tool.key, tool)
     }
   }
@@ -205,29 +198,27 @@ type WorkflowContext = {
   tags: ReadonlyMap<string, Tag>
 }
 
-/** The curated tags a workflow names; the derived ones are refused. */
-function resolveTags(
+/** The namespaces a workflow tags itself with; the rest are computed. */
+const WORKFLOW_TAG_NAMESPACES: ReadonlyArray<string> = ['motion', 'channel']
+
+/** A workflow names only motion and channel tags, each one in tags.yml. */
+function checkTags(
   file: WorkflowFile,
   keys: ReadonlyArray<string>,
   tags: ReadonlyMap<string, Tag>,
   problems: ProblemList
-): Array<Tag> {
-  const resolved: Array<Tag> = []
+): void {
   for (const tagKey of keys) {
     const namespace = tagKey.split(':')[0] ?? ''
-    const tag = tags.get(tagKey)
-    if (DERIVED_TAG_NAMESPACES.has(namespace as never)) {
+    if (!WORKFLOW_TAG_NAMESPACES.includes(namespace)) {
       problems.add(
         file.path,
-        `tags: "${tagKey}" is computed from tools, not a tag a workflow carries`
+        `tags: "${tagKey}" is computed from the workflow's tools; tag a workflow with motion: and channel: only`
       )
-    } else if (tag) {
-      resolved.push(tag)
-    } else {
-      problems.add(file.path, `tags: "${tagKey}" is not a file under tags/`)
+    } else if (!tags.has(tagKey)) {
+      problems.add(file.path, `tags: "${tagKey}" is not in tags.yml`)
     }
   }
-  return resolved
 }
 
 /** Every step names a published tool. */
@@ -252,7 +243,7 @@ function checkSteps(
 function toWorkflow(
   file: WorkflowFile,
   parsed: ParsedWorkflow,
-  tags: ReadonlyArray<Tag>
+  context: WorkflowContext
 ): Workflow {
   const { data, notes } = parsed
   // A step's key is its title as a slug, made unique within the workflow: two
@@ -271,12 +262,19 @@ function toWorkflow(
     instruction: step.instruction,
   }))
   const toolKeys = distinctToolKeys(steps)
+  const tags = workflowTags(
+    data.tags,
+    toolKeys.flatMap((key) => {
+      const tool = context.tools.get(key)
+      return tool ? [tool] : []
+    })
+  )
   return {
     key: file.name,
     author: data.author,
     title: data.title,
     summary: data.summary,
-    tags: data.tags,
+    tags,
     inputs: data.inputs,
     steps,
     doneWhen: data.doneWhen,
@@ -287,7 +285,18 @@ function toWorkflow(
     status: data.status,
     updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
-    searchText: workflowSearchText({ ...data, toolKeys }, tags),
+    // Both halves of each tool key: `clay/enrich-contacts` finds the workflow
+    // by "clay" as well as by "enrich" — its rows show the vendor's logo.
+    searchText: searchTextOf(
+      [
+        data.title,
+        data.summary,
+        data.author,
+        ...toolKeys.flatMap((key) => key.split('/')),
+      ],
+      tags,
+      context.tags
+    ),
   }
 }
 
@@ -318,9 +327,9 @@ export function buildWorkflows(
     if (!parsed) {
       continue
     }
-    const tags = resolveTags(file, parsed.data.tags, context.tags, problems)
+    checkTags(file, parsed.data.tags, context.tags, problems)
     checkSteps(file, parsed, context.tools, problems)
-    const workflow = toWorkflow(file, parsed, tags)
+    const workflow = toWorkflow(file, parsed, context)
     if (workflow.featured !== undefined) {
       const holder = featuredRanks.get(workflow.featured)
       if (holder) {
