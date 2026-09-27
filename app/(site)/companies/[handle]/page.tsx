@@ -6,6 +6,7 @@ import {
   toolListItem,
   workflowListItem,
 } from '@/components/catalog/list'
+import { CodeText } from '@/components/common/code-text'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { NoResults } from '@/components/common/no-results'
 import { ShareButton } from '@/components/detail/share-button'
@@ -35,6 +36,8 @@ import { companyJsonLd } from '@/lib/seo/structured-data'
 import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ handle: string }>
+
+const BLANK_LINE = /\n\s*\n/
 
 /**
  * Every page here is prerendered from `generateStaticParams`, and reading
@@ -167,11 +170,21 @@ async function CompanyDetail({ params }: { params: Params }) {
                 <div className="flex flex-col gap-8">
                   <section className="flex flex-col gap-3">
                     <h2 className={cn(PANEL_HEADING, 'min-h-0')}>Overview</h2>
-                    <p className="type-body max-w-2xl">
-                      {company.description ??
+                    {/* The body is markdown: one <p> per paragraph, and
+                        `backticks` set as code. */}
+                    <div className="flex max-w-2xl flex-col gap-4">
+                      {(
+                        company.description ??
                         company.tagline ??
-                        `${company.name} has no description yet.`}
-                    </p>
+                        `${company.name} has no description yet.`
+                      )
+                        .split(BLANK_LINE)
+                        .map((paragraph) => (
+                          <p className="type-body" key={paragraph}>
+                            <CodeText text={paragraph.trim()} />
+                          </p>
+                        ))}
+                    </div>
                   </section>
                 </div>
               ),

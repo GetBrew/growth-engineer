@@ -3,6 +3,7 @@
 import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useId, useState } from 'react'
+import { CodeText } from '@/components/common/code-text'
 import { PANEL_HEADING } from '@/components/detail/styles'
 import { useClampOverflow } from '@/lib/hooks/use-clamp-overflow'
 import { cn } from '@/lib/utils/cn'
@@ -46,7 +47,7 @@ function DescriptionCard({
   return (
     <div>
       <p className={cn(PARAGRAPH, clamps && !open && 'line-clamp-5')} ref={ref}>
-        {first}
+        <CodeText text={first} />
       </p>
       {rest.length > 0 || overflows ? (
         <>
@@ -60,7 +61,7 @@ function DescriptionCard({
             <div className="overflow-hidden">
               {rest.map((paragraph) => (
                 <p className={cn(PARAGRAPH, 'mt-4')} key={paragraph}>
-                  {paragraph}
+                  <CodeText text={paragraph} />
                 </p>
               ))}
             </div>

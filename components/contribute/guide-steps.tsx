@@ -1,4 +1,4 @@
-import { CodeText } from '@/components/contribute/code-text'
+import { CodeText } from '@/components/common/code-text'
 import { CopyButton } from '@/components/contribute/copy-button'
 import type { GuideStep } from '@/lib/constants/guide-steps'
 

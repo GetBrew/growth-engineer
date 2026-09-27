@@ -3,7 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CodeText } from '@/components/contribute/code-text'
+import { CodeText } from '@/components/common/code-text'
 import {
   GuideSteps,
   type ResolvedGuideStep,
