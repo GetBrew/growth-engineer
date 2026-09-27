@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { accessTypeLabels } from '@/components/common/badges'
+import { BuiltFrom } from '@/components/detail/built-from'
 import {
   DETAIL_DATE,
   DetailByline,
@@ -164,6 +165,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
             markdown={document.markdown}
             preview={<MarkdownPreview markdown={document.markdown} />}
           />
+          <BuiltFrom sources={document.sources} />
         </section>
 
         <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
