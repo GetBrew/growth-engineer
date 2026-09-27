@@ -16,11 +16,46 @@ import { MAX_WORKFLOW_STEPS } from '@/lib/catalog/render-markdown'
  *
  * Keys are never authored — a company's handle is its folder, a tool's slug
  * is its file name — so the schemas describe FIELDS only. Cross-file rules
- * (does this tool exist, does that access id exist) live in build-catalog.ts.
+ * (does this tool exist, does its company declare that way in) live in
+ * lib/content/build-*.ts.
  */
 
 const text = z.string().trim().min(1, 'must not be empty')
+const LINE_BREAK = /[\r\n]/
+/** A value that fits on one header line: no line breaks. */
+const line = text.refine((value) => !LINE_BREAK.test(value), {
+  message: 'must be one line',
+})
+/**
+ * Markdown that would open a block, as CommonMark reads a line: a heading
+ * (`## `, not `#1`), quote, list item, code fence, HTML block, or a line that
+ * is only a rule.
+ */
+const BLOCK_START =
+  /^(?:#{1,6}(?:\s|$)|>|[-*+](?:\s|$)|\d{1,9}[.)](?:\s|$)|```|~~~|<[A-Za-z!?/]|(?:[-*_=]\s*){3,}$)/
+/** A sentence the file prints as its own paragraph: plain prose, one line. */
+const sentence = line.refine((value) => !BLOCK_START.test(value), {
+  message: 'must be plain prose: no heading, quote, list or rule at the start',
+})
 const url = z.url({ protocol: /^https?$/, hostname: z.regexes.domain })
+/** `{subdomain}`: the part of a way's URL that differs per account. */
+const PLACEHOLDER = /\{[A-Za-z][A-Za-z0-9_-]*\}/g
+const STRAY = /[{}\s]/
+/**
+ * A way's URL. A host that differs per account keeps the placeholder the
+ * vendor's docs print, in braces — `https://{subdomain}.zendesk.com` — and
+ * the company's description says where the value comes from.
+ */
+const wayUrl = text.refine(
+  (value) => {
+    const filled = value.replace(PLACEHOLDER, 'account.example')
+    return !STRAY.test(filled) && url.safeParse(filled).success
+  },
+  {
+    message:
+      'must be a URL; a part that differs per account goes in braces, like `https://{subdomain}.zendesk.com`',
+  }
+)
 const isoDate = z.iso.date()
 const keyPart = text.refine(isValidKeyPart, {
   message:
@@ -31,7 +66,7 @@ const handle = text.refine(isValidHandle, {
     'must be a valid, unreserved handle (lowercase letters, digits, hyphens)',
 })
 const ownedKey = text.refine(isValidOwnedKey, {
-  message: 'must be `<handle>/<slug>`, like `clay/enrich-contacts`',
+  message: 'must be `<handle>/<slug>`, like `apollo/enrich-person`',
 })
 const githubLogin = text.refine(isValidGithubLogin, {
   message:
@@ -42,23 +77,129 @@ const tagKey = text.refine(isValidTagKey, {
 })
 const status = z.enum(['published', 'deprecated'])
 
+/* ──────────────────────────────── ways in ───────────────────────────────── */
+/* How an agent reaches a company, written once in its company.md: at most
+ * one MCP server, one CLI and one API. Each of the company's tools then
+ * names its call on each of them. */
+
+const envVar = z
+  .string()
+  .regex(
+    /^[A-Z][A-Z0-9_]*$/,
+    'must look like an environment variable, `CLAY_API_KEY`'
+  )
+
+/** A command an agent can split on spaces: no quotes, no shell syntax. */
+const ARGV = /^[^\s'"`\\$|&;<>(){}]+(?: [^\s'"`\\$|&;<>(){}]+)*$/
+
+const wayCommon = {
+  auth: z.enum(['none', 'api_key', 'oauth']),
+  /** Where the key goes: required with `api_key`, refused otherwise. */
+  env: envVar.optional(),
+  /** Where a person gets a key; `api_key` only. */
+  keyUrl: url.optional(),
+  docs: url.optional(),
+  /** Absent = official; a community-run way names who runs it. */
+  maintainer: line.optional(),
+}
+
+type WayAuth = {
+  auth: 'none' | 'api_key' | 'oauth'
+  env?: string | undefined
+  keyUrl?: string | undefined
+}
+
+function authRules(value: WayAuth, context: z.RefinementCtx): void {
+  if (value.auth === 'api_key' && !value.env) {
+    context.addIssue({
+      code: 'custom',
+      path: ['env'],
+      message: 'an API key needs the environment variable it goes in',
+    })
+  }
+  if (value.auth !== 'api_key' && (value.env || value.keyUrl)) {
+    context.addIssue({
+      code: 'custom',
+      path: [value.env ? 'env' : 'keyUrl'],
+      message: 'only `auth: api_key` takes `env` and `keyUrl`',
+    })
+  }
+}
+
+const mcpWay = z
+  .strictObject({
+    ...wayCommon,
+    /** A remote server. */
+    url: wayUrl.optional(),
+    /** A local server, started with this command. */
+    command: z
+      .string()
+      .regex(ARGV, 'must be a plain command, like `npx -y vendor-mcp`')
+      .optional(),
+  })
+  .superRefine((value, context) => {
+    if (Boolean(value.url) === Boolean(value.command)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['url'],
+        message:
+          'an MCP server has exactly one of `url` (remote) or `command` (local)',
+      })
+    }
+    if (value.url && value.auth === 'api_key') {
+      context.addIssue({
+        code: 'custom',
+        path: ['auth'],
+        message:
+          'a remote MCP server with an API key cannot be set up from a file yet; use `oauth` or `none`, or list its API instead',
+      })
+    }
+    authRules(value, context)
+  })
+
+const cliWay = z
+  .strictObject({
+    ...wayCommon,
+    install: text,
+    binary: z
+      .string()
+      .regex(/^[a-z0-9][a-z0-9._-]*$/, 'must be the command name, like `gh`'),
+  })
+  .superRefine(authRules)
+
+const apiWay = z
+  .strictObject({
+    ...wayCommon,
+    /** The base URL every call's path follows. */
+    url: wayUrl,
+    /**
+     * `X-Api-Key`, or a name plus scheme: `Authorization: Basic`. Header
+     * names may carry underscores (`api_key`) and schemes hyphens
+     * (`Authorization: Klaviyo-API-Key`), as vendors print them.
+     */
+    header: z
+      .string()
+      .regex(
+        /^[A-Za-z][A-Za-z0-9_-]*(?:: [A-Za-z][A-Za-z0-9-]*)?$/,
+        'must be a header name, optionally with a scheme: `X-Api-Key`, `Authorization: Bearer`'
+      )
+      .optional(),
+  })
+  .superRefine(authRules)
+
 /* ────────────────────────────────── company ─────────────────────────────── */
 
 export const companySchema = z.strictObject({
-  name: text,
-  kind: z.enum(['vendor', 'open_source', 'individual']).default('vendor'),
+  name: line,
   domain: z
     .string()
     .trim()
     .regex(z.regexes.domain, 'must be a bare domain like `clay.com`'),
-  /** A `tags/category/<slug>.md` slug. */
+  /** A `category:` slug from tags.yml. */
   category: keyPart,
-  tagline: text.optional(),
-  website: url.optional(),
+  tagline: sentence.optional(),
   docs: url.optional(),
   github: url.optional(),
-  linkedin: url.optional(),
-  x: url.optional(),
   /** A file under public/logos. */
   logo: z
     .string()
@@ -66,94 +207,43 @@ export const companySchema = z.strictObject({
       /^[a-z0-9-]+\.(png|jpg|jpeg|svg|webp)$/,
       'must name a file under public/logos, like `clay.png`'
     ),
-  founded: z.int().min(1800).max(2100).optional(),
-  headquarters: text.optional(),
+  mcp: mcpWay.optional(),
+  cli: cliWay.optional(),
+  api: apiWay.optional(),
   aliases: z.array(handle).default([]),
   status: status.default('published'),
   updated: isoDate,
 })
 
-/* ─────────────────────────────────── access ─────────────────────────────── */
-
-const auth = z.strictObject({
-  method: z.enum(['none', 'api_key', 'oauth']),
-  envVar: z
-    .string()
-    .regex(
-      /^[A-Z][A-Z0-9_]*$/,
-      'must look like an environment variable, `CLAY_API_KEY`'
-    )
-    .optional(),
-  header: text.optional(),
-  keyUrl: url.optional(),
-  selfServe: z.boolean(),
-})
-
-const accessCommon = {
-  official: z.boolean(),
-  maintainer: text.optional(),
-  auth,
-  docsUrl: url.optional(),
-}
-
-export const accessSchema = z
-  .discriminatedUnion('type', [
-    z.strictObject({
-      type: z.literal('mcp'),
-      ...accessCommon,
-      transport: z.enum(['remote', 'local']),
-      url: url.optional(),
-      command: text.optional(),
-      repoUrl: url.optional(),
-    }),
-    z.strictObject({
-      type: z.literal('cli'),
-      ...accessCommon,
-      installCommand: text,
-      binary: text,
-      repoUrl: url.optional(),
-    }),
-    z.strictObject({
-      type: z.literal('api'),
-      ...accessCommon,
-      baseUrl: url,
-      openApiUrl: url.optional(),
-    }),
-  ])
-  .superRefine((value, context) => {
-    if (!(value.official || value.maintainer)) {
-      context.addIssue({
-        code: 'custom',
-        path: ['maintainer'],
-        message: 'a community option must name its maintainer',
-      })
-    }
-    if (value.type === 'mcp' && value.transport === 'remote' && !value.url) {
-      context.addIssue({
-        code: 'custom',
-        path: ['url'],
-        message: 'a remote MCP server needs its `url`',
-      })
-    }
-    if (value.type === 'mcp' && value.transport === 'local' && !value.command) {
-      context.addIssue({
-        code: 'custom',
-        path: ['command'],
-        message:
-          'a local MCP server needs its `command`, like `npx -y vendor-mcp`',
-      })
-    }
-  })
-
 /* ──────────────────────────────────── tool ──────────────────────────────── */
 
 export const toolSchema = z.strictObject({
-  name: text,
-  summary: text,
-  /** `{ <access id>: <operation> }` — the exact call, per way in. */
-  access: z.record(z.string(), text).default({}),
+  name: line,
+  summary: sentence,
+  /** A `capability:` slug from tags.yml. */
+  capability: keyPart,
+  /** The page that documents the call. */
+  docs: url.optional(),
+  /** The MCP tool name, as the server lists it. */
+  mcp: z
+    .string()
+    .regex(
+      /^[A-Za-z0-9_.\-/]{1,128}$/,
+      'must be an MCP tool name, like `create_payment_link`'
+    )
+    .optional(),
+  /** The command, starting with the company's CLI binary. */
+  cli: text.optional(),
+  /** `METHOD /path`, as the API reference prints it. */
+  api: z
+    .string()
+    .regex(
+      /^(GET|POST|PUT|PATCH|DELETE) \/\S*$/,
+      'must be `METHOD /path`, like `POST /v1/payment_links`'
+    )
+    .optional(),
   aliases: z.array(ownedKey).default([]),
-  /** A draft is allowed to have no way in; it has no page and no file. */
+  /** A draft is allowed to have no call; it has no page and no file. */
   status: z.enum(['published', 'deprecated', 'draft']).default('published'),
   updated: isoDate,
 })
@@ -167,15 +257,16 @@ export const toolSchema = z.strictObject({
  * GitHub the way the rendered file reads on the site.
  */
 export const workflowHeaderSchema = z.strictObject({
-  title: text,
-  summary: text,
+  title: line,
+  summary: sentence,
   /** The GitHub login of the person who wrote it. */
   author: githubLogin,
-  version: z.int().min(1).default(1),
-  tags: z.array(tagKey).min(1, 'give the workflow at least one tag'),
+  /** Motion and channel tags; capabilities come from the tools. */
+  tags: z.array(tagKey).default([]),
   featured: z.int().min(1).optional(),
   aliases: z.array(keyPart).default([]),
-  status: status.default('published'),
+  /** A draft is checked but never published: no page, no file. */
+  status: z.enum(['published', 'deprecated', 'draft']).default('published'),
   updated: isoDate,
 })
 
@@ -204,13 +295,8 @@ export const workflowBodySchema = z.strictObject({
     .array(
       z.strictObject({
         title: text,
-        /** A tool key: `clay/enrich-contacts`. */
+        /** A tool key: `apollo/enrich-person`. */
         tool: ownedKey,
-        via: z
-          .enum(['mcp', 'cli', 'api'], {
-            error: 'must be MCP, CLI or API',
-          })
-          .optional(),
         instruction: text,
       })
     )
@@ -224,15 +310,29 @@ export const workflowBodySchema = z.strictObject({
     .min(1, 'add a `## Done when` section with at least one check'),
 })
 
-/* ──────────────────────────────────── tag ───────────────────────────────── */
+/* ─────────────────────────────────── tags.yml ───────────────────────────── */
 
-export const tagSchema = z.strictObject({
-  label: text,
+const tagEntry = z.strictObject({
+  label: line,
   synonyms: z.array(text).default([]),
 })
 
+/** A namespace: slug → entry. Slugs are checked in build-tags.ts. */
+const tagNamespace = z.record(z.string(), tagEntry).default({})
+
+/** The curated namespaces; `has:*` is computed and never written. */
+export const tagsFileSchema = z.strictObject({
+  capability: tagNamespace,
+  category: tagNamespace,
+  channel: tagNamespace,
+  motion: tagNamespace,
+})
+
 export type CompanyFrontmatter = z.infer<typeof companySchema>
-export type AccessFrontmatter = z.infer<typeof accessSchema>
+export type CompanyWays = Pick<
+  z.infer<typeof companySchema>,
+  'mcp' | 'cli' | 'api'
+>
 export type ToolFrontmatter = z.infer<typeof toolSchema>
 /** Everything a workflow file says: its header plus its body's fields. */
 export type WorkflowFrontmatter = z.infer<typeof workflowHeaderSchema> &

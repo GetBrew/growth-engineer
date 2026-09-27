@@ -2,10 +2,24 @@
 name: Attio
 domain: attio.com
 category: crm
-tagline: A CRM you can shape to your process in an afternoon.
+tagline: The CRM for revenue teams, with records, lists, notes and tasks an agent can read and write.
 docs: https://docs.attio.com
+github: https://github.com/attio
 logo: attio.png
-updated: 2026-09-16
+mcp:
+  url: https://mcp.attio.com/mcp
+  auth: oauth
+  docs: https://docs.attio.com/mcp/overview
+api:
+  url: https://api.attio.com
+  auth: api_key
+  env: ATTIO_API_KEY
+  keyUrl: https://attio.com/help/reference/apps/generating-an-api-key
+  docs: https://docs.attio.com/rest-api/overview
+updated: 2026-09-26
 ---
 
-Attio is an AI-native CRM platform that orchestrates revenue-focused workflows, agents, and automations to build pipelines, advance deals, and grow accounts.
+Attio is a CRM for revenue teams. Its hosted MCP server signs in as an Attio
+user with OAuth, and its REST API takes a workspace access token that an
+admin creates under Workspace settings, Developers. Both read and write
+people, companies, deals and custom objects, list entries, notes and tasks.

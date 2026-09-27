@@ -1,8 +1,18 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterAll, describe, expect, test } from 'vitest'
-import { MAX_LOGO_BYTES, readContentTree } from '@/lib/content/read-tree'
+import {
+  contentFingerprint,
+  MAX_LOGO_BYTES,
+  readContentTree,
+} from '@/lib/content/read-tree'
 
 /**
  * The tree walk itself, on a throwaway directory: what it places, what it
@@ -26,12 +36,10 @@ describe('the content tree walk', () => {
   test('places every file kind and skips the folder READMEs', () => {
     write('companies/README.md')
     write('companies/acme/company.md')
-    write('companies/acme/access/api.md')
     write('companies/acme/tools/manage-crm.md')
     write('workflows/README.md')
     write('workflows/keep-crm-clean.md')
-    write('tags/README.md')
-    write('tags/capability/manage-crm.md')
+    write('tags.yml', 'capability:\n  manage-crm:\n    label: Manage a CRM\n')
     write('public/logos/acme.png', 'png')
 
     const tree = readContentTree(root)
@@ -39,14 +47,28 @@ describe('the content tree walk', () => {
     expect(
       tree.files.map((file) => `${file.kind}:${file.path}`).sort()
     ).toEqual([
-      'access:companies/acme/access/api.md',
       'company:companies/acme/company.md',
-      'tag:tags/capability/manage-crm.md',
+      'tags:tags.yml',
       'tool:companies/acme/tools/manage-crm.md',
       'workflow:workflows/keep-crm-clean.md',
     ])
     expect(tree.logos.has('acme.png')).toBe(true)
-    expect(tree.fingerprint).toMatch(/^\d+:\d+(\.\d+)?$/)
+    expect(tree.fingerprint).toMatch(/^[0-9a-f]{40}$/)
+    // A rename or a new logo changes it; nothing else has to be read to know.
+    const before = contentFingerprint(root)
+    renameSync(
+      path.join(root, 'workflows/keep-crm-clean.md'),
+      path.join(root, 'workflows/keep-the-crm-clean.md')
+    )
+    expect(contentFingerprint(root)).not.toBe(before)
+    const renamed = contentFingerprint(root)
+    write('public/logos/other.png', 'png')
+    expect(contentFingerprint(root)).not.toBe(renamed)
+    rmSync(path.join(root, 'public/logos/other.png'))
+    renameSync(
+      path.join(root, 'workflows/keep-the-crm-clean.md'),
+      path.join(root, 'workflows/keep-crm-clean.md')
+    )
   })
 
   test('rejects a logo too heavy to serve as is', () => {
@@ -60,6 +82,34 @@ describe('the content tree walk', () => {
       ])
     )
     rmSync(path.join(root, 'public/logos/huge.png'))
+  })
+
+  test('rejects a leftover access/ folder: ways in live in company.md now', () => {
+    write('companies/acme/access/api.md')
+    const problems = readContentTree(root).problems.map(
+      (problem) => `${problem.file}: ${problem.message}`
+    )
+    expect(problems).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(
+          /^companies\/acme\/access: ways in live in company\.md now/
+        ),
+      ])
+    )
+    rmSync(path.join(root, 'companies/acme/access'), { recursive: true })
+  })
+
+  test('rejects a leftover tags/ folder: the vocabulary is one file now', () => {
+    write('tags/capability/manage-crm.md')
+    const problems = readContentTree(root).problems.map(
+      (problem) => `${problem.file}: ${problem.message}`
+    )
+    expect(problems).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^tags: tags live in one file now, tags\.yml/),
+      ])
+    )
+    rmSync(path.join(root, 'tags'), { recursive: true })
   })
 
   test('rejects a nested workflow folder, a stray file and a misplaced folder', () => {

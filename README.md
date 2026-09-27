@@ -13,26 +13,27 @@ Brought to you by [Brew](https://brew.new). MIT licensed.
 ## The catalog is the repo
 
 ```
-companies/<handle>/company.md        who the company is            → /companies/clay
-companies/<handle>/access/<id>.md    each way in: MCP, CLI, API    (shared by the company's tools)
-companies/<handle>/tools/<slug>.md   each function an agent calls  → /tools/clay/enrich-contacts
+companies/<handle>/company.md        who the company is, its ways in → /companies/apollo
+companies/<handle>/tools/<name>.md   each function an agent calls  → /tools/apollo/enrich-person
 workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
-tags/<namespace>/<slug>.md           the vocabulary                → capability, motion, channel, category, fit
+tags.yml                             the vocabulary                → capability, motion, channel, category
 ```
 
 - A **company** is a folder named by its permanent handle.
 - A **tool is ONE function** — one thing an agent calls, tied to a specific
-  MCP tool, CLI subcommand or API endpoint. A product with three functions is
-  three files. Its slug is a capability from `tags/capability/`.
+  MCP tool, CLI command or API endpoint. A product with three functions is
+  three files, each named after its function and shelved under a capability
+  from `tags.yml`.
 - A **workflow** is up to ten steps, each naming one tool, phrased as the
   result it reaches, written by a person (`author:` is a GitHub login). A
   growth hack is a workflow; there is no second kind. The build links every
   workflow to its tools and every tool to the workflows that use it.
 
-Adding your company is three files and a pull request:
+Adding your company is a `company.md`, one file per function, and a pull request:
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Each folder's README has the full
 field reference: [`companies/`](companies/README.md),
-[`workflows/`](workflows/README.md), [`tags/`](tags/README.md).
+[`workflows/`](workflows/README.md), and the vocabulary in
+[`tags.yml`](tags.yml).
 
 ## How a file becomes the product
 
@@ -45,7 +46,7 @@ golden-tested byte for byte. Nothing renders at request time; nobody
 hand-edits a rendered file. A deploy is the publish.
 
 ```
-companies/ workflows/ tags/  ─▶  lib/content/build-catalog.ts  ─▶  the Catalog (in memory)
+companies/ workflows/ tags.yml ─▶ lib/content/build-catalog.ts  ─▶  the Catalog (in memory)
                                         │                              ├▶ pages (prerendered)
                                         └▶ lib/catalog/render-markdown ├▶ /…/*.md files (prerendered)
                                                                        └▶ /llms.txt
@@ -54,14 +55,18 @@ companies/ workflows/ tags/  ─▶  lib/content/build-catalog.ts  ─▶  the C
 ## For agents
 
 Every company, tool and workflow page answers `Accept: text/markdown` with
-its file, or append `.md`: `/tools/clay/enrich-contacts.md`,
-`/workflows/funding-signal-outbound.md`, `/companies/clay.md`. `/llms.txt` defines the four words the catalog uses and
-links every file with a one-line summary; `/llms-full.txt` is every file in
-one document. Every HTML page declares its file as a `text/markdown`
+its file, or append `.md`: `/tools/apollo/enrich-person.md`,
+`/workflows/funding-signal-outbound.md`, `/companies/apollo.md`. Each tag has a
+file too, listing everything carrying it: `/tags/capability/enrich-contacts.md`.
+`/llms.txt` defines the four words the catalog uses and
+links every file with a one-line summary; `/llms-full.txt` is every company,
+tool and workflow file in one document. Every HTML page declares its file as a `text/markdown`
 alternate and carries schema.org data (a company is an `Organization`, a tool
 a `SoftwareApplication`, a workflow a `HowTo` with one step per step). No
 sign-in, no rate limit, no key. Any MCP client can connect to `/mcp`
-(Streamable HTTP, read-only): `search` finds files, `get` returns one.
+(Streamable HTTP, read-only): `search` finds workflows, tools and
+companies by words and filters; `get` returns a file, or every tool, workflow
+and company carrying a tag.
 
 The definitions themselves live in ONE place, `lib/catalog/definitions.ts`,
 and feed `/llms.txt` and the structured data.
@@ -95,20 +100,19 @@ the one optional public variable, the site origin.
 | `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
-| `/map`, `/map/[type]/[key]` | The relationship map: what is connected to what, one prerendered page per node |
 | `/contribute`, `/contribute/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
-| `/mcp` | The read-only MCP server (`search`, `get`) — the one dynamic route |
+| `/mcp` | The read-only MCP server — `search` (words, tags, company, author, the tool a workflow uses) and `get` (a file, or a tag's members) — the one dynamic route |
 | `/robots.txt`, `/sitemap.xml`, `…/opengraph-image` | Every crawler allowed (AI crawlers named); every page with its `updated` date; one social card per page, drawn at build |
 
 ## Layout
 
 ```
-companies/ workflows/ tags/   THE DATA — see CONTRIBUTING.md
+companies/ workflows/ tags.yml  THE DATA — see CONTRIBUTING.md
 app/
-  (site)/                     every page: /, companies, tools, workflows, map, contribute
+  (site)/                     every page: /, companies, tools, workflows, contribute
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
-  mcp/                        the read-only MCP server (lib/mcp/server.ts is the JSON-RPC)
+  mcp/                        the read-only MCP server (lib/mcp/: server.ts is the JSON-RPC, tools.ts the two tools)
   llms.txt, llms-full.txt     the file index with definitions; the whole corpus
   robots.ts, sitemap.ts       every crawler allowed; every page, with its date
   **/opengraph-image.tsx      the social cards, one per page, drawn at build
@@ -121,7 +125,7 @@ lib/
   schemas/content.ts          the strict header schemas (zod)
   types/catalog.ts            the catalog's types
   seo/                        per-page metadata, schema.org builders, the llms preamble
-components/                   site chrome, catalog rows and detail pages, the map, ui primitives
+components/                   site chrome, catalog rows and detail pages, ui primitives
 tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives
 docs/                         vision, file schema, architecture, validation, ci, performance
 ```

@@ -1,9 +1,10 @@
 # The markdown file
 
 Every company, tool and workflow has one file. Tool and workflow files are the
-product; company files are a short index of that company's tools. This is the
-contract the renderer (`lib/catalog/render-markdown.ts`) implements and the
-goldens in `tests/fixtures/markdown/` pin. The SOURCE files under
+product; company files are a short index of that company's tools, and each
+tag's file lists everything carrying it. This is the contract the renderers
+(`lib/catalog/render-markdown.ts`, and `render-tag.ts` for tags) implement
+and the goldens in `tests/fixtures/markdown/` pin. The SOURCE files under
 `companies/` and `workflows/` are the input to that renderer: a YAML header
 of facts and a markdown body a person reads on GitHub. A workflow's body is
 already written in this format — its inputs, steps and checks — so the
@@ -14,37 +15,40 @@ names the tools, and appends the rules.
 
 | Rule | Why |
 | --- | --- |
-| Files are generated, never hand-edited. | One render function builds each file from the source files at build time. When a tool's MCP URL changes, every workflow file that uses it is rebuilt on the next deploy. |
+| Files are generated, never hand-edited. | The renderer builds each file from the source files at build time. When a company's MCP URL changes in its `company.md`, every tool and workflow file that prints it is rebuilt on the next deploy. |
 | Files work in any agent. | Plain markdown, a short flat YAML header, no agent-specific syntax. MCP servers appear in the common `mcpServers` JSON shape with the URL spelled out too. |
 | Everything needed to run is in the file. | Setup, inputs, steps and finish checks are inline. Links are only for getting keys or reading more. |
-| Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool, or the one a step asks for (`via`). |
+| Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool, and set each company's way up once, listing every call on it. |
 | Inputs are named, not templated. | `target_accounts` appears in backticks and the file tells the agent to ask the user for it. No template engine. |
 | The file tells the agent to check access first. | After setup, one read-only call to each tool before any step runs. |
 | Rules always come last, and nobody can edit them. | Only the listed tools; ask before sending, spending or changing anything; never print keys. |
-| Files stay short. | Tool files under ~60 lines; workflow files under ~120, at most 10 steps. |
+| The header parses as written. | Every value an author wrote is quoted when it has to be (`yamlScalar`, `lib/catalog/render-header.ts`), so a title with a colon or a login like `true` reads back exactly, and no value can add a field. |
+| Deprecated says so. | `status: deprecated` in the header and one warning line under the title; an agent asks the user before using it. |
+| Prose never poses as structure. | A description or the Notes may use `###` and smaller headings only, never one named like a section the file writes (Set up, Steps, Rules…). |
+| Files stay short. | Tool files under ~80 lines; workflow files under ~150, at most 10 steps. |
 
 ## Layout
 
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
-| Header | `ref`, `name`, `company`, `workflows`, `access`, `updated` | `ref` (with `@N`), `title`, `author`, `tools`, `tags`, `updated` |
+| Header | `ref`, `name`, `company`, `workflows`, `access`, `tags`, `docs`, `status`, `updated` | `ref`, `title`, `author`, `tools`, `tags`, `status`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
-| Steps | — | Numbered steps, each naming its tool (a workflow using a single tool names it once up front instead) |
+| Steps | — | Numbered steps, each naming its tool and its company, `with Enrich a person (Apollo).` (a workflow using a single tool names it once up front instead) |
 | Done when | — | Checks that mean the job is finished |
 | Notes | — | Optional, written by the author |
 | Rules | Always | Always |
 
 `access` lists the ways in, in setup order.
-`workflows` lists every workflow whose steps use the tool, and `tools` in a
+`workflows` lists every published workflow whose steps use the tool, and `tools` in a
 workflow file lists the tools it uses: the relationship is in both files.
 `author` is the workflow author's GitHub login.
 
 A rendered file is never stored in the repository, so every tool and
 workflow page shows, under its file, **Built from**: the source files it was
 rendered from, each linked to GitHub — the entry's own file, each tool file,
-and each access file whose facts it prints (`CatalogDocument.sources`). The
+and each company file whose ways in it prints (`CatalogDocument.sources`). The
 layout, the set-up wording and the Rules come from the renderer.
 
 ## Where files are served
@@ -52,29 +56,32 @@ layout, the set-up wording and the Rules come from the renderer.
 | Where | Example |
 | --- | --- |
 | Copy prompt button | On every tool and workflow page |
-| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`, `/workflows/funding-signal-outbound@1.md`, `/companies/clay.md` |
+| `.md` URL | `/tools/apollo/enrich-person.md`, `/workflows/funding-signal-outbound.md`, `/companies/apollo.md`, and a tag's `/tags/capability/enrich-contacts.md` (everything carrying it, `lib/catalog/render-tag.ts`) |
 | A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
-| Index | `/llms.txt` lists every file |
-| MCP, at `/mcp` | `search` finds files; `get` with a ref returns the file |
+| Index | `/llms.txt` lists every file, tags included |
+| MCP, at `/mcp` | `search` finds entries by words and filters; `get` with a ref returns the file (and its links as refs); `get` on a tag returns the tag's file |
 
 `proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`. The
 handler reads the rendered document from the in-memory catalog — the same
-one the page reads — and every file, every current version pin and every
-alias is prerendered at build. A renamed key answers with a real 308.
+one the page reads — and every file and every alias is prerendered at
+build. A renamed key answers with a real 308.
 
 ## The render path
 
 ```
-companies/ workflows/ tags/  (source files, by pull request)
+companies/ workflows/ tags.yml  (source files, by pull request)
   → lib/content/build-catalog.ts                          validate, resolve, derive
-  → lib/content/build-documents.ts                        the ONE caller of the renderer
-  → lib/catalog/render-markdown.ts                        pure; goldens
-  → catalog.documents { ref, markdown, hash, lineCount, updatedAt }   read by everything
+  → lib/content/build-documents.ts                        the ONE caller of the renderers
+  → lib/catalog/render-markdown.ts, render-tag.ts         pure; goldens
+  → catalog.documents, catalog.tagDocuments { markdown, lineCount, updatedAt }   read by everything
 ```
 
 Everything renders at build; nothing renders on the request path. A file's
-`updated` date is the newest of its inputs, so a workflow file changes when a
-tool it uses changes its way in. Two builds of the same tree produce
+`updated` date is the newest `updated` of every file that fed it — a tool's
+file follows its company (the ways in) and the workflows that use it, a
+workflow's follows its tools and their companies — so editing an MCP URL
+moves the date of every file that shows it. The sitemap, the pages and the
+structured data use that date. Two builds of the same tree produce
 byte-identical files (`tests/content.test.ts` pins this).
 
 ## Publishing a workflow
@@ -84,10 +91,9 @@ byte-identical files (`tests/content.test.ts` pins this).
    tool, write what to do) and `## Done when`, the checks that mean it is
    done ([`workflows/README.md`](../workflows/README.md)).
 2. `pnpm content:check` renders the exact file and lists every problem with
-   its file and line; `pnpm dev` shows the page.
+   its file (and line, for a problem in the body); `pnpm dev` shows the page.
 3. Open a pull request. CI runs the same checks; a maintainer reviews the
    facts. Merging publishes it on the next deploy.
 
-`version` is an integer in the header; bump it when the steps change
-materially. v1 serves the current version's file only, so a pin on an older
-version is a 404 and git history is the archive.
+There are no versions: a merged change replaces the file, and git history is
+the archive.

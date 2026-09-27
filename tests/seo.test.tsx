@@ -10,6 +10,7 @@ import { DEFINITIONS, SITE } from '@/lib/catalog/definitions'
 import { loadSitemapEntries } from '@/lib/catalog/discovery'
 import {
   filePathToRef,
+  filePathToTagKey,
   isValidHandle,
   isValidKeyPart,
   isValidOwnedKey,
@@ -54,7 +55,7 @@ describe('definitions', () => {
     expect(isValidTagKey(tag?.example ?? '')).toBe(true)
     for (const entry of DEFINITIONS) {
       expect(entry.definition.endsWith('.')).toBe(true)
-      expect(entry.path).toMatch(/\.md$/)
+      expect(entry.path).toMatch(/\.(md|yml)$/)
     }
   })
 
@@ -91,8 +92,8 @@ describe('sitemap.xml', () => {
     const entries = await sitemap()
     const urls = entries.map((entry) => entry.url)
     expect(new Set(urls).size).toBe(urls.length)
-    expect(urls.slice(0, 5)).toEqual(
-      ['/', '/tools', '/workflows', '/companies', '/map'].map(
+    expect(urls.slice(0, 4)).toEqual(
+      ['/', '/tools', '/workflows', '/companies'].map(
         (path) => `${SITE_ORIGIN}${path}`
       )
     )
@@ -105,20 +106,19 @@ describe('sitemap.xml', () => {
     for (const key of catalog.workflows.keys()) {
       expect(urls).toContain(`${SITE_ORIGIN}/workflows/${key}`)
     }
-    // The home page, three listings, the map, /contribute and each guide.
+    // The home page, three listings, /contribute and each guide.
     expect(urls).toContain(`${SITE_ORIGIN}/contribute`)
     for (const guide of GUIDES) {
       expect(urls).toContain(`${SITE_ORIGIN}/contribute/${guide.id}`)
     }
     expect(urls.length).toBe(
-      6 +
+      5 +
         GUIDES.length +
         catalog.companies.size +
         catalog.tools.size +
         catalog.workflows.size
     )
-    // Map focus pages are noindex; a version pin is the same page; no file URLs.
-    expect(urls.some((url) => url.includes('/map/'))).toBe(false)
+    // No pinned or file URLs.
     expect(urls.some((url) => url.includes('@') || url.endsWith('.md'))).toBe(
       false
     )
@@ -155,6 +155,7 @@ describe('/llms.txt', () => {
       '## Tools',
       '## Workflows',
       '## Companies',
+      '## Tags',
       '## Optional',
     ]) {
       expect(lines).toContain(heading)
@@ -170,13 +171,21 @@ describe('/llms.txt', () => {
       )
     }
     const fileLines = lines.filter((line) => FILE_LINE.test(line))
-    expect(fileLines.length).toBe(catalog.documents.size)
+    expect(fileLines.length).toBe(
+      catalog.documents.size + catalog.tagDocuments.size
+    )
     for (const line of fileLines) {
       const [, title, url, summary] = FILE_LINE.exec(line) ?? []
       expect(title?.trim().length).toBeGreaterThan(0)
       expect(summary?.trim().length).toBeGreaterThan(0)
       expect(url?.startsWith(`${SITE_ORIGIN}/`)).toBe(true)
-      const ref = filePathToRef((url ?? '').slice(SITE_ORIGIN.length))
+      const path = (url ?? '').slice(SITE_ORIGIN.length)
+      const tagKey = filePathToTagKey(path)
+      if (tagKey) {
+        expect(catalog.tagDocuments.has(tagKey), line).toBe(true)
+        continue
+      }
+      const ref = filePathToRef(path)
       expect(ref, line).not.toBeNull()
       expect(catalog.documents.has(`${ref?.type}:${ref?.key}`), line).toBe(true)
     }
@@ -226,19 +235,11 @@ describe('page metadata', () => {
     expect(metadata.robots).toBeUndefined()
   })
 
-  test('a listing has a canonical URL and no alternate; noindex keeps follow', () => {
+  test('a listing has a canonical URL and no alternate', () => {
     expect(
       pageMetadata({ title: 'Tools', description: 'd', path: '/tools' })
         .alternates
     ).toEqual({ canonical: '/tools' })
-    expect(
-      pageMetadata({
-        title: 'x',
-        description: 'd',
-        path: '/map/tool/clay/enrich-contacts',
-        noindex: true,
-      }).robots
-    ).toEqual({ index: false, follow: true })
   })
 })
 
@@ -256,12 +257,15 @@ describe('structured data', () => {
   })
 
   test('a tool is a SoftwareApplication with its file as an alternate encoding', () => {
-    const tool = catalog.tools.get('clay/enrich-contacts')
+    const [key] = catalog.order.toolsNew
+    const tool = key ? catalog.tools.get(key) : undefined
     const company = tool ? catalog.companies.get(tool.companyKey) : undefined
     if (!(tool && company)) {
       throw new Error('the seed tool is missing')
     }
-    const graph = (toolJsonLd(origin, tool, company) as Graph)['@graph']
+    const graph = (toolJsonLd(origin, tool, company, tool.updatedAt) as Graph)[
+      '@graph'
+    ]
     expect(graph.map((node) => node['@type'])).toEqual([
       'SoftwareApplication',
       'WebPage',
@@ -272,13 +276,13 @@ describe('structured data', () => {
     expect(graph[1]?.encoding).toEqual({
       '@type': 'MediaObject',
       encodingFormat: 'text/markdown',
-      contentUrl: `${origin}/tools/clay/enrich-contacts.md`,
+      contentUrl: `${origin}/tools/${tool.key}.md`,
     })
     const crumbs = graph[2]?.itemListElement as Array<{ item: string }>
     expect(crumbs.map((crumb) => crumb.item)).toEqual([
       `${origin}/tools`,
-      `${origin}/companies/clay`,
-      `${origin}/tools/clay/enrich-contacts`,
+      `${origin}/companies/${company.key}`,
+      `${origin}/tools/${tool.key}`,
     ])
   })
 
@@ -294,7 +298,9 @@ describe('structured data', () => {
       const company = tool ? catalog.companies.get(tool.companyKey) : undefined
       return tool && company ? [{ tool, company }] : []
     })
-    const graph = (workflowJsonLd(origin, workflow, tools) as Graph)['@graph']
+    const graph = (
+      workflowJsonLd(origin, workflow, tools, workflow.updatedAt) as Graph
+    )['@graph']
     const howTo = graph[0] as {
       '@type': string
       step: Array<{ position: number; name: string; text: string }>
@@ -321,7 +327,9 @@ describe('structured data', () => {
     if (!company) {
       throw new Error('the seed company is missing')
     }
-    const graph = (companyJsonLd(origin, company) as Graph)['@graph']
+    const graph = (companyJsonLd(origin, company, company.updatedAt) as Graph)[
+      '@graph'
+    ]
     expect(graph[0]).toMatchObject({
       '@type': 'Organization',
       name: company.name,

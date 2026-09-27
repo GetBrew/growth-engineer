@@ -4,12 +4,17 @@ import { ContentError, type ProblemList } from './errors'
 import { splitFrontmatter } from './frontmatter'
 import type { ContentFile } from './read-tree'
 
-/** Header + schema, or a recorded problem and null. */
+/**
+ * Header + schema, or a recorded problem and null. `retired` names header
+ * fields that no longer exist and says what to write instead, so a file in
+ * an old shape hears where its fields went, not just "unknown field".
+ */
 export function parseFile<T>(
   file: ContentFile,
   schema: z.ZodType<T>,
-  problems: ProblemList
-): { data: T; body: string } | null {
+  problems: ProblemList,
+  retired: Readonly<Record<string, string>> = {}
+): { data: T; body: string; bodyLine: number } | null {
   let split: ReturnType<typeof splitFrontmatter>
   try {
     split = splitFrontmatter(file.path, file.source)
@@ -20,10 +25,21 @@ export function parseFile<T>(
     )
     return null
   }
-  const result = schema.safeParse(split.data)
+  const header = { ...split.data }
+  let isRetired = false
+  for (const [field, advice] of Object.entries(retired)) {
+    if (field in header) {
+      delete header[field]
+      problems.add(file.path, `\`${field}\`: ${advice}`)
+      isRetired = true
+    }
+  }
+  const result = schema.safeParse(header)
   if (!result.success) {
     problems.add(file.path, formatIssues(result.error))
     return null
   }
-  return { data: result.data, body: split.body }
+  return isRetired
+    ? null
+    : { data: result.data, body: split.body, bodyLine: split.bodyLine }
 }

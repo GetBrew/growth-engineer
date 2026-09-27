@@ -2,15 +2,11 @@
 title: Guide active free users toward their first paid moment
 summary: Combine behavioural milestones with timely education so promising users find the value before momentum fades.
 author: thedogwiththedataonit
-version: 1
 tags:
   - motion:plg
   - channel:email
-  - capability:track-product-usage
-  - capability:collect-payments
-  - capability:send-email
 featured: 8
-updated: 2026-09-16
+updated: 2026-09-27
 ---
 
 ## Inputs
@@ -20,11 +16,13 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Find activated free users** with [posthog/track-product-usage](../companies/posthog/tools/track-product-usage.md). List users on the free plan who fired `activation_event` three or more times in the last 14 days.
-2. **Skip paying customers** with [stripe/track-revenue](../companies/stripe/tools/track-revenue.md). Remove anyone with an active subscription.
-3. **Send the sequence** with [brew/send-email](../companies/brew/tools/send-email.md). Draft a two-email sequence explaining `trial_plan` around what they already did. Show it to the user; send after approval.
+1. **Find activated free users** with [posthog/run-sql-query](../companies/posthog/tools/run-sql-query.md). List users on the free plan who fired `activation_event` three or more times in the last 14 days.
+2. **Find their customers** with [stripe/list-customers](../companies/stripe/tools/list-customers.md). Look up each user's email, as stored and lowercased, and keep every customer ID it returns.
+3. **Skip paying customers** with [stripe/list-subscriptions](../companies/stripe/tools/list-subscriptions.md). Remove anyone whose customer has an active subscription.
+4. **Write the email** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft one email explaining `trial_plan` around what they already did. Show it to the user.
+5. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). After the user approves, send it to the remaining users.
 
 ## Done when
 
-- No paying customer received the sequence.
-- The user has the count of users enrolled.
+- No paying customer received the email.
+- The user has the count of users emailed.

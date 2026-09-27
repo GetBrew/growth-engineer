@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { getCatalog } from './catalog'
-import { parseRef, refToFilePath } from './keys'
+import { parseRef, refToFilePath, tagFilePath } from './keys'
 
 /**
  * Every path the build prerenders, straight from the catalog. Each list is
@@ -21,28 +21,8 @@ export function toolParams(): Array<{ handle: string; name: string }> {
   })
 }
 
-/** Every workflow, plus its current version pin (`name@1`). */
 export function workflowParams(): Array<{ name: string }> {
-  return [...getCatalog().workflows.values()].flatMap((workflow) => [
-    { name: workflow.key },
-    { name: `${workflow.key}@${workflow.version}` },
-  ])
-}
-
-/** `/map/<type>/<key>`: every node the map can focus. */
-export function mapFocusParams(): Array<{ focus: Array<string> }> {
-  const catalog = getCatalog()
-  return [
-    ...[...catalog.companies.keys()].map((key) => ({
-      focus: ['company', key],
-    })),
-    ...[...catalog.tools.keys()].map((key) => ({
-      focus: ['tool', ...key.split('/')],
-    })),
-    ...[...catalog.workflows.keys()].map((key) => ({
-      focus: ['workflow', key],
-    })),
-  ]
+  return [...getCatalog().workflows.keys()].map((name) => ({ name }))
 }
 
 /** `/tools/<handle>` shortcuts: every company and every old company key. */
@@ -58,8 +38,8 @@ export function toolShortcutParams(): Array<{ handle: string }> {
 }
 
 /**
- * Every `.md` file: each document, the current version pin of each workflow,
- * and each alias path (which the handler answers with a 308).
+ * Every `.md` file: each document, each tag's file, and each alias path
+ * (which the handler answers with a 308).
  */
 export function markdownFileParams(): Array<{ path: Array<string> }> {
   const catalog = getCatalog()
@@ -70,12 +50,9 @@ export function markdownFileParams(): Array<{ path: Array<string> }> {
       continue
     }
     paths.push(refToFilePath(ref))
-    if (ref.type === 'workflow') {
-      const workflow = catalog.workflows.get(ref.key)
-      if (workflow) {
-        paths.push(refToFilePath({ ...ref, version: workflow.version }))
-      }
-    }
+  }
+  for (const key of catalog.tagDocuments.keys()) {
+    paths.push(tagFilePath(key))
   }
   for (const oldRef of catalog.aliases.keys()) {
     const ref = parseRef(oldRef)

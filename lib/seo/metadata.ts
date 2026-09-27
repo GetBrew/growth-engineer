@@ -26,16 +26,14 @@ const SITE_CARD = {
 export function pageMetadata(input: {
   title: string
   description: string
-  /** `/tools/clay/enrich-contacts` */
+  /** `/tools/apollo/enrich-person` */
   path: string
   /**
-   * `/tools/clay/enrich-contacts.md` — only for pages that are a file. Those
+   * `/tools/apollo/enrich-person.md` — only for pages that are a file. Those
    * pages draw their own card, so they do not get the site's.
    */
   file?: string
   type?: 'website' | 'article'
-  /** Thin or navigational pages stay out of the index but keep their links. */
-  noindex?: boolean
 }): Metadata {
   return {
     title: input.title,
@@ -51,6 +49,5 @@ export function pageMetadata(input: {
       description: input.description,
       ...(input.file ? {} : { images: [SITE_CARD] }),
     },
-    ...(input.noindex ? { robots: { index: false, follow: true } } : {}),
   }
 }

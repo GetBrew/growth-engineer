@@ -6,28 +6,32 @@ this repository. Adding your company, a tool, or a workflow is a pull request
 that adds files. The site is built from them.
 
 ```
-companies/<handle>/company.md        who the company is
-companies/<handle>/access/<id>.md    each way in: MCP server, CLI, API
-companies/<handle>/tools/<slug>.md   each function an agent can call
+companies/<handle>/company.md        who the company is, and its ways in: MCP server, CLI, API
+companies/<handle>/tools/<name>.md   each function an agent can call
 workflows/<name>.md                  steps across tools that reach a result (flat; the author is your GitHub login)
-tags/<namespace>/<slug>.md           the vocabulary (capability, motion, channel, category, fit)
+tags.yml                             the vocabulary (capability, motion, channel, category)
 ```
 
 Each folder has a README with the full field reference and a copy-paste
 template: [`companies/README.md`](companies/README.md),
-[`workflows/README.md`](workflows/README.md), [`tags/README.md`](tags/README.md).
+[`workflows/README.md`](workflows/README.md); the vocabulary explains itself
+at the top of [`tags.yml`](tags.yml).
 
-## Add your company in three files
+## Add your company
 
 1. `companies/<handle>/company.md` — name, domain, category, logo, a short
-   description. Put the logo under `public/logos/`.
-2. `companies/<handle>/access/<id>.md` — one file per way in. Official MCP
-   first, then CLI, then API; community-maintained options say who maintains
-   them.
-3. `companies/<handle>/tools/<slug>.md` — one file per **function**, named
-   after a capability in `tags/capability/`, listing the exact operation for
-   each way in (`mcp: acme_enrich_contacts`, `api: POST /v1/enrich`), exactly
-   as the vendor's docs name it.
+   description, and how an agent reaches you: `mcp:`, `cli:` and `api:` in
+   the header, each with its auth. Put the logo under `public/logos/`.
+2. `companies/<handle>/tools/<name>.md` — one file per **function**, named
+   after it, with its `capability:` from `tags.yml`, the exact call on each
+   way in (`mcp: enrich_person`, `api: POST /v1/people/enrich`) exactly as
+   the vendor's docs print it, and `docs:` pointing at the page that names
+   the call.
+
+Working with an agent? The `research-company` skill
+([`.agents/skills/research-company/SKILL.md`](.agents/skills/research-company/SKILL.md))
+turns a domain into both files from the vendor's own docs, with a source for
+every fact.
 
 Then, with Node 22+ and pnpm 11 (`corepack enable` gives you the pinned pnpm):
 
@@ -54,20 +58,22 @@ every tool back to the workflows that use it.
 
 - **Keys are permanent.** A folder or file name is the key and the URL.
   Rename by adding the old key to `aliases`; the old URL redirects.
-- **A tool is one function** with at least one way in. No way in yet? Set
-  `status: draft`; it has no page until it does.
-- **Steps resolve.** Every `tool` in a workflow exists and is published; a
-  `via` names a way in that tool actually has.
-- **Tags exist.** Every tag names a file under `tags/`; `has:*` is computed
-  and cannot be written.
+- **A tool is one function** with at least one call on a way in, and
+  `docs:`, the page that names the call. Not there yet? Set `status: draft`;
+  it has no page until it is, and a workflow that needs it waits as a draft
+  too.
+- **Steps resolve.** Every step links a tool file that exists and is
+  published.
+- **Tags exist.** Every tag is an entry in `tags.yml`; `has:*` and a
+  workflow's capabilities are computed and cannot be written.
 - **Facts carry a date.** `updated` is when someone last checked the file.
-- **Files stay short.** Tool files render to about 60 lines, workflows to
-  about 120, with at most ten steps.
+- **Files stay short.** Tool files render to about 80 lines, workflows to
+  about 150, with at most ten steps.
 - **Nothing invented.** No placeholder companies, invented endpoints or
   made-up customers. If a fact is not public, leave the field out.
 
 `pnpm content:check` runs every one of these and lists every problem with
-its file and line. The same suite runs in CI on your pull request (a
+its file (and line, for a problem in the body). The same suite runs in CI on your pull request (a
 maintainer approves the first run for a first-time contributor).
 
 ## Pull requests
@@ -83,5 +89,6 @@ maintainer approves the first run for a first-time contributor).
 
 The app is Next.js with a build-time catalog compiler; there is no backend.
 [`AGENTS.md`](AGENTS.md) holds the engineering invariants and the validation
-ladder (`pnpm check` while editing, `pnpm tsc` and `pnpm lint` at handoff),
+ladder (Biome on the files you touch while editing, `pnpm check` once per
+change, `pnpm tsc` and `pnpm lint` at handoff),
 and routes to the deeper docs under [`docs/`](docs/).

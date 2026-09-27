@@ -7,14 +7,14 @@ This file is intentionally a thin pointer so the two cannot drift.
 Quick orientation (full rules in `AGENTS.md`):
 
 - **The catalog is the repository.** Companies, tools and workflows are
-  markdown files under `companies/`, `workflows/` and `tags/`; to change a
+  markdown files under `companies/` and `workflows/`, plus `tags.yml`; to change a
   fact, change the file ([`CONTRIBUTING.md`](CONTRIBUTING.md)). There is no
   backend.
 - **The rendered markdown file is the product.** Every tool and workflow
   renders through `lib/catalog/render-markdown.ts` at build time; rendered
   files are never hand-edited; the format is golden-tested.
-- **Keys are permanent** and they ARE the paths (`clay`,
-  `clay/enrich-contacts`, `intent-to-meeting`); `workflows/` is flat and a
+- **Keys are permanent** and they ARE the paths (`apollo`,
+  `apollo/enrich-person`, `funding-signal-outbound`); `workflows/` is flat and a
   workflow's `author` is a GitHub login; a rename adds the old key under
   `aliases:`.
 - **Validation is proportional**: `pnpm exec biome check --write <touched
@@ -25,4 +25,4 @@ Quick orientation (full rules in `AGENTS.md`):
   call `tsc`, `vitest`, `next build` or `knip` directly.
 - **Everything prerenders**: the catalog is built once per process from sync
   reads; every page and filter permutation is static (listings narrow in the
-  browser; the map is a page per node); internal links are `next/link`.
+  browser); internal links are `next/link`.

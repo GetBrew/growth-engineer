@@ -11,7 +11,7 @@ exists; running it after every patch is how people stop running it at all.
 | While editing | `pnpm test:run tests/<exact file>` | ~1s |
 | Once per unit of work | `pnpm check` (Biome + `tsgo`) | seconds |
 | Final handoff | `pnpm tsc` then `pnpm lint` | a minute or two |
-| Touched `companies/`, `workflows/` or `tags/` | `pnpm content:check` — every problem with its file path | ~1s |
+| Touched `companies/`, `workflows/` or `tags.yml` | `pnpm content:check` — every problem with its file path | ~1s |
 | Touched the renderer | `pnpm test:run tests/render-markdown.test.ts` — the goldens, byte for byte | ~1s |
 | Docs only | `pnpm docs:check` | instant |
 | Everything | `pnpm validate` | minutes |
@@ -78,7 +78,7 @@ agents — at once, and the failure mode is always memory, never git.
 - The unit suite (`tests/`) runs in the `node` environment: no DOM, no
   network. A file opts into a DOM with `// @vitest-environment jsdom`.
 - The content suite (`tests/content.test.ts`) builds the real tree under
-  `companies/`, `workflows/` and `tags/` and asks every question a page asks;
+  `companies/`, `workflows/` and `tags.yml` and asks every question a page asks;
   extend it when you add a read. `tests/content-schema.test.ts` holds the
   negatives — one per rule the build enforces — on in-memory fixtures.
 - The suite needs no environment at all, which is what makes a fresh clone

@@ -1,53 +1,66 @@
+import { TAG_NAMESPACE_MEANINGS } from '@/lib/catalog/definitions'
 import { formatRef, refToSourcePath } from '@/lib/catalog/keys'
-import { orderAccess, selectWorkflowAccess } from '@/lib/catalog/render-access'
+import { selectWorkflowAccess } from '@/lib/catalog/render-access'
 import {
   renderCompanyDocument,
   renderToolDocument,
   renderWorkflowDocument,
 } from '@/lib/catalog/render-markdown'
+import { renderTagDocument } from '@/lib/catalog/render-tag'
 import type {
   Access,
   CatalogDocument,
   Company,
+  Relations,
+  Tag,
+  TagDocument,
   Tool,
   Workflow,
 } from '@/lib/types/catalog'
+import { companySummary } from './derive'
 
 /**
  * The rendered files, one per company, tool and workflow — THE product. This
  * is the one caller of the renderer; nothing renders on the request path and
- * nobody hand-edits a file. A file's `updated` date is the newest of its
- * inputs: a workflow file changes when a tool it uses changes its way in.
+ * nobody hand-edits a file.
+ *
+ * A file's `updated` date is the newest `updated` of every file that fed it,
+ * from the ENTITY dates (never another file's date, so nothing loops):
+ *   tool      the tool, its company (its ways in), the published workflows
+ *             that use it (the ones its file lists)
+ *   workflow  the workflow, its tools, their companies
+ *   company   the company, its published tools (the ones its file lists)
+ * So editing Stripe's MCP URL moves the date of every file that shows it.
+ *
+ * Each file also lists the SOURCE files it was rendered from (`sources`), for
+ * the "Built from" links: its own file, then every tool file and company file
+ * (where the ways in live) whose facts it prints.
  */
+
+function newest(...dates: ReadonlyArray<number>): number {
+  return Math.max(...dates)
+}
 
 export type DocumentInputs = {
   companies: ReadonlyMap<string, Company>
   tools: ReadonlyMap<string, Tool>
   workflows: ReadonlyMap<string, Workflow>
-  toolsByCompany: ReadonlyMap<string, ReadonlyArray<string>>
-  workflowsByTool: ReadonlyMap<string, ReadonlyArray<string>>
+  relations: ReadonlyMap<string, Relations>
 }
 
-/** The access files a list of ways in was read from, in that order. */
-function accessFiles(access: ReadonlyArray<Access>): Array<string> {
-  return access.flatMap((entry) => (entry.file ? [entry.file] : []))
-}
-
-/**
- * What a tool file prints: the tool's own file, then every way in (a tool
- * file lists them all, in setup order).
- */
-function toolSources(tool: Tool): Array<string> {
+/** A tool's file, then its company's when the file prints a way in from it. */
+function toolFiles(tool: Tool, access: ReadonlyArray<Access>): Array<string> {
   return [
     refToSourcePath({ type: 'tool', key: tool.key }),
-    ...accessFiles(orderAccess(tool.access)),
+    ...(access.length > 0
+      ? [refToSourcePath({ type: 'company', key: tool.companyKey })]
+      : []),
   ]
 }
 
 /**
  * What a workflow file prints: the workflow's own file, then for each tool in
- * first-use order its file and ONLY the ways in its setup shows — the step's
- * `via`, else the best one or two — exactly as the renderer selects them.
+ * first-use order its file and, when its setup shows a way in, its company's.
  */
 function workflowSources(
   workflow: Workflow,
@@ -55,15 +68,9 @@ function workflowSources(
 ): Array<string> {
   return [
     refToSourcePath({ type: 'workflow', key: workflow.key }),
-    ...tools.flatMap((tool) => {
-      const via = workflow.steps.find(
-        (step) => step.toolKey === tool.key && step.via
-      )?.via
-      return [
-        refToSourcePath({ type: 'tool', key: tool.key }),
-        ...accessFiles(selectWorkflowAccess(tool.access, via)),
-      ]
-    }),
+    ...tools.flatMap((tool) =>
+      toolFiles(tool, selectWorkflowAccess(tool.access))
+    ),
   ]
 }
 
@@ -75,7 +82,7 @@ export function buildDocuments(
     entityType: CatalogDocument['entityType'],
     key: string,
     updatedAt: number,
-    rendered: { markdown: string; hash: string; lineCount: number },
+    rendered: { markdown: string; lineCount: number },
     sources: ReadonlyArray<string>
   ) => {
     const ref = formatRef(entityType, key)
@@ -88,24 +95,38 @@ export function buildDocuments(
     })
   }
 
+  const companyDate = (companyKey: string) =>
+    inputs.companies.get(companyKey)?.updatedAt ?? 0
+
   for (const tool of inputs.tools.values()) {
+    const updatedAt = newest(
+      tool.updatedAt,
+      companyDate(tool.companyKey),
+      ...(
+        inputs.relations.get(formatRef('tool', tool.key))?.workflows ?? []
+      ).map((key) => inputs.workflows.get(key)?.updatedAt ?? 0)
+    )
     put(
       'tool',
       tool.key,
-      tool.updatedAt,
+      updatedAt,
       renderToolDocument({
         key: tool.key,
         name: tool.name,
         companyKey: tool.companyKey,
-        workflows: inputs.workflowsByTool.get(tool.key) ?? [],
+        workflows:
+          inputs.relations.get(formatRef('tool', tool.key))?.workflows ?? [],
+        tags: tool.tags,
         summary: tool.summary,
         ...(tool.description === undefined
           ? {}
           : { description: tool.description }),
+        ...(tool.docs === undefined ? {} : { docs: tool.docs }),
         access: tool.access,
-        updatedAt: tool.updatedAt,
+        isDeprecated: tool.status === 'deprecated',
+        updatedAt,
       }),
-      toolSources(tool)
+      toolFiles(tool, tool.access)
     )
   }
 
@@ -114,9 +135,9 @@ export function buildDocuments(
       const tool = inputs.tools.get(key)
       return tool ? [tool] : []
     })
-    const updatedAt = Math.max(
+    const updatedAt = newest(
       workflow.updatedAt,
-      ...tools.map((tool) => tool.updatedAt)
+      ...tools.flatMap((tool) => [tool.updatedAt, companyDate(tool.companyKey)])
     )
     put(
       'workflow',
@@ -124,12 +145,13 @@ export function buildDocuments(
       updatedAt,
       renderWorkflowDocument({
         key: workflow.key,
-        version: workflow.version,
         title: workflow.title,
         author: workflow.author,
         tools: tools.map((tool) => ({
           key: tool.key,
           name: tool.name,
+          companyName:
+            inputs.companies.get(tool.companyKey)?.name ?? tool.companyKey,
           access: tool.access,
         })),
         tags: [...workflow.tags].sort(),
@@ -137,11 +159,11 @@ export function buildDocuments(
         steps: workflow.steps.map((step) => ({
           title: step.title,
           toolKey: step.toolKey,
-          ...(step.via ? { via: step.via } : {}),
           instruction: step.instruction,
         })),
         doneWhen: workflow.doneWhen,
         ...(workflow.notes === undefined ? {} : { notes: workflow.notes }),
+        isDeprecated: workflow.status === 'deprecated',
         updatedAt,
       }),
       workflowSources(workflow, tools)
@@ -149,13 +171,13 @@ export function buildDocuments(
   }
 
   for (const company of inputs.companies.values()) {
-    const tools = (inputs.toolsByCompany.get(company.key) ?? []).flatMap(
-      (key) => {
-        const tool = inputs.tools.get(key)
-        return tool?.status === 'published' ? [tool] : []
-      }
-    )
-    const updatedAt = Math.max(
+    const tools = (
+      inputs.relations.get(formatRef('company', company.key))?.tools ?? []
+    ).flatMap((key) => {
+      const tool = inputs.tools.get(key)
+      return tool ? [tool] : []
+    })
+    const updatedAt = newest(
       company.updatedAt,
       ...tools.map((tool) => tool.updatedAt)
     )
@@ -166,6 +188,7 @@ export function buildDocuments(
       renderCompanyDocument({
         key: company.key,
         name: company.name,
+        tags: company.tags,
         ...(company.tagline === undefined ? {} : { tagline: company.tagline }),
         ...(company.description === undefined
           ? {}
@@ -179,6 +202,7 @@ export function buildDocuments(
           name: tool.name,
           summary: tool.summary,
         })),
+        isDeprecated: company.status === 'deprecated',
         updatedAt,
       }),
       [
@@ -191,4 +215,79 @@ export function buildDocuments(
   }
 
   return documents
+}
+
+/**
+ * Every tag's file: its published members, as the listings and MCP `search`
+ * count them (./build-relations.ts). Dated like the newest member's file; a
+ * tag nothing carries yet takes the catalog's newest date.
+ */
+export function buildTagDocuments(inputs: {
+  tags: ReadonlyMap<string, Tag>
+  relations: ReadonlyMap<string, Relations>
+  companies: ReadonlyMap<string, Company>
+  tools: ReadonlyMap<string, Tool>
+  workflows: ReadonlyMap<string, Workflow>
+  documents: ReadonlyMap<string, CatalogDocument>
+}): Map<string, TagDocument> {
+  const { companies, tools, workflows, documents } = inputs
+  const dateOf = (ref: string) => documents.get(ref)?.updatedAt ?? 0
+  const catalogDate = Math.max(
+    0,
+    ...[...documents.values()].map((document) => document.updatedAt)
+  )
+  const tagDocuments = new Map<string, TagDocument>()
+  for (const tag of inputs.tags.values()) {
+    const members = inputs.relations.get(tag.key)
+    const memberTools = (members?.tools ?? []).flatMap((key) => {
+      const tool = tools.get(key)
+      return tool ? [tool] : []
+    })
+    const memberWorkflows = (members?.workflows ?? []).flatMap((key) => {
+      const workflow = workflows.get(key)
+      return workflow ? [workflow] : []
+    })
+    const memberCompanies = (members?.companies ?? []).flatMap((key) => {
+      const company = companies.get(key)
+      return company ? [company] : []
+    })
+    const dates = [
+      ...memberTools.map((tool) => dateOf(formatRef('tool', tool.key))),
+      ...memberWorkflows.map((workflow) =>
+        dateOf(formatRef('workflow', workflow.key))
+      ),
+      ...memberCompanies.map((company) =>
+        dateOf(formatRef('company', company.key))
+      ),
+    ]
+    const rendered = renderTagDocument({
+      key: tag.key,
+      label: tag.label,
+      meaning: TAG_NAMESPACE_MEANINGS[tag.namespace],
+      synonyms: tag.synonyms,
+      tools: memberTools.map((tool) => ({
+        key: tool.key,
+        name: tool.name,
+        companyName: companies.get(tool.companyKey)?.name ?? tool.companyKey,
+        summary: tool.summary,
+      })),
+      workflows: memberWorkflows.map((workflow) => ({
+        key: workflow.key,
+        title: workflow.title,
+        summary: workflow.summary,
+      })),
+      companies: memberCompanies.map((company) => ({
+        key: company.key,
+        name: company.name,
+        summary: companySummary(company),
+      })),
+      updatedAt: dates.length > 0 ? Math.max(...dates) : catalogDate,
+    })
+    tagDocuments.set(tag.key, {
+      key: tag.key,
+      ...rendered,
+      updatedAt: dates.length > 0 ? Math.max(...dates) : catalogDate,
+    })
+  }
+  return tagDocuments
 }

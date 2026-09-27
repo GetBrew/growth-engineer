@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { hasBackslashInPath, markdownRewriteTarget } from '@/proxy'
+import { isMalformedPath, markdownRewriteTarget } from '@/proxy'
 
 /**
  * The markdown rewrite is how every agent reaches a file, and it runs for
@@ -10,20 +10,28 @@ import { hasBackslashInPath, markdownRewriteTarget } from '@/proxy'
  * back with the gate, in the pages and handlers that own it.
  */
 
-describe('hasBackslashInPath', () => {
-  test.each(['/openapi.json\\', '/openapi.json%5C', '/a%5cb', '/x\\y'])(
-    'rejects %s',
-    (pathname) => {
-      expect(hasBackslashInPath(pathname)).toBe(true)
-    }
-  )
+describe('isMalformedPath', () => {
+  test.each([
+    '/openapi.json\\',
+    '/openapi.json%5C',
+    '/a%5cb',
+    '/x\\y',
+    '/workflows/%25zz',
+    '/tools/%zz/x',
+    '/companies/a%2',
+  ])('rejects %s', (pathname) => {
+    expect(isMalformedPath(pathname)).toBe(true)
+  })
 
-  test.each(['/', '/tools', '/llms.txt', '/workflows/brew/x'])(
-    'allows %s',
-    (pathname) => {
-      expect(hasBackslashInPath(pathname)).toBe(false)
-    }
-  )
+  test.each([
+    '/',
+    '/tools',
+    '/llms.txt',
+    '/workflows/brew/x',
+    '/workflows/%E2%9C%93',
+  ])('allows %s', (pathname) => {
+    expect(isMalformedPath(pathname)).toBe(false)
+  })
 })
 
 describe('markdown file rewrite', () => {
@@ -32,12 +40,18 @@ describe('markdown file rewrite', () => {
 
   test('a .md URL for a valid ref goes to the file handler', () => {
     expect(get('/tools/clay/clay.md')).toBe('/api/markdown/tools/clay/clay.md')
-    expect(get('/workflows/intent-to-meeting@3.md')).toBe(
-      '/api/markdown/workflows/intent-to-meeting@3.md'
+    expect(get('/workflows/intent-to-meeting.md')).toBe(
+      '/api/markdown/workflows/intent-to-meeting.md'
     )
+    // Versions are gone: a pinned file is not a file.
+    expect(get('/workflows/intent-to-meeting@3.md')).toBeNull()
     // A workflow key is one part; an owner segment is not a file.
     expect(get('/workflows/brew/intent-to-meeting.md')).toBeNull()
     expect(get('/companies/clay.md')).toBe('/api/markdown/companies/clay.md')
+    expect(get('/tags/capability/enrich-contacts.md')).toBe(
+      '/api/markdown/tags/capability/enrich-contacts.md'
+    )
+    expect(get('/tags/fit/icp.md')).toBeNull()
   })
 
   test('a .md URL that cannot name a file is left to 404 normally', () => {

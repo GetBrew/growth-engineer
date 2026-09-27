@@ -11,12 +11,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { cn } from '@/lib/utils/cn'
-
-const SURFACE = {
-  section: 'rounded-none py-16',
-  card: 'rounded-xl border border-dashed p-8 sm:p-8',
-} as const
 
 export function NoResults({
   title,
@@ -24,7 +18,6 @@ export function NoResults({
   clearHref,
   entity,
   icon,
-  variant = 'section',
   children,
 }: {
   title: string
@@ -35,12 +28,11 @@ export function NoResults({
   entity?: EntityKind
 
   icon?: IconSvgElement
-  variant?: keyof typeof SURFACE
 
   children?: ReactNode
 }) {
   return (
-    <Empty className={cn(SURFACE[variant])}>
+    <Empty className="rounded-none py-16">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           {entity ? (

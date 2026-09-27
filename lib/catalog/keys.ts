@@ -5,9 +5,9 @@
  * URL, so nothing else identifies a record. A ref is `${type}:${key}`, and it
  * is what agents pass around.
  *
- *   company    clay
- *   tool       clay/clay                  a company's only tool uses its product name
- *   workflow   funding-signal-outbound    @3 pins a version; the author (a GitHub login) is in the file
+ *   company    apollo
+ *   tool       apollo/enrich-person       named after the function it performs
+ *   workflow   funding-signal-outbound    the author (a GitHub login) is in the file
  *   tag        capability:enrich-contacts
  *
  * Keys never change after publishing. A rename lists the old key under
@@ -26,15 +26,9 @@ export const TAG_NAMESPACES = [
   'motion',
   'channel',
   'category',
-  'fit',
   'has',
 ] as const
 export type TagNamespace = (typeof TAG_NAMESPACES)[number]
-
-/** Namespaces the system computes; nobody can propose tags in them. */
-export const DERIVED_TAG_NAMESPACES: ReadonlySet<TagNamespace> = new Set([
-  'has',
-])
 
 /**
  * One key part: lowercase letters, digits and hyphens, 2–39 characters,
@@ -137,31 +131,12 @@ function isValidKey(type: EntityType, value: string): boolean {
   }
 }
 
-const VERSION_SUFFIX = /^(.+)@(\d+)$/
-
-/** `funding-signal-outbound@3` → `{ key, version: 3 }`; no suffix → `version: undefined`. */
-export function splitVersionedKey(value: string): {
-  key: string
-  version: number | undefined
-} {
-  const match = VERSION_SUFFIX.exec(value)
-  if (!match) {
-    return { key: value, version: undefined }
-  }
-  const version = Number.parseInt(match[2] ?? '', 10)
-  return Number.isSafeInteger(version) && version > 0
-    ? { key: match[1] ?? '', version }
-    : { key: value, version: undefined }
-}
-
 export type Ref = {
   type: EntityType
   key: string
-  /** Only workflows carry a pin; `undefined` means the current version. */
-  version: number | undefined
 }
 
-/** `tool:clay/clay` → `{ type: 'tool', key: 'clay/clay' }`; anything malformed → null. */
+/** `tool:apollo/enrich-person` → `{ type: 'tool', key: 'apollo/enrich-person' }`; anything malformed → null. */
 export function parseRef(value: string): Ref | null {
   const separator = value.indexOf(':')
   if (separator === -1) {
@@ -172,22 +147,12 @@ export function parseRef(value: string): Ref | null {
     return null
   }
   const entityType = type as EntityType
-  const { key, version } = splitVersionedKey(value.slice(separator + 1))
-  if (!isValidKey(entityType, key)) {
-    return null
-  }
-  if (version !== undefined && entityType !== 'workflow') {
-    return null
-  }
-  return { type: entityType, key, version }
+  const key = value.slice(separator + 1)
+  return isValidKey(entityType, key) ? { type: entityType, key } : null
 }
 
-export function formatRef(
-  type: EntityType,
-  key: string,
-  version?: number
-): string {
-  return version === undefined ? `${type}:${key}` : `${type}:${key}@${version}`
+export function formatRef(type: EntityType, key: string): string {
+  return `${type}:${key}`
 }
 
 const PATH_PREFIX: Record<EntityType, string> = {
@@ -196,22 +161,20 @@ const PATH_PREFIX: Record<EntityType, string> = {
   workflow: '/workflows',
 }
 
-/** The page for a ref: `/tools/clay/clay`. */
+/** The page for a ref: `/tools/apollo/enrich-person`. */
 export function refToPath(ref: Ref): string {
-  const pinned =
-    ref.version === undefined ? ref.key : `${ref.key}@${ref.version}`
-  return `${PATH_PREFIX[ref.type]}/${pinned}`
+  return `${PATH_PREFIX[ref.type]}/${ref.key}`
 }
 
-/** The file for a ref: `/tools/clay/clay.md`, `/workflows/brew/x@3.md`. */
+/** The file for a ref: `/tools/apollo/enrich-person.md`, `/workflows/funding-signal-outbound.md`. */
 export function refToFilePath(ref: Ref): string {
   return `${refToPath(ref)}.md`
 }
 
 /**
- * `/tools/clay/clay.md` → the ref it names, or null. Accepts the three
- * top-level prefixes and a workflow version pin; rejects everything else, so
- * the route handler never looks up a path that cannot be a file.
+ * `/tools/apollo/enrich-person.md` → the ref it names, or null. Accepts the three
+ * top-level prefixes; rejects everything else, so the route handler never
+ * looks up a path that cannot be a file.
  */
 export function filePathToRef(pathname: string): Ref | null {
   if (!pathname.endsWith('.md')) {
@@ -228,12 +191,26 @@ export function filePathToRef(pathname: string): Ref | null {
   return null
 }
 
+const TAG_FILE = /^\/tags\/([a-z]+)\/([a-z0-9-]+)\.md$/
+
+/** A tag's file: `capability:enrich-contacts` → `/tags/capability/enrich-contacts.md`. */
+export function tagFilePath(key: string): string {
+  const [namespace, slug] = key.split(':')
+  return `/tags/${namespace}/${slug}.md`
+}
+
+/** `/tags/capability/enrich-contacts.md` → the tag key it names, or null. */
+export function filePathToTagKey(pathname: string): string | null {
+  const match = TAG_FILE.exec(pathname)
+  const key = match ? `${match[1]}:${match[2]}` : ''
+  return isValidTagKey(key) ? key : null
+}
+
 /**
  * The SOURCE file behind a ref, from the repo root. Not the same as
  * `refToFilePath`, the rendered `.md` URL this site serves: a tool renders at
- * `/tools/clay/enrich-contacts.md` but is WRITTEN at
- * `companies/clay/tools/enrich-contacts.md`. The key carries both. A version
- * pin is dropped — the file on the branch is only ever the current one.
+ * `/tools/apollo/enrich-person.md` but is WRITTEN at
+ * `companies/apollo/tools/enrich-person.md`. The key carries both.
  */
 export function refToSourcePath(ref: {
   type: EntityType
@@ -247,9 +224,4 @@ export function refToSourcePath(ref: {
     return `companies/${handle}/tools/${slug}.md`
   }
   return `workflows/${ref.key}.md`
-}
-
-/** A way in's source file: `companies/clay/access/api.md`. */
-export function accessSourcePath(handle: string, id: string): string {
-  return `companies/${handle}/access/${id}.md`
 }

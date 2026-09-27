@@ -25,7 +25,7 @@ describe('workflow body', () => {
       '## Steps',
       '',
       `1. **Dedupe** with ${LINK}. Merge duplicates.`,
-      '2. **Tell the owner** with `acme/manage-crm` via MCP. Send `owner` the list.',
+      `2. **Tell the owner** with ${LINK}. Send \`owner\` the list.`,
       '',
       '## Done when',
       '',
@@ -49,7 +49,6 @@ describe('workflow body', () => {
       {
         title: 'Tell the owner',
         tool: 'acme/manage-crm',
-        via: 'mcp',
         instruction: 'Send `owner` the list.',
       },
     ])

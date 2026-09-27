@@ -13,36 +13,25 @@ import type { EntityType, TagNamespace } from '@/lib/catalog/keys'
 
 export type AccessType = 'mcp' | 'cli' | 'api'
 
-export type Auth = {
-  method: 'none' | 'api_key' | 'oauth'
-  /** "CLAY_API_KEY": named in the markdown file, never its value. */
-  envVar?: string
-  /** "Authorization: Bearer", "X-Api-Key"; absent = "Authorization: Bearer". */
-  header?: string
-  /** Where the user gets a key. */
-  keyUrl?: string
-  /** false = needs a sales call or approval. */
-  selfServe: boolean
-}
-
-type AccessHealth = {
-  ok: boolean
-  checkedAt: number
-  failingSince?: number
-}
+/**
+ * How a way in authenticates. An API key always names the environment
+ * variable it lives in, so a file can say where to put it without ever
+ * holding it; `header` is for an API only.
+ */
+export type Auth =
+  | { method: 'none' }
+  | { method: 'oauth' }
+  | { method: 'api_key'; envVar: string; header?: string; keyUrl?: string }
 
 type AccessCommon = {
-  /** false = community-maintained. */
+  /** Derived: a way with no `maintainer` is the vendor's own. */
   official: boolean
-  /** Handle or name when not official. */
+  /** Who runs a community way. */
   maintainer?: string
-  /** THE OPERATION: MCP tool name, CLI subcommand or API endpoint. */
+  /** THE OPERATION: MCP tool name, CLI command or API endpoint. */
   operation: string
   auth: Auth
   docsUrl?: string
-  health?: AccessHealth
-  /** The access file this way in was read from: `companies/clay/access/api.md`. */
-  file?: string
 }
 
 export type Access =
@@ -51,15 +40,13 @@ export type Access =
       transport: 'remote' | 'local'
       url?: string
       command?: string
-      repoUrl?: string
     })
   | (AccessCommon & {
       type: 'cli'
       installCommand: string
       binary: string
-      repoUrl?: string
     })
-  | (AccessCommon & { type: 'api'; baseUrl: string; openApiUrl?: string })
+  | (AccessCommon & { type: 'api'; baseUrl: string })
 
 /* ─────────────────────────────────── entities ───────────────────────────── */
 
@@ -69,7 +56,6 @@ type Status = 'published' | 'deprecated'
 export type Company = {
   key: string
   name: string
-  kind: 'vendor' | 'open_source' | 'individual'
   domain: string
   /** The `category:*` tag slug the directory groups by. */
   category: string
@@ -77,18 +63,17 @@ export type Company = {
   description?: string
   logo?: { url: string }
   links: {
-    website?: string
+    /** `https://<domain>`. */
+    website: string
     docs?: string
     github?: string
-    linkedin?: string
-    x?: string
   }
-  founded?: number
-  headquarters?: string
   status: Status
   /** From the file's `updated` date, at UTC midnight. */
   updatedAt: number
   aliases: ReadonlyArray<string>
+  /** Computed: its category, plus the ways in and capabilities of its published tools. */
+  tags: ReadonlyArray<string>
   searchText: string
 }
 
@@ -98,10 +83,12 @@ export type Tool = {
   name: string
   summary: string
   description?: string
-  /** The capability slug — the second half of the key. */
+  /** A `capability:` slug from tags.yml; the key names the function. */
   capability: string
+  /** The page that documents the call. */
+  docs?: string
   access: ReadonlyArray<Access>
-  /** Derived tag keys: one `has:<type>` per way in. */
+  /** Computed: its capability, its company's category, one `has:<type>` per way in. */
   tags: ReadonlyArray<string>
   status: Status
   updatedAt: number
@@ -120,8 +107,6 @@ export type WorkflowStep = {
   key: string
   title: string
   toolKey: string
-  /** Preferred way in; absent = the best available. */
-  via?: AccessType
   instruction: string
 }
 
@@ -132,8 +117,7 @@ export type Workflow = {
   author: string
   title: string
   summary: string
-  version: number
-  /** Curated tag keys: `motion:outbound`, `channel:email`, `capability:*`. */
+  /** Computed: its motion and channel tags, its tools' capabilities, and the `has:*` every tool shares. */
   tags: ReadonlyArray<string>
   inputs: ReadonlyArray<WorkflowInput>
   steps: ReadonlyArray<WorkflowStep>
@@ -157,10 +141,20 @@ export type Tag = {
   slug: string
   label: string
   synonyms: ReadonlyArray<string>
-  description: string
-  /** `has:*` is computed from tools, never authored. */
-  derived: boolean
+  /** Published companies, tools and workflows carrying it. */
   counts: { companies: number; tools: number; workflows: number }
+}
+
+/**
+ * What one entry is linked to, by key: the companies, tools and workflows one
+ * edge away, and its tags. Published entries only, except the ones an entry
+ * names itself (a workflow's tools, a tool's company).
+ */
+export type Relations = {
+  companies: ReadonlyArray<string>
+  tools: ReadonlyArray<string>
+  workflows: ReadonlyArray<string>
+  tags: ReadonlyArray<string>
 }
 
 /** A tag as a filter chip: what a listing needs to draw and count it. */
@@ -174,19 +168,27 @@ export type TagChip = {
 
 /** One rendered file: what `.md` URLs, the Copy button and `/llms.txt` serve. */
 export type CatalogDocument = {
-  /** `tool:clay/enrich-contacts` */
+  /** `tool:apollo/enrich-person` */
   ref: string
   entityType: EntityType
   markdown: string
-  hash: string
   lineCount: number
   updatedAt: number
   /**
    * The source files the markdown was rendered from, from the repo root: the
-   * entry's own file first, then every tool and access file whose facts it
+   * entry's own file first, then every tool and company file whose facts it
    * prints. The layout and the Rules come from the renderer, not a file.
    */
   sources: ReadonlyArray<string>
+}
+
+/** A tag's rendered file, `/tags/<namespace>/<slug>.md`: everything carrying it. */
+export type TagDocument = {
+  /** `capability:enrich-contacts` */
+  key: string
+  markdown: string
+  lineCount: number
+  updatedAt: number
 }
 
 /* ──────────────────────────────── list shapes ───────────────────────────── */
@@ -205,18 +207,16 @@ export type ToolListItem = {
   category?: Category
 }
 
-/** What the directory needs from a company: the summary plus its ways in. */
+/** What the directory needs from a company. */
 export type CompanyListItem = {
   company: {
     key: string
     name: string
     tagline?: string
     description?: string
-    domain?: string
     logoUrl?: string
   }
   category?: Category
-  access: ReadonlyArray<AccessType>
 }
 
 /** What a list row needs from a workflow: the workflow plus its tools' companies. */
@@ -226,31 +226,12 @@ export type WorkflowListItem = {
     title: string
     author: string
     summary?: string
-    toolCount: number
   }
   tools: ReadonlyArray<{
     companyKey: string
     companyName: string
     logoUrl?: string
-    access: ReadonlyArray<AccessType>
   }>
-}
-
-/* ───────────────────────────────── the map ──────────────────────────────── */
-
-export type MapNode = {
-  type: 'company' | 'tool' | 'workflow' | 'tag'
-  key: string
-  name: string
-}
-
-export type EdgeGroup = {
-  /** Reads as a sentence from the focused node: "Clay" — makes → tools. */
-  relation: string
-  /** `out` = this node points at them; `in` = they point at this node. */
-  direction: 'out' | 'in'
-  nodes: Array<MapNode>
-  isTruncated: boolean
 }
 
 /* ────────────────────────────── the palette ─────────────────────────────── */

@@ -11,7 +11,7 @@ Keys never change once published; to rename, add the old name under
 
 A workflow is **several tools in order with the instructions that reach a
 result**. A growth hack is a workflow — there is no second kind. Every step
-names one published tool (`companies/<handle>/tools/<slug>.md`), so every
+names one published tool (`companies/<handle>/tools/<name>.md`), so every
 workflow is built from defined tools, and every tool page lists the
 workflows that use it — the build links both directions.
 
@@ -27,25 +27,26 @@ tool you name and the rules; you write the rest.
 title: Turn fresh funding news into qualified outbound
 summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
 author: jdoe
-version: 1
-tags: [motion:outbound, channel:email, capability:enrich-contacts]
+tags: [motion:outbound, channel:email]
 updated: 2026-09-16
 ---
 
 ## Inputs
 
 - `target_segment`: the kind of company to watch, e.g. Series A B2B SaaS in the US
-- `sender_email`: the address emails are sent from
+- `campaign_id`: the lemlist campaign that sends the emails, e.g. cam_123
 
 ## Steps
 
-1. **Find funded companies** with [clay/build-audience](../companies/clay/tools/build-audience.md). List companies matching `target_segment` that announced a round in the last 30 days.
-2. **Write emails** with [brew/write-copy](../companies/brew/tools/write-copy.md) via MCP. Draft a three-sentence email per contact. Show the drafts to the user.
+1. **Find funded companies** with [people-data-labs/search-companies](../companies/people-data-labs/tools/search-companies.md). List companies matching `target_segment` whose `last_funding_date` falls in the last 30 days.
+2. **Find the buyer** with [apollo/search-people](../companies/apollo/tools/search-people.md). For each company, find the head of growth or marketing.
+3. **Write emails** with [anthropic/create-message](../companies/anthropic/tools/create-message.md). Draft a three-sentence email per buyer. Show the drafts to the user.
+4. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each buyer to `campaign_id`, with `findEmail` so lemlist finds their work email.
 
 ## Done when
 
 - Every funded company has a contact, or a note explaining why not.
-- Approved emails are sent, and the user has a summary table.
+- Every approved contact is in the campaign, and the user has a summary table.
 
 ## Notes
 
@@ -59,11 +60,10 @@ Optional. Anything else the agent should know, in any markdown.
 | `title` | yes | Phrased as the result. |
 | `summary` | yes | One sentence. |
 | `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
-| `tags` | yes | At least one `namespace:slug` from `tags/` (motion, channel, capability, category, fit). `has:*` is computed, never listed. |
+| `tags` | no | The `motion:` and `channel:` entries from `tags.yml` it serves. Its capabilities come from its tools, and `has:*` from their ways in — both computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
-| `version` | no | Integer, default 1. Bump it when the steps change materially. |
 | `featured` | no | Editorial rank on `/workflows`, set by maintainers; must be unique. Unranked workflows follow by date. |
-| `aliases`, `status` | no | Old names to redirect; `published` (default) or `deprecated`. |
+| `aliases`, `status` | no | Old names to redirect; `published` (default), `deprecated`, or `draft` — checked, never published, and free to use draft tools. A published workflow uses published tools only. |
 
 ### The body
 
@@ -73,9 +73,9 @@ heading is caught instead of silently dropped.
 | Section | Required | Each entry |
 | --- | --- | --- |
 | `## Inputs` | no | ``- `name`: what it is, e.g. an example`` — the name in snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
-| `## Steps` | yes, 1–10 | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). What to do.`` — the tool is a published tool's key (`<handle>/<slug>`), as a link to its file `../companies/<handle>/tools/<slug>.md` (GitHub follows it) or as a code span. Add `via MCP`, `via CLI` or `via API` after the tool to use that way in; the tool must have it. |
+| `## Steps` | yes, 1–10 | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. |
 | `## Done when` | yes | `- A check that means the job is finished.` |
-| `## Notes` | no | Free markdown, to the end of the file. |
+| `## Notes` | no | Free markdown, to the end of the file — with `###` and smaller headings, none named like a section the file writes (Set up, Steps, Rules…). |
 
 A long entry can wrap onto the next line; keep each entry to one paragraph.
 
@@ -86,7 +86,7 @@ A long entry can wrap onto the next line; keep each entry to one paragraph.
 - Inputs in backticks (`target_segment`), never `{{templates}}`.
 - Ask before anything that sends, spends or changes data. The rendered file
   adds these rules itself; do not duplicate them.
-- Keep the whole file under about 120 lines when rendered.
+- Keep the whole file under 150 lines when rendered.
 
 ## Checking your work
 
