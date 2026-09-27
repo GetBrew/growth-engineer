@@ -28,6 +28,11 @@ at the top of [`tags.yml`](tags.yml).
    the vendor's docs print it, and `docs:` pointing at the page that names
    the call.
 
+Working with an agent? The `research-company` skill
+([`.agents/skills/research-company/SKILL.md`](.agents/skills/research-company/SKILL.md))
+turns a domain into both files from the vendor's own docs, with a source for
+every fact.
+
 Then, with Node 22+ and pnpm 11 (`corepack enable` gives you the pinned pnpm):
 
 ```bash
