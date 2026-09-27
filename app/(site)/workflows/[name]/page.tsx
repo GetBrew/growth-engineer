@@ -35,6 +35,13 @@ async function resolveKey(params: Params): Promise<string | null> {
   return isValidKeyPart(key) ? key : null
 }
 
+/**
+ * Every page here is prerendered from `generateStaticParams`, and reading
+ * `params` outside `<Suspense>` is deliberate: nothing loads. So navigating
+ * here may block rather than show a fallback; `instant = false` says so.
+ */
+export const instant = false
+
 export function generateStaticParams() {
   return workflowParams()
 }
@@ -146,7 +153,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
             : []),
           ...tags.map((tag) => ({
             label: tag.label,
-            href: `/workflows?tag=${encodeURIComponent(tag.key)}`,
+            href: `/workflows?${tag.key.replace(':', '=')}`,
           })),
         ]}
         title={workflow.title}

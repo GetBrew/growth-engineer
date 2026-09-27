@@ -43,6 +43,13 @@ async function keyFrom(params: Params): Promise<string | null> {
   return isValidOwnedKey(key) ? key : null
 }
 
+/**
+ * Every page here is prerendered from `generateStaticParams`, and reading
+ * `params` outside `<Suspense>` is deliberate: nothing loads. So navigating
+ * here may block rather than show a fallback; `instant = false` says so.
+ */
+export const instant = false
+
 export function generateStaticParams() {
   return toolParams()
 }
