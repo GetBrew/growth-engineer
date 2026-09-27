@@ -191,6 +191,21 @@ export function filePathToRef(pathname: string): Ref | null {
   return null
 }
 
+const TAG_FILE = /^\/tags\/([a-z]+)\/([a-z0-9-]+)\.md$/
+
+/** A tag's file: `capability:enrich-contacts` → `/tags/capability/enrich-contacts.md`. */
+export function tagFilePath(key: string): string {
+  const [namespace, slug] = key.split(':')
+  return `/tags/${namespace}/${slug}.md`
+}
+
+/** `/tags/capability/enrich-contacts.md` → the tag key it names, or null. */
+export function filePathToTagKey(pathname: string): string | null {
+  const match = TAG_FILE.exec(pathname)
+  const key = match ? `${match[1]}:${match[2]}` : ''
+  return isValidTagKey(key) ? key : null
+}
+
 /**
  * The SOURCE file behind a ref, from the repo root. Not the same as
  * `refToFilePath`, the rendered `.md` URL this site serves: a tool renders at

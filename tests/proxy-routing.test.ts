@@ -40,6 +40,10 @@ describe('markdown file rewrite', () => {
     // A workflow key is one part; an owner segment is not a file.
     expect(get('/workflows/brew/intent-to-meeting.md')).toBeNull()
     expect(get('/companies/clay.md')).toBe('/api/markdown/companies/clay.md')
+    expect(get('/tags/capability/enrich-contacts.md')).toBe(
+      '/api/markdown/tags/capability/enrich-contacts.md'
+    )
+    expect(get('/tags/fit/icp.md')).toBeNull()
   })
 
   test('a .md URL that cannot name a file is left to 404 normally', () => {

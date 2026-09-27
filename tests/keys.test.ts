@@ -3,6 +3,7 @@ import path from 'node:path'
 import { describe, expect, test } from 'vitest'
 import {
   filePathToRef,
+  filePathToTagKey,
   formatRef,
   isValidGithubLogin,
   isValidHandle,
@@ -12,6 +13,7 @@ import {
   RESERVED_HANDLES,
   refToFilePath,
   refToPath,
+  tagFilePath,
 } from '@/lib/catalog/keys'
 import { REPO_ROOT } from './helpers/source-files'
 
@@ -154,5 +156,27 @@ describe('refs', () => {
     expect(filePathToRef('/tools/clay/clay')).toBeNull()
     expect(filePathToRef('/api/markdown/tools/clay/clay.md')).toBeNull()
     expect(filePathToRef('/tools/Clay/Clay.md')).toBeNull()
+  })
+})
+
+describe('tag files', () => {
+  test('a tag key and its file path name each other', () => {
+    expect(tagFilePath('capability:enrich-contacts')).toBe(
+      '/tags/capability/enrich-contacts.md'
+    )
+    expect(filePathToTagKey('/tags/capability/enrich-contacts.md')).toBe(
+      'capability:enrich-contacts'
+    )
+    expect(filePathToTagKey('/tags/has/mcp.md')).toBe('has:mcp')
+  })
+
+  test.each([
+    '/tags/fit/icp.md',
+    '/tags/capability/Enrich.md',
+    '/tags/capability/enrich-contacts',
+    '/tags/capability/a/b.md',
+    '/tools/capability/enrich-contacts.md',
+  ])('%s is not a tag file', (pathname) => {
+    expect(filePathToTagKey(pathname)).toBeNull()
   })
 })

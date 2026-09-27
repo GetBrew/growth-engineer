@@ -14,6 +14,7 @@ import {
   WORKFLOW_FILE_MAX_LINES,
   type WorkflowFileInput,
 } from '@/lib/catalog/render-markdown'
+import { renderTagDocument } from '@/lib/catalog/render-tag'
 import type { Access } from '@/lib/types/catalog'
 
 /**
@@ -381,6 +382,58 @@ describe('company file', () => {
       updatedAt: UPDATED_AT,
     })
     expect(rendered.markdown).toBe(golden('company'))
+  })
+})
+
+describe('tag file', () => {
+  test('lists every member, one line each, under its kind', () => {
+    const rendered = renderTagDocument({
+      key: 'capability:enrich-contacts',
+      label: 'Enrich contacts',
+      meaning: 'What a tool does: every vendor’s version of the same job.',
+      synonyms: ['enrichment', 'contact data'],
+      tools: [
+        {
+          key: 'apollo/enrich-person',
+          name: 'Enrich a person',
+          companyName: 'Apollo',
+          summary: "Returns one person's title, employer and work email.",
+        },
+        {
+          key: 'clay/run-routine',
+          name: 'Run a routine',
+          companyName: 'Clay',
+          summary: 'Runs an enrichment function on up to 100 records.',
+        },
+      ],
+      workflows: [
+        {
+          key: 'champion-job-change-loop',
+          title: 'Reconnect when a product champion changes jobs',
+          summary: 'Track past champions and reopen the relationship.',
+        },
+      ],
+      companies: [
+        { key: 'apollo', name: 'Apollo', summary: 'B2B data and outreach.' },
+      ],
+      updatedAt: UPDATED_AT,
+    })
+    expect(rendered.markdown).toBe(golden('tag'))
+  })
+
+  test('a tag nothing carries says so', () => {
+    const rendered = renderTagDocument({
+      key: 'channel:ads',
+      label: 'Ads',
+      meaning: 'Where a workflow reaches people.',
+      synonyms: [],
+      tools: [],
+      workflows: [],
+      companies: [],
+      updatedAt: UPDATED_AT,
+    }).markdown
+    expect(rendered).toContain('Nothing published carries this tag yet.')
+    expect(rendered).not.toContain('## ')
   })
 })
 

@@ -14,7 +14,7 @@ The public `key` is the path, and the path is the URL:
 | Company | `apollo` | `companies/apollo/company.md` | `/companies/apollo` |
 | Tool | `apollo/enrich-person` | `companies/apollo/tools/enrich-person.md` (named after the function) | `/tools/apollo/enrich-person` |
 | Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` |
-| Tag | `capability:enrich-contacts` | an entry in `tags.yml` | a filter chip |
+| Tag | `capability:enrich-contacts` | an entry in `tags.yml` | a filter chip, and `/tags/capability/enrich-contacts.md` |
 
 A key part is lowercase letters, digits and hyphens, 2–39 characters, never
 starting or ending with a hyphen. A company handle is one part that is not a

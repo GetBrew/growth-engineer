@@ -285,6 +285,24 @@ describe('the content tree', () => {
     }
   })
 
+  test('every tag has a file listing what carries it', () => {
+    for (const tag of catalog.tags.values()) {
+      const markdown = catalog.tagDocuments.get(tag.key)?.markdown ?? ''
+      const fields = parse(/^---\n([\s\S]*?)\n---/.exec(markdown)?.[1] ?? '', {
+        schema: 'core',
+      }) as Record<string, unknown>
+      expect(fields.ref, tag.key).toBe(tag.key)
+      expect(fields.label, tag.key).toBe(tag.label)
+      const members = relationsOf(catalog, tag.key)
+      expect(fields.tools, tag.key).toEqual(
+        members.tools.map((key) => `tool:${key}`)
+      )
+      expect(fields.workflows, tag.key).toEqual(
+        members.workflows.map((key) => `workflow:${key}`)
+      )
+    }
+  })
+
   test('every file names the source files it was built from, and each one feeds it', () => {
     const paths = new Set(readContentTree().files.map((file) => file.path))
     // What a company's ways in print, by the company file they live in.

@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { getCatalog } from './catalog'
-import { parseRef, refToFilePath } from './keys'
+import { parseRef, refToFilePath, tagFilePath } from './keys'
 
 /**
  * Every path the build prerenders, straight from the catalog. Each list is
@@ -38,8 +38,8 @@ export function toolShortcutParams(): Array<{ handle: string }> {
 }
 
 /**
- * Every `.md` file: each document, and each alias path (which the handler
- * answers with a 308).
+ * Every `.md` file: each document, each tag's file, and each alias path
+ * (which the handler answers with a 308).
  */
 export function markdownFileParams(): Array<{ path: Array<string> }> {
   const catalog = getCatalog()
@@ -50,6 +50,9 @@ export function markdownFileParams(): Array<{ path: Array<string> }> {
       continue
     }
     paths.push(refToFilePath(ref))
+  }
+  for (const key of catalog.tagDocuments.keys()) {
+    paths.push(tagFilePath(key))
   }
   for (const oldRef of catalog.aliases.keys()) {
     const ref = parseRef(oldRef)

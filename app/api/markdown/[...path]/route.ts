@@ -1,5 +1,13 @@
-import { filePathToRef, refToFilePath } from '@/lib/catalog/keys'
-import { loadDocument, resolveAlias } from '@/lib/catalog/loaders'
+import {
+  filePathToRef,
+  filePathToTagKey,
+  refToFilePath,
+} from '@/lib/catalog/keys'
+import {
+  loadDocument,
+  loadTagDocument,
+  resolveAlias,
+} from '@/lib/catalog/loaders'
 import { markdownFileParams } from '@/lib/catalog/static-params'
 
 export function generateStaticParams() {
@@ -11,7 +19,15 @@ export async function GET(
   { params }: { params: Promise<{ path: Array<string> }> }
 ) {
   const { path } = await params
-  const ref = filePathToRef(`/${path.join('/')}`)
+  const pathname = `/${path.join('/')}`
+  const tagKey = filePathToTagKey(pathname)
+  if (tagKey) {
+    const tagDocument = await loadTagDocument(tagKey)
+    return tagDocument
+      ? markdownResponse(tagDocument.markdown)
+      : new Response('Not found', { status: 404 })
+  }
+  const ref = filePathToRef(pathname)
   if (!ref) {
     return new Response('Not found', { status: 404 })
   }
@@ -28,7 +44,11 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
-  return new Response(document.markdown, {
+  return markdownResponse(document.markdown)
+}
+
+function markdownResponse(markdown: string): Response {
+  return new Response(markdown, {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
       'Cache-Control':

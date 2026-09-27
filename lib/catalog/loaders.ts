@@ -90,6 +90,11 @@ export async function loadDocument(type: EntityType, key: string) {
   return getCatalog().documents.get(formatRef(type, key)) ?? null
 }
 
+/** A tag's rendered file: `capability:enrich-contacts`. */
+export async function loadTagDocument(key: string) {
+  return getCatalog().tagDocuments.get(key) ?? null
+}
+
 /** A company's published tools, by key. */
 export async function loadToolsByCompany(
   companyKey: string

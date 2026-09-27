@@ -1,18 +1,17 @@
 import { z } from 'zod'
-import { TAG_NAMESPACE_MEANINGS } from '@/lib/catalog/definitions'
 import {
   ENTITY_TYPES,
   type EntityType,
   filePathToRef,
+  filePathToTagKey,
   formatRef,
   parseRef,
   refToFilePath,
   TAG_NAMESPACES,
-  type TagNamespace,
+  tagFilePath,
 } from '@/lib/catalog/keys'
 import { relationsOf } from '@/lib/catalog/relations'
 import type { Catalog } from '@/lib/content/build-catalog'
-import { mcpEntries } from './entries'
 import { closest } from './suggest'
 import { type ToolResult, toolError } from './tool-result'
 
@@ -20,8 +19,9 @@ import { type ToolResult, toolError } from './tool-result'
  * MCP `get`: one entry, whole. A company, tool or workflow returns its file —
  * byte for byte what its `.md` URL serves — plus its links as refs, so an
  * agent can walk the catalog: a workflow's tools, a tool's company and the
- * workflows using it. A TAG (`capability:enrich-contacts`) returns everything
- * carrying it: every vendor's version of one job, side by side.
+ * workflows using it. A TAG (`capability:enrich-contacts`) returns its file,
+ * `/tags/capability/enrich-contacts.md`: everything carrying it — every
+ * vendor's version of one job, side by side.
  *
  * Takes a ref, a tag key, or a page or `.md` URL; follows renamed keys; a
  * miss suggests the closest refs. Drafts are never found.
@@ -42,7 +42,7 @@ export const getOutput = z.strictObject({
   ref: z.string(),
   type: z.enum([...ENTITY_TYPES, 'tag']),
   title: z.string(),
-  url: z.string().optional().describe('The markdown file; tags have none.'),
+  url: z.string().describe('The markdown file.'),
   status: z.enum(['published', 'deprecated']).optional(),
   companies: z.array(z.string()),
   tools: z.array(z.string()),
@@ -76,7 +76,12 @@ function resolve(input: string, catalog: Catalog): Target | null {
   const value = input.toLowerCase()
   const path = pathOf(value)
   if (path) {
-    const ref = filePathToRef(path.endsWith('.md') ? path : `${path}.md`)
+    const file = path.endsWith('.md') ? path : `${path}.md`
+    const tagKey = filePathToTagKey(file)
+    if (tagKey) {
+      return { kind: 'tag', key: tagKey }
+    }
+    const ref = filePathToRef(file)
     return ref ? { kind: 'entity', ...ref } : null
   }
   const tag = TAG_KEY.exec(value)
@@ -101,46 +106,26 @@ function everyRef(catalog: Catalog): Array<string> {
   return [...catalog.documents.keys(), ...catalog.tags.keys()]
 }
 
-function tagAnswer(catalog: Catalog, key: string): ToolResult {
-  const tag = catalog.tags.get(key)
+function tagAnswer(
+  catalog: Catalog,
+  origin: string,
+  key: string
+): ToolResult | null {
+  const document = catalog.tagDocuments.get(key)
+  if (!document) {
+    return null
+  }
   const members = relationsOf(catalog, key)
-  const byRef = new Map(mcpEntries(catalog).map((entry) => [entry.ref, entry]))
-  const section = (title: string, refs: ReadonlyArray<string>) =>
-    refs.length === 0
-      ? []
-      : [
-          '',
-          `## ${title} (${refs.length})`,
-          '',
-          ...refs.map((ref) => {
-            const entry = byRef.get(ref)
-            return `- ${ref} — ${entry?.title ?? ref}: ${entry?.summary ?? ''}`
-          }),
-        ]
-  const tools = members.tools.map((k) => formatRef('tool', k))
-  const workflows = members.workflows.map((k) => formatRef('workflow', k))
-  const companies = members.companies.map((k) => formatRef('company', k))
-  const namespace = (tag?.namespace ?? 'capability') as TagNamespace
-  const text = [
-    `# ${tag?.label ?? key} (${key})`,
-    '',
-    TAG_NAMESPACE_MEANINGS[namespace],
-    ...(tag && tag.synonyms.length > 0
-      ? ['', `Also called: ${tag.synonyms.join(', ')}.`]
-      : []),
-    ...section('Tools', tools),
-    ...section('Workflows', workflows),
-    ...section('Companies', companies),
-  ].join('\n')
   return {
-    content: [{ type: 'text', text }],
+    content: [{ type: 'text', text: document.markdown }],
     structuredContent: {
       ref: key,
       type: 'tag',
-      title: tag?.label ?? key,
-      companies,
-      tools,
-      workflows,
+      title: catalog.tags.get(key)?.label ?? key,
+      url: `${origin}${tagFilePath(key)}`,
+      companies: members.companies.map((k) => formatRef('company', k)),
+      tools: members.tools.map((k) => formatRef('tool', k)),
+      workflows: members.workflows.map((k) => formatRef('workflow', k)),
       tags: [],
     },
   }
@@ -189,11 +174,15 @@ export function runGet(
 ): ToolResult {
   const target = resolve(args.ref, catalog)
   if (target?.kind === 'tag') {
-    return tagAnswer(catalog, target.key)
+    const answer = tagAnswer(catalog, origin, target.key)
+    if (answer) {
+      return answer
+    }
   }
-  const answer = target
-    ? entityAnswer(catalog, origin, target.type, target.key)
-    : null
+  const answer =
+    target?.kind === 'entity'
+      ? entityAnswer(catalog, origin, target.type, target.key)
+      : null
   if (answer) {
     return answer
   }

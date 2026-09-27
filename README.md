@@ -56,7 +56,9 @@ companies/ workflows/ tags.yml ─▶ lib/content/build-catalog.ts  ─▶  the 
 
 Every company, tool and workflow page answers `Accept: text/markdown` with
 its file, or append `.md`: `/tools/apollo/enrich-person.md`,
-`/workflows/funding-signal-outbound.md`, `/companies/apollo.md`. `/llms.txt` defines the four words the catalog uses and
+`/workflows/funding-signal-outbound.md`, `/companies/apollo.md`. Each tag has a
+file too, listing everything carrying it: `/tags/capability/enrich-contacts.md`.
+`/llms.txt` defines the four words the catalog uses and
 links every file with a one-line summary; `/llms-full.txt` is every file in
 one document. Every HTML page declares its file as a `text/markdown`
 alternate and carries schema.org data (a company is an `Organization`, a tool

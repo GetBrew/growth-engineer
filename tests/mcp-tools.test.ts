@@ -204,7 +204,17 @@ describe('get, on the real catalog', () => {
       })
     ).map((row) => row.ref)
     expect([...tools].sort()).toEqual([...searched].sort())
-    expect(result.content[0]?.text).toContain('# Enrich contacts')
+    // The answer is the tag's file, byte for byte what its URL serves.
+    expect(result.content[0]?.text).toBe(
+      catalog.tagDocuments.get('capability:enrich-contacts')?.markdown
+    )
+    expect(result.structuredContent?.url).toBe(
+      `${ORIGIN}/tags/capability/enrich-contacts.md`
+    )
+    const byUrl = call(catalog, 'get', {
+      ref: `${ORIGIN}/tags/capability/enrich-contacts.md`,
+    })
+    expect(byUrl.structuredContent?.ref).toBe('capability:enrich-contacts')
   })
 
   test('takes a page URL, a .md path or a bare key', () => {

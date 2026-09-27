@@ -3,12 +3,13 @@ import type {
   Company,
   Relations,
   Tag,
+  TagDocument,
   Tool,
   Workflow,
 } from '@/lib/types/catalog'
 import { buildAliases } from './build-aliases'
 import { buildCompanies } from './build-companies'
-import { buildDocuments } from './build-documents'
+import { buildDocuments, buildTagDocuments } from './build-documents'
 import { buildRelations } from './build-relations'
 import { buildTags } from './build-tags'
 import { buildTools } from './build-tools'
@@ -36,6 +37,8 @@ export type Catalog = {
   tags: ReadonlyMap<string, Tag>
   /** By ref: `tool:apollo/enrich-person`. */
   documents: ReadonlyMap<string, CatalogDocument>
+  /** By tag key: `capability:enrich-contacts` → its file (./build-documents.ts). */
+  tagDocuments: ReadonlyMap<string, TagDocument>
   /** `${type}:${oldKey}` → the current key. */
   aliases: ReadonlyMap<string, string>
   /** By ref or tag key: what each entry is linked to (./build-relations.ts). */
@@ -153,12 +156,21 @@ function assemble(entities: {
     tags,
     order,
   })
+  const documents = buildDocuments({ companies, tools, workflows, relations })
   return {
     companies,
     tools,
     workflows,
     tags,
-    documents: buildDocuments({ companies, tools, workflows, relations }),
+    documents,
+    tagDocuments: buildTagDocuments({
+      tags,
+      relations,
+      companies,
+      tools,
+      workflows,
+      documents,
+    }),
     aliases,
     relations,
     order,

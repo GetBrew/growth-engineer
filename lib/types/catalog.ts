@@ -182,6 +182,15 @@ export type CatalogDocument = {
   sources: ReadonlyArray<string>
 }
 
+/** A tag's rendered file, `/tags/<namespace>/<slug>.md`: everything carrying it. */
+export type TagDocument = {
+  /** `capability:enrich-contacts` */
+  key: string
+  markdown: string
+  lineCount: number
+  updatedAt: number
+}
+
 /* ──────────────────────────────── list shapes ───────────────────────────── */
 
 export type Category = { slug: string; label: string }

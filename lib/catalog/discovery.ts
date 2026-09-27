@@ -9,6 +9,7 @@ import {
   parseRef,
   refToFilePath,
   refToPath,
+  tagFilePath,
 } from './keys'
 import { relationsOf } from './relations'
 
@@ -170,6 +171,35 @@ export async function loadLlmsIndex(): Promise<
       }
     }),
   }
+}
+
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`
+}
+
+/** Every tag's file, by key, with what it gathers. */
+export async function loadLlmsTags(): Promise<
+  Array<{ title: string; file: string; summary: string }>
+> {
+  const catalog = getCatalog()
+  return [...catalog.tags.values()]
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .map((tag) => {
+      const counts = [
+        tag.counts.tools > 0 ? plural(tag.counts.tools, 'tool', 'tools') : null,
+        tag.counts.workflows > 0
+          ? plural(tag.counts.workflows, 'workflow', 'workflows')
+          : null,
+        tag.counts.companies > 0
+          ? plural(tag.counts.companies, 'company', 'companies')
+          : null,
+      ].filter((part): part is string => part !== null)
+      return {
+        title: `${tag.label} (${tag.key})`,
+        file: tagFilePath(tag.key),
+        summary: counts.length > 0 ? `${counts.join(', ')}.` : 'Nothing yet.',
+      }
+    })
 }
 
 /** Every rendered file, in the order `/llms.txt` lists them. */

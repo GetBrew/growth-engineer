@@ -10,6 +10,7 @@ import { DEFINITIONS, SITE } from '@/lib/catalog/definitions'
 import { loadSitemapEntries } from '@/lib/catalog/discovery'
 import {
   filePathToRef,
+  filePathToTagKey,
   isValidHandle,
   isValidKeyPart,
   isValidOwnedKey,
@@ -154,6 +155,7 @@ describe('/llms.txt', () => {
       '## Tools',
       '## Workflows',
       '## Companies',
+      '## Tags',
       '## Optional',
     ]) {
       expect(lines).toContain(heading)
@@ -169,13 +171,21 @@ describe('/llms.txt', () => {
       )
     }
     const fileLines = lines.filter((line) => FILE_LINE.test(line))
-    expect(fileLines.length).toBe(catalog.documents.size)
+    expect(fileLines.length).toBe(
+      catalog.documents.size + catalog.tagDocuments.size
+    )
     for (const line of fileLines) {
       const [, title, url, summary] = FILE_LINE.exec(line) ?? []
       expect(title?.trim().length).toBeGreaterThan(0)
       expect(summary?.trim().length).toBeGreaterThan(0)
       expect(url?.startsWith(`${SITE_ORIGIN}/`)).toBe(true)
-      const ref = filePathToRef((url ?? '').slice(SITE_ORIGIN.length))
+      const path = (url ?? '').slice(SITE_ORIGIN.length)
+      const tagKey = filePathToTagKey(path)
+      if (tagKey) {
+        expect(catalog.tagDocuments.has(tagKey), line).toBe(true)
+        continue
+      }
+      const ref = filePathToRef(path)
       expect(ref, line).not.toBeNull()
       expect(catalog.documents.has(`${ref?.type}:${ref?.key}`), line).toBe(true)
     }

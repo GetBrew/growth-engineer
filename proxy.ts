@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { filePathToRef } from '@/lib/catalog/keys'
+import { filePathToRef, filePathToTagKey } from '@/lib/catalog/keys'
 
 /**
  * `proxy.ts` is what Next 16 calls the file that used to be `middleware.ts`.
@@ -32,9 +32,13 @@ export function hasBackslashInPath(pathname: string): boolean {
 
 /**
  * Where a request for a markdown file is rewritten, or null when it is not
- * one. Only paths that name a valid ref qualify, so the handler never looks
- * up a path that cannot be a file. Exported for the proxy test.
+ * one. Only paths that name a valid ref or tag key qualify, so the handler
+ * never looks up a path that cannot be a file. Exported for the proxy test.
  */
+function isFilePath(pathname: string): boolean {
+  return Boolean(filePathToRef(pathname) ?? filePathToTagKey(pathname))
+}
+
 export function markdownRewriteTarget(input: {
   pathname: string
   method: string
@@ -44,13 +48,11 @@ export function markdownRewriteTarget(input: {
     return null
   }
   if (input.pathname.endsWith('.md')) {
-    return filePathToRef(input.pathname)
-      ? `/api/markdown${input.pathname}`
-      : null
+    return isFilePath(input.pathname) ? `/api/markdown${input.pathname}` : null
   }
   if (
     input.accept?.includes('text/markdown') &&
-    filePathToRef(`${input.pathname}.md`)
+    isFilePath(`${input.pathname}.md`)
   ) {
     return `/api/markdown${input.pathname}.md`
   }

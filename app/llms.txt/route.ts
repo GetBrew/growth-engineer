@@ -1,5 +1,5 @@
 import { SITE } from '@/lib/catalog/definitions'
-import { loadLlmsIndex } from '@/lib/catalog/discovery'
+import { loadLlmsIndex, loadLlmsTags } from '@/lib/catalog/discovery'
 import { SITE_ORIGIN } from '@/lib/env'
 import { llmsPreamble } from '@/lib/seo/llms'
 
@@ -26,11 +26,13 @@ function section(
 
 export async function GET() {
   const index = await loadLlmsIndex()
+  const tags = await loadLlmsTags()
   const lines = [
     ...llmsPreamble(SITE_ORIGIN, SITE.name),
     ...section('Tools', index.tool),
     ...section('Workflows', index.workflow),
     ...section('Companies', index.company),
+    ...section('Tags', tags),
     '## Optional',
     '',
     `- [Every file in one document](${SITE_ORIGIN}/llms-full.txt): the whole catalog, for one read.`,

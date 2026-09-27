@@ -1,3 +1,4 @@
+import { TAG_NAMESPACE_MEANINGS } from '@/lib/catalog/definitions'
 import { formatRef, refToSourcePath } from '@/lib/catalog/keys'
 import { selectWorkflowAccess } from '@/lib/catalog/render-access'
 import {
@@ -5,11 +6,14 @@ import {
   renderToolDocument,
   renderWorkflowDocument,
 } from '@/lib/catalog/render-markdown'
+import { renderTagDocument } from '@/lib/catalog/render-tag'
 import type {
   Access,
   CatalogDocument,
   Company,
   Relations,
+  Tag,
+  TagDocument,
   Tool,
   Workflow,
 } from '@/lib/types/catalog'
@@ -212,4 +216,89 @@ export function buildDocuments(
   }
 
   return documents
+}
+
+const FIRST_SENTENCE = /^[^.!?]+[.!?]/
+
+/** A company in one line: its tagline, else its description's first sentence. */
+function companySummary(company: Company): string {
+  const sentence = company.description
+    ? (FIRST_SENTENCE.exec(company.description.trim())?.[0] ?? '')
+    : ''
+  return company.tagline ?? sentence.trim()
+}
+
+/**
+ * Every tag's file: its published members, as the listings and MCP `search`
+ * count them (./build-relations.ts). Dated like the newest member's file; a
+ * tag nothing carries yet takes the catalog's newest date.
+ */
+export function buildTagDocuments(inputs: {
+  tags: ReadonlyMap<string, Tag>
+  relations: ReadonlyMap<string, Relations>
+  companies: ReadonlyMap<string, Company>
+  tools: ReadonlyMap<string, Tool>
+  workflows: ReadonlyMap<string, Workflow>
+  documents: ReadonlyMap<string, CatalogDocument>
+}): Map<string, TagDocument> {
+  const { companies, tools, workflows, documents } = inputs
+  const dateOf = (ref: string) => documents.get(ref)?.updatedAt ?? 0
+  const catalogDate = Math.max(
+    0,
+    ...[...documents.values()].map((document) => document.updatedAt)
+  )
+  const tagDocuments = new Map<string, TagDocument>()
+  for (const tag of inputs.tags.values()) {
+    const members = inputs.relations.get(tag.key)
+    const memberTools = (members?.tools ?? []).flatMap((key) => {
+      const tool = tools.get(key)
+      return tool ? [tool] : []
+    })
+    const memberWorkflows = (members?.workflows ?? []).flatMap((key) => {
+      const workflow = workflows.get(key)
+      return workflow ? [workflow] : []
+    })
+    const memberCompanies = (members?.companies ?? []).flatMap((key) => {
+      const company = companies.get(key)
+      return company ? [company] : []
+    })
+    const dates = [
+      ...memberTools.map((tool) => dateOf(formatRef('tool', tool.key))),
+      ...memberWorkflows.map((workflow) =>
+        dateOf(formatRef('workflow', workflow.key))
+      ),
+      ...memberCompanies.map((company) =>
+        dateOf(formatRef('company', company.key))
+      ),
+    ]
+    const rendered = renderTagDocument({
+      key: tag.key,
+      label: tag.label,
+      meaning: TAG_NAMESPACE_MEANINGS[tag.namespace],
+      synonyms: tag.synonyms,
+      tools: memberTools.map((tool) => ({
+        key: tool.key,
+        name: tool.name,
+        companyName: companies.get(tool.companyKey)?.name ?? tool.companyKey,
+        summary: tool.summary,
+      })),
+      workflows: memberWorkflows.map((workflow) => ({
+        key: workflow.key,
+        title: workflow.title,
+        summary: workflow.summary,
+      })),
+      companies: memberCompanies.map((company) => ({
+        key: company.key,
+        name: company.name,
+        summary: companySummary(company),
+      })),
+      updatedAt: dates.length > 0 ? Math.max(...dates) : catalogDate,
+    })
+    tagDocuments.set(tag.key, {
+      key: tag.key,
+      ...rendered,
+      updatedAt: dates.length > 0 ? Math.max(...dates) : catalogDate,
+    })
+  }
+  return tagDocuments
 }
