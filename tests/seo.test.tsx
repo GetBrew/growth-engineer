@@ -91,8 +91,8 @@ describe('sitemap.xml', () => {
     const entries = await sitemap()
     const urls = entries.map((entry) => entry.url)
     expect(new Set(urls).size).toBe(urls.length)
-    expect(urls.slice(0, 5)).toEqual(
-      ['/', '/tools', '/workflows', '/companies', '/map'].map(
+    expect(urls.slice(0, 4)).toEqual(
+      ['/', '/tools', '/workflows', '/companies'].map(
         (path) => `${SITE_ORIGIN}${path}`
       )
     )
@@ -105,20 +105,19 @@ describe('sitemap.xml', () => {
     for (const key of catalog.workflows.keys()) {
       expect(urls).toContain(`${SITE_ORIGIN}/workflows/${key}`)
     }
-    // The home page, three listings, the map, /contribute and each guide.
+    // The home page, three listings, /contribute and each guide.
     expect(urls).toContain(`${SITE_ORIGIN}/contribute`)
     for (const guide of GUIDES) {
       expect(urls).toContain(`${SITE_ORIGIN}/contribute/${guide.id}`)
     }
     expect(urls.length).toBe(
-      6 +
+      5 +
         GUIDES.length +
         catalog.companies.size +
         catalog.tools.size +
         catalog.workflows.size
     )
-    // Map focus pages are noindex; a version pin is the same page; no file URLs.
-    expect(urls.some((url) => url.includes('/map/'))).toBe(false)
+    // No pinned or file URLs.
     expect(urls.some((url) => url.includes('@') || url.endsWith('.md'))).toBe(
       false
     )
@@ -235,7 +234,7 @@ describe('page metadata', () => {
       pageMetadata({
         title: 'x',
         description: 'd',
-        path: '/map/tool/clay/enrich-contacts',
+        path: '/contribute/tool',
         noindex: true,
       }).robots
     ).toEqual({ index: false, follow: true })

@@ -30,10 +30,7 @@ function newest(dates: ReadonlyArray<number>): number | undefined {
   return dates.length > 0 ? Math.max(...dates) : undefined
 }
 
-/**
- * Every indexable page, most important first. Map focus pages are `noindex`
- * (one thin page per node, for navigation) and stay out on purpose.
- */
+/** Every indexable page, most important first. */
 export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
   const catalog = getCatalog()
   const companies = [...catalog.companies.values()]
@@ -67,12 +64,6 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-    {
-      path: '/map',
-      updatedAt: everything,
-      changeFrequency: 'weekly',
-      priority: 0.5,
-    },
     // How to contribute: no entity date behind them, so no lastmod.
     { path: '/contribute', changeFrequency: 'monthly', priority: 0.5 },
     ...GUIDES.map((guide) => ({
@@ -84,7 +75,6 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       path: refToPath({
         type: 'workflow' as const,
         key: workflow.key,
-        version: undefined,
       }),
       updatedAt: workflow.updatedAt,
       changeFrequency: 'weekly' as const,
@@ -94,7 +84,6 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       path: refToPath({
         type: 'tool' as const,
         key: tool.key,
-        version: undefined,
       }),
       updatedAt: tool.updatedAt,
       changeFrequency: 'weekly' as const,
@@ -104,7 +93,6 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       path: refToPath({
         type: 'company' as const,
         key: company.key,
-        version: undefined,
       }),
       updatedAt: company.updatedAt,
       changeFrequency: 'monthly' as const,
@@ -139,7 +127,7 @@ export async function loadLlmsIndex(): Promise<
     a.key.localeCompare(b.key)
   return {
     tool: [...catalog.tools.values()].sort(byKey).map((tool) => {
-      const ref = { type: 'tool' as const, key: tool.key, version: undefined }
+      const ref = { type: 'tool' as const, key: tool.key }
       const company = catalog.companies.get(tool.companyKey)
       return {
         title: company ? `${tool.name} (${company.name})` : tool.name,
@@ -152,7 +140,6 @@ export async function loadLlmsIndex(): Promise<
       const ref = {
         type: 'workflow' as const,
         key: workflow.key,
-        version: undefined,
       }
       return {
         title: workflow.title,
@@ -165,7 +152,6 @@ export async function loadLlmsIndex(): Promise<
       const ref = {
         type: 'company' as const,
         key: company.key,
-        version: undefined,
       }
       const toolCount = (catalog.toolsByCompany.get(company.key) ?? []).length
       const summary =

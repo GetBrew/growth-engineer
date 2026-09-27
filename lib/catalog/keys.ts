@@ -7,7 +7,7 @@
  *
  *   company    clay
  *   tool       clay/clay                  a company's only tool uses its product name
- *   workflow   funding-signal-outbound    @3 pins a version; the author (a GitHub login) is in the file
+ *   workflow   funding-signal-outbound    the author (a GitHub login) is in the file
  *   tag        capability:enrich-contacts
  *
  * Keys never change after publishing. A rename lists the old key under
@@ -137,28 +137,9 @@ function isValidKey(type: EntityType, value: string): boolean {
   }
 }
 
-const VERSION_SUFFIX = /^(.+)@(\d+)$/
-
-/** `funding-signal-outbound@3` → `{ key, version: 3 }`; no suffix → `version: undefined`. */
-export function splitVersionedKey(value: string): {
-  key: string
-  version: number | undefined
-} {
-  const match = VERSION_SUFFIX.exec(value)
-  if (!match) {
-    return { key: value, version: undefined }
-  }
-  const version = Number.parseInt(match[2] ?? '', 10)
-  return Number.isSafeInteger(version) && version > 0
-    ? { key: match[1] ?? '', version }
-    : { key: value, version: undefined }
-}
-
 export type Ref = {
   type: EntityType
   key: string
-  /** Only workflows carry a pin; `undefined` means the current version. */
-  version: number | undefined
 }
 
 /** `tool:clay/clay` → `{ type: 'tool', key: 'clay/clay' }`; anything malformed → null. */
@@ -172,22 +153,12 @@ export function parseRef(value: string): Ref | null {
     return null
   }
   const entityType = type as EntityType
-  const { key, version } = splitVersionedKey(value.slice(separator + 1))
-  if (!isValidKey(entityType, key)) {
-    return null
-  }
-  if (version !== undefined && entityType !== 'workflow') {
-    return null
-  }
-  return { type: entityType, key, version }
+  const key = value.slice(separator + 1)
+  return isValidKey(entityType, key) ? { type: entityType, key } : null
 }
 
-export function formatRef(
-  type: EntityType,
-  key: string,
-  version?: number
-): string {
-  return version === undefined ? `${type}:${key}` : `${type}:${key}@${version}`
+export function formatRef(type: EntityType, key: string): string {
+  return `${type}:${key}`
 }
 
 const PATH_PREFIX: Record<EntityType, string> = {
@@ -198,20 +169,18 @@ const PATH_PREFIX: Record<EntityType, string> = {
 
 /** The page for a ref: `/tools/clay/clay`. */
 export function refToPath(ref: Ref): string {
-  const pinned =
-    ref.version === undefined ? ref.key : `${ref.key}@${ref.version}`
-  return `${PATH_PREFIX[ref.type]}/${pinned}`
+  return `${PATH_PREFIX[ref.type]}/${ref.key}`
 }
 
-/** The file for a ref: `/tools/clay/clay.md`, `/workflows/brew/x@3.md`. */
+/** The file for a ref: `/tools/clay/clay.md`, `/workflows/intent-to-meeting.md`. */
 export function refToFilePath(ref: Ref): string {
   return `${refToPath(ref)}.md`
 }
 
 /**
  * `/tools/clay/clay.md` → the ref it names, or null. Accepts the three
- * top-level prefixes and a workflow version pin; rejects everything else, so
- * the route handler never looks up a path that cannot be a file.
+ * top-level prefixes; rejects everything else, so the route handler never
+ * looks up a path that cannot be a file.
  */
 export function filePathToRef(pathname: string): Ref | null {
   if (!pathname.endsWith('.md')) {

@@ -2,7 +2,6 @@
 title: Turn content downloads into useful conversations
 summary: Personalise the follow-up around what someone read instead of dropping every lead into the same sequence.
 author: thedogwiththedataonit
-version: 1
 tags:
   - motion:inbound
   - channel:email

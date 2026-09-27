@@ -2,7 +2,6 @@
 title: Spot and recover at-risk customer accounts
 summary: Detect meaningful usage drops, assemble the account story, and trigger a human check-in before renewal risk grows.
 author: thedogwiththedataonit
-version: 1
 tags:
   - motion:midbound
   - channel:chat

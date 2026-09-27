@@ -2,7 +2,6 @@
 title: Route high-intent website visitors in real time
 summary: Identify promising accounts on your site, enrich them, and tell the right owner with useful context.
 author: thedogwiththedataonit
-version: 1
 tags:
   - motion:midbound
   - channel:website

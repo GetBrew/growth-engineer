@@ -1,5 +1,5 @@
 ---
-ref: workflow:intent-to-meeting@3
+ref: workflow:intent-to-meeting
 title: Turn high-intent accounts into booked meetings
 author: jdoe
 tools: [tool:apollo/find-work-emails, tool:brew/send-email]

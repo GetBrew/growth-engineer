@@ -130,7 +130,6 @@ export type Workflow = {
   author: string
   title: string
   summary: string
-  version: number
   /** Curated tag keys: `motion:outbound`, `channel:email`, `capability:*`. */
   tags: ReadonlyArray<string>
   inputs: ReadonlyArray<WorkflowInput>
@@ -226,23 +225,6 @@ export type WorkflowListItem = {
     logoUrl?: string
     access: ReadonlyArray<AccessType>
   }>
-}
-
-/* ───────────────────────────────── the map ──────────────────────────────── */
-
-export type MapNode = {
-  type: 'company' | 'tool' | 'workflow' | 'tag'
-  key: string
-  name: string
-}
-
-export type EdgeGroup = {
-  /** Reads as a sentence from the focused node: "Clay" — makes → tools. */
-  relation: string
-  /** `out` = this node points at them; `in` = they point at this node. */
-  direction: 'out' | 'in'
-  nodes: Array<MapNode>
-  isTruncated: boolean
 }
 
 /* ────────────────────────────── the palette ─────────────────────────────── */

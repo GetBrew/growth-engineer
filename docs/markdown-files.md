@@ -27,7 +27,7 @@ names the tools, and appends the rules.
 
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
-| Header | `ref`, `name`, `company`, `workflows`, `access`, `updated` | `ref` (with `@N`), `title`, `author`, `tools`, `tags`, `updated` |
+| Header | `ref`, `name`, `company`, `workflows`, `access`, `updated` | `ref`, `title`, `author`, `tools`, `tags`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
@@ -46,15 +46,15 @@ workflow file lists the tools it uses: the relationship is in both files.
 | Where | Example |
 | --- | --- |
 | Copy prompt button | On every tool and workflow page |
-| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`, `/workflows/funding-signal-outbound@1.md`, `/companies/clay.md` |
+| `.md` URL | `/tools/clay/enrich-contacts.md`, `/workflows/funding-signal-outbound.md`, `/companies/clay.md` |
 | A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file |
 | MCP, at `/mcp` | `search` finds files; `get` with a ref returns the file |
 
 `proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`. The
 handler reads the rendered document from the in-memory catalog — the same
-one the page reads — and every file, every current version pin and every
-alias is prerendered at build. A renamed key answers with a real 308.
+one the page reads — and every file and every alias is prerendered at
+build. A renamed key answers with a real 308.
 
 ## The render path
 
@@ -82,6 +82,5 @@ byte-identical files (`tests/content.test.ts` pins this).
 3. Open a pull request. CI runs the same checks; a maintainer reviews the
    facts. Merging publishes it on the next deploy.
 
-`version` is an integer in the header; bump it when the steps change
-materially. v1 serves the current version's file only, so a pin on an older
-version is a 404 and git history is the archive.
+There are no versions: a merged change replaces the file, and git history is
+the archive.

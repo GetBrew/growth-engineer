@@ -60,7 +60,6 @@ export async function generateMetadata({
   const ref = {
     type: 'tool' as const,
     key: result.tool.key,
-    version: undefined,
   }
   return pageMetadata({
     title: `${result.tool.name} by ${result.company.name}`,
@@ -102,7 +101,6 @@ async function ToolDetail({ params }: { params: Params }) {
   const filePath = refToFilePath({
     type: 'tool',
     key: tool.key,
-    version: undefined,
   })
 
   const docsUrl = tool.access.find((access) => access.docsUrl)?.docsUrl

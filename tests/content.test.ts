@@ -92,9 +92,8 @@ describe('the content tree', () => {
     )
   })
 
-  test('a single-tool workflow names its one tool, its author and its version', () => {
+  test('a single-tool workflow names its one tool and its author', () => {
     const workflow = catalog.workflows.get('clay-waterfall-order')
-    expect(workflow?.version).toBe(1)
     expect(workflow?.toolKeys).toEqual(['clay/find-work-emails'])
     expect(workflow?.toolCount).toBe(1)
     // Workflows are by people: a GitHub login, never a company handle.

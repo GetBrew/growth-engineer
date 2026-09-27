@@ -50,7 +50,6 @@ export default async function Image({
       path={refToFilePath({
         type: 'company',
         key: company.key,
-        version: undefined,
       })}
       title={company.name}
     />,

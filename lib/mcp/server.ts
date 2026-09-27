@@ -165,7 +165,7 @@ function search(args: Record<string, unknown>, origin: string): ToolResult {
       type: item.kind,
       title: item.title,
       summary: item.subtitle,
-      url: `${origin}${refToFilePath({ type: item.kind, key: item.key, version: undefined })}`,
+      url: `${origin}${refToFilePath({ type: item.kind, key: item.key })}`,
     })
   )
   const text =
@@ -194,13 +194,6 @@ function get(args: Record<string, unknown>, origin: string): ToolResult {
   if (!document) {
     return toolError(
       `Nothing in the catalog at ${formatRef(ref.type, ref.key)}. Search for it instead.`
-    )
-  }
-  const workflow =
-    ref.type === 'workflow' ? catalog.workflows.get(current) : undefined
-  if (ref.version !== undefined && workflow?.version !== ref.version) {
-    return toolError(
-      `Only the current version of ${formatRef(ref.type, current)} is served (v${workflow?.version ?? 1}).`
     )
   }
   return { content: [{ type: 'text', text: document.markdown }] }

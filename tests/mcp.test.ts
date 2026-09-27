@@ -114,7 +114,7 @@ describe('/mcp with the MCP SDK client', () => {
       const refs = [
         `${SITE_ORIGIN}/workflows/${key}`,
         `/workflows/${key}.md`,
-        `workflow:${key}@${workflow?.version}`,
+        `workflow:${key}`,
       ]
       const files = await Promise.all(
         refs.map((ref) => client.callTool({ name: 'get', arguments: { ref } }))
@@ -127,9 +127,10 @@ describe('/mcp with the MCP SDK client', () => {
         arguments: { ref: 'workflow:no-such-workflow' },
       })
       expect(missing.isError).toBe(true)
+      // Versions are gone: a pinned ref is not a ref.
       const pinned = await client.callTool({
         name: 'get',
-        arguments: { ref: `workflow:${key}@99` },
+        arguments: { ref: `workflow:${key}@1` },
       })
       expect(pinned.isError).toBe(true)
     } finally {

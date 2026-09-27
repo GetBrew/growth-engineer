@@ -28,13 +28,6 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
-  if (
-    ref.version !== undefined &&
-    !document.markdown.includes(`ref: workflow:${ref.key}@${ref.version}\n`)
-  ) {
-    return new Response('Version not found', { status: 404 })
-  }
-
   return new Response(document.markdown, {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',

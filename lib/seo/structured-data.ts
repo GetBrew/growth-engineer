@@ -77,7 +77,6 @@ export function companyJsonLd(origin: string, company: Company): JsonLd {
   const path = refToPath({
     type: 'company',
     key: company.key,
-    version: undefined,
   })
   return {
     '@context': CONTEXT,
@@ -124,7 +123,7 @@ export function toolJsonLd(
   tool: Tool,
   company: Company
 ): JsonLd {
-  const ref = { type: 'tool' as const, key: tool.key, version: undefined }
+  const ref = { type: 'tool' as const, key: tool.key }
   const path = refToPath(ref)
   return {
     '@context': CONTEXT,
@@ -194,7 +193,6 @@ export function workflowJsonLd(
   const ref = {
     type: 'workflow' as const,
     key: workflow.key,
-    version: undefined,
   }
   const path = refToPath(ref)
   const toolNames = new Map(
@@ -229,7 +227,6 @@ export function workflowJsonLd(
           url: `${absolute(origin, path)}#step-${index + 1}`,
         })),
         keywords: workflow.tags.join(', '),
-        version: workflow.version,
         dateModified: new Date(workflow.updatedAt).toISOString(),
       },
       {

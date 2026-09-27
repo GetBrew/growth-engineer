@@ -290,7 +290,6 @@ function toWorkflow(
     author: data.author,
     title: data.title,
     summary: data.summary,
-    version: data.version,
     tags: data.tags,
     inputs: data.inputs,
     steps,

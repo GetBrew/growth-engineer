@@ -171,7 +171,6 @@ export const workflowHeaderSchema = z.strictObject({
   summary: text,
   /** The GitHub login of the person who wrote it. */
   author: githubLogin,
-  version: z.int().min(1).default(1),
   tags: z.array(tagKey).min(1, 'give the workflow at least one tag'),
   featured: z.int().min(1).optional(),
   aliases: z.array(keyPart).default([]),

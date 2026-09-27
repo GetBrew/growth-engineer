@@ -12,7 +12,6 @@ import {
   RESERVED_HANDLES,
   refToFilePath,
   refToPath,
-  splitVersionedKey,
 } from '@/lib/catalog/keys'
 import { REPO_ROOT } from './helpers/source-files'
 
@@ -106,15 +105,13 @@ describe('refs', () => {
     expect(parseRef('tool:clay/clay')).toEqual({
       type: 'tool',
       key: 'clay/clay',
-      version: undefined,
     })
-    expect(parseRef('workflow:intent-to-meeting@3')).toEqual({
+    expect(parseRef('workflow:intent-to-meeting')).toEqual({
       type: 'workflow',
       key: 'intent-to-meeting',
-      version: 3,
     })
-    expect(formatRef('workflow', 'intent-to-meeting', 3)).toBe(
-      'workflow:intent-to-meeting@3'
+    expect(formatRef('workflow', 'intent-to-meeting')).toBe(
+      'workflow:intent-to-meeting'
     )
     expect(formatRef('company', 'clay')).toBe('company:clay')
   })
@@ -123,6 +120,8 @@ describe('refs', () => {
     'tool:clay',
     'company:clay/clay',
     'tool:clay/clay@2',
+    // Versions are gone: a pin is not a ref.
+    'workflow:intent-to-meeting@3',
     'user:jdoe',
     'clay/clay',
     'tool:Clay/Clay',
@@ -130,40 +129,26 @@ describe('refs', () => {
     expect(parseRef(value)).toBeNull()
   })
 
-  test('version pins', () => {
-    expect(splitVersionedKey('brew/x@3')).toEqual({ key: 'brew/x', version: 3 })
-    expect(splitVersionedKey('brew/x')).toEqual({
-      key: 'brew/x',
-      version: undefined,
-    })
-    expect(splitVersionedKey('brew/x@0')).toEqual({
-      key: 'brew/x@0',
-      version: undefined,
-    })
-  })
-
   test('paths and files', () => {
-    const ref = parseRef('workflow:intent-to-meeting@3')
-    expect(ref && refToPath(ref)).toBe('/workflows/intent-to-meeting@3')
-    expect(ref && refToFilePath(ref)).toBe('/workflows/intent-to-meeting@3.md')
+    const ref = parseRef('workflow:intent-to-meeting')
+    expect(ref && refToPath(ref)).toBe('/workflows/intent-to-meeting')
+    expect(ref && refToFilePath(ref)).toBe('/workflows/intent-to-meeting.md')
     expect(filePathToRef('/tools/clay/clay.md')).toEqual({
       type: 'tool',
       key: 'clay/clay',
-      version: undefined,
     })
     expect(filePathToRef('/companies/clay.md')).toEqual({
       type: 'company',
       key: 'clay',
-      version: undefined,
     })
     // A workflow key is ONE part: the author lives in the file, not the path.
     expect(filePathToRef('/workflows/brew/xy@2.md')).toBeNull()
     expect(parseRef('workflow:brew/xy')).toBeNull()
-    expect(filePathToRef('/workflows/xy@2.md')).toEqual({
+    expect(filePathToRef('/workflows/xy.md')).toEqual({
       type: 'workflow',
       key: 'xy',
-      version: 2,
     })
+    expect(filePathToRef('/workflows/xy@2.md')).toBeNull()
     expect(filePathToRef('/tools/clay/clay')).toBeNull()
     expect(filePathToRef('/api/markdown/tools/clay/clay.md')).toBeNull()
     expect(filePathToRef('/tools/Clay/Clay.md')).toBeNull()

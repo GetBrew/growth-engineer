@@ -35,7 +35,6 @@ export async function GET() {
     '',
     `- [Every file in one document](${SITE_ORIGIN}/llms-full.txt): the whole catalog, for one read.`,
     `- [Sitemap](${SITE_ORIGIN}/sitemap.xml): every page.`,
-    `- [Relationship map](${SITE_ORIGIN}/map): what is connected to what.`,
     `- [Repository](${SITE.repository}): the files themselves, and how to contribute.`,
     '',
   ]

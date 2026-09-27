@@ -27,7 +27,6 @@ tool you name and the rules; you write the rest.
 title: Turn fresh funding news into qualified outbound
 summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
 author: jdoe
-version: 1
 tags: [motion:outbound, channel:email, capability:enrich-contacts]
 updated: 2026-09-16
 ---
@@ -61,7 +60,6 @@ Optional. Anything else the agent should know, in any markdown.
 | `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
 | `tags` | yes | At least one `namespace:slug` from `tags/` (motion, channel, capability, category, fit). `has:*` is computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
-| `version` | no | Integer, default 1. Bump it when the steps change materially. |
 | `featured` | no | Editorial rank on `/workflows`, set by maintainers; must be unique. Unranked workflows follow by date. |
 | `aliases`, `status` | no | Old names to redirect; `published` (default) or `deprecated`. |
 

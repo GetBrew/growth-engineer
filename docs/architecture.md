@@ -47,7 +47,7 @@ public.
 **Pages** (`app/(site)/`) — Server Components. A page's default export is
 synchronous and returns a `<Suspense>`; the async child does the reads. Detail
 routes declare `generateStaticParams` from `lib/catalog/static-params.ts`
-and prerender in full; so does every map focus (`/map/<type>/<key>`). The
+and prerender in full. The
 listings prerender EVERY item and hand them to a client component
 (`ToolsExplorer`, `CompanyDirectory`, `WorkflowsIndex`) that reads the URL
 with `useSearchParams` and narrows the list in the browser — so no page reads
@@ -68,12 +68,12 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 
 | Route | At build | Why |
 | --- | --- | --- |
-| `/companies/[handle]`, `/tools/[handle]/[name]`, `/workflows/[name]` (+ `@N`), `/map/[...focus]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
-| `/api/markdown/[...path]` — every file, every current pin, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
+| `/companies/[handle]`, `/tools/[handle]/[name]`, `/workflows/[name]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
+| `/api/markdown/[...path]` — every file, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/` | static | no request-time input |
-| `…/opengraph-image` — one card per company, tool and workflow (+ `@N`) | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
+| `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
-| `/map`, `/contribute`, `/contribute/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
+| `/contribute`, `/contribute/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call; stateless, read-only, the same catalog |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
@@ -94,9 +94,7 @@ stated once:
 The definitions (company, tool, workflow, tag, how to read a file) live in
 `lib/catalog/definitions.ts` and nowhere else; the llms preamble and the
 structured data import them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
-catalog exactly: every page, every file, nothing invented. Map focus pages
-(`/map/<type>/<key>`) are `noindex, follow` — one thin page per node, for
-navigation — and stay out of the sitemap.
+catalog exactly: every page, every file, nothing invented.
 
 ## Search v1 (`lib/catalog/search.ts`)
 

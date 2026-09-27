@@ -92,7 +92,6 @@ const brewMcp: Access = {
 
 const intentToMeeting: WorkflowFileInput = {
   key: 'intent-to-meeting',
-  version: 3,
   title: 'Turn high-intent accounts into booked meetings',
   author: 'jdoe',
   tools: [
@@ -143,7 +142,6 @@ const intentToMeeting: WorkflowFileInput = {
 // THESE steps: name the tool once up front instead of on every line.
 const waterfall: WorkflowFileInput = {
   key: 'clay-waterfall-order',
-  version: 1,
   title: 'Find more work emails by ordering providers by hit rate',
   author: 'jdoe',
   tools: [

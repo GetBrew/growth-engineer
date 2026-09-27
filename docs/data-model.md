@@ -13,7 +13,7 @@ The public `key` is the path, and the path is the URL:
 | --- | --- | --- | --- |
 | Company | `clay` | `companies/clay/company.md` | `/companies/clay` |
 | Tool | `clay/enrich-contacts` | `companies/clay/tools/enrich-contacts.md` | `/tools/clay/enrich-contacts` |
-| Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` (`@1` pins a version) |
+| Workflow | `funding-signal-outbound` | `workflows/funding-signal-outbound.md` | `/workflows/funding-signal-outbound` |
 | Tag | `capability:enrich-contacts` | `tags/capability/enrich-contacts.md` | a filter chip |
 
 A key part is lowercase letters, digits and hyphens, 2–39 characters, never
@@ -61,8 +61,8 @@ hyphens), shown as `@login` and linked to the profile; it is never a company.
 
 The HEADER holds the facts: `title` (phrased as the result), `summary`,
 `author`, `tags` (≥ 1, curated namespaces only) and `updated` are required;
-`version` (integer, default 1), `featured` (unique rank on the featured
-list), `aliases` and `status` are optional.
+`featured` (unique rank on the featured list), `aliases` and `status` are
+optional. There are no versions: git history is the archive.
 
 The BODY holds the workflow itself, in the markdown the rendered file uses,
 so the source reads on GitHub the way it reads on the site
@@ -113,7 +113,7 @@ more than ten steps. `tests/content-schema.test.ts` proves each one fails.
 ## Not in this model, on purpose
 
 Views, copies and ranking counters; teams, reviews and claims; submissions
-and moderation queues; version history beyond the current version. Each was
+and moderation queues; versions and their history. Each was
 designed for in the original schema and can return without changing a key or
 a file — a pull request is the submission pipeline for now, and git history
 is the version history.

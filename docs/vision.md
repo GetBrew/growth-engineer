@@ -43,7 +43,7 @@ That single decision shapes everything else:
 | --- | --- | --- |
 | **Company** | `clay` | A vendor, open-source project or person that makes tools. |
 | **Tool** | `clay/enrich-contacts` | ONE function an agent can call, tied to a specific public API endpoint, MCP tool or CLI subcommand of a company's product. Every way in names its `operation`. A company with three functions has three tools. |
-| **Workflow** | `funding-signal-outbound` | Steps across tools that reach a result, written by a person (a GitHub login). Frozen versions (`@3`); the current one renders the file. |
+| **Workflow** | `funding-signal-outbound` | Steps across tools that reach a result, written by a person (a GitHub login). |
 | **Growth hack** | `clay-waterfall-order` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
 
 Each company has many tools. Each workflow combines tools from different
@@ -75,9 +75,9 @@ cannot be published.
 
 Pricing and cost, standalone connector pages, skills/SDKs/webhooks as ways in,
 write actions through an API, an admin app, teams and reviews, usage
-counters and ranking, vector search, version history beyond the current
-version. Each can arrive without changing a key or a file — a pull request is
-the submission pipeline and git is the history.
+counters and ranking, vector search, versions and version history. Each
+can arrive without changing a key or a file — a pull request is the
+submission pipeline and git is the history.
 
 ## Principles
 

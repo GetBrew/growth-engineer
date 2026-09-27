@@ -75,7 +75,6 @@ export function buildDocuments(
       updatedAt,
       renderWorkflowDocument({
         key: workflow.key,
-        version: workflow.version,
         title: workflow.title,
         author: workflow.author,
         tools: tools.map((tool) => ({

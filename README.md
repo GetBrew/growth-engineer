@@ -95,7 +95,6 @@ the one optional public variable, the site origin.
 | `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
-| `/map`, `/map/[type]/[key]` | The relationship map: what is connected to what, one prerendered page per node |
 | `/contribute`, `/contribute/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
 | `/mcp` | The read-only MCP server (`search`, `get`) — the one dynamic route |
@@ -106,7 +105,7 @@ the one optional public variable, the site origin.
 ```
 companies/ workflows/ tags/   THE DATA — see CONTRIBUTING.md
 app/
-  (site)/                     every page: /, companies, tools, workflows, map, contribute
+  (site)/                     every page: /, companies, tools, workflows, contribute
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
   mcp/                        the read-only MCP server (lib/mcp/server.ts is the JSON-RPC)
   llms.txt, llms-full.txt     the file index with definitions; the whole corpus
@@ -121,7 +120,7 @@ lib/
   schemas/content.ts          the strict header schemas (zod)
   types/catalog.ts            the catalog's types
   seo/                        per-page metadata, schema.org builders, the llms preamble
-components/                   site chrome, catalog rows and detail pages, the map, ui primitives
+components/                   site chrome, catalog rows and detail pages, ui primitives
 tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives
 docs/                         vision, file schema, architecture, validation, ci, performance
 ```

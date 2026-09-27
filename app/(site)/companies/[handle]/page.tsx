@@ -50,7 +50,7 @@ export async function generateMetadata({
   if (!company) {
     return {}
   }
-  const ref = { type: 'company' as const, key: company.key, version: undefined }
+  const ref = { type: 'company' as const, key: company.key }
   return pageMetadata({
     title: company.name,
     description:

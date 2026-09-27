@@ -2,7 +2,6 @@
 title: Follow up when accounts research a competitor
 summary: Combine what a competitor just shipped with which of your accounts are looking, then send a focused comparison.
 author: thedogwiththedataonit
-version: 1
 tags:
   - motion:outbound
   - channel:email

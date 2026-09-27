@@ -2,7 +2,6 @@
 title: Win a second open with a subject-line resend
 summary: Resend a campaign to the people who never opened it, with a subject line they have not seen.
 author: thedogwiththedataonit
-version: 1
 tags:
   - channel:email
   - capability:send-email

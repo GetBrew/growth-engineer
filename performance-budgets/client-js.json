@@ -13,8 +13,6 @@
     "/companies/[handle]": 856343,
     "/contribute": 830489,
     "/contribute/[guide]": 841679,
-    "/map": 805452,
-    "/map/[...focus]": 805452,
     "/tools": 870679,
     "/tools/[handle]/[name]": 868543,
     "/workflows": 893958,

@@ -2,7 +2,6 @@
 title: Reach new executives in their first 90 days
 summary: Track leadership changes and open a thoughtful conversation while new priorities and budgets are being set.
 author: thedogwiththedataonit
-version: 1
 tags:
   - motion:outbound
   - channel:email

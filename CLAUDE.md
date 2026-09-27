@@ -25,4 +25,4 @@ Quick orientation (full rules in `AGENTS.md`):
   call `tsc`, `vitest`, `next build` or `knip` directly.
 - **Everything prerenders**: the catalog is built once per process from sync
   reads; every page and filter permutation is static (listings narrow in the
-  browser; the map is a page per node); internal links are `next/link`.
+  browser); internal links are `next/link`.

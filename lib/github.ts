@@ -22,9 +22,6 @@ export function repoFileUrl(path: string): string {
  * renders at `/tools/clay/enrich-contacts.md` but is WRITTEN at
  * `companies/clay/tools/enrich-contacts.md`. The key carries both, so neither
  * path has to be stored.
- *
- * A workflow's version pin is dropped: `@3` is a rendered snapshot, while the
- * file on the branch is only ever the current one.
  */
 function sourceFilePath(ref: { type: EntityType; key: string }): string {
   if (ref.type === 'company') {

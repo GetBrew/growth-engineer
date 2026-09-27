@@ -56,7 +56,6 @@ type WorkflowFileStep = {
 
 export type WorkflowFileInput = {
   key: string
-  version: number
   title: string
   /** The GitHub login of whoever wrote it. */
   author: string
@@ -275,7 +274,7 @@ export function renderWorkflowDocument(
 
   const lines: Array<string> = [
     '---',
-    `ref: ${formatRef('workflow', workflow.key, workflow.version)}`,
+    `ref: ${formatRef('workflow', workflow.key)}`,
     `title: ${workflow.title}`,
     `author: ${workflow.author}`,
     `tools: ${list(usedTools.map((tool) => formatRef('tool', tool.key)))}`,

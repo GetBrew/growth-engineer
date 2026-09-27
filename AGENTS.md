@@ -82,7 +82,7 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 ### Keys and refs
 
 - Public identity is the `key` (`clay`, `clay/enrich-contacts`,
-  `funding-signal-outbound`, `@3` pins a version), and the key IS the path:
+  `funding-signal-outbound`), and the key IS the path:
   `companies/clay/`, `companies/clay/tools/enrich-contacts.md`,
   `workflows/funding-signal-outbound.md` (FLAT — no folders; the workflow's
   `author` is a GitHub login in its header, never a company). Keys are never
@@ -126,7 +126,7 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   drawn at build (`generateStaticParams`, `next/og`). Structured data
   (`lib/seo/structured-data.ts`, rendered by `<JsonLd>`) restates facts
   already on the page — never new ones. `/sitemap.xml` lists every indexable
-  page with its `updated` date; map focus pages are `noindex`. `/robots.txt`
+  page with its `updated` date. `/robots.txt`
   allows every crawler and names the AI crawlers. `tests/seo.test.tsx` holds
   the sitemap, `/llms.txt` and `/llms-full.txt` to the catalog exactly.
 
@@ -139,8 +139,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   `export const dynamic`, `revalidate` or `dynamicParams`.
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
-  from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`);
-  the map is one page per node. No page reads `searchParams` on the server.
+  from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
+  No page reads `searchParams` on the server.
   The one dynamic route is `/mcp` (POST); the proxy runs only for `.md`.
 - NOTHING LOADS: no skeletons, no spinners, no fetch after load. A page with
   no params renders its data directly — the build fails if anything in it is

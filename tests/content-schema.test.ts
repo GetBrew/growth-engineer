@@ -137,6 +137,11 @@ describe('content rules', () => {
       /steps: a workflow has at most 10 steps/,
     ],
     [
+      'a retired version field',
+      () => workflow('author: jdoe\n', 'author: jdoe\nversion: 2\n'),
+      /workflows\/keep-crm-clean\.md: `version`: versions are gone/,
+    ],
+    [
       'a reserved handle',
       () => [
         ...VALID,

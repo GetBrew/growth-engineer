@@ -71,6 +71,10 @@ const nextConfig: NextConfig = {
         destination: '/workflows/:name',
         permanent: true,
       },
+      // The relationship map is gone: relations live on each detail page and
+      // in MCP `get`.
+      { source: '/map', destination: '/', permanent: true },
+      { source: '/map/:path*', destination: '/', permanent: true },
       // A growth hack IS a workflow; the concept went, the URL keeps its promise.
       { source: '/hacks', destination: '/workflows', permanent: true },
       { source: '/hacks/:path*', destination: '/workflows', permanent: true },
