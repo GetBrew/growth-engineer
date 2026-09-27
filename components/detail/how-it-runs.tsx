@@ -2,12 +2,12 @@ import Link from 'next/link'
 import { accessTypeLabels } from '@/components/common/badges'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { PANEL_HEADING } from '@/components/detail/styles'
-import { Badge } from '@/components/ui/badge'
 import type { AccessType, WorkflowStep as Step } from '@/lib/types/catalog'
 
 type StepTool = {
   key: string
   name: string
+  companyName: string
   logoUrl?: string
   access: ReadonlyArray<AccessType>
 }
@@ -41,28 +41,27 @@ export function HowItRuns({
               <div className="min-w-0 pt-0.5">
                 <h3 className="type-subsection">{step.title}</h3>
                 {tool ? (
-                  <div className="mt-2 flex min-w-0 items-center gap-1.5">
-                    <Link
-                      className="focus-ring type-label inline-flex min-w-0 items-center gap-1.5 rounded-full border bg-background py-1 pr-2.5 pl-1 text-soft transition-colors hover:border-foreground/20 hover:text-foreground"
-                      href={`/tools/${tool.key}`}
-                    >
-                      <EntityLogo
-                        className="shrink-0 rounded-full"
-                        logoUrl={tool.logoUrl}
-                        name={tool.name}
-                        size={16}
-                      />
-                      <span className="truncate">{tool.name}</span>
-                    </Link>
-                    {accessTypeLabels(tool.access).map((label) => (
-                      <Badge
-                        className="h-auto shrink-0 bg-background px-2 py-0.5"
-                        key={label}
-                      >
-                        {label}
-                      </Badge>
-                    ))}
-                  </div>
+                  // One quiet line per step: who makes the tool and what it
+                  // is, then the ways in as plain text on the right edge, so
+                  // they line up down the list instead of stacking badges.
+                  <Link
+                    className="focus-ring group -mx-1.5 mt-1.5 flex min-w-0 items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-hover"
+                    href={`/tools/${tool.key}`}
+                  >
+                    <EntityLogo
+                      className="shrink-0"
+                      logoUrl={tool.logoUrl}
+                      name={tool.companyName}
+                      size={16}
+                    />
+                    <span className="type-label min-w-0 truncate text-soft transition-colors group-hover:text-foreground">
+                      {tool.name}
+                      <span className="text-faint"> · {tool.companyName}</span>
+                    </span>
+                    <span className="type-meta ml-auto shrink-0 font-mono text-faint">
+                      {accessTypeLabels(tool.access).join(' · ')}
+                    </span>
+                  </Link>
                 ) : null}
               </div>
             </li>

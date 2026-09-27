@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowDown01Icon, BookOpen01Icon } from '@hugeicons/core-free-icons'
+import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -22,12 +22,6 @@ const LINK =
 
 const ROW_ITEM =
   'focus-ring type-control flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-soft transition-colors hover:bg-hover hover:text-foreground'
-
-/**
- * Docs sits after the catalog's sections, not among them: SECTIONS also
- * drives the listings, the home tabs and ⌘K, which are the catalog only.
- */
-const DOCS = { href: '/docs', label: 'Docs' } as const
 
 function isCurrent(pathname: string | null, href: string): boolean {
   if (!pathname) {
@@ -52,16 +46,6 @@ function Links({ pathname }: { pathname: string | null }) {
           </Link>
         )
       })}
-      <Link
-        aria-current={isCurrent(pathname, DOCS.href) ? 'page' : undefined}
-        className={cn(
-          LINK,
-          isCurrent(pathname, DOCS.href) && 'bg-hover text-foreground'
-        )}
-        href={DOCS.href}
-      >
-        {DOCS.label}
-      </Link>
     </nav>
   )
 }
@@ -118,25 +102,6 @@ function Menu({ pathname }: { pathname: string | null }) {
               </li>
             )
           })}
-          <li>
-            <Link
-              aria-current={isCurrent(pathname, DOCS.href) ? 'page' : undefined}
-              className={cn(
-                ROW_ITEM,
-                isCurrent(pathname, DOCS.href) && 'bg-hover text-foreground'
-              )}
-              href={DOCS.href}
-              onClick={() => setOpen(false)}
-            >
-              <HugeiconsIcon
-                aria-hidden="true"
-                icon={BookOpen01Icon}
-                size={16}
-                strokeWidth={1.8}
-              />
-              {DOCS.label}
-            </Link>
-          </li>
         </ul>
       </PopoverContent>
     </Popover>
