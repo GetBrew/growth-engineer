@@ -204,11 +204,18 @@ export function buildCatalog(
     problems
   )
   problems.throwIfAny()
+  const paged = withAnyTool(companies, tools)
   return assemble({
-    companies: withAnyTool(companies, tools),
+    companies: paged,
     tools,
     workflows: workflows.workflows,
     tags,
-    aliases,
+    // A company whose tools are all drafts has no page: its old keys have
+    // nowhere to redirect.
+    aliases: new Map(
+      [...aliases].filter(
+        ([ref, key]) => !ref.startsWith('company:') || paged.has(key)
+      )
+    ),
   })
 }

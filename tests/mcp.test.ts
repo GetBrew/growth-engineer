@@ -226,6 +226,17 @@ describe('/mcp protocol edges', () => {
     expect(await errorCode(response)).toBe(-32_600)
   })
 
+  test('a batch past the cap is an invalid request, not minutes of work', async () => {
+    const batch = Array.from({ length: 17 }, (_, id) => ({
+      jsonrpc: '2.0',
+      id,
+      method: 'ping',
+    }))
+    const response = await rpc(batch)
+    expect(response.status).toBe(400)
+    expect(await errorCode(response)).toBe(-32_600)
+  })
+
   test('a request id is a string or a number, never null', async () => {
     const response = await rpc({ jsonrpc: '2.0', id: null, method: 'ping' })
     expect(await errorCode(response)).toBe(-32_600)

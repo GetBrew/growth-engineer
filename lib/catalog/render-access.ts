@@ -374,7 +374,16 @@ function companySetup(group: ReadonlyArray<SetupTool>): Array<string> {
         ]
       : []
   )
-  return [...heading, 'Use the first option your agent supports.', ...options]
+  // One option may not run every call (an MCP server without the note
+  // endpoint): then the choice is per call, not per company.
+  const coversAll = ways.every((calls) => calls.length === group.length)
+  return [
+    ...heading,
+    coversAll
+      ? 'Use the first option your agent supports.'
+      : 'For each call, use the first option your agent supports that lists it.',
+    ...options,
+  ]
 }
 
 /** A workflow's Set up section: each company once, in the order it is first used. */

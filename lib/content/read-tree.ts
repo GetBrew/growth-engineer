@@ -175,6 +175,9 @@ function walkWorkflows(walk: Walk): void {
 }
 
 export function readContentTree(root = process.cwd()): ContentTree {
+  // Taken BEFORE reading: a file saved mid-read then differs from this
+  // fingerprint, so the next request reads the tree again.
+  const fingerprint = contentFingerprint(root)
   const walk = new Walk(root)
   for (const handle of walk.folders(
     'companies',
@@ -212,7 +215,7 @@ export function readContentTree(root = process.cwd()): ContentTree {
     files: walk.files,
     problems: walk.problems,
     logos,
-    fingerprint: contentFingerprint(root),
+    fingerprint,
   }
 }
 

@@ -1,5 +1,6 @@
 import { SITE } from '@/lib/catalog/definitions'
 import { refToFilePath, refToPath } from '@/lib/catalog/keys'
+import { toolDocsUrl } from '@/lib/catalog/tool-docs'
 import type {
   Company,
   CompanyListItem,
@@ -126,6 +127,7 @@ export function toolJsonLd(
 ): JsonLd {
   const ref = { type: 'tool' as const, key: tool.key }
   const path = refToPath(ref)
+  const docsUrl = toolDocsUrl(tool)
   return {
     '@context': CONTEXT,
     '@graph': [
@@ -141,20 +143,18 @@ export function toolJsonLd(
           name: company.name,
           url: company.links.website,
         },
-        // Every way in: where an agent reaches the function.
-        installUrl: tool.access.flatMap((entry) => {
-          if (entry.type === 'api') {
-            return [entry.baseUrl]
-          }
-          return entry.type === 'mcp' && entry.url ? [entry.url] : []
-        }),
-        ...(tool.access.some((entry) => entry.docsUrl)
-          ? {
-              softwareHelp: {
-                '@type': 'CreativeWork',
-                url: tool.access.find((entry) => entry.docsUrl)?.docsUrl,
-              },
+        // Every way in: where an agent reaches the function. A URL that
+        // differs per account (`https://{subdomain}…`) is no address to give.
+        installUrl: tool.access
+          .flatMap((entry) => {
+            if (entry.type === 'api') {
+              return [entry.baseUrl]
             }
+            return entry.type === 'mcp' && entry.url ? [entry.url] : []
+          })
+          .filter((url) => !url.includes('{')),
+        ...(docsUrl
+          ? { softwareHelp: { '@type': 'CreativeWork', url: docsUrl } }
           : {}),
         keywords: tool.tags.join(', '),
         dateModified: new Date(updatedAt).toISOString(),

@@ -151,7 +151,13 @@ export function queryWords(q: string): QueryWords {
   )
   const content = all.filter((word) => !KIND_WORDS.has(word))
   const meaningful = content.filter((word) => !STOP_WORDS.has(word))
-  const words = (meaningful.length > 0 ? meaningful : content).map(stem)
+  // Only function words: keep them ("the"), unless a kind word said what to
+  // browse ("all workflows" lists every workflow, it doesn't search "all").
+  let kept = meaningful
+  if (kept.length === 0 && kinds.size === 0) {
+    kept = content
+  }
+  const words = kept.map(stem)
   const [kind] = kinds
   return {
     words,

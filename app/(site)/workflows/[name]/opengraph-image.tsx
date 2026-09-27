@@ -19,8 +19,7 @@ export default async function Image({
 }: {
   params: Promise<{ name: string }>
 }) {
-  const { name } = await params
-  const key = decodeURIComponent(name)
+  const { name: key } = await params
   const result = isValidKeyPart(key) ? await loadWorkflow(key) : null
   if (!result) {
     return new Response(null, { status: 404 })

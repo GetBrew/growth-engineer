@@ -34,8 +34,6 @@ export function pageMetadata(input: {
    */
   file?: string
   type?: 'website' | 'article'
-  /** Thin or navigational pages stay out of the index but keep their links. */
-  noindex?: boolean
 }): Metadata {
   return {
     title: input.title,
@@ -51,6 +49,5 @@ export function pageMetadata(input: {
       description: input.description,
       ...(input.file ? {} : { images: [SITE_CARD] }),
     },
-    ...(input.noindex ? { robots: { index: false, follow: true } } : {}),
   }
 }

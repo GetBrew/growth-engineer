@@ -35,7 +35,7 @@ export async function GET() {
     ...section('Tags', tags),
     '## Optional',
     '',
-    `- [Every file in one document](${SITE_ORIGIN}/llms-full.txt): the whole catalog, for one read.`,
+    `- [Every company, tool and workflow file in one document](${SITE_ORIGIN}/llms-full.txt): the whole catalog, for one read.`,
     `- [Sitemap](${SITE_ORIGIN}/sitemap.xml): every page.`,
     `- [Repository](${SITE.repository}): the files themselves, and how to contribute.`,
     '',

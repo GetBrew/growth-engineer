@@ -17,6 +17,7 @@ import type {
   Tool,
   Workflow,
 } from '@/lib/types/catalog'
+import { companySummary } from './derive'
 
 /**
  * The rendered files, one per company, tool and workflow — THE product. This
@@ -25,9 +26,10 @@ import type {
  *
  * A file's `updated` date is the newest `updated` of every file that fed it,
  * from the ENTITY dates (never another file's date, so nothing loops):
- *   tool      the tool, its company (its ways in), the workflows that use it
+ *   tool      the tool, its company (its ways in), the published workflows
+ *             that use it (the ones its file lists)
  *   workflow  the workflow, its tools, their companies
- *   company   the company, its tools
+ *   company   the company, its published tools (the ones its file lists)
  * So editing Stripe's MCP URL moves the date of every file that shows it.
  *
  * Each file also lists the SOURCE files it was rendered from (`sources`), for
@@ -95,15 +97,14 @@ export function buildDocuments(
 
   const companyDate = (companyKey: string) =>
     inputs.companies.get(companyKey)?.updatedAt ?? 0
-  const workflows = [...inputs.workflows.values()]
 
   for (const tool of inputs.tools.values()) {
     const updatedAt = newest(
       tool.updatedAt,
       companyDate(tool.companyKey),
-      ...workflows
-        .filter((workflow) => workflow.toolKeys.includes(tool.key))
-        .map((workflow) => workflow.updatedAt)
+      ...(
+        inputs.relations.get(formatRef('tool', tool.key))?.workflows ?? []
+      ).map((key) => inputs.workflows.get(key)?.updatedAt ?? 0)
     )
     put(
       'tool',
@@ -178,9 +179,7 @@ export function buildDocuments(
     })
     const updatedAt = newest(
       company.updatedAt,
-      ...[...inputs.tools.values()]
-        .filter((tool) => tool.companyKey === company.key)
-        .map((tool) => tool.updatedAt)
+      ...tools.map((tool) => tool.updatedAt)
     )
     put(
       'company',
@@ -216,16 +215,6 @@ export function buildDocuments(
   }
 
   return documents
-}
-
-const FIRST_SENTENCE = /^[^.!?]+[.!?]/
-
-/** A company in one line: its tagline, else its description's first sentence. */
-function companySummary(company: Company): string {
-  const sentence = company.description
-    ? (FIRST_SENTENCE.exec(company.description.trim())?.[0] ?? '')
-    : ''
-  return company.tagline ?? sentence.trim()
 }
 
 /**

@@ -42,6 +42,8 @@ function invalid(code: number, message: string) {
   return json({ jsonrpc: '2.0', id: null, error: { code, message } }, 400)
 }
 
+const MAX_BATCH = 16
+
 export async function POST(request: Request) {
   // A client names the protocol it speaks; one we don't know is refused.
   const version = request.headers.get('mcp-protocol-version')
@@ -62,6 +64,13 @@ export async function POST(request: Request) {
   }
   if (Array.isArray(message) && message.length === 0) {
     return invalid(ERROR.invalidRequest, 'Invalid Request: an empty batch')
+  }
+  // Every message costs a search or a lookup; one request buys a few.
+  if (Array.isArray(message) && message.length > MAX_BATCH) {
+    return invalid(
+      ERROR.invalidRequest,
+      `Invalid Request: at most ${MAX_BATCH} messages in a batch`
+    )
   }
 
   const context = { catalog: getCatalog(), origin: SITE_ORIGIN }

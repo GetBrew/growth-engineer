@@ -133,7 +133,13 @@ function resolveFilters(
 ):
   | { company?: string; uses?: string; author?: string }
   | { error: ToolResult } {
-  const company = args.company?.replace(COMPANY_REF, '').toLowerCase()
+  // Old keys follow their rename, as they do everywhere else.
+  const current = (type: 'company' | 'tool', key: string | undefined) =>
+    key ? (catalog.aliases.get(`${type}:${key}`) ?? key) : undefined
+  const company = current(
+    'company',
+    args.company?.replace(COMPANY_REF, '').toLowerCase()
+  )
   if (company && !catalog.companies.has(company)) {
     return {
       error: toolError(
@@ -141,7 +147,7 @@ function resolveFilters(
       ),
     }
   }
-  const uses = args.uses?.replace(TOOL_REF, '').toLowerCase()
+  const uses = current('tool', args.uses?.replace(TOOL_REF, '').toLowerCase())
   if (uses && !catalog.tools.has(uses)) {
     return {
       error: toolError(

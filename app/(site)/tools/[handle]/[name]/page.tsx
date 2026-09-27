@@ -1,4 +1,3 @@
-import { File01Icon } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -31,6 +30,7 @@ import {
   resolveAlias,
 } from '@/lib/catalog/loaders'
 import { toolParams } from '@/lib/catalog/static-params'
+import { toolDocsUrl } from '@/lib/catalog/tool-docs'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { toolJsonLd } from '@/lib/seo/structured-data'
@@ -102,17 +102,19 @@ async function ToolDetail({ params }: { params: Params }) {
     }
     notFound()
   }
+  // Every tool in the catalog has a file; a missing one is no page.
+  if (!document) {
+    notFound()
+  }
   const { tool, company, capabilities } = result
   // The file's date: the tool's, its company's and its workflows', newest.
-  const updatedAt = document?.updatedAt ?? tool.updatedAt
+  const updatedAt = document.updatedAt
   const filePath = refToFilePath({
     type: 'tool',
     key: tool.key,
   })
 
-  // The page that documents the call, else the first way's docs.
-  const docsUrl =
-    tool.docs ?? tool.access.find((access) => access.docsUrl)?.docsUrl
+  const docsUrl = toolDocsUrl(tool)
 
   const links = [
     { label: 'Website', href: company.links.website, icon: LINK_ICON.website },
@@ -130,13 +132,11 @@ async function ToolDetail({ params }: { params: Params }) {
           <>
             <ShareButton text={tool.summary} title={tool.name} />
             <ViewSourceButton entityKey={tool.key} type="tool" />
-            {document ? (
-              <OpenInAgentMenu
-                filePath={filePath}
-                markdown={document.markdown}
-                title={tool.name}
-              />
-            ) : null}
+            <OpenInAgentMenu
+              filePath={filePath}
+              markdown={document.markdown}
+              title={tool.name}
+            />
           </>
         }
         available={accessLabels(tool.access)}
@@ -173,23 +173,12 @@ async function ToolDetail({ params }: { params: Params }) {
       <div className="flex min-w-0 flex-col gap-(--space-block)">
         <DescriptionSection text={tool.description} />
         <section className="flex flex-col gap-(--space-md)">
-          {document ? (
-            <>
-              <MarkdownFile
-                fileName={filePath.split('/').pop() ?? 'tool.md'}
-                markdown={document.markdown}
-                preview={<MarkdownPreview markdown={document.markdown} />}
-              />
-              <BuiltFrom sources={document.sources} />
-            </>
-          ) : (
-            <NoResults
-              description="It appears here as soon as the catalog renders it."
-              icon={File01Icon}
-              title="No file yet"
-              variant="card"
-            />
-          )}
+          <MarkdownFile
+            fileName={filePath.split('/').pop() ?? 'tool.md'}
+            markdown={document.markdown}
+            preview={<MarkdownPreview markdown={document.markdown} />}
+          />
+          <BuiltFrom sources={document.sources} />
         </section>
         <ToolAccessPanel tool={tool} />
       </div>

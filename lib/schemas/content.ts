@@ -26,6 +26,12 @@ const LINE_BREAK = /[\r\n]/
 const line = text.refine((value) => !LINE_BREAK.test(value), {
   message: 'must be one line',
 })
+/** Markdown that would open a block: a heading, quote, list or rule. */
+const BLOCK_START = /^(?:#|>|[-*+]\s|\d+[.)]\s|---|===|```)/
+/** A sentence the file prints as its own paragraph: plain prose, one line. */
+const sentence = line.refine((value) => !BLOCK_START.test(value), {
+  message: 'must be plain prose: no heading, quote, list or rule at the start',
+})
 const url = z.url({ protocol: /^https?$/, hostname: z.regexes.domain })
 /** `{subdomain}`: the part of a way's URL that differs per account. */
 const PLACEHOLDER = /\{[A-Za-z][A-Za-z0-9_-]*\}/g
@@ -186,7 +192,7 @@ export const companySchema = z.strictObject({
     .regex(z.regexes.domain, 'must be a bare domain like `clay.com`'),
   /** A `category:` slug from tags.yml. */
   category: keyPart,
-  tagline: line.optional(),
+  tagline: sentence.optional(),
   docs: url.optional(),
   github: url.optional(),
   /** A file under public/logos. */
@@ -208,7 +214,7 @@ export const companySchema = z.strictObject({
 
 export const toolSchema = z.strictObject({
   name: line,
-  summary: line,
+  summary: sentence,
   /** A `capability:` slug from tags.yml. */
   capability: keyPart,
   /** The page that documents the call. */
@@ -247,7 +253,7 @@ export const toolSchema = z.strictObject({
  */
 export const workflowHeaderSchema = z.strictObject({
   title: line,
-  summary: line,
+  summary: sentence,
   /** The GitHub login of the person who wrote it. */
   author: githubLogin,
   /** Motion and channel tags; capabilities come from the tools. */

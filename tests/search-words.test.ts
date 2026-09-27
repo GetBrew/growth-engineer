@@ -52,6 +52,16 @@ describe('search words', () => {
     expect(queryWords('vendors').words).toEqual([])
   })
 
+  test('a kind word with only function words browses that kind', () => {
+    expect(queryWords('all workflows')).toEqual({
+      words: [],
+      kind: 'workflow',
+      isNothing: false,
+    })
+    expect(queryWords('the tools').words).toEqual([])
+    expect(queryWords('tools and workflows').words).toEqual([])
+  })
+
   test('punctuation alone matches nothing, not everything', () => {
     expect(queryWords('???').isNothing).toBe(true)
     expect(queryWords('').isNothing).toBe(false)

@@ -30,15 +30,16 @@ export function hasBackslashInPath(pathname: string): boolean {
   return pathname.includes('\\') || PERCENT_ENCODED_BACKSLASH.test(pathname)
 }
 
-/**
- * Where a request for a markdown file is rewritten, or null when it is not
- * one. Only paths that name a valid ref or tag key qualify, so the handler
- * never looks up a path that cannot be a file. Exported for the proxy test.
- */
+/** A path that names a file: a valid ref's, or a tag's. */
 function isFilePath(pathname: string): boolean {
   return Boolean(filePathToRef(pathname) ?? filePathToTagKey(pathname))
 }
 
+/**
+ * Where a request for a markdown file is rewritten, or null when it is not
+ * one. Only paths that name a file qualify, so the handler never looks up a
+ * path that cannot be a file. Exported for the proxy test.
+ */
 export function markdownRewriteTarget(input: {
   pathname: string
   method: string

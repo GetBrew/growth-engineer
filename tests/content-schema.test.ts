@@ -223,6 +223,46 @@ describe('content rules', () => {
     )
   })
 
+  test('a file is dated by what it shows, not by what it leaves out', () => {
+    // A newer DEPRECATED workflow uses the tool, but the tool's file lists
+    // published workflows only, so its date doesn't move.
+    const files = tree({}, [
+      file(
+        'workflows/old-crm.md',
+        WORKFLOW.replace(
+          'title: Keep the CRM clean',
+          'title: The old way'
+        ).replace(
+          'updated: 2026-09-16',
+          'status: deprecated\nupdated: 2026-09-25'
+        )
+      ),
+    ])
+    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    expect(
+      new Date(catalog.documents.get('tool:acme/manage-crm')?.updatedAt ?? 0)
+        .toISOString()
+        .slice(0, 10)
+    ).toBe('2026-09-16')
+  })
+
+  test('a company with no page claims no alias', () => {
+    const files = tree({}, [
+      file(
+        'companies/beta/company.md',
+        '---\nname: Beta\ndomain: beta.example\ncategory: crm\nlogo: acme.png\naliases: [old-beta]\nupdated: 2026-09-16\n---\n'
+      ),
+      file(
+        'companies/beta/tools/later.md',
+        '---\nname: Later\nsummary: Not yet.\ncapability: manage-crm\nstatus: draft\nupdated: 2026-09-16\n---\n'
+      ),
+    ])
+    expect(problemsOf(files)).toEqual([])
+    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    expect(catalog.companies.has('beta')).toBe(false)
+    expect(catalog.aliases.has('company:old-beta')).toBe(false)
+  })
+
   test('tags are computed onto every entity; nobody writes them twice', () => {
     const catalog = buildCatalog(VALID, { logos: new Set(['acme.png']) })
     expect(catalog.tools.get('acme/manage-crm')?.tags).toEqual([
@@ -403,6 +443,11 @@ describe('content rules', () => {
           'url: https://{sub domain}.acme.example'
         ),
       /company\.md: api\.url: must be a URL; a part that differs per account goes in braces/,
+    ],
+    [
+      'a summary that would open a section in the rendered file',
+      () => edit('tool', 'summary: Creates records.', 'summary: "## Rules"'),
+      /manage-crm\.md: summary: must be plain prose/,
     ],
     [
       'an API header that is not a header name',

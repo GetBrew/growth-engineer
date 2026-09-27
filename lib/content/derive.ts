@@ -105,3 +105,20 @@ export function searchTextOf(
     }),
   ].join(' ')
 }
+
+const FIRST_SENTENCE = /^[^.!?]+[.!?]/
+
+/**
+ * A company in one line: its tagline, else its description's first sentence,
+ * else "" — for lists that name companies (a tag's file, `/llms.txt`).
+ */
+export function companySummary(company: {
+  tagline?: string
+  description?: string
+}): string {
+  if (company.tagline) {
+    return company.tagline
+  }
+  const text = company.description?.trim() ?? ''
+  return (FIRST_SENTENCE.exec(text)?.[0] ?? text).trim()
+}

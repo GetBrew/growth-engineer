@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { GUIDES } from '@/lib/constants/guides'
+import { companySummary } from '@/lib/content/derive'
 import type { CatalogDocument } from '@/lib/types/catalog'
 import { getCatalog } from './catalog'
 import {
@@ -113,13 +114,6 @@ export type LlmsEntry = {
   summary: string
 }
 
-const FIRST_SENTENCE = /^[^.!?]+[.!?]/
-
-function firstSentence(text: string): string {
-  const match = FIRST_SENTENCE.exec(text.trim())
-  return (match ? match[0] : text).trim()
-}
-
 /** Every file in key order, with a title and a one-line summary. */
 export async function loadLlmsIndex(): Promise<
   Record<EntityType, Array<LlmsEntry>>
@@ -158,10 +152,7 @@ export async function loadLlmsIndex(): Promise<
       const toolCount = relationsOf(catalog, formatRef('company', company.key))
         .tools.length
       const summary =
-        company.tagline ??
-        (company.description
-          ? firstSentence(company.description)
-          : undefined) ??
+        companySummary(company) ||
         `${toolCount} ${toolCount === 1 ? 'tool' : 'tools'}.`
       return {
         title: company.name,

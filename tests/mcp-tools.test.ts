@@ -299,8 +299,14 @@ describe('get, on a fixture catalog', () => {
   const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
 
   test('an old key returns the current file, under its current ref', () => {
-    const result = call(catalog, 'get', { ref: 'tool:acme/old-record' })
-    expect(result.structuredContent?.ref).toBe('tool:acme/create-record')
+    for (const ref of ['tool:acme/old-record', 'acme/old-record']) {
+      const result = call(catalog, 'get', { ref })
+      expect(result.structuredContent?.ref, ref).toBe('tool:acme/create-record')
+    }
+    // Filters follow the rename too.
+    expect(
+      call(catalog, 'search', { uses: 'acme/old-record' }).isError
+    ).toBeFalsy()
   })
 
   test('deprecated: hidden from search, returned by get with its status', () => {

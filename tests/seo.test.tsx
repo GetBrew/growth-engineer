@@ -235,19 +235,11 @@ describe('page metadata', () => {
     expect(metadata.robots).toBeUndefined()
   })
 
-  test('a listing has a canonical URL and no alternate; noindex keeps follow', () => {
+  test('a listing has a canonical URL and no alternate', () => {
     expect(
       pageMetadata({ title: 'Tools', description: 'd', path: '/tools' })
         .alternates
     ).toEqual({ canonical: '/tools' })
-    expect(
-      pageMetadata({
-        title: 'x',
-        description: 'd',
-        path: '/contribute/tool',
-        noindex: true,
-      }).robots
-    ).toEqual({ index: false, follow: true })
   })
 })
 

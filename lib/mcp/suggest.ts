@@ -21,6 +21,8 @@ function distance(a: string, b: string): number {
   return row[b.length] ?? 0
 }
 
+const MAX_NEEDLE = 80
+
 /** The best matches within two edits, as a trailing sentence (or ""). */
 export function closest(
   input: string,
@@ -28,17 +30,25 @@ export function closest(
   limit = 3
 ): string {
   const needle = input.toLowerCase()
+  // Nothing that long is a typo of a ref, and each comparison costs its length.
+  if (needle.length > MAX_NEEDLE) {
+    return ''
+  }
+  // Two strings whose lengths differ by more than two are more than two edits
+  // apart: skip the table.
+  const near = (a: string, b: string) =>
+    Math.abs(a.length - b.length) > 2 ? 3 : distance(a, b)
   // A ref is compared whole and by its key, so `clya` finds `company:clay`.
   const score = (candidate: string) => {
     const lower = candidate.toLowerCase()
     const key = lower.slice(lower.indexOf(':') + 1)
-    return Math.min(distance(needle, lower), distance(needle, key))
+    return Math.min(near(needle, lower), near(needle, key))
   }
-  const near = candidates
+  const matches = candidates
     .map((candidate) => ({ candidate, score: score(candidate) }))
     .filter((item) => item.score <= 2)
     .sort((a, b) => a.score - b.score || a.candidate.localeCompare(b.candidate))
     .slice(0, limit)
     .map((item) => item.candidate)
-  return near.length > 0 ? ` Did you mean ${near.join(', ')}?` : ''
+  return matches.length > 0 ? ` Did you mean ${matches.join(', ')}?` : ''
 }

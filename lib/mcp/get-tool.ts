@@ -92,9 +92,12 @@ function resolve(input: string, catalog: Catalog): Target | null {
   if (ref) {
     return { kind: 'entity', ...ref }
   }
-  // A bare key: `apollo`, `apollo/enrich-person`, `funding-signal-outbound`.
-  const found = ENTITY_TYPES.filter((type) =>
-    catalog.documents.has(formatRef(type, value))
+  // A bare key: `apollo`, `apollo/enrich-person`, `funding-signal-outbound`,
+  // or an old one that a rename left behind.
+  const found = ENTITY_TYPES.filter(
+    (type) =>
+      catalog.documents.has(formatRef(type, value)) ||
+      catalog.aliases.has(formatRef(type, value))
   )
   const [only] = found
   return found.length === 1 && only

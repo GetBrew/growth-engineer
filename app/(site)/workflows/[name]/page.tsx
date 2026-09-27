@@ -1,8 +1,6 @@
-import { File01Icon } from '@hugeicons/core-free-icons'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { accessTypeLabels } from '@/components/common/badges'
-import { NoResults } from '@/components/common/no-results'
 import { BuiltFrom } from '@/components/detail/built-from'
 import {
   DETAIL_DATE,
@@ -31,8 +29,7 @@ type Params = Promise<{ name: string }>
 
 async function resolveKey(params: Params): Promise<string | null> {
   const { name } = await params
-  const key = decodeURIComponent(name)
-  return isValidKeyPart(key) ? key : null
+  return isValidKeyPart(name) ? name : null
 }
 
 /**
@@ -94,6 +91,10 @@ async function WorkflowDetail({ params }: { params: Params }) {
     }
     notFound()
   }
+  // Every workflow in the catalog has a file; a missing one is no page.
+  if (!document) {
+    notFound()
+  }
 
   const { workflow, updatedAt, tools, tags } = result
   const filePath = refToFilePath({ type: 'workflow', key: workflow.key })
@@ -117,13 +118,11 @@ async function WorkflowDetail({ params }: { params: Params }) {
           <>
             <ShareButton text={workflow.summary} title={workflow.title} />
             <ViewSourceButton entityKey={workflow.key} type="workflow" />
-            {document ? (
-              <OpenInAgentMenu
-                filePath={filePath}
-                markdown={document.markdown}
-                title={workflow.title}
-              />
-            ) : null}
+            <OpenInAgentMenu
+              filePath={filePath}
+              markdown={document.markdown}
+              title={workflow.title}
+            />
           </>
         }
         available={available}
@@ -161,23 +160,12 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
       <div className="grid gap-(--space-block) lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <section className="flex min-w-0 flex-col gap-(--space-md)">
-          {document ? (
-            <>
-              <MarkdownFile
-                fileName={filePath.split('/').pop() ?? 'workflow.md'}
-                markdown={document.markdown}
-                preview={<MarkdownPreview markdown={document.markdown} />}
-              />
-              <BuiltFrom sources={document.sources} />
-            </>
-          ) : (
-            <NoResults
-              description="It appears here as soon as the catalog renders it."
-              icon={File01Icon}
-              title="No file yet"
-              variant="card"
-            />
-          )}
+          <MarkdownFile
+            fileName={filePath.split('/').pop() ?? 'workflow.md'}
+            markdown={document.markdown}
+            preview={<MarkdownPreview markdown={document.markdown} />}
+          />
+          <BuiltFrom sources={document.sources} />
         </section>
 
         <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">

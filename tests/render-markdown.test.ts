@@ -304,7 +304,8 @@ describe('setup picks the best way in', () => {
         '',
         '### Clay (tool:clay/search-people, tool:clay/enrich-contacts)',
         '',
-        'Use the first option your agent supports.',
+        // The API runs only one of the two calls, so the choice is per call.
+        'For each call, use the first option your agent supports that lists it.',
         '',
         '#### MCP (official, remote)',
         '',
@@ -329,6 +330,38 @@ describe('setup picks the best way in', () => {
         '',
       ].join('\n')
     )
+  })
+
+  test('when every option runs every call, the first one supported is enough', () => {
+    const search: Access = { ...clayMcp, operation: 'clay_search_people' }
+    const searchApi: Access = { ...clayApi, operation: 'POST /search' }
+    const setup = renderWorkflowDocument({
+      ...intentToMeeting,
+      tools: [
+        {
+          key: 'clay/enrich-contacts',
+          name: 'Enrich contacts',
+          companyName: 'Clay',
+          access: [clayApi, clayMcp],
+        },
+        {
+          key: 'clay/search-people',
+          name: 'Search people',
+          companyName: 'Clay',
+          access: [searchApi, search],
+        },
+      ],
+      steps: [
+        { title: 'Find', toolKey: 'clay/search-people', instruction: 'Find.' },
+        {
+          title: 'Enrich',
+          toolKey: 'clay/enrich-contacts',
+          instruction: 'Add.',
+        },
+      ],
+    }).markdown
+    expect(setup).toContain('Use the first option your agent supports.')
+    expect(setup).not.toContain('For each call')
   })
 
   test('a community option names its maintainer', () => {

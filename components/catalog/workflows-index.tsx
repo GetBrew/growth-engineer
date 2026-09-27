@@ -7,7 +7,7 @@ import { SectionHeading } from '@/components/layout/section-heading'
 import { CatalogSearch } from '@/components/search/catalog-search'
 import type { FilterOption } from '@/components/search/filter-types'
 import { ListingToolbar } from '@/components/search/listing-toolbar'
-import { TAG_NAMESPACES } from '@/lib/catalog/keys'
+import { isValidTagKey, TAG_NAMESPACES } from '@/lib/catalog/keys'
 import {
   searchWorkflowItems,
   type WorkflowSearchItem,
@@ -29,7 +29,10 @@ function tagParam(tag: string): Record<string, string> {
   return tag ? { [namespace]: slug } : {}
 }
 
-/** The one tag the URL filters by, in the grammar every listing uses. */
+/**
+ * The one tag the URL filters by, in the grammar every listing uses — or, for
+ * links made before it, `?tag=motion:outbound`.
+ */
 function tagFrom(searchParams: URLSearchParams): string {
   for (const namespace of TAG_NAMESPACES) {
     const slug = (searchParams.get(namespace) ?? '').trim()
@@ -37,7 +40,8 @@ function tagFrom(searchParams: URLSearchParams): string {
       return `${namespace}:${slug}`
     }
   }
-  return ''
+  const legacy = (searchParams.get('tag') ?? '').trim()
+  return isValidTagKey(legacy) ? legacy : ''
 }
 
 function href(sort: Sort, q: string, tag?: string): string {
