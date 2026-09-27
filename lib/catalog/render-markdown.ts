@@ -8,6 +8,7 @@ import {
   serverUrlLine,
   singleAccessSetup,
 } from './render-access'
+import { yamlList, yamlScalar } from './render-header'
 
 /**
  * THE render function. Every company, tool and workflow renders to one
@@ -22,6 +23,7 @@ import {
  *   - inputs are named in backticks, never templated
  *   - the file tells the agent to check access before running anything
  *   - Rules come last and nobody can edit them
+ *   - a deprecated file says so, in its header and under its title
  *   - tool files stay under ~60 lines, workflow files under ~120, ≤ 10 steps
  *
  * PURE MODULE: type-only imports, deterministic for a given `now`. The
@@ -41,12 +43,15 @@ export type ToolFileInput = {
   /** The page that documents the call. */
   docs?: string
   access: ReadonlyArray<Access>
+  isDeprecated?: boolean
   updatedAt: number
 }
 
 type WorkflowFileTool = {
   key: string
   name: string
+  /** Who makes it: two vendors' "Enrich contacts" must read differently. */
+  companyName: string
   access: ReadonlyArray<Access>
 }
 
@@ -68,6 +73,7 @@ export type WorkflowFileInput = {
   steps: ReadonlyArray<WorkflowFileStep>
   doneWhen: ReadonlyArray<string>
   notes?: string
+  isDeprecated?: boolean
   updatedAt: number
 }
 
@@ -84,6 +90,7 @@ export type CompanyFileInput = {
     name: string
     summary: string
   }>
+  isDeprecated?: boolean
   updatedAt: number
 }
 
@@ -109,8 +116,14 @@ function isoDate(timestamp: number): string {
   return new Date(timestamp).toISOString().slice(0, 10)
 }
 
-function list(values: ReadonlyArray<string>): string {
-  return `[${values.join(', ')}]`
+/** The header line and the warning under the title a deprecated file carries. */
+function deprecation(
+  isDeprecated: boolean | undefined,
+  warning: string
+): { header: Array<string>; notice: Array<string> } {
+  return isDeprecated
+    ? { header: ['status: deprecated'], notice: ['', `> ${warning}`] }
+    : { header: [], notice: [] }
 }
 
 function rulesSection(rules: ReadonlyArray<string>): Array<string> {
@@ -130,19 +143,25 @@ function finish(lines: ReadonlyArray<string>): RenderedDocument {
 export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
   const ordered = orderAccess(tool.access)
   const accessTypes = [...new Set(ordered.map((entry) => entry.type))]
+  const deprecated = deprecation(
+    tool.isDeprecated,
+    'This tool is deprecated. Ask the user before using it.'
+  )
   const lines: Array<string> = [
     '---',
     `ref: ${formatRef('tool', tool.key)}`,
-    `name: ${tool.name}`,
+    `name: ${yamlScalar(tool.name)}`,
     `company: ${formatRef('company', tool.companyKey)}`,
-    `workflows: ${list(tool.workflows.map((key) => formatRef('workflow', key)))}`,
-    `access: ${list(accessTypes)}`,
-    `tags: ${list([...tool.tags].sort())}`,
-    ...(tool.docs ? [`docs: ${tool.docs}`] : []),
+    `workflows: ${yamlList(tool.workflows.map((key) => formatRef('workflow', key)))}`,
+    `access: ${yamlList(accessTypes)}`,
+    `tags: ${yamlList([...tool.tags].sort())}`,
+    ...(tool.docs ? [`docs: ${yamlScalar(tool.docs)}`] : []),
+    ...deprecated.header,
     `updated: ${isoDate(tool.updatedAt)}`,
     '---',
     '',
     `# ${tool.name}`,
+    ...deprecated.notice,
     '',
     tool.summary,
   ]
@@ -196,7 +215,11 @@ function inputsSection(inputs: WorkflowFileInput['inputs']): Array<string> {
 /** One tool's setup: its best one or two options. */
 function toolSetup(tool: WorkflowFileTool): Array<string> {
   const selected = selectWorkflowAccess(tool.access)
-  const heading = ['', `### ${tool.name} (${formatRef('tool', tool.key)})`, '']
+  const heading = [
+    '',
+    `### ${tool.name} (${tool.companyName}, ${formatRef('tool', tool.key)})`,
+    '',
+  ]
   if (selected.length === 0) {
     return [
       ...heading,
@@ -228,9 +251,14 @@ function setupSection(tools: ReadonlyArray<WorkflowFileTool>): Array<string> {
   ]
 }
 
+/** "Find work emails (Apollo)": a tool as a step names it. */
+function toolLabel(tool: WorkflowFileTool): string {
+  return `${tool.name} (${tool.companyName})`
+}
+
 function stepsSection(
   steps: ReadonlyArray<WorkflowFileStep>,
-  toolNames: ReadonlyMap<string, string>,
+  tools: ReadonlyMap<string, WorkflowFileTool>,
   hasSoleTool: boolean
 ): Array<string> {
   return [
@@ -238,10 +266,11 @@ function stepsSection(
     '## Steps',
     '',
     ...steps.map((step, index) => {
-      const toolName = toolNames.get(step.toolKey) ?? step.toolKey
+      const tool = tools.get(step.toolKey)
+      const label = tool ? toolLabel(tool) : step.toolKey
       const lead = hasSoleTool
         ? `**${step.title}**`
-        : `**${step.title}** with ${toolName}.`
+        : `**${step.title}** with ${label}.`
       return `${index + 1}. ${lead} ${step.instruction}`
     }),
   ]
@@ -256,7 +285,6 @@ export function renderWorkflowDocument(
     )
   }
   const toolsByKey = new Map(workflow.tools.map((tool) => [tool.key, tool]))
-  const toolNames = new Map(workflow.tools.map((tool) => [tool.key, tool.name]))
   // Tools in first-use order across the steps — the header and setup follow it.
   const usedTools = [
     ...new Set(workflow.steps.map((step) => step.toolKey)),
@@ -268,25 +296,31 @@ export function renderWorkflowDocument(
   // front than repeating it on every step. That is a rendering choice about
   // THESE steps, not a second kind of document.
   const soleTool = usedTools.length === 1 ? usedTools[0] : undefined
+  const deprecated = deprecation(
+    workflow.isDeprecated,
+    'This workflow is deprecated. Ask the user before running it.'
+  )
 
   const lines: Array<string> = [
     '---',
     `ref: ${formatRef('workflow', workflow.key)}`,
-    `title: ${workflow.title}`,
-    `author: ${workflow.author}`,
-    `tools: ${list(usedTools.map((tool) => formatRef('tool', tool.key)))}`,
-    `tags: ${list(workflow.tags)}`,
+    `title: ${yamlScalar(workflow.title)}`,
+    `author: ${yamlScalar(workflow.author)}`,
+    `tools: ${yamlList(usedTools.map((tool) => formatRef('tool', tool.key)))}`,
+    `tags: ${yamlList(workflow.tags)}`,
+    ...deprecated.header,
     `updated: ${isoDate(workflow.updatedAt)}`,
     '---',
     '',
     `# ${workflow.title}`,
+    ...deprecated.notice,
     '',
     soleTool
-      ? `Set up ${soleTool.name}, then run the steps in order for the user.`
+      ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user.`
       : 'Set up the tools below, then run the steps in order for the user.',
     ...inputsSection(workflow.inputs),
     ...setupSection(usedTools),
-    ...stepsSection(workflow.steps, toolNames, soleTool !== undefined),
+    ...stepsSection(workflow.steps, toolsByKey, soleTool !== undefined),
   ]
 
   if (workflow.doneWhen.length > 0) {
@@ -309,16 +343,22 @@ export function renderWorkflowDocument(
 export function renderCompanyDocument(
   company: CompanyFileInput
 ): RenderedDocument {
+  const deprecated = deprecation(
+    company.isDeprecated,
+    'This company is deprecated.'
+  )
   const lines: Array<string> = [
     '---',
     `ref: ${formatRef('company', company.key)}`,
-    `name: ${company.name}`,
-    `tools: ${list(company.tools.map((tool) => formatRef('tool', tool.key)))}`,
-    `tags: ${list([...company.tags].sort())}`,
+    `name: ${yamlScalar(company.name)}`,
+    `tools: ${yamlList(company.tools.map((tool) => formatRef('tool', tool.key)))}`,
+    `tags: ${yamlList([...company.tags].sort())}`,
+    ...deprecated.header,
     `updated: ${isoDate(company.updatedAt)}`,
     '---',
     '',
     `# ${company.name}`,
+    ...deprecated.notice,
   ]
   if (company.tagline) {
     lines.push('', company.tagline)

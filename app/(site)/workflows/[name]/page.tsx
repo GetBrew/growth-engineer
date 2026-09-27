@@ -142,10 +142,15 @@ async function WorkflowDetail({ params }: { params: Params }) {
         }
         dates={dates}
         description={workflow.summary}
-        tags={tags.map((tag) => ({
-          label: tag.label,
-          href: `/workflows?tag=${encodeURIComponent(tag.key)}`,
-        }))}
+        tags={[
+          ...(workflow.status === 'deprecated'
+            ? [{ label: 'Deprecated', emphasis: true }]
+            : []),
+          ...tags.map((tag) => ({
+            label: tag.label,
+            href: `/workflows?tag=${encodeURIComponent(tag.key)}`,
+          })),
+        ]}
         title={workflow.title}
       />
 

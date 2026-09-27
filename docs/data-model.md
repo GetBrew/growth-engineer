@@ -83,7 +83,7 @@ so the source reads on GitHub the way it reads on the site
 | `## Inputs` (optional) | ``- `name`: description, e.g. example`` | `inputs`: `{ name (snake_case), description, example? }` |
 | `## Steps` (1–10) | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). Instruction.`` — a link to the tool's source file | `steps`: `{ title, tool, instruction }` |
 | `## Done when` (≥ 1) | `- A check.` | `doneWhen` |
-| `## Notes` (optional) | free markdown | `notes` |
+| `## Notes` (optional) | free markdown; `###` and smaller headings, none named like a section the file writes | `notes` |
 
 A step names its tool by a link to the tool's source file (the link must
 point at that file). Every step's tool must be a published tool. Any other

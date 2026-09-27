@@ -23,6 +23,8 @@
  * every problem carries the line it is on, counted in the whole file.
  */
 
+import { proseProblems } from './prose'
+
 type BodyInput = { name: string; description: string; example?: string }
 
 type BodyStep = {
@@ -220,12 +222,15 @@ export function parseWorkflowBody(
   }
   const state: SectionState = { seen: new Set(), lastOrder: -1, current: null }
   const notes: Array<string> = []
+  let notesLine = 0
   let reportedStray = false
 
   for (const [offset, raw] of body.split('\n').entries()) {
     const line = firstLine + offset
     if (state.current === 'notes') {
-      // Notes are free markdown to the end of the file, headings included.
+      // Notes are free markdown to the end of the file; the prose guard below
+      // keeps their headings under the sections the file writes itself.
+      notesLine ||= line
       notes.push(raw)
       continue
     }
@@ -252,6 +257,7 @@ export function parseWorkflowBody(
     }
   }
 
+  problems.push(...proseProblems(notes.join('\n'), notesLine, 'Notes'))
   const note = notes.join('\n').trim()
   return {
     body: {

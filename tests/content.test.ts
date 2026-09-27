@@ -234,6 +234,36 @@ describe('the content tree', () => {
     }
   })
 
+  test('every rendered header parses back to its entity', () => {
+    const header = (ref: string) =>
+      parse(
+        /^---\n([\s\S]*?)\n---/.exec(
+          catalog.documents.get(ref)?.markdown ?? ''
+        )?.[1] ?? '',
+        { schema: 'core' }
+      ) as Record<string, unknown>
+    for (const tool of catalog.tools.values()) {
+      const fields = header(`tool:${tool.key}`)
+      expect(fields.ref, tool.key).toBe(`tool:${tool.key}`)
+      expect(fields.name, tool.key).toBe(tool.name)
+      expect(fields.company, tool.key).toBe(`company:${tool.companyKey}`)
+      expect(fields.tags, tool.key).toEqual([...tool.tags].sort())
+    }
+    for (const workflow of catalog.workflows.values()) {
+      const fields = header(`workflow:${workflow.key}`)
+      expect(fields.title, workflow.key).toBe(workflow.title)
+      expect(fields.author, workflow.key).toBe(workflow.author)
+      expect(fields.tools, workflow.key).toEqual(
+        workflow.toolKeys.map((key) => `tool:${key}`)
+      )
+    }
+    for (const company of catalog.companies.values()) {
+      expect(header(`company:${company.key}`).name, company.key).toBe(
+        company.name
+      )
+    }
+  })
+
   test('two builds of the same tree render byte-identical files', () => {
     const tree = readContentTree()
     const again = buildCatalog(tree.files, { logos: tree.logos })

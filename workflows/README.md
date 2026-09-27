@@ -73,7 +73,7 @@ heading is caught instead of silently dropped.
 | `## Inputs` | no | ``- `name`: what it is, e.g. an example`` — the name in snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
 | `## Steps` | yes, 1–10 | ``1. **Title** with [clay/enrich-contacts](../companies/clay/tools/enrich-contacts.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. |
 | `## Done when` | yes | `- A check that means the job is finished.` |
-| `## Notes` | no | Free markdown, to the end of the file. |
+| `## Notes` | no | Free markdown, to the end of the file — with `###` and smaller headings, none named like a section the file writes (Set up, Steps, Rules…). |
 
 A long entry can wrap onto the next line; keep each entry to one paragraph.
 

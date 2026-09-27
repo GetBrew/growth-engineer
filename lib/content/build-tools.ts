@@ -15,6 +15,7 @@ import type {
 import { dateToMs, searchTextOf, toolTags } from './derive'
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
+import { proseProblems } from './prose'
 import type { ContentFile } from './read-tree'
 
 /**
@@ -218,6 +219,13 @@ export function buildTools(
     const company = context.companies.get(file.handle)
     if (!(parsed && company)) {
       continue
+    }
+    for (const problem of proseProblems(
+      parsed.body,
+      parsed.bodyLine,
+      'the description'
+    )) {
+      problems.add(file.path, problem.message, problem.line)
     }
     if (!context.tags.has(`capability:${parsed.data.capability}`)) {
       problems.add(

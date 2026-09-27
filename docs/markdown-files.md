@@ -21,17 +21,20 @@ names the tools, and appends the rules.
 | Inputs are named, not templated. | `target_accounts` appears in backticks and the file tells the agent to ask the user for it. No template engine. |
 | The file tells the agent to check access first. | After setup, one read-only call to each tool before any step runs. |
 | Rules always come last, and nobody can edit them. | Only the listed tools; ask before sending, spending or changing anything; never print keys. |
+| The header parses as written. | Every value an author wrote is quoted when it has to be (`yamlScalar`, `lib/catalog/render-header.ts`), so a title with a colon or a login like `true` reads back exactly, and no value can add a field. |
+| Deprecated says so. | `status: deprecated` in the header and one warning line under the title; an agent asks the user before using it. |
+| Prose never poses as structure. | A description or the Notes may use `###` and smaller headings only, never one named like a section the file writes (Set up, Steps, Rules…). |
 | Files stay short. | Tool files under ~60 lines; workflow files under ~120, at most 10 steps. |
 
 ## Layout
 
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
-| Header | `ref`, `name`, `company`, `workflows`, `access`, `updated` | `ref`, `title`, `author`, `tools`, `tags`, `updated` |
+| Header | `ref`, `name`, `company`, `workflows`, `access`, `tags`, `docs`, `status`, `updated` | `ref`, `title`, `author`, `tools`, `tags`, `status`, `updated` |
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
-| Steps | — | Numbered steps, each naming its tool (a workflow using a single tool names it once up front instead) |
+| Steps | — | Numbered steps, each naming its tool and its company, `with Enrich contacts (Clay).` (a workflow using a single tool names it once up front instead) |
 | Done when | — | Checks that mean the job is finished |
 | Notes | — | Optional, written by the author |
 | Rules | Always | Always |

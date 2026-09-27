@@ -20,6 +20,11 @@ import { MAX_WORKFLOW_STEPS } from '@/lib/catalog/render-markdown'
  */
 
 const text = z.string().trim().min(1, 'must not be empty')
+const LINE_BREAK = /[\r\n]/
+/** A value that fits on one header line: no line breaks. */
+const line = text.refine((value) => !LINE_BREAK.test(value), {
+  message: 'must be one line',
+})
 const url = z.url({ protocol: /^https?$/, hostname: z.regexes.domain })
 const isoDate = z.iso.date()
 const keyPart = text.refine(isValidKeyPart, {
@@ -65,7 +70,7 @@ const wayCommon = {
   keyUrl: url.optional(),
   docs: url.optional(),
   /** Absent = official; a community-run way names who runs it. */
-  maintainer: text.optional(),
+  maintainer: line.optional(),
 }
 
 type WayAuth = {
@@ -151,14 +156,14 @@ const apiWay = z
 /* ────────────────────────────────── company ─────────────────────────────── */
 
 export const companySchema = z.strictObject({
-  name: text,
+  name: line,
   domain: z
     .string()
     .trim()
     .regex(z.regexes.domain, 'must be a bare domain like `clay.com`'),
   /** A `category:` slug from tags.yml. */
   category: keyPart,
-  tagline: text.optional(),
+  tagline: line.optional(),
   docs: url.optional(),
   github: url.optional(),
   /** A file under public/logos. */
@@ -179,8 +184,8 @@ export const companySchema = z.strictObject({
 /* ──────────────────────────────────── tool ──────────────────────────────── */
 
 export const toolSchema = z.strictObject({
-  name: text,
-  summary: text,
+  name: line,
+  summary: line,
   /** A `capability:` slug from tags.yml. */
   capability: keyPart,
   /** The page that documents the call. */
@@ -218,8 +223,8 @@ export const toolSchema = z.strictObject({
  * GitHub the way the rendered file reads on the site.
  */
 export const workflowHeaderSchema = z.strictObject({
-  title: text,
-  summary: text,
+  title: line,
+  summary: line,
   /** The GitHub login of the person who wrote it. */
   author: githubLogin,
   /** Motion and channel tags; capabilities come from the tools. */
@@ -274,7 +279,7 @@ export const workflowBodySchema = z.strictObject({
 /* ─────────────────────────────────── tags.yml ───────────────────────────── */
 
 const tagEntry = z.strictObject({
-  label: text,
+  label: line,
   synonyms: z.array(text).default([]),
 })
 

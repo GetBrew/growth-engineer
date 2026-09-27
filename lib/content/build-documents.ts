@@ -79,6 +79,7 @@ export function buildDocuments(
           : { description: tool.description }),
         ...(tool.docs === undefined ? {} : { docs: tool.docs }),
         access: tool.access,
+        isDeprecated: tool.status === 'deprecated',
         updatedAt,
       })
     )
@@ -104,6 +105,8 @@ export function buildDocuments(
         tools: tools.map((tool) => ({
           key: tool.key,
           name: tool.name,
+          companyName:
+            inputs.companies.get(tool.companyKey)?.name ?? tool.companyKey,
           access: tool.access,
         })),
         tags: [...workflow.tags].sort(),
@@ -115,6 +118,7 @@ export function buildDocuments(
         })),
         doneWhen: workflow.doneWhen,
         ...(workflow.notes === undefined ? {} : { notes: workflow.notes }),
+        isDeprecated: workflow.status === 'deprecated',
         updatedAt,
       })
     )
@@ -154,6 +158,7 @@ export function buildDocuments(
           name: tool.name,
           summary: tool.summary,
         })),
+        isDeprecated: company.status === 'deprecated',
         updatedAt,
       })
     )

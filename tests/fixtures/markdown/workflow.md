@@ -20,7 +20,7 @@ Ask the user for these before you start.
 
 ## Set up
 
-### Find work emails (tool:apollo/find-work-emails)
+### Find work emails (Apollo, tool:apollo/find-work-emails)
 
 Use the API.
 
@@ -29,7 +29,7 @@ Use the API.
 - Auth: send the header `X-Api-Key: $APOLLO_API_KEY`
 - Get a key: https://app.apollo.example/settings/api
 
-### Send email (tool:brew/send-email)
+### Send email (Brew, tool:brew/send-email)
 
 Use the MCP server. Add it to your agent's MCP settings.
 
@@ -43,9 +43,9 @@ Make one read-only call to each tool to confirm access.
 
 ## Steps
 
-1. **Find contacts** with Find work emails. For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
-2. **Write emails** with Send email. Draft a short, specific email to each contact from step 1. Show the drafts to the user.
-3. **Send** with Send email. After the user approves, send each email from `sender_email`.
+1. **Find contacts** with Find work emails (Apollo). For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
+2. **Write emails** with Send email (Brew). Draft a short, specific email to each contact from step 1. Show the drafts to the user.
+3. **Send** with Send email (Brew). After the user approves, send each email from `sender_email`.
 
 ## Done when
 

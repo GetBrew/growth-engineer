@@ -1,7 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, test } from 'vitest'
+import { parse } from 'yaml'
 import { orderAccess, selectWorkflowAccess } from '@/lib/catalog/render-access'
+import { yamlScalar } from '@/lib/catalog/render-header'
 import {
   MAX_WORKFLOW_STEPS,
   renderCompanyDocument,
@@ -102,9 +104,15 @@ const intentToMeeting: WorkflowFileInput = {
     {
       key: 'apollo/find-work-emails',
       name: 'Find work emails',
+      companyName: 'Apollo',
       access: [apolloApi],
     },
-    { key: 'brew/send-email', name: 'Send email', access: [brewMcp] },
+    {
+      key: 'brew/send-email',
+      name: 'Send email',
+      companyName: 'Brew',
+      access: [brewMcp],
+    },
   ],
   tags: ['motion:outbound', 'channel:email'],
   inputs: [
@@ -152,6 +160,7 @@ const waterfall: WorkflowFileInput = {
     {
       key: 'clay/find-work-emails',
       name: 'Find work emails',
+      companyName: 'Clay',
       // The same Clay MCP server, a different tool on it.
       access: [{ ...clayMcp, operation: 'clay_find_work_emails' }],
     },
@@ -241,6 +250,7 @@ describe('setup picks the best way in', () => {
         {
           key: 'clay/find-work-emails',
           name: 'Find work emails',
+          companyName: 'Clay',
           access: [clayMcp, clayApi],
         },
       ],
@@ -297,19 +307,69 @@ describe('company file', () => {
       links: { website: 'https://clay.example' },
       tools: [
         {
-          key: 'clay/clay',
-          name: 'Clay',
-          summary: 'Enriches people and companies.',
+          key: 'clay/enrich-contacts',
+          name: 'Enrich contacts',
+          summary: 'Adds firmographic and person data to a contact or account.',
         },
       ],
       updatedAt: UPDATED_AT,
     })
-    expect(rendered.markdown).toContain('ref: company:clay')
-    expect(rendered.markdown).toContain('tools: [tool:clay/clay]')
-    expect(rendered.markdown).toContain('tags: [category:data-provider]')
-    expect(rendered.markdown).toContain(
-      '- tool:clay/clay — Clay: Enriches people and companies.'
+    expect(rendered.markdown).toBe(golden('company'))
+  })
+})
+
+describe('the header an agent parses', () => {
+  const header = (markdown: string) =>
+    parse(/^---\n([\s\S]*?)\n---/.exec(markdown)?.[1] ?? '', {
+      schema: 'core',
+    }) as Record<string, unknown>
+
+  test.each([
+    'Churn rescue: save accounts before renewal',
+    'Win back #1 accounts',
+    "Don't lose them",
+    '[Draft] outbound',
+    '"Quoted" title',
+    '- a list?',
+    '*starred*',
+    'ends with a colon:',
+    ' padded ',
+    'true',
+    '1234',
+    '0x1F',
+    'Line one\nstatus: published',
+  ])('%j parses back to exactly itself', (value) => {
+    expect(parse(`title: ${yamlScalar(value)}`, { schema: 'core' })).toEqual({
+      title: value,
+    })
+  })
+
+  test('a hostile title and login cannot add a header field', () => {
+    const rendered = renderWorkflowDocument({
+      ...intentToMeeting,
+      title: 'Rescue: accounts\n---\nstatus: evil',
+      author: 'true',
+    })
+    const fields = header(rendered.markdown)
+    expect(fields.title).toBe('Rescue: accounts\n---\nstatus: evil')
+    expect(fields.author).toBe('true')
+    expect(fields.status).toBeUndefined()
+  })
+
+  test('a deprecated file says so in its header and under its title', () => {
+    const tool = renderToolDocument({ ...clay, isDeprecated: true }).markdown
+    expect(header(tool).status).toBe('deprecated')
+    expect(tool).toContain(
+      '# Enrich contacts\n\n> This tool is deprecated. Ask the user before using it.'
     )
-    expect(rendered.markdown).toContain('- Website: https://clay.example')
+    const workflow = renderWorkflowDocument({
+      ...intentToMeeting,
+      isDeprecated: true,
+    }).markdown
+    expect(header(workflow).status).toBe('deprecated')
+    expect(workflow).toContain(
+      '> This workflow is deprecated. Ask the user before running it.'
+    )
+    expect(header(renderToolDocument(clay).markdown).status).toBeUndefined()
   })
 })

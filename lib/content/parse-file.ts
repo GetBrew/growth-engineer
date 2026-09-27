@@ -14,7 +14,7 @@ export function parseFile<T>(
   schema: z.ZodType<T>,
   problems: ProblemList,
   retired: Readonly<Record<string, string>> = {}
-): { data: T; body: string } | null {
+): { data: T; body: string; bodyLine: number } | null {
   let split: ReturnType<typeof splitFrontmatter>
   try {
     split = splitFrontmatter(file.path, file.source)
@@ -39,5 +39,7 @@ export function parseFile<T>(
     problems.add(file.path, formatIssues(result.error))
     return null
   }
-  return isRetired ? null : { data: result.data, body: split.body }
+  return isRetired
+    ? null
+    : { data: result.data, body: split.body, bodyLine: split.bodyLine }
 }

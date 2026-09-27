@@ -8,6 +8,7 @@ import type { Company, Tag } from '@/lib/types/catalog'
 import { dateToMs } from './derive'
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
+import { proseProblems } from './prose'
 import type { ContentFile } from './read-tree'
 
 /**
@@ -74,6 +75,13 @@ export function buildCompanies(
         file.path,
         `category "${parsed.data.category}" is not in tags.yml`
       )
+    }
+    for (const problem of proseProblems(
+      parsed.body,
+      parsed.bodyLine,
+      'the description'
+    )) {
+      problems.add(file.path, problem.message, problem.line)
     }
     if (logos && !logos.has(parsed.data.logo)) {
       problems.add(
