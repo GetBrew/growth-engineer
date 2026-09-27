@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { hasBackslashInPath, markdownRewriteTarget } from '@/proxy'
+import { isMalformedPath, markdownRewriteTarget } from '@/proxy'
 
 /**
  * The markdown rewrite is how every agent reaches a file, and it runs for
@@ -10,20 +10,28 @@ import { hasBackslashInPath, markdownRewriteTarget } from '@/proxy'
  * back with the gate, in the pages and handlers that own it.
  */
 
-describe('hasBackslashInPath', () => {
-  test.each(['/openapi.json\\', '/openapi.json%5C', '/a%5cb', '/x\\y'])(
-    'rejects %s',
-    (pathname) => {
-      expect(hasBackslashInPath(pathname)).toBe(true)
-    }
-  )
+describe('isMalformedPath', () => {
+  test.each([
+    '/openapi.json\\',
+    '/openapi.json%5C',
+    '/a%5cb',
+    '/x\\y',
+    '/workflows/%25zz',
+    '/tools/%zz/x',
+    '/companies/a%2',
+  ])('rejects %s', (pathname) => {
+    expect(isMalformedPath(pathname)).toBe(true)
+  })
 
-  test.each(['/', '/tools', '/llms.txt', '/workflows/brew/x'])(
-    'allows %s',
-    (pathname) => {
-      expect(hasBackslashInPath(pathname)).toBe(false)
-    }
-  )
+  test.each([
+    '/',
+    '/tools',
+    '/llms.txt',
+    '/workflows/brew/x',
+    '/workflows/%E2%9C%93',
+  ])('allows %s', (pathname) => {
+    expect(isMalformedPath(pathname)).toBe(false)
+  })
 })
 
 describe('markdown file rewrite', () => {

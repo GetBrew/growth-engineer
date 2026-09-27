@@ -43,7 +43,7 @@ value that resolves without I/O keeps a route static.
 **`proxy.ts`** — one job: the markdown files. A `.md` URL, or a company,
 tool or workflow page requested with `Accept: text/markdown`, is rewritten to
 the file handler. Its matcher admits only those requests (and paths with a
-backslash, answered 404), so a page view or a Link prefetch never runs it.
+backslash or a bad `%`, answered 404), so a page view or a Link prefetch never runs it.
 There is NO auth gate here and no auth provider anywhere; every route is
 public.
 

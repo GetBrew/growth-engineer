@@ -20,14 +20,21 @@ import { filePathToRef, filePathToTagKey } from '@/lib/catalog/keys'
  */
 
 const PERCENT_ENCODED_BACKSLASH = /%5c/i
+/** `%25` decodes to a bare `%`; `%zz` is no escape at all. */
+const BAD_PERCENT = /%25|%(?![0-9a-f]{2})/i
 
 /**
- * A backslash is not a legal path character and no route has one, but Next
- * routes `/x.json%5C` far enough to throw. Answer 404 here instead of minting
+ * Paths no route has but Next routes far enough to throw on: a backslash
+ * (`/x.json%5C`), or a `%` a param decodes badly (`/workflows/%25zz`,
+ * `/tools/%zz/x`). No key holds either. Answer 404 here instead of minting
  * 500s for scanners. Exported for tests/proxy-routing.test.ts.
  */
-export function hasBackslashInPath(pathname: string): boolean {
-  return pathname.includes('\\') || PERCENT_ENCODED_BACKSLASH.test(pathname)
+export function isMalformedPath(pathname: string): boolean {
+  return (
+    pathname.includes('\\') ||
+    PERCENT_ENCODED_BACKSLASH.test(pathname) ||
+    BAD_PERCENT.test(pathname)
+  )
 }
 
 /** A path that names a file: a valid ref's, or a tag's. */
@@ -63,7 +70,7 @@ export function markdownRewriteTarget(input: {
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  if (hasBackslashInPath(pathname)) {
+  if (isMalformedPath(pathname)) {
     return new NextResponse(null, { status: 404 })
   }
 
@@ -95,7 +102,8 @@ export const config = {
       source: '/((?!_next|api).*)',
       has: [{ type: 'header', key: 'accept', value: '.*text/markdown.*' }],
     },
-    // A path with a backslash, answered 404 before Next can route it.
-    '/(.*(?:%5[cC]|\\\\).*)',
+    // A path with a backslash or a bad `%`, answered 404 before Next can
+    // route it.
+    '/(.*(?:%5[cC]|%25|%(?![0-9a-fA-F]{2})|\\\\).*)',
   ],
 }

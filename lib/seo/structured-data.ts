@@ -128,6 +128,16 @@ export function toolJsonLd(
   const ref = { type: 'tool' as const, key: tool.key }
   const path = refToPath(ref)
   const docsUrl = toolDocsUrl(tool)
+  // A URL that differs per account (`https://{subdomain}…`) is no address
+  // to give; a CLI has none.
+  const installUrls = tool.access
+    .flatMap((entry) => {
+      if (entry.type === 'api') {
+        return [entry.baseUrl]
+      }
+      return entry.type === 'mcp' && entry.url ? [entry.url] : []
+    })
+    .filter((url) => !url.includes('{'))
   return {
     '@context': CONTEXT,
     '@graph': [
@@ -143,16 +153,8 @@ export function toolJsonLd(
           name: company.name,
           url: company.links.website,
         },
-        // Every way in: where an agent reaches the function. A URL that
-        // differs per account (`https://{subdomain}…`) is no address to give.
-        installUrl: tool.access
-          .flatMap((entry) => {
-            if (entry.type === 'api') {
-              return [entry.baseUrl]
-            }
-            return entry.type === 'mcp' && entry.url ? [entry.url] : []
-          })
-          .filter((url) => !url.includes('{')),
+        // Every way in: where an agent reaches the function.
+        ...(installUrls.length > 0 ? { installUrl: installUrls } : {}),
         ...(docsUrl
           ? { softwareHelp: { '@type': 'CreativeWork', url: docsUrl } }
           : {}),
