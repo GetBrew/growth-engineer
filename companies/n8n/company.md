@@ -25,9 +25,8 @@ api:
 updated: 2026-09-27
 ---
 
-n8n is a workflow automation platform that combines AI capabilities with
-business process automation, giving technical teams the flexibility of code
-with the speed of no-code. It runs on n8n Cloud or self-hosted, so every way in
+n8n runs automation workflows, with AI steps, that a team builds visually or
+in code. It runs on n8n Cloud or self-hosted, so every way in
 points at your own instance: `{your-n8n-domain}` and `{your-domain}` are its
 domain without `https://`, such as `your-instance.app.n8n.cloud` on n8n Cloud
 or the domain that serves your n8n editor when self-hosted.

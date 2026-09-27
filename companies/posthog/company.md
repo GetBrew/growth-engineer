@@ -23,9 +23,12 @@ api:
   env: POSTHOG_PERSONAL_API_KEY
   keyUrl: https://us.posthog.com/settings/user-api-keys
   docs: https://posthog.com/docs/api
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 PostHog is a product platform that combines product and web analytics, session replay, feature flags, experiments, surveys, error tracking and a CDP in one place.
 
 The API URL above is US Cloud; EU Cloud projects use `https://eu.posthog.com`. The hosted MCP server routes to the right region from the account you sign in with.
+
+The CLI reads its key as `POSTHOG_CLI_API_KEY` and the API as
+`POSTHOG_PERSONAL_API_KEY`: each is the name that way's docs use.

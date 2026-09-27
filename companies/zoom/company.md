@@ -2,7 +2,7 @@
 name: Zoom
 domain: zoom.us
 category: video
-tagline: Book and run the call, then work the attendance list.
+tagline: Video meetings and webinars, with chat and phone.
 docs: https://developers.zoom.us
 github: https://github.com/zoom
 logo: zoom.jpg
@@ -14,9 +14,9 @@ api:
   url: https://api.zoom.us/v2
   auth: oauth
   docs: https://developers.zoom.us/docs/api/
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
-Zoom is a global communications platform that provides video conferencing, online meetings, chat, phone, and webinar solutions for individuals and businesses.
+Zoom runs video meetings and webinars, with team chat and phone alongside.
 
 Both the MCP server and the API sign in through an OAuth app you create on the Zoom App Marketplace. The MCP server does not support dynamic client registration, so the agent's client needs that app's client ID and secret. Webinar calls need a Pro or higher plan with the Webinar add-on.

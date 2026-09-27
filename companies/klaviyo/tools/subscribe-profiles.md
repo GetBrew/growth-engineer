@@ -14,3 +14,6 @@ first. Subscribing also removes unsubscribe, spam-report and user
 suppressions. To add profiles to a list without touching consent, use Add
 Profiles to List (`add_profiles_to_list`,
 `POST /api/lists/{id}/relationships/profiles`).
+
+The MCP tool `subscribe_profile_to_marketing` subscribes one profile per call;
+the CLI and API take up to 1,000 at once.

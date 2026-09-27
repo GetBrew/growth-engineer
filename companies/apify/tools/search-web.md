@@ -1,6 +1,6 @@
 ---
 name: Search the web and read the top results
-summary: Runs Apify's RAG Web Browser, which searches Google for a query and saves the content of the top result pages as Markdown, or fetches one page when the query is a URL.
+summary: Starts Apify's RAG Web Browser on a query, or on one URL, and returns the run's storage IDs; its dataset holds the top result pages as Markdown.
 capability: research-accounts
 docs: https://docs.apify.com/integrations/mcp
 mcp: apify--rag-web-browser

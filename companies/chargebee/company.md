@@ -33,3 +33,6 @@ an OAuth client ID for your MCP client under Settings > Configure Chargebee >
 Agentic AI > MCP Servers; sites with Multi-Business Entity enabled can't use
 OAuth. Sites in the EU and AU data centers use `mcp.eu.chargebee.com` and
 `mcp.au.chargebee.com` in place of `mcp.chargebee.com`.
+
+The MCP server's tool names aren't published, so the tools below name only
+their API or CLI calls; the server lists its own once connected.

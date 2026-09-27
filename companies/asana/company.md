@@ -2,7 +2,7 @@
 name: Asana
 domain: asana.com
 category: project-management
-tagline: Turn a signal into a task somebody owns.
+tagline: Work management for tasks, projects and portfolios.
 docs: https://developers.asana.com
 github: https://github.com/Asana
 logo: asana.png
@@ -16,7 +16,7 @@ api:
   env: ASANA_ACCESS_TOKEN
   keyUrl: https://app.asana.com/0/my-apps
   docs: https://developers.asana.com/reference/rest-api-reference
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 Asana is work management software for teams and AI agents. Its V2 MCP server

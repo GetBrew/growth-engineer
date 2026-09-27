@@ -1,5 +1,5 @@
 ---
-title: Route high-intent website visitors in real time
+title: Route high-intent website visitors to their owners
 summary: Identify promising accounts on your site, enrich them, and tell the right owner with useful context.
 author: thedogwiththedataonit
 tags:

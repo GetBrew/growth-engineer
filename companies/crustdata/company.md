@@ -22,7 +22,7 @@ api:
   env: CRUSTDATA_API_KEY
   keyUrl: https://app.crustdata.com/api-keys
   docs: https://docs.crustdata.com/openapi-specs/2025-11-01/introduction
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 Crustdata provides a real-time B2B data API for AI agents, covering people
@@ -31,3 +31,6 @@ Person, Job, Web and Social Post APIs search, identify and enrich records,
 and watches deliver newly matching records on a schedule. Pin every API
 request to a version with the `x-api-version: 2025-11-01` header; some
 endpoints and fields depend on the plan.
+
+The MCP server's tool names aren't published, so the tools below name only
+their API or CLI calls; the server lists its own once connected.

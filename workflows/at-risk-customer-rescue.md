@@ -17,9 +17,10 @@ updated: 2026-09-27
 
 ## Steps
 
-1. **Detect drops** with [mixpanel/run-query](../companies/mixpanel/tools/run-query.md). List accounts whose usage fell more than `drop_threshold` versus the prior 30 days and renew within `renewal_window`.
-2. **Escalate** with [slack/post-message](../companies/slack/tools/post-message.md). Post one message per account to the customer success channel with the usage chart numbers and renewal date.
-3. **Draft the check-in** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft a short check-in email from the account manager for each account. Show the drafts to the user.
+1. **Detect drops** with [mixpanel/run-query](../companies/mixpanel/tools/run-query.md). List accounts whose usage fell more than `drop_threshold` versus the prior 30 days.
+2. **Check renewals** with [stripe/list-subscriptions](../companies/stripe/tools/list-subscriptions.md). Keep the accounts whose subscription renews within `renewal_window`.
+3. **Escalate** with [slack/post-message](../companies/slack/tools/post-message.md). Post one message per account to the customer success channel with the usage numbers and renewal date.
+4. **Draft the check-in** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft a short check-in email from the account manager for each account. Show the drafts to the user.
 
 ## Done when
 

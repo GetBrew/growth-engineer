@@ -16,7 +16,7 @@ updated: 2026-09-27
 
 ## Steps
 
-1. **Find funded companies** with [clay/search-people-and-companies](../companies/clay/tools/search-people-and-companies.md). List companies matching `target_segment` that announced a round in the last 30 days. Keep name, domain, round and amount.
+1. **Find funded companies** with [people-data-labs/search-companies](../companies/people-data-labs/tools/search-companies.md). List companies matching `target_segment` whose `last_funding_date` falls in the last 30 days. Keep name, domain, latest round and date.
 2. **Find the buyer** with [apollo/search-people](../companies/apollo/tools/search-people.md). For each company, find the head of growth or marketing; skip companies with no match.
 3. **Get their emails** with [apollo/bulk-enrich-people](../companies/apollo/tools/bulk-enrich-people.md). Enrich each buyer, up to 10 per call. Keep their name, title and work email.
 4. **Write emails** with [anthropic/create-message](../companies/anthropic/tools/create-message.md). Draft a three-sentence plain-text email per contact: congratulate the round, name one thing they will now have budget for, ask one question. Show the drafts to the user.

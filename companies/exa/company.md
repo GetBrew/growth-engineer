@@ -1,7 +1,7 @@
 ---
 name: Exa
 domain: exa.ai
-category: scraper
+category: web-search
 tagline: Web search for AI agents, with page contents, cited answers, monitors and a research agent.
 docs: https://exa.ai/docs
 github: https://github.com/exa-labs

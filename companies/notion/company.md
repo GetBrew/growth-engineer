@@ -23,9 +23,13 @@ api:
   env: NOTION_API_KEY
   keyUrl: https://www.notion.so/developers/tokens
   docs: https://developers.notion.com/reference/intro
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 Notion is an AI workspace for docs, wikis and databases, where teams build Custom Agents, search across their apps and automate busywork.
 
 A database holds one or more data sources, and each row of a data source is a page. API requests also send a `Notion-Version` header; `ntn api` adds it for you.
+
+One personal access token works for every way in: the CLI reads it as
+`NOTION_API_TOKEN` and API requests as `NOTION_API_KEY`, each the name that
+way's docs use.

@@ -38,7 +38,7 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Find funded companies** with [clay/search-people-and-companies](../companies/clay/tools/search-people-and-companies.md). List companies matching `target_segment` that announced a round in the last 30 days.
+1. **Find funded companies** with [people-data-labs/search-companies](../companies/people-data-labs/tools/search-companies.md). List companies matching `target_segment` whose `last_funding_date` falls in the last 30 days.
 2. **Write emails** with [anthropic/create-message](../companies/anthropic/tools/create-message.md). Draft a three-sentence email per contact. Show the drafts to the user.
 3. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each contact to `campaign_id`.
 

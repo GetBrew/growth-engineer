@@ -185,11 +185,11 @@ category:
   video:
     label: Video
     synonyms: [video, meetings, webinars]
+  web-search:
+    label: Web search
+    synonyms: [search api, search engine, answer engine]
 
 channel:
-  ads:
-    label: Ads
-    synonyms: [ads, paid, advertising]
   chat:
     label: Chat
     synonyms: [chat, slack, teams, messaging]
@@ -199,17 +199,11 @@ channel:
   linkedin:
     label: LinkedIn
     synonyms: [linkedin]
-  phone:
-    label: Phone
-    synonyms: [phone, calls, dialer]
   website:
     label: Website
     synonyms: [website, web, landing page]
 
 motion:
-  abm:
-    label: Account-based
-    synonyms: [abm, account based, named accounts]
   inbound:
     label: Inbound
     synonyms: [inbound, warm inbound, leads]

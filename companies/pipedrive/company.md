@@ -2,7 +2,7 @@
 name: Pipedrive
 domain: pipedrive.com
 category: crm
-tagline: The easy-to-use sales CRM for small and medium-sized businesses.
+tagline: Sales CRM built around deals and pipelines.
 docs: https://developers.pipedrive.com
 github: https://github.com/pipedrive
 logo: pipedrive.png

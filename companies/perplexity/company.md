@@ -1,7 +1,7 @@
 ---
 name: Perplexity
 domain: perplexity.ai
-category: ai-model
+category: web-search
 tagline: Real-time web search, web-grounded answers and research for agents and apps.
 docs: https://docs.perplexity.ai
 github: https://github.com/perplexityai
@@ -30,7 +30,7 @@ Perplexity's API platform brings real-time, web-wide research and Q&A to your
 products. The Search API returns ranked web results; the Agent API answers and
 researches with web search using models from several providers; the Router and
 Embeddings APIs cover open-weight models and embeddings. Sonar Chat Completions
-has been replaced by the Agent API and is supported only until September 27,
+was replaced by the Agent API and reached its end of support on September 27,
 2026.
 
 The hosted MCP server offers `perplexity_search`, `perplexity_ask`,
