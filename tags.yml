@@ -18,6 +18,12 @@ capability:
   authenticate-users:
     label: Authenticate users
     synonyms: [auth, authentication, login, sign up]
+  automate-workflows:
+    label: Automate workflows
+    synonyms: [automation, workflows, zaps, scenarios, integrations, run workflow]
+  book-meetings:
+    label: Book meetings
+    synonyms: [booking, scheduling, booking links, availability, calendar]
   build-audience:
     label: Build audiences
     synonyms: [audience, audiences, list building, prospecting, segments]
@@ -27,6 +33,9 @@ capability:
   collect-payments:
     label: Collect payments
     synonyms: [payments, billing, subscriptions, checkout]
+  collect-responses:
+    label: Collect form responses
+    synonyms: [forms, surveys, form responses, submissions, lead capture, nps]
   design-assets:
     label: Design assets
     synonyms: [design, graphics, creative, mockups]
@@ -39,6 +48,9 @@ capability:
   host-meetings:
     label: Host meetings
     synonyms: [meetings, video calls, webinars]
+  make-calls:
+    label: Make phone calls
+    synonyms: [calls, voice, phone calls, outbound calls, dialer]
   manage-code:
     label: Manage code
     synonyms: [code, repositories, pull requests, issues]
@@ -48,12 +60,24 @@ capability:
   manage-docs:
     label: Manage docs
     synonyms: [docs, notes, wiki, knowledge base]
+  manage-tables:
+    label: Manage tables
+    synonyms: [spreadsheet, records, rows, tables]
   manage-tasks:
     label: Manage tasks
     synonyms: [tasks, projects, tickets]
+  publish-content:
+    label: Publish content
+    synonyms: [cms, publishing, blog, landing pages, website content]
+  read-reviews:
+    label: Read reviews
+    synonyms: [reviews, ratings, social proof, testimonials]
   research-accounts:
     label: Research accounts
     synonyms: [research, account research, company research]
+  review-recordings:
+    label: Review recordings
+    synonyms: [recordings, transcripts, call recordings, meeting notes, action items]
   route-alerts:
     label: Route alerts
     synonyms: [alerts, notifications, routing, notify]
@@ -63,6 +87,9 @@ capability:
   send-email:
     label: Send email
     synonyms: [sequencer, email sending, sending, campaigns]
+  send-sms:
+    label: Send SMS
+    synonyms: [sms, text message, texting, mms, whatsapp]
   store-files:
     label: Store files
     synonyms: [files, storage, documents]
@@ -75,6 +102,9 @@ capability:
   track-revenue:
     label: Track revenue
     synonyms: [revenue, mrr, arr, invoices]
+  verify-emails:
+    label: Verify emails
+    synonyms: [email verification, email validation, bounce check]
   write-copy:
     label: Write copy
     synonyms: [copywriting, drafting, generate text, llm]
@@ -86,6 +116,15 @@ category:
   auth:
     label: Auth
     synonyms: [auth, identity]
+  automation:
+    label: Automation
+    synonyms: [workflow automation, integration platform, ipaas, no-code]
+  cdp:
+    label: Customer data platform
+    synonyms: [cdp, customer data, event pipeline, identity resolution]
+  cms:
+    label: Website and CMS
+    synonyms: [cms, website builder, websites, content management]
   code:
     label: Code
     synonyms: [code, git, repositories]
@@ -95,6 +134,9 @@ category:
   data-provider:
     label: Data provider
     synonyms: [data, enrichment provider, contact database]
+  database:
+    label: Database
+    synonyms: [spreadsheet, spreadsheets, no-code database]
   design:
     label: Design
     synonyms: [design tool, creative]
@@ -103,7 +145,10 @@ category:
     synonyms: [docs, wiki, notes]
   email:
     label: Email platform
-    synonyms: [email platform, esp, sequencer]
+    synonyms: [email platform, esp]
+  forms:
+    label: Forms
+    synonyms: [surveys, quizzes, form builder]
   intent:
     label: Intent
     synonyms: [intent data, signals]
@@ -119,12 +164,24 @@ category:
   project-management:
     label: Project management
     synonyms: [project management, tasks]
+  revenue-intelligence:
+    label: Revenue intelligence
+    synonyms: [conversation intelligence, call recording, call analytics, revenue ai]
+  sales-engagement:
+    label: Sales engagement
+    synonyms: [sequencer, sequences, cadences, cold email, outbound email]
+  scheduling:
+    label: Scheduling
+    synonyms: [calendar, booking, appointments, meeting scheduler]
   scraper:
     label: Scraper
     synonyms: [scraper, crawler, web data]
   storage:
     label: Storage
     synonyms: [storage, files]
+  support:
+    label: Customer support
+    synonyms: [customer service, help desk, helpdesk, ticketing, shared inbox]
   video:
     label: Video
     synonyms: [video, meetings, webinars]

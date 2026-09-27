@@ -84,6 +84,9 @@ below. Each way says how it authenticates:
 - A host that differs per account keeps the placeholder the docs print, in
   braces: `url: https://{subdomain}.zendesk.com/api/v2`. The description
   says where the value comes from.
+- Basic auth is `header: "Authorization: Basic"`, and the variable holds the
+  base64 of the pair the docs define (`<key>:`, `<email>:<token>`); the
+  description says which.
 - `docs` links the way's own documentation. `maintainer: <who>` marks a
   community-run way; without it, the way is the vendor's own.
 

@@ -144,6 +144,18 @@ describe('content rules', () => {
     expect(problemsOf(files)).toEqual([])
   })
 
+  test.each(['api_key', 'Authorization: Klaviyo-API-Key'])(
+    'an API key header may be written as the vendor prints it: %s',
+    (header) => {
+      const files = edit(
+        'company',
+        '  env: ACME_API_KEY\n',
+        `  env: ACME_API_KEY\n  header: "${header}"\n`
+      )
+      expect(problemsOf(files)).toEqual([])
+    }
+  )
+
   test('a tool file is named after its function, not its capability', () => {
     const files = tree({}, [
       file('companies/acme/tools/create-record.md', FIXTURE.tool.source),
@@ -391,6 +403,16 @@ describe('content rules', () => {
           'url: https://{sub domain}.acme.example'
         ),
       /company\.md: api\.url: must be a URL; a part that differs per account goes in braces/,
+    ],
+    [
+      'an API header that is not a header name',
+      () =>
+        edit(
+          'company',
+          '  env: ACME_API_KEY\n',
+          '  env: ACME_API_KEY\n  header: "Bearer token please"\n'
+        ),
+      /company\.md: api\.header: must be a header name/,
     ],
     [
       'a remote MCP server with an API key',

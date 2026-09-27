@@ -160,11 +160,15 @@ const apiWay = z
     ...wayCommon,
     /** The base URL every call's path follows. */
     url: wayUrl,
-    /** `X-Api-Key`, or a name plus scheme: `Authorization: Basic`. */
+    /**
+     * `X-Api-Key`, or a name plus scheme: `Authorization: Basic`. Header
+     * names may carry underscores (`api_key`) and schemes hyphens
+     * (`Authorization: Klaviyo-API-Key`), as vendors print them.
+     */
     header: z
       .string()
       .regex(
-        /^[A-Za-z][A-Za-z0-9-]*(?:: [A-Za-z]+)?$/,
+        /^[A-Za-z][A-Za-z0-9_-]*(?:: [A-Za-z][A-Za-z0-9-]*)?$/,
         'must be a header name, optionally with a scheme: `X-Api-Key`, `Authorization: Bearer`'
       )
       .optional(),
