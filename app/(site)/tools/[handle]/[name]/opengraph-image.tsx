@@ -32,7 +32,7 @@ export default async function Image({
       description={tool.summary}
       facts={[`by ${company.name}`, ...ways.map((type) => type.toUpperCase())]}
       kind="Tool"
-      path={refToFilePath({ type: 'tool', key: tool.key, version: undefined })}
+      path={refToFilePath({ type: 'tool', key: tool.key })}
       title={tool.name}
     />,
     ogOptions()

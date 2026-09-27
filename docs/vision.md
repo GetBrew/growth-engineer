@@ -41,10 +41,10 @@ That single decision shapes everything else:
 
 | Entity | Key | What it is |
 | --- | --- | --- |
-| **Company** | `clay` | A vendor, open-source project or person that makes tools. |
-| **Tool** | `clay/enrich-contacts` | ONE function an agent can call, tied to a specific public API endpoint, MCP tool or CLI subcommand of a company's product. Every way in names its `operation`. A company with three functions has three tools. |
-| **Workflow** | `funding-signal-outbound` | Steps across tools that reach a result, written by a person (a GitHub login). Frozen versions (`@3`); the current one renders the file. |
-| **Growth hack** | `clay-waterfall-order` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
+| **Company** | `apollo` | A vendor, open-source project or person that makes tools. |
+| **Tool** | `apollo/enrich-person` | ONE function an agent can call, tied to a specific public API endpoint, MCP tool or CLI subcommand of a company's product. Every way in names the exact call. A company with three functions has three tools. |
+| **Workflow** | `funding-signal-outbound` | Steps across tools that reach a result, written by a person (a GitHub login). |
+| **Growth hack** | `resend-to-unopened` | A workflow. Not a second kind of thing — the word describes the ambition, not the schema, and nothing is keyed off how many tools it uses. |
 
 Each company has many tools. Each workflow combines tools from different
 companies. Each tool is reachable over MCP, CLI or API — a tool with no way in
@@ -55,15 +55,15 @@ cannot be published.
 - **GTM engineers** choosing and combining tools, and sharing what worked.
 - **Their agents** (Claude, ChatGPT, Cursor, anything that reads markdown)
   setting tools up and running workflows without a person copying keys.
-- **Vendors**, who claim their listing by verified domain and keep it current.
-- **Teams**, who share their stack and publish under their handle.
+- **Vendors**, who keep their own folder current by pull request.
+- **Teams**, who share the workflows that work for them.
 
 ## Phases
 
 1. **Plan the schema.** Done — the file schema in `docs/data-model.md`.
-2. **Seed by hand.** Done — 25 companies, 37 published tools and 12
-   workflows under `companies/` and `workflows/`, illustrative until a
-   person checks each one.
+2. **Seed from the vendors' docs.** Done — on 2026-09-27, 67 companies, 294
+   published tools and 11 published workflows, every call cited to the page
+   that names it (the `research-company` skill).
 3. **Open community contributions.** Now: anyone adds or corrects a file by
    pull request; CI checks every rule; a maintainer reviews the facts;
    vendors maintain their own folder.
@@ -75,9 +75,9 @@ cannot be published.
 
 Pricing and cost, standalone connector pages, skills/SDKs/webhooks as ways in,
 write actions through an API, an admin app, teams and reviews, usage
-counters and ranking, vector search, version history beyond the current
-version. Each can arrive without changing a key or a file — a pull request is
-the submission pipeline and git is the history.
+counters and ranking, vector search, versions and version history. Each
+can arrive without changing a key or a file — a pull request is the
+submission pipeline and git is the history.
 
 ## Principles
 

@@ -8,13 +8,17 @@ import { BrandLockup } from './brand'
 import { BrewLink } from './brew-link'
 import styles from './footer.module.css'
 
-// Three columns of equal weight. Explore holds every listing; Contribute
-// points at the guide for each kind of file (each guide links on to its
-// README on GitHub).
+// Three columns of equal weight. Explore holds every listing plus the two
+// files an agent reads first; Contribute points at the guide for
+// each kind of file (each guide links on to its README on GitHub).
 const COLUMNS = [
   {
     heading: 'Explore',
-    links: SECTIONS.map((section) => [section.label, section.href] as const),
+    links: [
+      ...SECTIONS.map((section) => [section.label, section.href] as const),
+      ['llms.txt', '/llms.txt'],
+      ['llms-full.txt', '/llms-full.txt'],
+    ],
   },
   {
     heading: 'Contribute',

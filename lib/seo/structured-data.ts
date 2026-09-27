@@ -1,5 +1,6 @@
 import { SITE } from '@/lib/catalog/definitions'
 import { refToFilePath, refToPath } from '@/lib/catalog/keys'
+import { toolDocsUrl } from '@/lib/catalog/tool-docs'
 import type {
   Company,
   CompanyListItem,
@@ -73,11 +74,15 @@ function breadcrumb(
   }
 }
 
-export function companyJsonLd(origin: string, company: Company): JsonLd {
+/** `updatedAt` is the company file's date: its own and its tools', newest. */
+export function companyJsonLd(
+  origin: string,
+  company: Company,
+  updatedAt: number
+): JsonLd {
   const path = refToPath({
     type: 'company',
     key: company.key,
-    version: undefined,
   })
   return {
     '@context': CONTEXT,
@@ -91,12 +96,7 @@ export function companyJsonLd(origin: string, company: Company): JsonLd {
         ...(company.description || company.tagline
           ? { description: company.description ?? company.tagline }
           : {}),
-        ...(company.founded ? { foundingDate: String(company.founded) } : {}),
-        sameAs: [
-          company.links.github,
-          company.links.linkedin,
-          company.links.x,
-        ].filter((link): link is string => typeof link === 'string'),
+        ...(company.links.github ? { sameAs: [company.links.github] } : {}),
       },
       {
         '@type': 'WebPage',
@@ -105,7 +105,7 @@ export function companyJsonLd(origin: string, company: Company): JsonLd {
         name: company.name,
         isPartOf: { '@id': `${origin}/#website` },
         about: { '@id': `${origin}${path}#organization` },
-        dateModified: new Date(company.updatedAt).toISOString(),
+        dateModified: new Date(updatedAt).toISOString(),
       },
       breadcrumb(origin, [
         { name: 'Companies', path: '/companies' },
@@ -122,10 +122,22 @@ export function companyJsonLd(origin: string, company: Company): JsonLd {
 export function toolJsonLd(
   origin: string,
   tool: Tool,
-  company: Company
+  company: Company,
+  updatedAt: number
 ): JsonLd {
-  const ref = { type: 'tool' as const, key: tool.key, version: undefined }
+  const ref = { type: 'tool' as const, key: tool.key }
   const path = refToPath(ref)
+  const docsUrl = toolDocsUrl(tool)
+  // A URL that differs per account (`https://{subdomain}…`) is no address
+  // to give; a CLI has none.
+  const installUrls = tool.access
+    .flatMap((entry) => {
+      if (entry.type === 'api') {
+        return [entry.baseUrl]
+      }
+      return entry.type === 'mcp' && entry.url ? [entry.url] : []
+    })
+    .filter((url) => !url.includes('{'))
   return {
     '@context': CONTEXT,
     '@graph': [
@@ -142,25 +154,12 @@ export function toolJsonLd(
           url: company.links.website,
         },
         // Every way in: where an agent reaches the function.
-        installUrl: tool.access.flatMap((entry) => {
-          if (entry.type === 'api') {
-            return [entry.baseUrl]
-          }
-          if (entry.type === 'mcp') {
-            return entry.url ? [entry.url] : []
-          }
-          return entry.repoUrl ? [entry.repoUrl] : []
-        }),
-        ...(tool.access.some((entry) => entry.docsUrl)
-          ? {
-              softwareHelp: {
-                '@type': 'CreativeWork',
-                url: tool.access.find((entry) => entry.docsUrl)?.docsUrl,
-              },
-            }
+        ...(installUrls.length > 0 ? { installUrl: installUrls } : {}),
+        ...(docsUrl
+          ? { softwareHelp: { '@type': 'CreativeWork', url: docsUrl } }
           : {}),
-        keywords: [tool.capability, ...tool.tags].join(', '),
-        dateModified: new Date(tool.updatedAt).toISOString(),
+        keywords: tool.tags.join(', '),
+        dateModified: new Date(updatedAt).toISOString(),
       },
       {
         '@type': 'WebPage',
@@ -189,12 +188,12 @@ export function toolJsonLd(
 export function workflowJsonLd(
   origin: string,
   workflow: Workflow,
-  tools: ReadonlyArray<{ tool: Tool; company: Company }>
+  tools: ReadonlyArray<{ tool: Tool; company: Company }>,
+  updatedAt: number
 ): JsonLd {
   const ref = {
     type: 'workflow' as const,
     key: workflow.key,
-    version: undefined,
   }
   const path = refToPath(ref)
   const toolNames = new Map(
@@ -229,8 +228,7 @@ export function workflowJsonLd(
           url: `${absolute(origin, path)}#step-${index + 1}`,
         })),
         keywords: workflow.tags.join(', '),
-        version: workflow.version,
-        dateModified: new Date(workflow.updatedAt).toISOString(),
+        dateModified: new Date(updatedAt).toISOString(),
       },
       {
         '@type': 'WebPage',

@@ -61,9 +61,9 @@ export const GUIDES: ReadonlyArray<Guide> = [
       'Describe one function your product exposes, and how an agent reaches it.',
     length: 'three-minute',
     intro:
-      'A tool is one function an agent calls: one MCP tool, one CLI command or one API endpoint. A product with three functions has three tool files.',
-    note: 'The file name must match a capability in `tags/capability/`. If none fits, add one in the same pull request.',
-    docPath: 'companies/README.md#toolsslugmd',
+      'A tool is ONE function an agent calls — one MCP tool, one CLI command, one API endpoint. A product with three functions is three files, each named after its function.',
+    note: 'Its capability must be listed in tags.yml. If none fits, add it there in the same pull request.',
+    docPath: 'companies/README.md#toolsnamemd',
   },
   {
     id: 'company',

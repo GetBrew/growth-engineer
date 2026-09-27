@@ -1,8 +1,6 @@
-import { Linkedin01Icon, NewTwitterIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { Suspense } from 'react'
 import {
   CatalogList,
   toolListItem,
@@ -25,6 +23,7 @@ import { Badge } from '@/components/ui/badge'
 import { isValidHandle, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadCompany,
+  loadDocument,
   loadToolsByCompany,
   loadWorkflowsByCompany,
   resolveAlias,
@@ -37,8 +36,12 @@ import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ handle: string }>
 
-const SOCIAL =
-  'focus-ring grid size-8 place-items-center rounded-full text-subtle transition-colors hover:bg-hover hover:text-foreground'
+/**
+ * Every page here is prerendered from `generateStaticParams`, and reading
+ * `params` outside `<Suspense>` is deliberate: nothing loads. So navigating
+ * here may block rather than show a fallback; `instant = false` says so.
+ */
+export const instant = false
 
 export function generateStaticParams() {
   return companyParams()
@@ -54,7 +57,7 @@ export async function generateMetadata({
   if (!company) {
     return {}
   }
-  const ref = { type: 'company' as const, key: company.key, version: undefined }
+  const ref = { type: 'company' as const, key: company.key }
   return pageMetadata({
     title: company.name,
     description:
@@ -66,13 +69,11 @@ export async function generateMetadata({
   })
 }
 
-export default function CompanyPage({ params }: { params: Params }) {
+export default async function CompanyPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/companies" label="All companies" />
-      <Suspense fallback={null}>
-        <CompanyDetail params={params} />
-      </Suspense>
+      <CompanyDetail params={params} />
     </Page>
   )
 }
@@ -82,10 +83,11 @@ async function CompanyDetail({ params }: { params: Params }) {
   if (!isValidHandle(handle)) {
     notFound()
   }
-  const [company, tools, workflows] = await Promise.all([
+  const [company, tools, workflows, document] = await Promise.all([
     loadCompany(handle),
     loadToolsByCompany(handle),
     loadWorkflowsByCompany(handle),
+    loadDocument('company', handle),
   ])
   if (!company) {
     const alias = await resolveAlias('company', handle)
@@ -95,14 +97,15 @@ async function CompanyDetail({ params }: { params: Params }) {
     notFound()
   }
 
-  const facts = [
-    company.headquarters,
-    company.founded ? `Founded ${company.founded}` : undefined,
-  ].filter((fact): fact is string => Boolean(fact))
-
   return (
     <div className="flex flex-col">
-      <JsonLd data={companyJsonLd(SITE_ORIGIN, company)} />
+      <JsonLd
+        data={companyJsonLd(
+          SITE_ORIGIN,
+          company,
+          document?.updatedAt ?? company.updatedAt
+        )}
+      />
       <header>
         {/* One row on every screen: the name on the left, the actions as
             icons on the right (labels join them from sm). */}
@@ -129,69 +132,26 @@ async function CompanyDetail({ params }: { params: Params }) {
               title={company.name}
             />
             <ViewSourceButton entityKey={company.key} type="company" />
-            {company.links.website ? (
-              <a
-                className={HEADER_ACTION_COLLAPSING}
-                href={company.links.website}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <HugeiconsIcon
-                  aria-hidden="true"
-                  icon={LINK_ICON.website}
-                  size={16}
-                  strokeWidth={1.8}
-                />
-                <span className="max-sm:sr-only">Website</span>
-              </a>
-            ) : null}
-            <div className="flex items-center gap-0.5">
-              {company.links.x ? (
-                <a
-                  aria-label={`${company.name} on X`}
-                  className={SOCIAL}
-                  href={company.links.x}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <HugeiconsIcon
-                    aria-hidden="true"
-                    icon={NewTwitterIcon}
-                    size={15}
-                    strokeWidth={1.8}
-                  />
-                </a>
-              ) : null}
-              {company.links.linkedin ? (
-                <a
-                  aria-label={`${company.name} on LinkedIn`}
-                  className={SOCIAL}
-                  href={company.links.linkedin}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <HugeiconsIcon
-                    aria-hidden="true"
-                    icon={Linkedin01Icon}
-                    size={16}
-                    strokeWidth={1.8}
-                  />
-                </a>
-              ) : null}
-            </div>
+            <a
+              className={HEADER_ACTION_COLLAPSING}
+              href={company.links.website}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <HugeiconsIcon
+                aria-hidden="true"
+                icon={LINK_ICON.website}
+                size={16}
+                strokeWidth={1.8}
+              />
+              <span className="max-sm:sr-only">Website</span>
+            </a>
           </div>
         </div>
 
-        {facts.length > 0 || company.status === 'deprecated' ? (
+        {company.status === 'deprecated' ? (
           <div className="mt-6 flex flex-wrap items-center gap-1.5">
-            {facts.map((fact) => (
-              <Badge key={fact} variant="plain">
-                {fact}
-              </Badge>
-            ))}
-            {company.status === 'deprecated' ? (
-              <Badge variant="emphasis">Deprecated</Badge>
-            ) : null}
+            <Badge variant="emphasis">Deprecated</Badge>
           </div>
         ) : null}
       </header>

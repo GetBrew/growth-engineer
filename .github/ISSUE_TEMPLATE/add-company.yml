@@ -22,7 +22,7 @@ body:
     id: functions
     attributes:
       label: Functions an agent can call
-      description: One line per function, with the exact operation per way in (MCP tool name, CLI subcommand, `METHOD /path`).
+      description: One line per function, with the exact call per way in (MCP tool name, CLI command, `METHOD /path`) and the docs page that names it.
     validations:
       required: true
   - type: textarea

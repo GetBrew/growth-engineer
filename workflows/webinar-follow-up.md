@@ -2,15 +2,11 @@
 title: Create a webinar follow-up that reflects attendance
 summary: Send different next steps to attendees, no-shows and highly engaged viewers without manual list work.
 author: thedogwiththedataonit
-version: 1
 tags:
   - motion:inbound
   - channel:email
-  - capability:host-meetings
-  - capability:send-email
-  - capability:manage-crm
 featured: 6
-updated: 2026-09-16
+updated: 2026-09-27
 ---
 
 ## Inputs
@@ -19,9 +15,11 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Split the audience** with [zoom/host-meetings](../companies/zoom/tools/host-meetings.md). From `webinar_id`, build three lists: attended, did not attend, and attended for 40 minutes or more.
-2. **Write three emails** with [brew/write-copy](../companies/brew/tools/write-copy.md). Draft one email per list: the recording for no-shows, the next step for attendees, a call offer for the engaged. Show the drafts to the user.
-3. **Tag contacts** with [hubspot/manage-crm](../companies/hubspot/tools/manage-crm.md). Set a contact property with the list each person landed in, then send the approved emails.
+1. **List attendees** with [zoom/list-webinar-participants](../companies/zoom/tools/list-webinar-participants.md). From `webinar_id`, list who attended and add up each person's time across rejoins; 40 minutes or more makes them engaged.
+2. **List no-shows** with [zoom/list-webinar-absentees](../companies/zoom/tools/list-webinar-absentees.md). From `webinar_id`, list the registrants who did not attend.
+3. **Write three emails** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft one email per list: the recording for no-shows, the next step for attendees, a call offer for the engaged. Show the drafts to the user.
+4. **Tag contacts** with [hubspot/upsert-contacts](../companies/hubspot/tools/upsert-contacts.md). Set a contact property with the list each person landed in.
+5. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). Send each list its approved email.
 
 ## Done when
 

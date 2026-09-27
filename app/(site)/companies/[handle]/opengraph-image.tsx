@@ -14,12 +14,6 @@ export function generateStaticParams() {
   return companyParams()
 }
 
-const KIND = {
-  vendor: 'Vendor',
-  open_source: 'Open source',
-  individual: 'Individual',
-} as const
-
 export default async function Image({
   params,
 }: {
@@ -42,7 +36,6 @@ export default async function Image({
         `${company.name} on growth.engineer.`
       }
       facts={[
-        KIND[company.kind],
         `${tools.length} ${tools.length === 1 ? 'tool' : 'tools'}`,
         ...ways.map((type) => type.toUpperCase()),
       ]}
@@ -50,7 +43,6 @@ export default async function Image({
       path={refToFilePath({
         type: 'company',
         key: company.key,
-        version: undefined,
       })}
       title={company.name}
     />,

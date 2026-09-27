@@ -3,7 +3,6 @@ import { accessTypeLabels } from '@/components/common/badges'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { PANEL_HEADING } from '@/components/detail/styles'
 import { Badge } from '@/components/ui/badge'
-import { ACCESS_LABEL } from '@/lib/constants/catalog'
 import type { AccessType, WorkflowStep as Step } from '@/lib/types/catalog'
 
 type StepTool = {
@@ -63,11 +62,6 @@ export function HowItRuns({
                         {label}
                       </Badge>
                     ))}
-                    {step.via ? (
-                      <span className="eyebrow shrink-0">
-                        via {ACCESS_LABEL[step.via]}
-                      </span>
-                    ) : null}
                   </div>
                 ) : null}
               </div>

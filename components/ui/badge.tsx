@@ -27,7 +27,6 @@ const badgeVariants = cva(
         solid: 'border-foreground bg-foreground text-background',
         company: 'border-company/40 bg-company/5 text-company',
         tool: 'border-tool/40 bg-tool/5 text-tool',
-        tag: 'border-tag/40 bg-tag/5 text-tag',
       },
       size: {
         meta: 'type-meta',

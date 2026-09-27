@@ -71,7 +71,7 @@ for every URL anyone bookmarked.
 
 5. **Exclude the child's paths from the parent proxy matcher** in `proxy.ts`.
    The child runs its own proxy; running the parent's as well means every admin
-   request pays two auth round trips, and the two gates drift:
+   request pays for two proxies, and the two drift:
 
    ```
    '/((?!_next|admin(?:/|$)|[^?]*\\.(?:…)).*)'

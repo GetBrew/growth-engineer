@@ -40,7 +40,6 @@
   --tool: #0a8363;
   --workflow: #9a650b;
   --doc: #7245d4;
-  --tag: #b82a5b;
   /* Affection, not status: the heart in the agent line. */
   --heart: #ef4444;
   /* A step that went through: the tick in the terminal. */
@@ -91,7 +90,6 @@
   --color-tool: var(--tool);
   --color-workflow: var(--workflow);
   --color-doc: var(--doc);
-  --color-tag: var(--tag);
   --color-heart: var(--heart);
   --color-success: var(--success);
   --color-soft: var(--soft);

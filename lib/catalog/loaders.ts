@@ -2,8 +2,6 @@ import 'server-only'
 
 import type {
   Company,
-  EdgeGroup,
-  MapNode,
   PaletteItem,
   Tool,
   WorkflowListItem,
@@ -20,6 +18,7 @@ import {
   workflowListItem,
   workflowSearchItem,
 } from './lists'
+import { relationsOf } from './relations'
 import { type Excerpt, sourceExcerpt } from './source-excerpt'
 
 /**
@@ -60,14 +59,11 @@ export async function loadTool(key: string) {
   }
 }
 
-/**
- * One workflow with its tools. v1 keeps the current version only: a pin on
- * any other version is a miss, and the page turns that into a 404.
- */
-export async function loadWorkflow(key: string, version: number | undefined) {
+/** One workflow with its tools, and the date of its rendered file. */
+export async function loadWorkflow(key: string) {
   const catalog = getCatalog()
   const workflow = catalog.workflows.get(key)
-  if (!workflow || (version !== undefined && version !== workflow.version)) {
+  if (!workflow) {
     return null
   }
   const tools = workflow.toolKeys.flatMap((toolKey) => {
@@ -80,10 +76,8 @@ export async function loadWorkflow(key: string, version: number | undefined) {
     workflow.updatedAt
   return {
     workflow,
-    version: { version: workflow.version, steps: workflow.steps, updatedAt },
+    updatedAt,
     tools,
-    /** The same tools as list rows, for the "Built from" section. */
-    toolItems: tools.map(({ tool }) => toolListItem(catalog, tool)),
     tags: workflow.tags.flatMap((tagKey) => {
       const tag = catalog.tags.get(tagKey)
       return tag ? [{ key: tag.key, label: tag.label }] : []
@@ -91,9 +85,14 @@ export async function loadWorkflow(key: string, version: number | undefined) {
   }
 }
 
-/** The rendered file for a ref (no version pin — the header carries it). */
+/** The rendered file for a ref. */
 export async function loadDocument(type: EntityType, key: string) {
   return getCatalog().documents.get(formatRef(type, key)) ?? null
+}
+
+/** A tag's rendered file: `capability:enrich-contacts`. */
+export async function loadTagDocument(key: string) {
+  return getCatalog().tagDocuments.get(key) ?? null
 }
 
 /** A company's published tools, by key. */
@@ -101,10 +100,12 @@ export async function loadToolsByCompany(
   companyKey: string
 ): Promise<Array<Tool>> {
   const catalog = getCatalog()
-  return (catalog.toolsByCompany.get(companyKey) ?? []).flatMap((key) => {
-    const tool = catalog.tools.get(key)
-    return tool?.status === 'published' ? [tool] : []
-  })
+  return relationsOf(catalog, formatRef('company', companyKey)).tools.flatMap(
+    (key) => {
+      const tool = catalog.tools.get(key)
+      return tool ? [tool] : []
+    }
+  )
 }
 
 function workflowRows(keys: ReadonlyArray<string>): Array<WorkflowListItem> {
@@ -117,12 +118,16 @@ function workflowRows(keys: ReadonlyArray<string>): Array<WorkflowListItem> {
 
 /** Published workflows using a tool, featured first. */
 export async function loadWorkflowsByTool(toolKey: string) {
-  return workflowRows(getCatalog().workflowsByTool.get(toolKey) ?? [])
+  return workflowRows(
+    relationsOf(getCatalog(), formatRef('tool', toolKey)).workflows
+  )
 }
 
 /** Published workflows using any of a company's tools, featured first. */
 export async function loadWorkflowsByCompany(companyKey: string) {
-  return workflowRows(getCatalog().workflowsByCompany.get(companyKey) ?? [])
+  return workflowRows(
+    relationsOf(getCatalog(), formatRef('company', companyKey)).workflows
+  )
 }
 
 /** An old key → its current one, or null. */
@@ -131,205 +136,27 @@ export async function resolveAlias(entityType: EntityType, key: string) {
   return current ? { key: current } : null
 }
 
-/* ─────────────────────────────────── the map ─────────────────────────────── */
-
-function edgeGroup(
-  relation: string,
-  direction: 'out' | 'in',
-  nodes: Array<MapNode>
-): EdgeGroup {
-  return { relation, direction, nodes, isTruncated: false }
-}
-
-function companyNode(company: Company): MapNode {
-  return { type: 'company', key: company.key, name: company.name }
-}
-
-function tagNodes(keys: ReadonlyArray<string>): Array<MapNode> {
-  const catalog = getCatalog()
-  return keys.flatMap((key) => {
-    const tag = catalog.tags.get(key)
-    return tag ? [{ type: 'tag', key: tag.key, name: tag.label }] : []
-  })
-}
-
-function toolNodes(keys: ReadonlyArray<string>): Array<MapNode> {
-  const catalog = getCatalog()
-  return keys.flatMap((key) => {
-    const tool = catalog.tools.get(key)
-    return tool ? [{ type: 'tool', key: tool.key, name: tool.name }] : []
-  })
-}
-
-function workflowNodes(keys: ReadonlyArray<string>): Array<MapNode> {
-  const catalog = getCatalog()
-  return keys.flatMap((key) => {
-    const workflow = catalog.workflows.get(key)
-    return workflow
-      ? [{ type: 'workflow', key: workflow.key, name: workflow.title }]
-      : []
-  })
-}
-
-/** The relationship map for one node: what it is, and every edge touching it. */
-export async function loadNeighborhood(
-  type: 'company' | 'tool' | 'workflow',
-  key: string
-): Promise<{ node: MapNode; groups: Array<EdgeGroup> } | null> {
-  const catalog = getCatalog()
-  if (type === 'company') {
-    const company = catalog.companies.get(key)
-    if (!company) {
-      return null
-    }
-    return {
-      node: companyNode(company),
-      groups: [
-        edgeGroup(
-          'makes',
-          'out',
-          toolNodes(catalog.toolsByCompany.get(key) ?? [])
-        ),
-        edgeGroup('tagged', 'out', tagNodes([`category:${company.category}`])),
-        edgeGroup(
-          'its tools appear in',
-          'in',
-          workflowNodes(catalog.workflowsByCompany.get(key) ?? [])
-        ),
-      ],
-    }
-  }
-  if (type === 'tool') {
-    const tool = catalog.tools.get(key)
-    if (!tool) {
-      return null
-    }
-    const company = catalog.companies.get(tool.companyKey)
-    return {
-      node: { type: 'tool', key: tool.key, name: tool.name },
-      groups: [
-        edgeGroup('made by', 'out', company ? [companyNode(company)] : []),
-        edgeGroup(
-          'tagged',
-          'out',
-          tagNodes([`capability:${tool.capability}`, ...tool.tags])
-        ),
-        edgeGroup(
-          'used by',
-          'in',
-          workflowNodes(catalog.workflowsByTool.get(key) ?? [])
-        ),
-      ],
-    }
-  }
-  const workflow = catalog.workflows.get(key)
-  if (!workflow) {
-    return null
-  }
-  const companies = [
-    ...new Set(
-      workflow.toolKeys.flatMap((toolKey) => {
-        const tool = catalog.tools.get(toolKey)
-        return tool ? [tool.companyKey] : []
-      })
-    ),
-  ].flatMap((companyKey) => {
-    const company = catalog.companies.get(companyKey)
-    return company ? [companyNode(company)] : []
-  })
-  return {
-    node: { type: 'workflow', key: workflow.key, name: workflow.title },
-    groups: [
-      edgeGroup('uses', 'out', toolNodes(workflow.toolKeys)),
-      edgeGroup('reaches', 'out', companies),
-      edgeGroup('tagged', 'out', tagNodes(workflow.tags)),
-      edgeGroup('versions', 'out', [
-        {
-          type: 'workflow',
-          key: `${workflow.key}@${workflow.version}`,
-          name: `v${workflow.version}`,
-        },
-      ]),
-    ],
-  }
-}
-
-/** The whole graph's shape plus every focusable node. */
-export async function loadMapOverview() {
-  const catalog = getCatalog()
-  const tools = [...catalog.tools.values()]
-  const workflows = [...catalog.workflows.values()]
-  const nodes: Array<MapNode> = [
-    ...[...catalog.companies.values()].map(companyNode),
-    ...toolNodes(tools.map((tool) => tool.key)),
-    ...workflowNodes(workflows.map((workflow) => workflow.key)),
-  ]
-  return {
-    counts: {
-      companies: catalog.companies.size,
-      tools: tools.length,
-      workflows: workflows.length,
-      tags: catalog.tags.size,
-      // Every tool has exactly one company, so the edge count IS the tool count.
-      toolCompanyEdges: tools.length,
-      workflowToolEdges: workflows.reduce(
-        (sum, workflow) => sum + workflow.toolCount,
-        0
-      ),
-      taggingEdges:
-        catalog.companies.size +
-        tools.reduce((sum, tool) => sum + 1 + tool.tags.length, 0) +
-        workflows.reduce((sum, workflow) => sum + workflow.tags.length, 0),
-      versionEdges: workflows.length,
-      aliasEdges: catalog.aliases.size,
-    },
-    isTruncated: false,
-    nodes,
-  }
-}
-
 /* ─────────────────────────────────── lists ───────────────────────────────── */
 
-/** Published companies in name order, optionally one category, with category and ways in. */
-export async function loadCompanies(
-  limit = MAX_LIST,
-  category?: string,
-  includeCategory = true
-) {
+/** Published companies in name order, as rows without their category. */
+export async function loadCompanies(limit = MAX_LIST) {
   const catalog = getCatalog()
-  if (category && !catalog.tags.has(`category:${category}`)) {
-    return []
-  }
   return catalog.order.companies
+    .slice(0, Math.min(limit, MAX_LIST))
     .flatMap((key) => {
       const company = catalog.companies.get(key)
-      return company && (!category || company.category === category)
-        ? [company]
-        : []
+      return company ? [companyListItem(catalog, company, false)] : []
     })
-    .slice(0, Math.min(limit, MAX_LIST))
-    .map((company) => companyListItem(catalog, company, includeCategory))
 }
 
-/** Featured (editorial rank, then newest) or New, optionally within one tag. */
-export async function loadWorkflows(
-  sort: 'featured' | 'new',
-  limit = 30,
-  tag?: string
-) {
+/** Featured (editorial rank, then newest) or New. */
+export async function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
   const catalog = getCatalog()
-  if (tag && !catalog.tags.has(tag)) {
-    return []
-  }
   const order =
     sort === 'new'
       ? catalog.order.workflowsNew
       : catalog.order.workflowsFeatured
-  return workflowRows(
-    order.filter(
-      (key) => !tag || catalog.workflows.get(key)?.tags.includes(tag)
-    )
-  ).slice(0, Math.min(limit, MAX_LIST))
+  return workflowRows(order.slice(0, Math.min(limit, MAX_LIST)))
 }
 
 /* ──────────────────────────── listing payloads ───────────────────────────── */

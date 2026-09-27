@@ -13,13 +13,11 @@ import styles from './access-terminal.module.css'
  */
 export async function AccessTerminal() {
   const [featured] = await loadWorkflows('featured', 1)
-  const result = featured
-    ? await loadWorkflow(featured.workflow.key, undefined)
-    : null
+  const result = featured ? await loadWorkflow(featured.workflow.key) : null
   if (!result) {
     return null
   }
-  const fileUrl = `${SITE_ORIGIN}${refToFilePath({ type: 'workflow', key: result.workflow.key, version: undefined })}`
+  const fileUrl = `${SITE_ORIGIN}${refToFilePath({ type: 'workflow', key: result.workflow.key })}`
   const lines = result.tools.flatMap(({ tool }) => {
     const [best] = orderAccess(tool.access)
     return best

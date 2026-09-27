@@ -36,17 +36,6 @@ function categoryOf(catalog: Catalog, company: Company): Category | undefined {
   return tag ? { slug: tag.slug, label: tag.label } : undefined
 }
 
-/** The ways in across a company's published tools — a fact, not a badge. */
-function companyAccess(catalog: Catalog, company: Company): Array<AccessType> {
-  const tools = (catalog.toolsByCompany.get(company.key) ?? []).flatMap(
-    (key) => {
-      const tool = catalog.tools.get(key)
-      return tool?.status === 'published' ? [tool] : []
-    }
-  )
-  return accessTypesOf(tools.flatMap((tool) => tool.access))
-}
-
 export function toolListItem(catalog: Catalog, tool: Tool): ToolListItem {
   const company = catalog.companies.get(tool.companyKey)
   const category = company ? categoryOf(catalog, company) : undefined
@@ -78,11 +67,9 @@ export function companyListItem(
       name: company.name,
       ...(company.tagline ? { tagline: company.tagline } : {}),
       ...(company.description ? { description: company.description } : {}),
-      domain: company.domain,
       ...(company.logo ? { logoUrl: company.logo.url } : {}),
     },
     ...(category ? { category } : {}),
-    access: companyAccess(catalog, company),
   }
 }
 
@@ -96,7 +83,6 @@ export function workflowListItem(
       title: workflow.title,
       summary: workflow.summary,
       author: workflow.author,
-      toolCount: workflow.toolCount,
     },
     tools: workflow.toolKeys.flatMap((key) => {
       const tool = catalog.tools.get(key)
@@ -109,7 +95,6 @@ export function workflowListItem(
           companyKey: company.key,
           companyName: company.name,
           ...(company.logo ? { logoUrl: company.logo.url } : {}),
-          access: accessTypesOf(tool.access),
         },
       ]
     }),

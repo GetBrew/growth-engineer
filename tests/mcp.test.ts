@@ -55,15 +55,23 @@ afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))
 })
 
-async function rpc(payload: unknown): Promise<Response> {
+async function rpc(
+  payload: unknown,
+  headers: Record<string, string> = {}
+): Promise<Response> {
   return await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json, text/event-stream',
+      ...headers,
     },
     body: typeof payload === 'string' ? payload : JSON.stringify(payload),
   })
+}
+
+async function errorCode(response: Response): Promise<number | undefined> {
+  return ((await response.json()) as { error?: { code: number } }).error?.code
 }
 
 describe('/mcp with the MCP SDK client', () => {
@@ -114,7 +122,7 @@ describe('/mcp with the MCP SDK client', () => {
       const refs = [
         `${SITE_ORIGIN}/workflows/${key}`,
         `/workflows/${key}.md`,
-        `workflow:${key}@${workflow?.version}`,
+        `workflow:${key}`,
       ]
       const files = await Promise.all(
         refs.map((ref) => client.callTool({ name: 'get', arguments: { ref } }))
@@ -127,9 +135,10 @@ describe('/mcp with the MCP SDK client', () => {
         arguments: { ref: 'workflow:no-such-workflow' },
       })
       expect(missing.isError).toBe(true)
+      // Versions are gone: a pinned ref is not a ref.
       const pinned = await client.callTool({
         name: 'get',
-        arguments: { ref: `workflow:${key}@99` },
+        arguments: { ref: `workflow:${key}@1` },
       })
       expect(pinned.isError).toBe(true)
     } finally {
@@ -209,5 +218,92 @@ describe('/mcp protocol edges', () => {
     })
     const json = (await response.json()) as { error: { code: number } }
     expect(json.error.code).toBe(-32_602)
+  })
+
+  test('an empty batch is an invalid request', async () => {
+    const response = await rpc([])
+    expect(response.status).toBe(400)
+    expect(await errorCode(response)).toBe(-32_600)
+  })
+
+  test('a batch past the cap is an invalid request, not minutes of work', async () => {
+    const batch = Array.from({ length: 17 }, (_, id) => ({
+      jsonrpc: '2.0',
+      id,
+      method: 'ping',
+    }))
+    const response = await rpc(batch)
+    expect(response.status).toBe(400)
+    expect(await errorCode(response)).toBe(-32_600)
+  })
+
+  test('a request id is a string or a number, never null', async () => {
+    const response = await rpc({ jsonrpc: '2.0', id: null, method: 'ping' })
+    expect(await errorCode(response)).toBe(-32_600)
+  })
+
+  test('a protocol version this server does not speak is refused', async () => {
+    const unknown = await rpc(
+      { jsonrpc: '2.0', id: 1, method: 'ping' },
+      { 'MCP-Protocol-Version': '1999-01-01' }
+    )
+    expect(unknown.status).toBe(400)
+    const known = await rpc(
+      { jsonrpc: '2.0', id: 1, method: 'ping' },
+      { 'MCP-Protocol-Version': PROTOCOL_VERSIONS[0] }
+    )
+    expect(known.status).toBe(200)
+  })
+
+  test('a malformed tools/call is invalid params; a bad argument is a tool error', async () => {
+    const noName = await rpc({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/call',
+      params: { arguments: {} },
+    })
+    expect(await errorCode(noName)).toBe(-32_602)
+    const listArguments = await rpc({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/call',
+      params: { name: 'search', arguments: [] },
+    })
+    expect(await errorCode(listArguments)).toBe(-32_602)
+    const badLimit = await rpc({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/call',
+      params: { name: 'search', arguments: { limit: 0 } },
+    })
+    const json = (await badLimit.json()) as { result: { isError: boolean } }
+    expect(json.result.isError).toBe(true)
+  })
+
+  test('tools/list: strict inputs, the vocabulary in the schema, a size budget', async () => {
+    const response = await rpc({ jsonrpc: '2.0', id: 1, method: 'tools/list' })
+    const text = await response.text()
+    const { result } = JSON.parse(text) as {
+      result: {
+        tools: Array<{
+          name: string
+          inputSchema: {
+            additionalProperties?: boolean
+            properties: Record<string, { items?: { enum?: Array<string> } }>
+          }
+          outputSchema: Record<string, unknown>
+        }>
+      }
+    }
+    const search = result.tools.find((tool) => tool.name === 'search')
+    expect(search?.inputSchema.additionalProperties).toBe(false)
+    expect(search?.inputSchema.properties.tags?.items?.enum).toEqual(
+      [...getCatalog().tags.keys()].sort()
+    )
+    for (const tool of result.tools) {
+      expect(tool.outputSchema, tool.name).toBeDefined()
+    }
+    // The list rides every session; the vocabulary must not bloat it.
+    expect(text.length).toBeLessThan(12_000)
   })
 })

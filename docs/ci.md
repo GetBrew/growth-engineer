@@ -70,8 +70,9 @@ merge sails past. Set it once the repository is public: Settings → Branches
 `${{ vars.CI_RUNNER_LARGE || 'ubuntu-latest' }}` is the rollback plan. If you
 move to a faster runner fleet and that fleet has an incident, the obvious fix —
 "open a PR changing `runs-on` back" — requires the CI you no longer have.
-Setting a repository variable moves every job in seconds, with no commit, no
-review, and no green build required.
+Setting the repository variables (`CI_RUNNER_LARGE` for the build,
+`CI_RUNNER_SMALL` for the rest) moves every job in seconds, with no commit,
+no review, and no green build required.
 
 ## Least privilege
 

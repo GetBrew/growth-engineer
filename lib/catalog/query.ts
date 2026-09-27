@@ -126,15 +126,3 @@ export function searchHref(pathname: string, state: SearchState): string {
 export function searchText(state: SearchState): string {
   return [...state.words, ...state.chips].join(' ')
 }
-
-export function toggleChip(state: SearchState, chip: string): SearchState {
-  const chips = state.chips.includes(chip)
-    ? state.chips.filter((existing) => existing !== chip)
-    : [...state.chips, chip].slice(-MAX_CHIPS)
-  return { words: state.words, chips }
-}
-
-/** A stable key for `<Suspense key>` so a changed search re-suspends. */
-export function searchKey(state: SearchState): string {
-  return `${state.words.join(' ')}|${[...state.chips].sort().join(',')}`
-}

@@ -3,7 +3,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 import { CodeText } from '@/components/contribute/code-text'
 import {
   GuideSteps,
@@ -33,6 +32,13 @@ import { pageMetadata } from '@/lib/seo/metadata'
 import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ guide: string }>
+
+/**
+ * Every page here is prerendered from `generateStaticParams`, and reading
+ * `params` outside `<Suspense>` is deliberate: nothing loads. So navigating
+ * here may block rather than show a fallback; `instant = false` says so.
+ */
+export const instant = false
 
 export function generateStaticParams() {
   return GUIDES.map((guide) => ({ guide: guide.slug }))
@@ -75,17 +81,14 @@ async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
 /**
  * Built on the same shell as every other detail page: the page container at
  * its usual width, a back link, `DetailHeader`, then the two-column grid with
- * a sticky aside. The default export is SYNCHRONOUS and the awaited params
- * sit in a Suspense child, because awaiting URL data in the page itself
- * blocks the route from prerendering.
+ * a sticky aside. Every guide is listed by `generateStaticParams`, so the
+ * whole page prerenders complete — nothing on it loads.
  */
-export default function GuidePage({ params }: { params: Params }) {
+export default async function GuidePage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/docs" label="Docs" />
-      <Suspense fallback={null}>
-        <GuideDetail params={params} />
-      </Suspense>
+      <GuideDetail params={params} />
     </Page>
   )
 }

@@ -14,35 +14,33 @@ request-time data at all — the catalog is in memory — so every page's HTML i
 complete at build and nothing on it loads: no skeletons, no spinners, no
 fetch after the page arrives. Two rules keep it that way.
 
-**A page without params renders its data directly.** Its async children read
-the in-memory catalog, which resolves during the prerender. There is no
-Suspense and no fallback to design — and if a request-time read ever sneaks
-in, the build fails instead of the page quietly growing a loading state.
+**A page renders its data directly — no `<Suspense>` in a page.** Its
+async children read the in-memory catalog, which resolves during the
+prerender, so there is no fallback to design. If a request-time read ever
+sneaks in, the build fails instead of the page quietly growing a loading
+state.
 
-**A page with params is synchronous and awaits them in a Suspense child.**
-Every known key is listed by `generateStaticParams` and prerenders complete;
-only an unknown key (answered on demand with a 404 or an alias's 308) reaches
-the boundary, so its fallback is `null`.
+**A page with params awaits them itself.** Every known key is listed by
+`generateStaticParams` and prerenders complete, its content inline in the
+HTML. Wrapping the read in a Suspense child instead would emit the content as
+a hidden segment that a script reveals after the first paint — a load, and
+invisible without JavaScript. Only an unknown key renders on request (it
+answers `notFound()` or an alias's redirect; Cache Components streams the
+first such response from the route's fallback shell, so its status is 200
+until the 404 is cached).
 
 ```tsx
-// ✅ every known key prerenders complete; nothing is drawn while it resolves
-export default function Page({ params }: { params: Params }) {
-  return (
-    <Suspense fallback={null}>
-      <Detail params={params} />
-    </Suspense>
-  )
-}
-
-// ❌ awaiting params in the page itself blocks the route from prerendering
-export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
-  const { handle } = await params
+// ✅ every known key prerenders complete, content inline
+export default async function Page({ params }: { params: Params }) {
+  const { key } = await params
   …
 }
 ```
 
-`next dev` flags a blocking route (`experimental.instantInsights`), which is
-why that setting is pinned rather than left to the framework default.
+`next dev` flags a page that reads params outside `<Suspense>`
+(`experimental.instantInsights`, pinned rather than left to the framework
+default). A detail page answers with `export const instant = false`: it may
+block on an unknown key, and it never shows a fallback.
 
 **Never `export const dynamic`, `revalidate` or `dynamicParams`.** Cache
 Components rejects them at build.
@@ -65,9 +63,10 @@ twenty links cost one request.
 Listings never read the URL on the server: they prerender every item and a
 client component narrows the list from `useSearchParams`, so `/tools?has=mcp`
 is the same static page as `/tools` with a different filter applied in the
-browser. The map is one prerendered page per node. `pnpm build` prints `○`
+browser. `pnpm build` prints `○`
 or `●` for every page, `◐` only for the on-demand fallbacks of unknown keys,
-and `ƒ` only for `/mcp` (plus the proxy, which runs for `.md` requests only).
+and `ƒ` only for `/mcp` (plus the proxy, which runs only for `.md` files,
+`Accept: text/markdown` requests and malformed paths).
 
 ## 3. The bundle budget — the ratchet
 
@@ -115,5 +114,6 @@ a wrong one.
   serves dynamic — silently, as a `◐` or `ƒ` in the build table.
 - Keep the sync memo in `lib/catalog/catalog.ts` sync. `fs.promises` there
   would make every catalog page dynamic with no error.
-- Suspense the leaf, not the page: the `searchParams` read is the only thing
-  that belongs in an async child.
+- No Suspense in a page: a boundary turns prerendered content into a hidden
+  segment revealed by script. The URL's query is read on the client, after
+  hydration (`useIsClient`), never on the server.

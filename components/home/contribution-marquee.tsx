@@ -26,7 +26,7 @@ const ROWS = [
 export async function ContributionMarquee() {
   const [workflows, companies] = await Promise.all([
     loadWorkflows('featured', 30),
-    loadCompanies(24, undefined, false),
+    loadCompanies(24),
   ])
 
   const kinds: Array<Array<Pill>> = [

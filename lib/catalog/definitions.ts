@@ -32,7 +32,7 @@ export type Definition = {
 export const DEFINITIONS: ReadonlyArray<Definition> = [
   {
     term: 'Company',
-    example: 'clay',
+    example: 'apollo',
     definition: 'A vendor, open-source project or person that makes tools.',
     detail:
       'Named by a permanent handle that is its URL and the first half of every tool key. A company lists the ways in it offers — MCP server, CLI, API — once, and its tools point at them.',
@@ -40,12 +40,12 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
   },
   {
     term: 'Tool',
-    example: 'clay/enrich-contacts',
+    example: 'apollo/enrich-person',
     definition:
       'ONE function an agent can call, tied to a specific MCP tool, CLI subcommand or API endpoint.',
     detail:
       'Not the product: a product with three functions is three tools. Every way in names the exact operation an agent calls.',
-    path: 'companies/<handle>/tools/<slug>.md',
+    path: 'companies/<handle>/tools/<name>.md',
   },
   {
     term: 'Workflow',
@@ -62,10 +62,19 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
     definition:
       'A word from the managed vocabulary that companies, tools and workflows are filtered by.',
     detail:
-      'Five curated namespaces — capability, motion, channel, category, fit — plus one derived from each tool’s access: has (its ways in).',
-    path: 'tags/<namespace>/<slug>.md',
+      'Four curated namespaces — capability, motion, channel, category — plus one derived from each tool’s access: has (its ways in). Every entry carries the tags it earns: a workflow its tools’ capabilities, a company its tools’ ways in.',
+    path: 'tags.yml',
   },
 ]
+
+/** What each tag namespace means — `get` on a tag opens with it. */
+export const TAG_NAMESPACE_MEANINGS = {
+  capability: 'What a tool does: every vendor’s version of the same job.',
+  category: 'What kind of company it is.',
+  channel: 'Where a workflow reaches people.',
+  motion: 'Which go-to-market motion a workflow serves.',
+  has: 'A way in: everything an agent can reach over it.',
+} as const
 
 /** Where the MCP server answers (app/mcp/route.ts), from the site origin. */
 export const MCP_PATH = '/mcp'
@@ -74,6 +83,6 @@ export const MCP_PATH = '/mcp'
 export const AGENT_ACCESS = [
   'Append `.md` to any company, tool or workflow URL to get its file.',
   'Or request a company, tool or workflow page with `Accept: text/markdown`.',
-  '`/llms.txt` lists every file; `/llms-full.txt` is every file in one document.',
-  `Or connect an MCP client to \`${MCP_PATH}\` (Streamable HTTP, no sign-in): \`search\` finds files, \`get\` returns one.`,
+  '`/llms.txt` lists every file, tags included; `/llms-full.txt` is every company, tool and workflow file in one document.',
+  `Or connect an MCP client to \`${MCP_PATH}\` (Streamable HTTP, no sign-in): \`search\` finds entries by words and filters, \`get\` returns a file — a tag’s included.`,
 ] as const

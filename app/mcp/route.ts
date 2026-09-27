@@ -1,5 +1,11 @@
+import { getCatalog } from '@/lib/catalog/catalog'
 import { SITE_ORIGIN } from '@/lib/env'
-import { ERROR, handleMessage, type JsonRpcResponse } from '@/lib/mcp/server'
+import {
+  ERROR,
+  handleMessage,
+  type JsonRpcResponse,
+  PROTOCOL_VERSIONS,
+} from '@/lib/mcp/server'
 
 /**
  * `/mcp` — the catalog as an MCP server, over the Streamable HTTP transport
@@ -9,7 +15,8 @@ import { ERROR, handleMessage, type JsonRpcResponse } from '@/lib/mcp/server'
  * is lib/mcp/server.ts.
  *
  * CORS is open because the data is public and read-only; browser-based
- * clients (the MCP Inspector, web agents) need it.
+ * clients (the MCP Inspector, web agents) need it. Batches are still
+ * accepted for 2025-03-26 clients; an empty one is invalid.
  */
 
 const CORS = {
@@ -31,28 +38,45 @@ function json(body: JsonRpcResponse | Array<JsonRpcResponse>, status = 200) {
   })
 }
 
+function invalid(code: number, message: string) {
+  return json({ jsonrpc: '2.0', id: null, error: { code, message } }, 400)
+}
+
+const MAX_BATCH = 16
+
 export async function POST(request: Request) {
+  // A client names the protocol it speaks; one we don't know is refused.
+  const version = request.headers.get('mcp-protocol-version')
+  if (
+    version &&
+    !(PROTOCOL_VERSIONS as ReadonlyArray<string>).includes(version)
+  ) {
+    return invalid(
+      ERROR.invalidRequest,
+      `Unsupported MCP-Protocol-Version ${version}; this server speaks ${PROTOCOL_VERSIONS.join(', ')}`
+    )
+  }
   let message: unknown
   try {
     message = await request.json()
   } catch {
-    return json(
-      {
-        jsonrpc: '2.0',
-        id: null,
-        error: {
-          code: ERROR.parse,
-          message: 'Parse error: the body is not JSON',
-        },
-      },
-      400
+    return invalid(ERROR.parse, 'Parse error: the body is not JSON')
+  }
+  if (Array.isArray(message) && message.length === 0) {
+    return invalid(ERROR.invalidRequest, 'Invalid Request: an empty batch')
+  }
+  // Every message costs a search or a lookup; one request buys a few.
+  if (Array.isArray(message) && message.length > MAX_BATCH) {
+    return invalid(
+      ERROR.invalidRequest,
+      `Invalid Request: at most ${MAX_BATCH} messages in a batch`
     )
   }
 
-  // 2025-03-26 clients may batch; later protocol versions send one message.
+  const context = { catalog: getCatalog(), origin: SITE_ORIGIN }
   const messages = Array.isArray(message) ? message : [message]
   const responses = messages
-    .map((entry) => handleMessage(entry, SITE_ORIGIN))
+    .map((entry) => handleMessage(entry, context))
     .filter((response): response is JsonRpcResponse => response !== null)
 
   if (responses.length === 0) {

@@ -8,7 +8,7 @@ and the routing table into the deep-dive docs. CI caps it at 200 lines
 
 An open-source catalog of **companies**, the **tools** they make, and
 **workflows** that put tools to work. A COMPANY makes many TOOLS; a tool is
-ONE function an agent can call (`clay/enrich-contacts`), tied to a specific
+ONE function an agent can call (`apollo/enrich-person`), tied to a specific
 MCP tool, CLI subcommand or API endpoint — not the product. A WORKFLOW is
 several tools in order with the instructions that reach a result, and a growth
 hack IS a workflow, not a second kind. **Every tool and workflow is ONE
@@ -16,11 +16,11 @@ generated markdown file any agent can run; copying it is the product action.**
 Reads are public; agents fetch files with no sign-in.
 
 **THE CATALOG IS THE REPOSITORY.** Every entry is a markdown file under
-`companies/`, `workflows/` and `tags/`; the site is built from them, and
+`companies/` and `workflows/`, plus the vocabulary in `tags.yml`; the site is built from them, and
 the community contributes by pull request. To add or change catalog data,
 read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the folder READMEs
 ([`companies/`](companies/README.md), [`workflows/`](workflows/README.md),
-[`tags/`](tags/README.md)); never edit a rendered file or the app to change
+[`tags.yml`](tags.yml)); never edit a rendered file or the app to change
 a fact. Vision: [`docs/vision.md`](docs/vision.md). File schema:
 [`docs/data-model.md`](docs/data-model.md).
 
@@ -36,7 +36,7 @@ route is public; the only environment is one optional `NEXT_PUBLIC_SITE_URL`.
 - **While editing**: `pnpm exec biome check --write <all touched files>` once
   per unit of work, in ONE call (every invocation loads the whole project).
   Plus `pnpm test:run tests/<exact file>` for the behavior you touched.
-- **Touched catalog data** (`companies/`, `workflows/`, `tags/`):
+- **Touched catalog data** (`companies/`, `workflows/`, `tags.yml`):
   `pnpm content:check` — every problem, with its file path.
 - **Once per unit of work**: `pnpm check` (Biome + `tsgo`). Not per patch.
 - **Final handoff**: `pnpm tsc` then `pnpm lint`. Touched the renderer: the
@@ -64,26 +64,26 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 ### The markdown file
 
 - ONE render path: [`lib/catalog/render-markdown.ts`](lib/catalog/render-markdown.ts)
-  (pure) called only by [`lib/content/build-documents.ts`](lib/content/build-documents.ts)
-  at build time. Nothing renders on the request path; a rendered file is
+  (and `render-tag.ts` for tags; pure), called only by
+  [`lib/content/build-documents.ts`](lib/content/build-documents.ts) at build time. Nothing renders on the request path; a rendered file is
   never hand-edited. A SOURCE file is a YAML header of facts plus a markdown
   body a person can read on GitHub: a workflow's inputs, steps and checks
   are body sections ([`lib/content/workflow-body.ts`](lib/content/workflow-body.ts));
   the build adds setup and rules.
 - The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
   flat YAML header, setup picks the best way in (official MCP → CLI → API →
-  community; tool files list every option, workflow files ≤ 2 per tool or the
-  step's `via`), inputs in backticks, ≤ 10 steps, Rules last and immutable,
-  tool ≈ 60 lines, workflow ≈ 120. Change the format and the golden fixtures
-  in `tests/fixtures/markdown/` in the same commit.
-- A file's `updated` date is the newest of its inputs: a workflow file
-  changes when a tool it uses changes its way in.
+  community; tool files list every option, workflow files ≤ 2 per tool, each
+  company's ways once), inputs in backticks, ≤ 10 steps, Rules last and
+  immutable, tool ≈ 80 lines, workflow ≈ 150. Change the format and the
+  golden fixtures in `tests/fixtures/markdown/` in the same commit.
+- A file's `updated` date is the newest ENTITY date of every file that fed
+  it (tool ← company, workflows; workflow ← tools, their companies).
 
 ### Keys and refs
 
-- Public identity is the `key` (`clay`, `clay/enrich-contacts`,
-  `funding-signal-outbound`, `@3` pins a version), and the key IS the path:
-  `companies/clay/`, `companies/clay/tools/enrich-contacts.md`,
+- Public identity is the `key` (`apollo`, `apollo/enrich-person`,
+  `funding-signal-outbound`), and the key IS the path:
+  `companies/apollo/`, `companies/apollo/tools/enrich-person.md`,
   `workflows/funding-signal-outbound.md` (FLAT — no folders; the workflow's
   `author` is a GitHub login in its header, never a company). Keys are never
   authored in a header.
@@ -92,8 +92,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - Keys never change after publishing. A rename lists the old key under
   `aliases:`; every miss asks the alias map before answering 404, and the
   `.md` handler and the pages turn a hit into a real 308.
-- Deprecated stays visible with a warning; a `draft` tool (no way in yet) has
-  no page, no file and no place in any list.
+- Deprecated stays visible with a warning; a `draft` tool or workflow has no
+  page, no file and no list; a published workflow uses published tools only.
 
 ### The content compiler
 
@@ -102,13 +102,14 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - Every rule is enforced at build with the offending file's path, and every
   problem is reported at once (`ContentErrors`): strict schemas (unknown
   fields rejected), reserved handles, every step's tool resolves and is
-  published, `via` names a way in the tool has, tags exist, aliases never
-  shadow a live key, a published tool has ≥ 1 way in, logos exist. A new rule
-  ships with a negative test in `tests/content-schema.test.ts` — a guard is
-  not done until it has FAILED.
-- PROJECTIONS (`has:*` tags, tag counts, `searchText`, `toolCount`, the
-  edges) are computed in `lib/content/derive.ts` and `build-catalog.ts` — one
-  writer each, never authored in a file. The workflow ↔ tool relationship is
+  published, tags exist, aliases never shadow a live key, a published tool
+  has ≥ 1 call on a declared way in and `docs:`, logos exist. Line caps are
+  checked by `pnpm content:check`. A new rule ships with a
+  negative test in `tests/content-schema.test.ts` — a guard is not done
+  until it has FAILED.
+- PROJECTIONS (tags, `searchText`) are computed in `lib/content/derive.ts`;
+  the EDGES and tag counts in `lib/content/build-relations.ts`, read through
+  `relationsOf` — one writer each, never authored in a file. The workflow ↔ tool relationship is
   written into BOTH rendered files (`tools:` / `workflows:`) and both pages.
 - The pure half of `lib/catalog/*` (keys, renderer, search grammar) imports
   nothing from `node:`, `server-only` or `lib/content` — it runs in the proxy
@@ -126,7 +127,7 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   drawn at build (`generateStaticParams`, `next/og`). Structured data
   (`lib/seo/structured-data.ts`, rendered by `<JsonLd>`) restates facts
   already on the page — never new ones. `/sitemap.xml` lists every indexable
-  page with its `updated` date; map focus pages are `noindex`. `/robots.txt`
+  page with its `updated` date. `/robots.txt`
   allows every crawler and names the AI crawlers. `tests/seo.test.tsx` holds
   the sitemap, `/llms.txt` and `/llms-full.txt` to the catalog exactly.
 
@@ -139,14 +140,14 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   `export const dynamic`, `revalidate` or `dynamicParams`.
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
-  from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`);
-  the map is one page per node. No page reads `searchParams` on the server.
-  The one dynamic route is `/mcp` (POST); the proxy runs only for `.md`.
-- NOTHING LOADS: no skeletons, no spinners, no fetch after load. A page with
-  no params renders its data directly — the build fails if anything in it is
-  request-time. A page with params is SYNCHRONOUS and awaits them in a
-  `<Suspense fallback={null}>` child, which only an unknown key (rendered on
-  demand from the traced tree) ever reaches.
+  from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
+  No page reads `searchParams` on the server.
+  The one dynamic route is `/mcp` (POST); the proxy runs only for `.md` files
+  and `Accept: text/markdown`. A detail page says `export const instant = false`.
+- NOTHING LOADS: no skeletons, no spinners, no fetch after load, no
+  `<Suspense>` in a page. A page renders its data directly and a page with
+  params awaits them itself: every known key is in `generateStaticParams`,
+  so its HTML is complete and inline. Only an unknown key renders on demand.
 - Internal navigation is ALWAYS `next/link` (never a raw `<a href="/…">`):
   Link prefetches on viewport and on hover, and every target is static, so a
   navigation is a cached fetch. Raw anchors are for external URLs and for
@@ -186,7 +187,7 @@ same batch; `pnpm docs:check` fails on a broken link or this file over cap.
 
 | Topic | Doc |
 | --- | --- |
-| Adding a company, tool, workflow or tag | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`companies/README.md`](companies/README.md), [`workflows/README.md`](workflows/README.md), [`tags/README.md`](tags/README.md) |
+| Adding a company, tool, workflow or tag | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`companies/README.md`](companies/README.md), [`workflows/README.md`](workflows/README.md), [`tags.yml`](tags.yml) |
 | Product vision, phases, what is not in v1 | [`docs/vision.md`](docs/vision.md) |
 | The file schema: every field, every rule, the projections | [`docs/data-model.md`](docs/data-model.md) |
 | The rendered markdown file contract and where files are served | [`docs/markdown-files.md`](docs/markdown-files.md) |

@@ -9,8 +9,8 @@
  *   - `target_segment`: the kind of company to watch, e.g. Series A SaaS
  *
  *   ## Steps                                                     1 to 10
- *   1. **Find companies** with [clay/build-audience](../companies/clay/tools/build-audience.md). List …
- *   2. **Write emails** with `brew/write-copy` via MCP. Draft …
+ *   1. **Find companies** with [apollo/search-people](../companies/apollo/tools/search-people.md). List …
+ *   2. **Write emails** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft …
  *
  *   ## Done when                                                 1 or more
  *   - Every company has a contact.
@@ -18,18 +18,18 @@
  *   ## Notes                                                     optional
  *   Anything else, in any markdown.
  *
- * A step names its tool by key, as a code span or as a link to the tool's
- * source file (which GitHub follows). `via MCP|CLI|API` after the tool picks
- * the way in. PURE: text in, fields and problems out; every problem carries
- * the line it is on, counted in the whole file.
+ * A step names its tool by a link to the tool's source file, which GitHub
+ * follows and `docs:check` resolves. PURE: text in, fields and problems out;
+ * every problem carries the line it is on, counted in the whole file.
  */
+
+import { proseProblems } from './prose'
 
 type BodyInput = { name: string; description: string; example?: string }
 
 type BodyStep = {
   title: string
   tool: string
-  via?: string
   instruction: string
 }
 
@@ -64,13 +64,12 @@ const HEADING = /^ {0,3}(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/
 const LIST_ITEM = /^( *)(?:[-*+]|\d{1,3}[.)])[ \t]+(.*)$/
 const INPUT = /^`([^`]+)`\s*:\s*(.+)$/
 const EXAMPLE = ', e.g. '
-const STEP =
-  /^\*\*(.+?)\*\*\s+with\s+(?:`([^`\s]+)`|\[([^\]\s]+)\]\(([^)\s]+)\))(?:\s+via\s+([A-Za-z]+))?\.\s+(\S.*)$/
+const STEP = /^\*\*(.+?)\*\*\s+with\s+\[([^\]\s]+)\]\(([^)\s]+)\)\.\s+(\S.*)$/
 
 const SHAPE: Record<Exclude<SectionId, 'notes'>, string> = {
   inputs: 'an input reads ``- `name`: what it is, e.g. an example``',
   steps:
-    'a step reads ``1. **Title** with `handle/slug`. What to do.`` — add `via MCP`, `via CLI` or `via API` after the tool to pick the way in',
+    'a step reads ``1. **Title** with [handle/slug](../companies/handle/tools/slug.md). What to do.``',
   doneWhen: 'a check reads `- The result is there.`',
 }
 
@@ -107,10 +106,8 @@ function parseStep(item: Item, problems: Array<BodyProblem>): BodyStep {
     problems.push({ line: item.line, message: SHAPE.steps })
     return { title: '', tool: '', instruction: '' }
   }
-  const [, title = '', code, linkText, linkTarget, via, instruction = ''] =
-    match
-  const tool = code ?? linkText ?? ''
-  if (linkText !== undefined && linkTarget !== toolSourceLink(tool)) {
+  const [, title = '', tool = '', linkTarget, instruction = ''] = match
+  if (linkTarget !== toolSourceLink(tool)) {
     problems.push({
       line: item.line,
       message: `the link to ${tool} must point at ${toolSourceLink(tool)}, its source file`,
@@ -119,7 +116,6 @@ function parseStep(item: Item, problems: Array<BodyProblem>): BodyStep {
   return {
     title: title.trim(),
     tool,
-    ...(via ? { via: via.toLowerCase() } : {}),
     instruction: instruction.trim(),
   }
 }
@@ -226,12 +222,15 @@ export function parseWorkflowBody(
   }
   const state: SectionState = { seen: new Set(), lastOrder: -1, current: null }
   const notes: Array<string> = []
+  let notesLine = 0
   let reportedStray = false
 
   for (const [offset, raw] of body.split('\n').entries()) {
     const line = firstLine + offset
     if (state.current === 'notes') {
-      // Notes are free markdown to the end of the file, headings included.
+      // Notes are free markdown to the end of the file; the prose guard below
+      // keeps their headings under the sections the file writes itself.
+      notesLine ||= line
       notes.push(raw)
       continue
     }
@@ -258,6 +257,7 @@ export function parseWorkflowBody(
     }
   }
 
+  problems.push(...proseProblems(notes.join('\n'), notesLine, 'Notes'))
   const note = notes.join('\n').trim()
   return {
     body: {

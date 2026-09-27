@@ -14,6 +14,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { SECTIONS } from '@/lib/constants/sections'
+import { useIsClient } from '@/lib/hooks/use-is-client'
 import { cn } from '@/lib/utils/cn'
 
 const LINK =
@@ -143,24 +144,24 @@ function Menu({ pathname }: { pathname: string | null }) {
 }
 
 /**
- * `usePathname` is only known at request time, so reading it in the navbar
- * blocks every route from prerendering. The pair below splits that: the
- * fallbacks render identical markup with nothing marked current, so the links
- * sit in the prerendered HTML, and the real components stream in behind a
- * Suspense boundary to add the highlight. Nothing moves when they arrive.
+ * The navbar is in every page's HTML with nothing marked current; once the
+ * page has hydrated it reads the path and highlights the section. Reading the
+ * path during the prerender would suspend on every route with params — the
+ * navbar would ship as a hidden segment revealed by script — so it waits for
+ * the browser instead. The markup is identical either way: nothing moves.
  */
-export function SectionLinks() {
+function LinksAtPath() {
   return <Links pathname={usePathname()} />
 }
 
-export function SectionLinksFallback() {
-  return <Links pathname={null} />
-}
-
-export function BrowseMenu() {
+function MenuAtPath() {
   return <Menu pathname={usePathname()} />
 }
 
-export function BrowseMenuFallback() {
-  return <Menu pathname={null} />
+export function SectionLinks() {
+  return useIsClient() ? <LinksAtPath /> : <Links pathname={null} />
+}
+
+export function BrowseMenu() {
+  return useIsClient() ? <MenuAtPath /> : <Menu pathname={null} />
 }

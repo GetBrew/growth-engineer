@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { filePathToRef } from '@/lib/catalog/keys'
+import { filePathToRef, filePathToTagKey } from '@/lib/catalog/keys'
 
 /**
  * `proxy.ts` is what Next 16 calls the file that used to be `middleware.ts`.
  * It runs before every matched request.
  *
- * ONE JOB: serve the markdown files. `/tools/clay/clay.md`, and a page
+ * ONE JOB: serve the markdown files. `/tools/apollo/enrich-person.md`, and a page
  * requested with `Accept: text/markdown`, is rewritten to the file handler —
  * agents fetch files with no session, and on Vercel the proxy runs ahead of
  * the CDN cache, which does not key on `Vary`, so agents must be diverted
@@ -20,20 +20,32 @@ import { filePathToRef } from '@/lib/catalog/keys'
  */
 
 const PERCENT_ENCODED_BACKSLASH = /%5c/i
+/** `%25` decodes to a bare `%`; `%zz` is no escape at all. */
+const BAD_PERCENT = /%25|%(?![0-9a-f]{2})/i
 
 /**
- * A backslash is not a legal path character and no route has one, but Next
- * routes `/x.json%5C` far enough to throw. Answer 404 here instead of minting
+ * Paths no route has but Next routes far enough to throw on: a backslash
+ * (`/x.json%5C`), or a `%` a param decodes badly (`/workflows/%25zz`,
+ * `/tools/%zz/x`). No key holds either. Answer 404 here instead of minting
  * 500s for scanners. Exported for tests/proxy-routing.test.ts.
  */
-export function hasBackslashInPath(pathname: string): boolean {
-  return pathname.includes('\\') || PERCENT_ENCODED_BACKSLASH.test(pathname)
+export function isMalformedPath(pathname: string): boolean {
+  return (
+    pathname.includes('\\') ||
+    PERCENT_ENCODED_BACKSLASH.test(pathname) ||
+    BAD_PERCENT.test(pathname)
+  )
+}
+
+/** A path that names a file: a valid ref's, or a tag's. */
+function isFilePath(pathname: string): boolean {
+  return Boolean(filePathToRef(pathname) ?? filePathToTagKey(pathname))
 }
 
 /**
  * Where a request for a markdown file is rewritten, or null when it is not
- * one. Only paths that name a valid ref qualify, so the handler never looks
- * up a path that cannot be a file. Exported for the proxy test.
+ * one. Only paths that name a file qualify, so the handler never looks up a
+ * path that cannot be a file. Exported for the proxy test.
  */
 export function markdownRewriteTarget(input: {
   pathname: string
@@ -44,13 +56,11 @@ export function markdownRewriteTarget(input: {
     return null
   }
   if (input.pathname.endsWith('.md')) {
-    return filePathToRef(input.pathname)
-      ? `/api/markdown${input.pathname}`
-      : null
+    return isFilePath(input.pathname) ? `/api/markdown${input.pathname}` : null
   }
   if (
     input.accept?.includes('text/markdown') &&
-    filePathToRef(`${input.pathname}.md`)
+    isFilePath(`${input.pathname}.md`)
   ) {
     return `/api/markdown${input.pathname}.md`
   }
@@ -60,7 +70,7 @@ export function markdownRewriteTarget(input: {
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  if (hasBackslashInPath(pathname)) {
+  if (isMalformedPath(pathname)) {
     return new NextResponse(null, { status: 404 })
   }
 
@@ -85,14 +95,15 @@ export default function proxy(req: NextRequest) {
  */
 export const config = {
   matcher: [
-    // A file: `/tools/clay/enrich-contacts.md`.
+    // A file: `/tools/apollo/enrich-person.md`.
     '/(.+\\.md)',
     // A page asked for as markdown (an agent, `curl -H 'Accept: text/markdown'`).
     {
       source: '/((?!_next|api).*)',
       has: [{ type: 'header', key: 'accept', value: '.*text/markdown.*' }],
     },
-    // A path with a backslash, answered 404 before Next can route it.
-    '/(.*(?:%5[cC]|\\\\).*)',
+    // A path with a backslash or a bad `%`, answered 404 before Next can
+    // route it.
+    '/(.*(?:%5[cC]|%25|%(?![0-9a-fA-F]{2})|\\\\).*)',
   ],
 }

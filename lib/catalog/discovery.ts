@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { GUIDES, guidePath } from '@/lib/constants/guides'
+import { companySummary } from '@/lib/content/derive'
 import type { CatalogDocument } from '@/lib/types/catalog'
 import { getCatalog } from './catalog'
 import {
@@ -9,7 +10,9 @@ import {
   parseRef,
   refToFilePath,
   refToPath,
+  tagFilePath,
 } from './keys'
+import { relationsOf } from './relations'
 
 /**
  * What the discovery surfaces read: the sitemap, `/llms.txt` and
@@ -30,19 +33,28 @@ function newest(dates: ReadonlyArray<number>): number | undefined {
   return dates.length > 0 ? Math.max(...dates) : undefined
 }
 
-/**
- * Every indexable page, most important first. Map focus pages are `noindex`
- * (one thin page per node, for navigation) and stay out on purpose.
- */
+/** Every indexable page, most important first, dated like its file. */
 export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
   const catalog = getCatalog()
-  const companies = [...catalog.companies.values()]
-  const tools = [...catalog.tools.values()]
-  const workflows = [...catalog.workflows.values()]
+  // A page's date is its file's: the newest of everything the file shows.
+  const dated = (type: EntityType, keys: Iterable<string>) =>
+    [...keys].map((key) => ({
+      path: refToPath({ type, key }),
+      updatedAt: catalog.documents.get(formatRef(type, key))?.updatedAt,
+    }))
+  const workflows = dated('workflow', catalog.workflows.keys())
+  const tools = dated('tool', catalog.tools.keys())
+  const companies = dated('company', catalog.companies.keys())
+  const newestOf = (entries: ReadonlyArray<{ updatedAt?: number }>) =>
+    newest(
+      entries.flatMap((entry) =>
+        entry.updatedAt === undefined ? [] : [entry.updatedAt]
+      )
+    )
   const kinds = {
-    companies: newest(companies.map((company) => company.updatedAt)),
-    tools: newest(tools.map((tool) => tool.updatedAt)),
-    workflows: newest(workflows.map((workflow) => workflow.updatedAt)),
+    companies: newestOf(companies),
+    tools: newestOf(tools),
+    workflows: newestOf(workflows),
   }
   const everything = newest(
     Object.values(kinds).filter((date): date is number => date !== undefined)
@@ -67,12 +79,6 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-    {
-      path: '/map',
-      updatedAt: everything,
-      changeFrequency: 'weekly',
-      priority: 0.5,
-    },
     // The docs: no entity date behind them, so no lastmod.
     { path: '/docs', changeFrequency: 'monthly', priority: 0.5 },
     ...GUIDES.map((guide) => ({
@@ -80,33 +86,18 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       changeFrequency: 'monthly' as const,
       priority: 0.4,
     })),
-    ...workflows.map((workflow) => ({
-      path: refToPath({
-        type: 'workflow' as const,
-        key: workflow.key,
-        version: undefined,
-      }),
-      updatedAt: workflow.updatedAt,
+    ...workflows.map((entry) => ({
+      ...entry,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
-    ...tools.map((tool) => ({
-      path: refToPath({
-        type: 'tool' as const,
-        key: tool.key,
-        version: undefined,
-      }),
-      updatedAt: tool.updatedAt,
+    ...tools.map((entry) => ({
+      ...entry,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
-    ...companies.map((company) => ({
-      path: refToPath({
-        type: 'company' as const,
-        key: company.key,
-        version: undefined,
-      }),
-      updatedAt: company.updatedAt,
+    ...companies.map((entry) => ({
+      ...entry,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
@@ -116,18 +107,11 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
 /** One line of `/llms.txt`: a file, named and summarized. */
 export type LlmsEntry = {
   title: string
-  /** `/tools/clay/enrich-contacts` */
+  /** `/tools/apollo/enrich-person` */
   path: string
-  /** `/tools/clay/enrich-contacts.md` */
+  /** `/tools/apollo/enrich-person.md` */
   file: string
   summary: string
-}
-
-const FIRST_SENTENCE = /^[^.!?]+[.!?]/
-
-function firstSentence(text: string): string {
-  const match = FIRST_SENTENCE.exec(text.trim())
-  return (match ? match[0] : text).trim()
 }
 
 /** Every file in key order, with a title and a one-line summary. */
@@ -139,7 +123,7 @@ export async function loadLlmsIndex(): Promise<
     a.key.localeCompare(b.key)
   return {
     tool: [...catalog.tools.values()].sort(byKey).map((tool) => {
-      const ref = { type: 'tool' as const, key: tool.key, version: undefined }
+      const ref = { type: 'tool' as const, key: tool.key }
       const company = catalog.companies.get(tool.companyKey)
       return {
         title: company ? `${tool.name} (${company.name})` : tool.name,
@@ -152,7 +136,6 @@ export async function loadLlmsIndex(): Promise<
       const ref = {
         type: 'workflow' as const,
         key: workflow.key,
-        version: undefined,
       }
       return {
         title: workflow.title,
@@ -165,14 +148,11 @@ export async function loadLlmsIndex(): Promise<
       const ref = {
         type: 'company' as const,
         key: company.key,
-        version: undefined,
       }
-      const toolCount = (catalog.toolsByCompany.get(company.key) ?? []).length
+      const toolCount = relationsOf(catalog, formatRef('company', company.key))
+        .tools.length
       const summary =
-        company.tagline ??
-        (company.description
-          ? firstSentence(company.description)
-          : undefined) ??
+        companySummary(company) ||
         `${toolCount} ${toolCount === 1 ? 'tool' : 'tools'}.`
       return {
         title: company.name,
@@ -182,6 +162,35 @@ export async function loadLlmsIndex(): Promise<
       }
     }),
   }
+}
+
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`
+}
+
+/** Every tag's file, by key, with what it gathers. */
+export async function loadLlmsTags(): Promise<
+  Array<{ title: string; file: string; summary: string }>
+> {
+  const catalog = getCatalog()
+  return [...catalog.tags.values()]
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .map((tag) => {
+      const counts = [
+        tag.counts.tools > 0 ? plural(tag.counts.tools, 'tool', 'tools') : null,
+        tag.counts.workflows > 0
+          ? plural(tag.counts.workflows, 'workflow', 'workflows')
+          : null,
+        tag.counts.companies > 0
+          ? plural(tag.counts.companies, 'company', 'companies')
+          : null,
+      ].filter((part): part is string => part !== null)
+      return {
+        title: `${tag.label} (${tag.key})`,
+        file: tagFilePath(tag.key),
+        summary: counts.length > 0 ? `${counts.join(', ')}.` : 'Nothing yet.',
+      }
+    })
 }
 
 /** Every rendered file, in the order `/llms.txt` lists them. */
