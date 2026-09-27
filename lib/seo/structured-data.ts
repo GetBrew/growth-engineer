@@ -73,7 +73,12 @@ function breadcrumb(
   }
 }
 
-export function companyJsonLd(origin: string, company: Company): JsonLd {
+/** `updatedAt` is the company file's date: its own and its tools', newest. */
+export function companyJsonLd(
+  origin: string,
+  company: Company,
+  updatedAt: number
+): JsonLd {
   const path = refToPath({
     type: 'company',
     key: company.key,
@@ -99,7 +104,7 @@ export function companyJsonLd(origin: string, company: Company): JsonLd {
         name: company.name,
         isPartOf: { '@id': `${origin}/#website` },
         about: { '@id': `${origin}${path}#organization` },
-        dateModified: new Date(company.updatedAt).toISOString(),
+        dateModified: new Date(updatedAt).toISOString(),
       },
       breadcrumb(origin, [
         { name: 'Companies', path: '/companies' },
@@ -116,7 +121,8 @@ export function companyJsonLd(origin: string, company: Company): JsonLd {
 export function toolJsonLd(
   origin: string,
   tool: Tool,
-  company: Company
+  company: Company,
+  updatedAt: number
 ): JsonLd {
   const ref = { type: 'tool' as const, key: tool.key }
   const path = refToPath(ref)
@@ -151,7 +157,7 @@ export function toolJsonLd(
             }
           : {}),
         keywords: tool.tags.join(', '),
-        dateModified: new Date(tool.updatedAt).toISOString(),
+        dateModified: new Date(updatedAt).toISOString(),
       },
       {
         '@type': 'WebPage',
@@ -180,7 +186,8 @@ export function toolJsonLd(
 export function workflowJsonLd(
   origin: string,
   workflow: Workflow,
-  tools: ReadonlyArray<{ tool: Tool; company: Company }>
+  tools: ReadonlyArray<{ tool: Tool; company: Company }>,
+  updatedAt: number
 ): JsonLd {
   const ref = {
     type: 'workflow' as const,
@@ -219,7 +226,7 @@ export function workflowJsonLd(
           url: `${absolute(origin, path)}#step-${index + 1}`,
         })),
         keywords: workflow.tags.join(', '),
-        dateModified: new Date(workflow.updatedAt).toISOString(),
+        dateModified: new Date(updatedAt).toISOString(),
       },
       {
         '@type': 'WebPage',

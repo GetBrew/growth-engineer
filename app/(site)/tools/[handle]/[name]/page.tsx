@@ -98,12 +98,16 @@ async function ToolDetail({ params }: { params: Params }) {
     notFound()
   }
   const { tool, company, capabilities } = result
+  // The file's date: the tool's, its company's and its workflows', newest.
+  const updatedAt = document?.updatedAt ?? tool.updatedAt
   const filePath = refToFilePath({
     type: 'tool',
     key: tool.key,
   })
 
-  const docsUrl = tool.access.find((access) => access.docsUrl)?.docsUrl
+  // The page that documents the call, else the first way's docs.
+  const docsUrl =
+    tool.docs ?? tool.access.find((access) => access.docsUrl)?.docsUrl
 
   const links = [
     { label: 'Website', href: company.links.website, icon: LINK_ICON.website },
@@ -115,7 +119,7 @@ async function ToolDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-(--space-block)">
-      <JsonLd data={toolJsonLd(SITE_ORIGIN, tool, company)} />
+      <JsonLd data={toolJsonLd(SITE_ORIGIN, tool, company, updatedAt)} />
       <DetailHeader
         actions={
           <>
@@ -147,7 +151,7 @@ async function ToolDetail({ params }: { params: Params }) {
           </DetailByline>
         }
         links={links}
-        dates={[`Updated ${DETAIL_DATE.format(tool.updatedAt)}`]}
+        dates={[`Updated ${DETAIL_DATE.format(updatedAt)}`]}
         description={tool.summary}
         tags={[
           ...(tool.status === 'deprecated'

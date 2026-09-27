@@ -106,7 +106,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-(--space-block)">
-      <JsonLd data={workflowJsonLd(SITE_ORIGIN, workflow, tools)} />
+      <JsonLd data={workflowJsonLd(SITE_ORIGIN, workflow, tools, updatedAt)} />
       <DetailHeader
         actions={
           <>

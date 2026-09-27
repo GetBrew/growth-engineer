@@ -63,12 +63,15 @@ companies/ workflows/ tags.yml  (source files, by pull request)
   → lib/content/build-catalog.ts                          validate, resolve, derive
   → lib/content/build-documents.ts                        the ONE caller of the renderer
   → lib/catalog/render-markdown.ts                        pure; goldens
-  → catalog.documents { ref, markdown, hash, lineCount, updatedAt }   read by everything
+  → catalog.documents { ref, markdown, lineCount, updatedAt }   read by everything
 ```
 
 Everything renders at build; nothing renders on the request path. A file's
-`updated` date is the newest of its inputs, so a workflow file changes when a
-tool it uses changes its way in. Two builds of the same tree produce
+`updated` date is the newest `updated` of every file that fed it — a tool's
+file follows its company (the ways in) and the workflows that use it, a
+workflow's follows its tools and their companies — so editing an MCP URL
+moves the date of every file that shows it. The sitemap, the pages and the
+structured data use that date. Two builds of the same tree produce
 byte-identical files (`tests/content.test.ts` pins this).
 
 ## Publishing a workflow

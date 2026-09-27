@@ -146,6 +146,53 @@ describe('content rules', () => {
     )
   })
 
+  test('a draft workflow may use a draft tool, and is left out', () => {
+    const files = tree({
+      tool: FIXTURE.tool.source.replace(
+        'api: POST /records\n',
+        'status: draft\n'
+      ),
+      workflow: WORKFLOW.replace('updated:', 'status: draft\nupdated:'),
+    })
+    expect(problemsOf(files)).toEqual([])
+    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    expect(catalog.workflows.size).toBe(0)
+    expect(catalog.documents.size).toBe(0)
+    // A company with nothing but drafts has no page and no file yet.
+    expect(catalog.companies.has('acme')).toBe(false)
+  })
+
+  test('a deprecated workflow may keep a deprecated tool', () => {
+    const files = tree({
+      tool: FIXTURE.tool.source.replace(
+        'updated:',
+        'status: deprecated\nupdated:'
+      ),
+      workflow: WORKFLOW.replace('updated:', 'status: deprecated\nupdated:'),
+    })
+    expect(problemsOf(files)).toEqual([])
+  })
+
+  test("a file's date is the newest of every file that feeds it", () => {
+    const files = tree({
+      company: FIXTURE.company.source.replace(
+        'updated: 2026-09-16',
+        'updated: 2026-09-20'
+      ),
+    })
+    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const day = (ref: string) =>
+      new Date(catalog.documents.get(ref)?.updatedAt ?? 0)
+        .toISOString()
+        .slice(0, 10)
+    // The company's ways in changed: its tool's file and the workflow show it.
+    expect(day('tool:acme/manage-crm')).toBe('2026-09-20')
+    expect(day('workflow:keep-crm-clean')).toBe('2026-09-20')
+    expect(catalog.documents.get('tool:acme/manage-crm')?.markdown).toContain(
+      'updated: 2026-09-20'
+    )
+  })
+
   test('tags are computed onto every entity; nobody writes them twice', () => {
     const catalog = buildCatalog(VALID, { logos: new Set(['acme.png']) })
     expect(catalog.tools.get('acme/manage-crm')?.tags).toEqual([
@@ -180,7 +227,7 @@ describe('content rules', () => {
           '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
           '[acme/nope](../companies/acme/tools/nope.md)'
         ),
-      /workflows\/keep-crm-clean\.md:11: step 1: "acme\/nope" is not a published tool/,
+      /workflows\/keep-crm-clean\.md:11: step 1: "acme\/nope" is not a tool/,
     ],
     [
       'an alias that shadows a live key',
@@ -191,7 +238,7 @@ describe('content rules', () => {
             '---\nname: Other\ndomain: other.example\ncategory: crm\nlogo: acme.png\naliases: [acme]\nupdated: 2026-09-16\n---\n'
           ),
         ]),
-      /companies\/other\/company\.md: aliases: "acme" is a live company key/,
+      /companies\/other\/company\.md: aliases: "acme" is an existing company key/,
     ],
     [
       'eleven steps',
@@ -232,7 +279,38 @@ describe('content rules', () => {
     [
       'a workflow using a draft tool',
       () => edit('tool', 'api: POST /records\n', 'status: draft\n'),
-      /step 1: "acme\/manage-crm" is not a published tool/,
+      /step 1: "acme\/manage-crm" is a draft: publish it, or set this workflow to `status: draft`/,
+    ],
+    [
+      'a published workflow using a deprecated tool',
+      () =>
+        edit(
+          'tool',
+          'updated: 2026-09-16',
+          'status: deprecated\nupdated: 2026-09-16'
+        ),
+      /step 1: "acme\/manage-crm" is deprecated: a published workflow uses published tools only/,
+    ],
+    [
+      "an alias that takes a draft tool's key",
+      () =>
+        tree({}, [
+          file(
+            'companies/acme/tools/create-record.md',
+            FIXTURE.tool.source.replace(
+              'updated:',
+              'aliases: [acme/draft-record]\nupdated:'
+            )
+          ),
+          file(
+            'companies/acme/tools/draft-record.md',
+            FIXTURE.tool.source.replace(
+              'api: POST /records\n',
+              'status: draft\n'
+            )
+          ),
+        ]),
+      /create-record\.md: aliases: "acme\/draft-record" is an existing tool key/,
     ],
     [
       'an invalid key part in a path',

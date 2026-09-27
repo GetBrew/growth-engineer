@@ -13,17 +13,28 @@ import type { ContentFile } from './read-tree'
 
 /**
  * Workflows: a header of facts and a body of steps (./parse-workflow.ts),
- * then the cross-file checks — every step names a published tool, and the
- * workflow tags itself with motion and channel only; its capabilities come
- * from its tools. Every miss is a problem with a file path, never a crash.
+ * then the cross-file checks — every step's tool fits the workflow's status
+ * (below), and the workflow tags itself with motion and channel only; its
+ * capabilities come from its tools. A draft is checked and left out: no
+ * page, no file. Every miss is a problem with a file path, never a crash.
+ *
+ *   workflow status   may use tools that are
+ *   published         published
+ *   deprecated        published or deprecated
+ *   draft             any tool file, drafts included
  */
 
 type WorkflowFile = ContentFile & { kind: 'workflow' }
 
 type WorkflowContext = {
+  /** Published and deprecated tools. */
   tools: ReadonlyMap<string, Tool>
+  /** Draft tool keys: real files, not published. */
+  drafts: ReadonlySet<string>
   tags: ReadonlyMap<string, Tag>
 }
+
+type Status = 'published' | 'deprecated' | 'draft'
 
 /** The namespaces a workflow tags itself with; the rest are computed. */
 const WORKFLOW_TAG_NAMESPACES: ReadonlyArray<string> = ['motion', 'channel']
@@ -48,20 +59,41 @@ function checkTags(
   }
 }
 
-/** Every step names a published tool. */
+/** Why a step's tool does not fit a workflow of this status, or null. */
+function stepProblem(
+  toolKey: string,
+  status: Status,
+  context: WorkflowContext
+): string | null {
+  const tool = context.tools.get(toolKey)
+  if (!(tool || context.drafts.has(toolKey))) {
+    return `"${toolKey}" is not a tool (companies/<handle>/tools/<name>.md)`
+  }
+  if (status === 'draft') {
+    return null
+  }
+  if (!tool) {
+    return `"${toolKey}" is a draft: publish it, or set this workflow to \`status: draft\``
+  }
+  if (status === 'published' && tool.status === 'deprecated') {
+    return `"${toolKey}" is deprecated: a published workflow uses published tools only`
+  }
+  return null
+}
+
 function checkSteps(
   file: WorkflowFile,
   parsed: ParsedWorkflow,
-  tools: ReadonlyMap<string, Tool>,
+  context: WorkflowContext,
   problems: ProblemList
 ): void {
   for (const [index, step] of parsed.data.steps.entries()) {
-    const line = parsed.stepLines[index]
-    if (!tools.has(step.tool)) {
+    const problem = stepProblem(step.tool, parsed.data.status, context)
+    if (problem) {
       problems.add(
         file.path,
-        `step ${index + 1}: "${step.tool}" is not a published tool (companies/<handle>/tools/<slug>.md)`,
-        line
+        `step ${index + 1}: ${problem}`,
+        parsed.stepLines[index]
       )
     }
   }
@@ -109,7 +141,7 @@ function toWorkflow(
     ...(data.featured === undefined ? {} : { featured: data.featured }),
     toolKeys,
     toolCount: toolKeys.length,
-    status: data.status,
+    status: data.status === 'deprecated' ? 'deprecated' : 'published',
     updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
     // Both halves of each tool key: `clay/enrich-contacts` finds the workflow
@@ -138,8 +170,9 @@ export function buildWorkflows(
   files: ReadonlyArray<ContentFile>,
   context: WorkflowContext,
   problems: ProblemList
-): Map<string, Workflow> {
+): { workflows: Map<string, Workflow>; drafts: Set<string> } {
   const workflows = new Map<string, Workflow>()
+  const drafts = new Set<string>()
   const featuredRanks = new Map<number, string>()
   for (const file of files) {
     if (file.kind !== 'workflow') {
@@ -155,19 +188,25 @@ export function buildWorkflows(
       continue
     }
     checkTags(file, parsed.data.tags, context.tags, problems)
-    checkSteps(file, parsed, context.tools, problems)
-    const workflow = toWorkflow(file, parsed, context)
-    if (workflow.featured !== undefined) {
-      const holder = featuredRanks.get(workflow.featured)
+    checkSteps(file, parsed, context, problems)
+    // A rank is unique across every file, drafts included: publishing one
+    // must not collide with a rank already taken.
+    const { featured } = parsed.data
+    if (featured !== undefined) {
+      const holder = featuredRanks.get(featured)
       if (holder) {
         problems.add(
           file.path,
-          `featured: rank ${workflow.featured} is already taken by ${holder}`
+          `featured: rank ${featured} is already taken by ${holder}`
         )
       }
-      featuredRanks.set(workflow.featured, workflow.key)
+      featuredRanks.set(featured, file.name)
     }
-    workflows.set(workflow.key, workflow)
+    if (parsed.data.status === 'draft') {
+      drafts.add(file.name)
+    } else {
+      workflows.set(file.name, toWorkflow(file, parsed, context))
+    }
   }
-  return workflows
+  return { workflows, drafts }
 }

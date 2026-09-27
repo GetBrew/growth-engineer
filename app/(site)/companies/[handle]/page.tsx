@@ -20,6 +20,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { isValidHandle, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadCompany,
+  loadDocument,
   loadToolsByCompany,
   loadWorkflowsByCompany,
   resolveAlias,
@@ -74,10 +75,11 @@ async function CompanyDetail({ params }: { params: Params }) {
   if (!isValidHandle(handle)) {
     notFound()
   }
-  const [company, tools, workflows] = await Promise.all([
+  const [company, tools, workflows, document] = await Promise.all([
     loadCompany(handle),
     loadToolsByCompany(handle),
     loadWorkflowsByCompany(handle),
+    loadDocument('company', handle),
   ])
   if (!company) {
     const alias = await resolveAlias('company', handle)
@@ -89,7 +91,13 @@ async function CompanyDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col">
-      <JsonLd data={companyJsonLd(SITE_ORIGIN, company)} />
+      <JsonLd
+        data={companyJsonLd(
+          SITE_ORIGIN,
+          company,
+          document?.updatedAt ?? company.updatedAt
+        )}
+      />
       <header>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex min-w-0 items-center gap-3">

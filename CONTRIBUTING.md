@@ -54,7 +54,8 @@ every tool back to the workflows that use it.
 - **Keys are permanent.** A folder or file name is the key and the URL.
   Rename by adding the old key to `aliases`; the old URL redirects.
 - **A tool is one function** with at least one way in. No way in yet? Set
-  `status: draft`; it has no page until it does.
+  `status: draft`; it has no page until it does, and a workflow that
+  needs it waits as a draft too.
 - **Steps resolve.** Every step links a tool file that exists and is
   published.
 - **Tags exist.** Every tag is an entry in `tags.yml`; `has:*` and a

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import type { ContentProblem } from './errors'
@@ -31,7 +32,7 @@ export type ContentTree = {
   problems: Array<ContentProblem>
   /** File names under public/logos, for the company schema's logo check. */
   logos: Set<string>
-  /** Changes when any content file is added, removed or touched. */
+  /** Changes when any content file or logo is added, removed, renamed or edited. */
   fingerprint: string
 }
 
@@ -47,8 +48,6 @@ export const MAX_LOGO_BYTES = 32 * 1024
 class Walk {
   readonly files: Array<ContentFile> = []
   readonly problems: Array<ContentProblem> = []
-  count = 0
-  newest = 0
   readonly root: string
 
   constructor(root: string) {
@@ -82,10 +81,7 @@ class Walk {
   }
 
   read(relative: string): string {
-    const absolute = path.join(this.root, relative)
-    this.count += 1
-    this.newest = Math.max(this.newest, statSync(absolute).mtimeMs)
-    return readFileSync(absolute, 'utf8')
+    return readFileSync(path.join(this.root, relative), 'utf8')
   }
 
   reject(file: string, message: string): void {
@@ -216,6 +212,49 @@ export function readContentTree(root = process.cwd()): ContentTree {
     files: walk.files,
     problems: walk.problems,
     logos,
-    fingerprint: `${walk.count}:${walk.newest}`,
+    fingerprint: contentFingerprint(root),
   }
+}
+
+/** Every path under a directory, recursively, with its size and mtime. */
+function statEntries(root: string, relative: string): Array<string> {
+  let names: Array<string>
+  try {
+    names = readdirSync(path.join(root, relative))
+  } catch {
+    return []
+  }
+  return names.flatMap((name) => {
+    const child = path.join(relative, name)
+    const stats = statSync(path.join(root, child))
+    return stats.isDirectory()
+      ? statEntries(root, child)
+      : [`${child}:${stats.size}:${stats.mtimeMs}`]
+  })
+}
+
+/** One file's entry, or none when it is missing. */
+function statFile(root: string, relative: string): Array<string> {
+  try {
+    const stats = statSync(path.join(root, relative))
+    return [`${relative}:${stats.size}:${stats.mtimeMs}`]
+  } catch {
+    return []
+  }
+}
+
+/**
+ * A cheap answer to "did the tree change?" for the development server: the
+ * sorted paths of every content file and logo with their size and mtime,
+ * hashed. `stat` only — no file is read — so a rename, a new logo or an edit
+ * all change it, and an unchanged tree costs no parsing at all.
+ */
+export function contentFingerprint(root = process.cwd()): string {
+  const entries = [
+    ...statEntries(root, 'companies'),
+    ...statEntries(root, 'workflows'),
+    ...statEntries(root, path.join('public', 'logos')),
+    ...statFile(root, TAGS_FILE),
+  ].sort()
+  return createHash('sha1').update(entries.join('\n')).digest('hex')
 }

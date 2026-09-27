@@ -60,9 +60,19 @@ Workflows are by people: `author` is a GitHub login (letters, digits, single
 hyphens), shown as `@login` and linked to the profile; it is never a company.
 
 The HEADER holds the facts: `title` (phrased as the result), `summary`,
-`author`, `tags` (≥ 1, curated namespaces only) and `updated` are required;
-`featured` (unique rank on the featured list), `aliases` and `status` are
-optional. There are no versions: git history is the archive.
+`author` and `updated` are required; `tags` (motion and channel only),
+`featured` (a rank unique across every workflow file), `aliases` and
+`status` are optional. There are no versions: git history is the archive.
+
+### Status, one rule
+
+`status` is `published` (default), `deprecated` (visible, with a warning) or
+`draft` (checked, never published: no page, no file, no list) — for tools
+and workflows alike. A workflow's steps must fit its status: a published one
+uses published tools; a deprecated one, published or deprecated tools; a
+draft, any tool file. A company is `published` or `deprecated`, gets a page
+and a file once it has a tool that is not a draft, and is listed once it has
+a published one.
 
 The BODY holds the workflow itself, in the markdown the rendered file uses,
 so the source reads on GitHub the way it reads on the site
@@ -114,10 +124,10 @@ Every problem is reported at once, with its file path
 var names; reserved or malformed handles and names; a capability or category
 missing from `tags.yml`; a call on a way the company does not declare, or in
 the wrong shape; an MCP way with both or neither of `url` and `command`; an
-API key with no `env`; a published tool with no call; a
-step naming an unknown or draft tool; an unknown or
-derived tag; an unknown category; a missing logo; an alias that shadows a
-live key or is claimed twice; two workflows with the same `featured` rank;
+API key with no `env`; a published tool with no call; a step whose tool does
+not fit the workflow's status; an unknown or derived tag; an unknown
+category; a missing logo; an alias that shadows an existing key (drafts
+included) or is claimed twice; two workflows with the same `featured` rank;
 more than ten steps. `tests/content-schema.test.ts` proves each one fails.
 
 ## Not in this model, on purpose

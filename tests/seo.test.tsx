@@ -260,7 +260,9 @@ describe('structured data', () => {
     if (!(tool && company)) {
       throw new Error('the seed tool is missing')
     }
-    const graph = (toolJsonLd(origin, tool, company) as Graph)['@graph']
+    const graph = (toolJsonLd(origin, tool, company, tool.updatedAt) as Graph)[
+      '@graph'
+    ]
     expect(graph.map((node) => node['@type'])).toEqual([
       'SoftwareApplication',
       'WebPage',
@@ -293,7 +295,9 @@ describe('structured data', () => {
       const company = tool ? catalog.companies.get(tool.companyKey) : undefined
       return tool && company ? [{ tool, company }] : []
     })
-    const graph = (workflowJsonLd(origin, workflow, tools) as Graph)['@graph']
+    const graph = (
+      workflowJsonLd(origin, workflow, tools, workflow.updatedAt) as Graph
+    )['@graph']
     const howTo = graph[0] as {
       '@type': string
       step: Array<{ position: number; name: string; text: string }>
@@ -320,7 +324,9 @@ describe('structured data', () => {
     if (!company) {
       throw new Error('the seed company is missing')
     }
-    const graph = (companyJsonLd(origin, company) as Graph)['@graph']
+    const graph = (companyJsonLd(origin, company, company.updatedAt) as Graph)[
+      '@graph'
+    ]
     expect(graph[0]).toMatchObject({
       '@type': 'Organization',
       name: company.name,

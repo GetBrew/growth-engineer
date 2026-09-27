@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { buildCatalog, type Catalog } from '@/lib/content/build-catalog'
-import { readContentTree } from '@/lib/content/read-tree'
+import { contentFingerprint, readContentTree } from '@/lib/content/read-tree'
 
 /**
  * THE catalog, built from the source tree once per process and reused by
@@ -11,9 +11,9 @@ import { readContentTree } from '@/lib/content/read-tree'
  * `.md` handlers prerender at build with no `'use cache'` and no
  * `connection()`.
  *
- * In development the tree is re-read when its fingerprint (file count and
- * newest mtime) changes, because content files are not modules and Turbopack
- * cannot hot-reload them. In production the catalog is frozen per deployment,
+ * In development the tree is re-read when its fingerprint (every content
+ * file's path, size and mtime — `stat` only) changes, because content files
+ * are not modules and Turbopack cannot hot-reload them. In production the catalog is frozen per deployment,
  * which is the point: a deploy IS the publish.
  */
 
@@ -31,10 +31,10 @@ function build(): Built {
   if (cached && !isDevelopment) {
     return cached
   }
-  const tree = readContentTree()
-  if (cached?.fingerprint === tree.fingerprint) {
+  if (cached && cached.fingerprint === contentFingerprint()) {
     return cached
   }
+  const tree = readContentTree()
   const catalog = buildCatalog(tree.files, {
     logos: tree.logos,
     problems: tree.problems,

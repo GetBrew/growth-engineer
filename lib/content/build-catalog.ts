@@ -28,7 +28,7 @@ import type { ContentFile } from './read-tree'
  */
 
 export type Catalog = {
-  /** Published and deprecated only — a draft has no page and no file. */
+  /** Companies with a tool that is not a draft; tools and workflows are published or deprecated — a draft has no page and no file. */
   companies: ReadonlyMap<string, Company>
   tools: ReadonlyMap<string, Tool>
   workflows: ReadonlyMap<string, Workflow>
@@ -74,6 +74,18 @@ function featuredFirst(workflows: ReadonlyArray<Workflow>): Array<Workflow> {
       (a.featured ?? Number.POSITIVE_INFINITY) -
         (b.featured ?? Number.POSITIVE_INFINITY) || newestFirst(a, b)
   )
+}
+
+/**
+ * A company has a page and a file once it has a tool that is not a draft;
+ * until then it is a folder waiting for its first function.
+ */
+function withAnyTool(
+  companies: ReadonlyMap<string, Company>,
+  tools: ReadonlyMap<string, Tool>
+): Map<string, Company> {
+  const makers = new Set([...tools.values()].map((tool) => tool.companyKey))
+  return new Map([...companies].filter(([key]) => makers.has(key)))
 }
 
 /** A company's tags and search text, once its tools are known. */
@@ -124,7 +136,13 @@ function assemble(entities: {
     workflowsNew: published(workflows.values())
       .sort(newestFirst)
       .map((workflow) => workflow.key),
+    // Listed: published, with at least one published tool to show.
     companies: published(companies.values())
+      .filter((company) =>
+        published(tools.values()).some(
+          (tool) => tool.companyKey === company.key
+        )
+      )
       .sort((a, b) => a.name.localeCompare(b.name) || byKey(a, b))
       .map((company) => company.key),
   }
@@ -162,9 +180,23 @@ export function buildCatalog(
     options.logos,
     problems
   )
-  const tools = buildTools(files, { companies, ways, tags }, problems)
-  const workflows = buildWorkflows(files, { tools, tags }, problems)
-  const aliases = buildAliases({ companies, tools, workflows }, problems)
+  const { tools, drafts } = buildTools(
+    files,
+    { companies, ways, tags },
+    problems
+  )
+  const workflows = buildWorkflows(files, { tools, drafts, tags }, problems)
+  const aliases = buildAliases(
+    { companies, tools, workflows: workflows.workflows },
+    { tool: drafts, workflow: workflows.drafts },
+    problems
+  )
   problems.throwIfAny()
-  return assemble({ companies, tools, workflows, tags, aliases })
+  return assemble({
+    companies: withAnyTool(companies, tools),
+    tools,
+    workflows: workflows.workflows,
+    tags,
+    aliases,
+  })
 }

@@ -61,7 +61,7 @@ Optional. Anything else the agent should know, in any markdown.
 | `tags` | no | The `motion:` and `channel:` entries from `tags.yml` it serves. Its capabilities come from its tools, and `has:*` from their ways in — both computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
 | `featured` | no | Editorial rank on `/workflows`, set by maintainers; must be unique. Unranked workflows follow by date. |
-| `aliases`, `status` | no | Old names to redirect; `published` (default) or `deprecated`. |
+| `aliases`, `status` | no | Old names to redirect; `published` (default), `deprecated`, or `draft` — checked, never published, and free to use draft tools. A published workflow uses published tools only. |
 
 ### The body
 

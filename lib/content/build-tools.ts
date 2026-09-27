@@ -202,8 +202,9 @@ export function buildTools(
     tags: ReadonlyMap<string, Tag>
   },
   problems: ProblemList
-): Map<string, Tool> {
+): { tools: Map<string, Tool>; drafts: Set<string> } {
   const tools = new Map<string, Tool>()
+  const drafts = new Set<string>()
   for (const file of files) {
     if (file.kind !== 'tool') {
       continue
@@ -230,10 +231,12 @@ export function buildTools(
       context.ways.get(file.handle) ?? {},
       problems
     )
-    if (parsed.data.status !== 'draft') {
+    if (parsed.data.status === 'draft') {
+      drafts.add(`${file.handle}/${file.slug}`)
+    } else {
       const tool = toTool(file, parsed, company, context.tags, access)
       tools.set(tool.key, tool)
     }
   }
-  return tools
+  return { tools, drafts }
 }

@@ -31,16 +31,28 @@ function newest(dates: ReadonlyArray<number>): number | undefined {
   return dates.length > 0 ? Math.max(...dates) : undefined
 }
 
-/** Every indexable page, most important first. */
+/** Every indexable page, most important first, dated like its file. */
 export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
   const catalog = getCatalog()
-  const companies = [...catalog.companies.values()]
-  const tools = [...catalog.tools.values()]
-  const workflows = [...catalog.workflows.values()]
+  // A page's date is its file's: the newest of everything the file shows.
+  const dated = (type: EntityType, keys: Iterable<string>) =>
+    [...keys].map((key) => ({
+      path: refToPath({ type, key }),
+      updatedAt: catalog.documents.get(formatRef(type, key))?.updatedAt,
+    }))
+  const workflows = dated('workflow', catalog.workflows.keys())
+  const tools = dated('tool', catalog.tools.keys())
+  const companies = dated('company', catalog.companies.keys())
+  const newestOf = (entries: ReadonlyArray<{ updatedAt?: number }>) =>
+    newest(
+      entries.flatMap((entry) =>
+        entry.updatedAt === undefined ? [] : [entry.updatedAt]
+      )
+    )
   const kinds = {
-    companies: newest(companies.map((company) => company.updatedAt)),
-    tools: newest(tools.map((tool) => tool.updatedAt)),
-    workflows: newest(workflows.map((workflow) => workflow.updatedAt)),
+    companies: newestOf(companies),
+    tools: newestOf(tools),
+    workflows: newestOf(workflows),
   }
   const everything = newest(
     Object.values(kinds).filter((date): date is number => date !== undefined)
@@ -72,30 +84,18 @@ export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
       changeFrequency: 'monthly' as const,
       priority: 0.4,
     })),
-    ...workflows.map((workflow) => ({
-      path: refToPath({
-        type: 'workflow' as const,
-        key: workflow.key,
-      }),
-      updatedAt: workflow.updatedAt,
+    ...workflows.map((entry) => ({
+      ...entry,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
-    ...tools.map((tool) => ({
-      path: refToPath({
-        type: 'tool' as const,
-        key: tool.key,
-      }),
-      updatedAt: tool.updatedAt,
+    ...tools.map((entry) => ({
+      ...entry,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
-    ...companies.map((company) => ({
-      path: refToPath({
-        type: 'company' as const,
-        key: company.key,
-      }),
-      updatedAt: company.updatedAt,
+    ...companies.map((entry) => ({
+      ...entry,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),

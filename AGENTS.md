@@ -76,8 +76,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   inputs in backticks, ≤ 10 steps, Rules last and immutable,
   tool ≈ 60 lines, workflow ≈ 120. Change the format and the golden fixtures
   in `tests/fixtures/markdown/` in the same commit.
-- A file's `updated` date is the newest of its inputs: a workflow file
-  changes when a tool it uses changes its way in.
+- A file's `updated` date is the newest ENTITY date of every file that fed
+  it (tool ← company, workflows; workflow ← tools, their companies).
 
 ### Keys and refs
 
@@ -92,8 +92,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
 - Keys never change after publishing. A rename lists the old key under
   `aliases:`; every miss asks the alias map before answering 404, and the
   `.md` handler and the pages turn a hit into a real 308.
-- Deprecated stays visible with a warning; a `draft` tool (no way in yet) has
-  no page, no file and no place in any list.
+- Deprecated stays visible with a warning; a `draft` tool or workflow has no
+  page, no file and no list; a published workflow uses published tools only.
 
 ### The content compiler
 

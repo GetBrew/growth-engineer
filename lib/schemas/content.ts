@@ -226,7 +226,8 @@ export const workflowHeaderSchema = z.strictObject({
   tags: z.array(tagKey).default([]),
   featured: z.int().min(1).optional(),
   aliases: z.array(keyPart).default([]),
-  status: status.default('published'),
+  /** A draft is checked but never published: no page, no file. */
+  status: z.enum(['published', 'deprecated', 'draft']).default('published'),
   updated: isoDate,
 })
 
