@@ -10,8 +10,8 @@ companies/ workflows/ tags.yml ─▶ lib/content/read-tree.ts ──▶ lib/con
                                      lib/catalog/render-markdown.ts ◀──┘ the ONE render path; golden-tested
 
 agent / browser ─▶ proxy.ts ──────────▶ app/(site)/… ────────▶ lib/catalog/loaders.ts ──▶ the Catalog
-                    │  .md URL or          (sync RSC shells       (every read; async,
-                    │  Accept: text/markdown  + Suspense)          resolves in memory)
+                    │  .md URL or          (Server Components,    (every read; async,
+                    │  Accept: text/markdown  prerendered whole)   resolves in memory)
                     └─▶ app/api/markdown/[...path] ──▶ loadDocument(ref) ──▶ catalog.documents (prerendered)
 ```
 
@@ -46,10 +46,10 @@ backslash, answered 404), so a page view or a Link prefetch never runs it.
 There is NO auth gate here and no auth provider anywhere; every route is
 public.
 
-**Pages** (`app/(site)/`) — Server Components. A page's default export is
-synchronous and returns a `<Suspense>`; the async child does the reads. Detail
-routes declare `generateStaticParams` from `lib/catalog/static-params.ts`
-and prerender in full. The
+**Pages** (`app/(site)/`) — Server Components that render their data
+directly, with no `<Suspense>` and nothing that loads. Detail routes declare
+`generateStaticParams` from `lib/catalog/static-params.ts`, await their params
+themselves and prerender in full, content inline. The
 listings prerender EVERY item and hand them to a client component
 (`ToolsExplorer`, `CompanyDirectory`, `WorkflowsIndex`) that reads the URL
 with `useSearchParams` and narrows the list in the browser — so no page reads
@@ -125,9 +125,9 @@ A query with no words in it (`???`) matches nothing.
 | You are adding | It goes in |
 | --- | --- |
 | A company, tool, workflow or tag | a file — [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
-| A page | `app/(site)/…`, sync shell + Suspense child; `generateStaticParams` if it has params; reserve its first segment in `lib/catalog/keys.ts` |
+| A page | `app/(site)/…`, rendering its data directly (no Suspense); `generateStaticParams` if it has params; reserve its first segment in `lib/catalog/keys.ts` |
 | A field a file shows | the schema (`lib/schemas/content.ts`), the type (`lib/types/catalog.ts`), the renderer, its golden fixture, a negative test — in one commit |
 | A projection | `lib/content/derive.ts`, the one writer |
 | A read | a loader in `lib/catalog/loaders.ts`, and a case in `tests/content.test.ts` |
-| A rule about the content | `build-catalog.ts` / `build-entities.ts`, with a case in `tests/content-schema.test.ts` that FAILS first |
+| A rule about the content | the `lib/content/build-*.ts` file that owns it, with a case in `tests/content-schema.test.ts` that FAILS first |
 | A second app | its own project — [`docs/microfrontends.md`](microfrontends.md) |

@@ -111,11 +111,12 @@ offers that way.
 | --- | --- | --- |
 | every entity's `tags` (capability, category, `has:*`) | its file, its company, its tools | `derive.ts` |
 | `searchText` | its words plus its tags' labels and synonyms | `derive.ts` |
-| `toolKeys`, `toolCount` | steps | `build-entities.ts` |
+| `toolKeys`, `toolCount` | steps | `build-workflows.ts` |
 | the edges: company ↔ tools ↔ workflows, tag members — written into both rendered files (`tools:` / `workflows:`) | tool folders, step links, tags | `build-relations.ts`, read through `relationsOf` |
 | tag `counts` | the tag's members | `build-relations.ts` |
 | listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
 | the rendered files and their line count | everything above | `build-documents.ts` |
+| each file's `sources`: its own file, then every tool file and company file (where the ways in live) whose facts it prints | the files above | `build-documents.ts` |
 
 ## Rules the build enforces
 

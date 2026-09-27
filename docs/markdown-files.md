@@ -44,6 +44,12 @@ names the tools, and appends the rules.
 workflow file lists the tools it uses: the relationship is in both files.
 `author` is the workflow author's GitHub login.
 
+A rendered file is never stored in the repository, so every tool and
+workflow page shows, under its file, **Built from**: the source files it was
+rendered from, each linked to GitHub — the entry's own file, each tool file,
+and each company file whose ways in it prints (`CatalogDocument.sources`). The
+layout, the set-up wording and the Rules come from the renderer.
+
 ## Where files are served
 
 | Where | Example |

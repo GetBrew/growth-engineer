@@ -190,3 +190,23 @@ export function filePathToRef(pathname: string): Ref | null {
   }
   return null
 }
+
+/**
+ * The SOURCE file behind a ref, from the repo root. Not the same as
+ * `refToFilePath`, the rendered `.md` URL this site serves: a tool renders at
+ * `/tools/apollo/enrich-person.md` but is WRITTEN at
+ * `companies/apollo/tools/enrich-person.md`. The key carries both.
+ */
+export function refToSourcePath(ref: {
+  type: EntityType
+  key: string
+}): string {
+  if (ref.type === 'company') {
+    return `companies/${ref.key}/company.md`
+  }
+  if (ref.type === 'tool') {
+    const [handle, slug] = ref.key.split('/')
+    return `companies/${handle}/tools/${slug}.md`
+  }
+  return `workflows/${ref.key}.md`
+}

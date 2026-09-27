@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 import { parse } from 'yaml'
-import { parseRef } from '@/lib/catalog/keys'
+import { parseRef, refToSourcePath } from '@/lib/catalog/keys'
 import {
   companySearchItem,
   toolSearchItem,
@@ -18,6 +18,27 @@ import {
 } from '@/lib/catalog/search'
 import { buildCatalog, type Catalog } from '@/lib/content/build-catalog'
 import { readContentTree } from '@/lib/content/read-tree'
+import type { Access } from '@/lib/types/catalog'
+
+const WHITESPACE = /\s+/
+
+/** The fact a way in contributes to a file, which must appear in it. */
+function accessFact(access: Access): string {
+  switch (access.type) {
+    case 'mcp':
+      // A local server's command renders as JSON `command` + `args`, so its
+      // last word (the package) is what appears verbatim.
+      return (
+        access.url ??
+        access.command?.trim().split(WHITESPACE).at(-1) ??
+        access.operation
+      )
+    case 'cli':
+      return access.installCommand
+    default:
+      return access.baseUrl
+  }
+}
 
 /**
  * THE CONTENT SUITE (`pnpm content:check`): the real tree under companies/,
@@ -261,6 +282,52 @@ describe('the content tree', () => {
       expect(header(`company:${company.key}`).name, company.key).toBe(
         company.name
       )
+    }
+  })
+
+  test('every file names the source files it was built from, and each one feeds it', () => {
+    const paths = new Set(readContentTree().files.map((file) => file.path))
+    // What a company's ways in print, by the company file they live in.
+    const waysByFile = new Map<string, Set<string>>()
+    for (const tool of catalog.tools.values()) {
+      const file = refToSourcePath({ type: 'company', key: tool.companyKey })
+      const facts = waysByFile.get(file) ?? new Set<string>()
+      for (const entry of tool.access) {
+        facts.add(accessFact(entry))
+      }
+      waysByFile.set(file, facts)
+    }
+    for (const document of catalog.documents.values()) {
+      const ref = parseRef(document.ref)
+      expect(ref, document.ref).not.toBeNull()
+      // Its own file first, and nothing listed twice.
+      const own = refToSourcePath({
+        type: ref?.type ?? 'tool',
+        key: ref?.key ?? '',
+      })
+      expect(document.sources[0]).toBe(own)
+      expect(new Set(document.sources).size).toBe(document.sources.length)
+      for (const source of document.sources) {
+        // A real file in the tree...
+        expect(paths.has(source), `${document.ref} → ${source}`).toBe(true)
+        // ...and a company file only when a way in from it is printed.
+        if (source !== own && source.endsWith('/company.md')) {
+          const facts = [...(waysByFile.get(source) ?? [])]
+          expect(
+            facts.some((fact) => document.markdown.includes(fact)),
+            `${document.ref} → ${source}`
+          ).toBe(true)
+        }
+      }
+    }
+    // A workflow lists every tool it uses.
+    for (const workflow of catalog.workflows.values()) {
+      const sources = catalog.documents.get(`workflow:${workflow.key}`)?.sources
+      for (const key of workflow.toolKeys) {
+        expect(sources, workflow.key).toContain(
+          refToSourcePath({ type: 'tool', key })
+        )
+      }
     }
   })
 

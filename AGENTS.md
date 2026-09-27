@@ -143,11 +143,10 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
   No page reads `searchParams` on the server.
   The one dynamic route is `/mcp` (POST); the proxy runs only for `.md`.
-- NOTHING LOADS: no skeletons, no spinners, no fetch after load. A page with
-  no params renders its data directly — the build fails if anything in it is
-  request-time. A page with params is SYNCHRONOUS and awaits them in a
-  `<Suspense fallback={null}>` child, which only an unknown key (rendered on
-  demand from the traced tree) ever reaches.
+- NOTHING LOADS: no skeletons, no spinners, no fetch after load, no
+  `<Suspense>` in a page. A page renders its data directly and a page with
+  params awaits them itself: every known key is in `generateStaticParams`,
+  so its HTML is complete and inline. Only an unknown key renders on demand.
 - Internal navigation is ALWAYS `next/link` (never a raw `<a href="/…">`):
   Link prefetches on viewport and on hover, and every target is static, so a
   navigation is a cached fetch. Raw anchors are for external URLs and for

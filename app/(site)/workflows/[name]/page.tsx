@@ -1,9 +1,9 @@
 import { File01Icon } from '@hugeicons/core-free-icons'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { Suspense } from 'react'
 import { accessTypeLabels } from '@/components/common/badges'
 import { NoResults } from '@/components/common/no-results'
+import { BuiltFrom } from '@/components/detail/built-from'
 import {
   DETAIL_DATE,
   DetailByline,
@@ -62,13 +62,11 @@ export async function generateMetadata({
   })
 }
 
-export default function WorkflowPage({ params }: { params: Params }) {
+export default async function WorkflowPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/workflows" label="All workflows" />
-      <Suspense fallback={null}>
-        <WorkflowDetail params={params} />
-      </Suspense>
+      <WorkflowDetail params={params} />
     </Page>
   )
 }
@@ -157,11 +155,14 @@ async function WorkflowDetail({ params }: { params: Params }) {
       <div className="grid gap-(--space-block) lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <section className="flex min-w-0 flex-col gap-(--space-md)">
           {document ? (
-            <MarkdownFile
-              fileName={filePath.split('/').pop() ?? 'workflow.md'}
-              markdown={document.markdown}
-              preview={<MarkdownPreview markdown={document.markdown} />}
-            />
+            <>
+              <MarkdownFile
+                fileName={filePath.split('/').pop() ?? 'workflow.md'}
+                markdown={document.markdown}
+                preview={<MarkdownPreview markdown={document.markdown} />}
+              />
+              <BuiltFrom sources={document.sources} />
+            </>
           ) : (
             <NoResults
               description="It appears here as soon as the catalog renders it."

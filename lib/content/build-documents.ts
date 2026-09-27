@@ -1,10 +1,12 @@
-import { formatRef } from '@/lib/catalog/keys'
+import { formatRef, refToSourcePath } from '@/lib/catalog/keys'
+import { selectWorkflowAccess } from '@/lib/catalog/render-access'
 import {
   renderCompanyDocument,
   renderToolDocument,
   renderWorkflowDocument,
 } from '@/lib/catalog/render-markdown'
 import type {
+  Access,
   CatalogDocument,
   Company,
   Relations,
@@ -23,6 +25,10 @@ import type {
  *   workflow  the workflow, its tools, their companies
  *   company   the company, its tools
  * So editing Stripe's MCP URL moves the date of every file that shows it.
+ *
+ * Each file also lists the SOURCE files it was rendered from (`sources`), for
+ * the "Built from" links: its own file, then every tool file and company file
+ * (where the ways in live) whose facts it prints.
  */
 
 function newest(...dates: ReadonlyArray<number>): number {
@@ -36,6 +42,32 @@ export type DocumentInputs = {
   relations: ReadonlyMap<string, Relations>
 }
 
+/** A tool's file, then its company's when the file prints a way in from it. */
+function toolFiles(tool: Tool, access: ReadonlyArray<Access>): Array<string> {
+  return [
+    refToSourcePath({ type: 'tool', key: tool.key }),
+    ...(access.length > 0
+      ? [refToSourcePath({ type: 'company', key: tool.companyKey })]
+      : []),
+  ]
+}
+
+/**
+ * What a workflow file prints: the workflow's own file, then for each tool in
+ * first-use order its file and, when its setup shows a way in, its company's.
+ */
+function workflowSources(
+  workflow: Workflow,
+  tools: ReadonlyArray<Tool>
+): Array<string> {
+  return [
+    refToSourcePath({ type: 'workflow', key: workflow.key }),
+    ...tools.flatMap((tool) =>
+      toolFiles(tool, selectWorkflowAccess(tool.access))
+    ),
+  ]
+}
+
 export function buildDocuments(
   inputs: DocumentInputs
 ): Map<string, CatalogDocument> {
@@ -44,10 +76,17 @@ export function buildDocuments(
     entityType: CatalogDocument['entityType'],
     key: string,
     updatedAt: number,
-    rendered: { markdown: string; lineCount: number }
+    rendered: { markdown: string; lineCount: number },
+    sources: ReadonlyArray<string>
   ) => {
     const ref = formatRef(entityType, key)
-    documents.set(ref, { ref, entityType, updatedAt, ...rendered })
+    documents.set(ref, {
+      ref,
+      entityType,
+      updatedAt,
+      ...rendered,
+      sources: [...new Set(sources)],
+    })
   }
 
   const companyDate = (companyKey: string) =>
@@ -81,7 +120,8 @@ export function buildDocuments(
         access: tool.access,
         isDeprecated: tool.status === 'deprecated',
         updatedAt,
-      })
+      }),
+      toolFiles(tool, tool.access)
     )
   }
 
@@ -120,7 +160,8 @@ export function buildDocuments(
         ...(workflow.notes === undefined ? {} : { notes: workflow.notes }),
         isDeprecated: workflow.status === 'deprecated',
         updatedAt,
-      })
+      }),
+      workflowSources(workflow, tools)
     )
   }
 
@@ -160,7 +201,13 @@ export function buildDocuments(
         })),
         isDeprecated: company.status === 'deprecated',
         updatedAt,
-      })
+      }),
+      [
+        refToSourcePath({ type: 'company', key: company.key }),
+        ...tools.map((tool) =>
+          refToSourcePath({ type: 'tool', key: tool.key })
+        ),
+      ]
     )
   }
 
