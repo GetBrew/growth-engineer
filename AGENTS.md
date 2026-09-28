@@ -37,8 +37,8 @@ Next.js 16 (App Router, Cache Components, Turbopack) · a build-time content
 compiler (`lib/content/`) · Tailwind v4 · shadcn on Base UI · Biome · Vitest
 · pnpm. **The catalog has no backend, no database and no auth provider**;
 the one runtime store is an optional Upstash Redis counting workflow copies
-(`lib/usage/copies.ts`: Uses, Hot, Popular). Every route is public; the env is an
-optional `NEXT_PUBLIC_SITE_URL` and the counter's optional `KV_REST_API_*`.
+(`lib/usage/copies.ts`: Uses, Hot, Popular). Every route is public; every
+env var is optional (`.env.example`, read only through `lib/env.ts`).
 
 ## Validation — proportional, not ceremonial
 
@@ -135,9 +135,9 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   synchronous reads, so every page, the `.md` handler and `/llms.txt`
   PRERENDER with no `'use cache'` and no `connection()`; detail routes list
   params with `generateStaticParams` (`lib/catalog/static-params.ts`). Never
-  `export const dynamic`, `revalidate` or `dynamicParams`. The ONE
-  `'use cache'` (+ `connection()`) is the copy counts: read per request, cached
-  a minute, streamed into `<Suspense>` holes in an otherwise prerendered page.
+  `export const dynamic`, `revalidate` or `dynamicParams`. Two `'use cache'`s:
+  the copy counts (+ `connection()`, cached a minute, streamed into `<Suspense>`
+  holes) and the header's star count (read once per build, `revalidate: Infinity`).
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).

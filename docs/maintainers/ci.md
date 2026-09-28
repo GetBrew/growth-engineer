@@ -1,93 +1,88 @@
 # CI
 
-Five jobs, each proving something a human reviewer cannot reliably check by
-reading a diff, and `test`, the one required check, which needs all of them.
-They run on every pull request, including one from a fork: no job needs a
-secret, and the token is read-only.
+Five jobs, each checking something a reviewer can't reliably check by reading
+a diff, plus `test`, the one required check, which needs all five. They run on
+every pull request, including one from a fork: no job needs a secret, and the
+token is read-only.
 
-| Job | Proves |
+| Job | Checks |
 | --- | --- |
-| `lint` | Biome: style, formatting, AND no import cycles |
-| `typecheck (×2)` | each TypeScript program (app, tests) compiles, in parallel |
-| `build` | the production build works — on the PR — every catalog page and file prerenders, and no route's client JS grew past its budget |
-| `test (unit)` | the hermetic unit suite, including the content suite over the real tree |
-| `hygiene` | docs links, the content tree, dead code, duplicate deps |
+| `lint` | Biome: style, formatting and import cycles |
+| `typecheck (×2)` | Each TypeScript program (app, tests) compiles, in parallel |
+| `build` | The production build works on the pull request: every catalog page and file prerenders, and no route's client JavaScript grew past its budget |
+| `test (unit)` | The hermetic unit suite, including the content suite over the real tree |
+| `hygiene` | Docs links, the content tree, dead code, duplicate dependencies |
 
 ## Why the typecheck is a matrix
 
-`pnpm tsc` chains two programs: app and tests. Run sequentially, wall
-time is the SUM. As matrix legs it is the slowest one — and a failure names
-its program in the job title instead of making you read a log to find out
-which one went red.
+`pnpm tsc` checks two programs, app and tests. Run one after the other, the
+job takes as long as both together; as matrix legs it takes as long as the
+slower one, and a failure names its program in the job title.
 
-The split exists for the same reason the programs exist: `next build` and the
-fast check should not compile thousands of test and script files that no
-runtime depends on.
+The programs are split so that `next build` and the fast check never compile
+the thousands of test and script files no runtime depends on.
 
-## Why `build` runs in CI at all
+## Why `build` runs in CI
 
-The hosting platform already builds on deploy — but that is AFTER merge. A
-broken build and every client-bundle regression would reach main first and be
-discovered by whoever merged next. This job runs on the pull request.
+Vercel builds on deploy, which is after the merge. Without this job, a broken
+build or a client bundle regression would reach `main` first. This job builds
+the pull request instead.
 
-It needs no environment at all: the catalog is built from the checkout, and
-`lib/env.ts` reads nothing secret. A variable appearing in that job means
-`lib/env.ts` grew one.
+It needs no environment: the catalog is built from the checkout, and every
+variable in `lib/env.ts` is optional. Without `GITHUB_TOKEN` the header's star
+count may be missing from the CI build, which changes nothing it checks.
 
-The bundle budget step reads THIS build's manifests, so it has to live in this
-job. See [`performance.md`](performance.md).
+The bundle budget step reads this build's manifests, so it runs in this job.
+See [`performance.md`](performance.md).
 
 ## Why the content suite runs twice
 
 `pnpm test:run` includes `tests/content.test.ts`, and `hygiene` runs
-`pnpm content:check` as its own step. The second run is for the contributor:
-a pull request that only adds a company gets a step named after the thing it
+`pnpm content:check` as its own step. The second run is for contributors: a
+pull request that only adds a company gets a step named after what it
 changed, with every problem listed, instead of a failed unit-test job.
 
 ## Why hygiene uses `continue-on-error`
 
-These gates are mutually independent, but steps run sequentially and a bare
-failure aborts the rest. The job would then report exactly one problem per
-run: fix one gate, push, wait five minutes, discover the docs are broken too,
-push, wait again.
+The hygiene gates are independent, but steps run in order and a failure stops
+the rest. Without `continue-on-error`, each run would report one problem: fix
+it, push, wait, and find the next.
 
-`continue-on-error` marks the step's OUTCOME as failure while letting the job
-continue; the final step re-reads every outcome and fails the job if any gate
-failed. One run, the complete list.
+`continue-on-error` records the step's outcome as a failure and lets the job
+continue. The last step reads every outcome and fails the job if any gate
+failed, so one run lists every problem.
 
-## Why `test` is a separate aggregator job
+## Why `test` is a separate job
 
-`test` is the ONE check branch protection requires, and it `needs` every
-other job — lint, both typecheck legs, the build and its bundle budget,
-the unit suite and hygiene — so one name covers them all and a new job only
-has to be added to that list. `if: always()` matters: without it a failed
-job makes `test` *skipped*, and a required check that is skipped is one a
-merge sails past. Set it once the repository is public: Settings → Branches
-→ require status checks → `test`.
+`test` is the one check to require in branch protection. It `needs` every
+other job (lint, both typecheck legs, the build and its bundle budget, the
+unit suite and hygiene), so one name covers them all and a new job only has
+to join that list. `if: always()` matters: without it, a failed job makes
+`test` skipped, and branch protection lets a skipped required check through.
+To require it: Settings → Branches → add a rule for `main` → require status
+checks to pass → `test`.
 
 ## Why `runs-on` reads a variable
 
-`${{ vars.CI_RUNNER_LARGE || 'ubuntu-latest' }}` is the rollback plan. If you
-move to a faster runner fleet and that fleet has an incident, the obvious fix —
-"open a PR changing `runs-on` back" — requires the CI you no longer have.
-Setting the repository variables (`CI_RUNNER_LARGE` for the build,
-`CI_RUNNER_SMALL` for the rest) moves every job in seconds, with no commit,
-no review, and no green build required.
+`${{ vars.CI_RUNNER_LARGE || 'ubuntu-latest' }}` is the rollback plan. If the
+project moves to a faster runner fleet and that fleet has an incident, a pull
+request changing `runs-on` back would need the CI that is down. Setting the
+repository variables (`CI_RUNNER_LARGE` for the build, `CI_RUNNER_SMALL` for
+the rest) moves every job at once, with no commit.
 
 ## Least privilege
 
-`permissions: contents: read` at the workflow level. Nothing in CI writes to
-the repository. Without that block the token inherits the organization default,
-which is frequently read-WRITE — handing every third-party action and every
-dependency install script a push-capable token.
+`permissions: contents: read` is set for the whole workflow, because nothing
+in CI writes to the repository. Without it, the token inherits the
+organization default, often read-write, and every third-party action and
+install script would get a token that can push.
 
-`persist-credentials: false` on checkout, for the same reason: it stops the
-token from sitting in `.git/config` for the rest of the job.
+`persist-credentials: false` on checkout keeps the token out of `.git/config`
+for the rest of the job.
 
-## Dependabot, actions only
+## Dependabot, for Actions only
 
-Every `uses:` pins a floating major tag, so nothing tells you a v5 exists or
-that an action shipped a security fix. That is the drift nobody notices until a
-runner image change breaks a workflow. The npm tree is managed through the
-lockfile with its own review flow — adding it here would open dozens of PRs a
-week and the config would get muted within a month.
+Every `uses:` pins a floating major tag, so nothing announces a new major, a
+deprecation or a security fix in an action. Dependabot opens one grouped pull
+request a month for them. npm dependencies are managed through the lockfile;
+adding them here would open dozens of pull requests a week.

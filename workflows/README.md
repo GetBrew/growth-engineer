@@ -1,6 +1,6 @@
 # workflows/
 
-One file per workflow, flat: `workflows/<name>.md`. **No folders.** The file
+One file per workflow, flat: `workflows/<name>.md`, with no folders. The file
 name is the key and the URL: `workflows/funding-signal-outbound.md` is
 `funding-signal-outbound` at `/workflows/funding-signal-outbound`.
 
@@ -10,17 +10,17 @@ Keys never change once published; to rename, add the old name under
 `aliases`.
 
 A workflow is **several tools in order with the instructions that reach a
-result**. A growth hack is a workflow — there is no second kind. A step
+result**. A growth hack is a workflow; there is no second kind. A step
 names one published tool (`companies/<handle>/tools/<name>.md`), or none when
-the agent does it itself — drafting an email, picking the best match — so
-every workflow is built from defined tools, and every tool page lists the
-workflows that use it — the build links both directions.
+the agent does it itself, such as drafting an email or picking the best
+match. The build links both directions: every workflow page lists its tools,
+and every tool page lists the workflows that use it.
 
 ## The file
 
 A short YAML header with the facts, then the workflow itself in plain
-markdown — the same markdown the published file uses, so what you write here
-reads the same on GitHub as on the site. The build adds the setup for every
+markdown. It is the same markdown the published file uses, so what you write
+here reads the same on GitHub as on the site. The build adds the setup for every
 tool you name and the rules; you write the rest.
 
 ```markdown
@@ -63,10 +63,10 @@ Optional. Anything else the agent should know, in any markdown.
 | `title` | yes | Phrased as the result. |
 | `summary` | yes | One sentence. |
 | `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
-| `tags` | no | The `motion:` and `channel:` entries from `tags.yml` it serves. Its capabilities come from its tools, and `has:*` from their ways in — both computed, never listed. |
+| `tags` | no | The `motion:` and `channel:` entries from `tags.yml` it serves. Its capabilities come from its tools, and `has:*` from their ways in; both are computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
 | `featured` | no | `true` puts it on the featured list at the top of `/workflows`. Set by maintainers; leave it out. |
-| `aliases`, `status` | no | Old names to redirect; `published` (default), `deprecated`, or `draft` — checked, never published, and free to use draft tools. A published workflow uses published tools only. |
+| `aliases`, `status` | no | Old names to redirect; `published` (default), `deprecated`, or `draft` (checked, never published, and free to use draft tools). A published workflow uses published tools only. |
 
 ### The body
 
@@ -75,10 +75,10 @@ heading is caught instead of silently dropped.
 
 | Section | Required | Each entry |
 | --- | --- | --- |
-| `## Inputs` | no | ``- `name`: what it is, e.g. an example`` — the name in snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
-| `## Steps` | yes, 1–10 | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. A step the agent does itself has no link: ``3. **Write emails**. Draft …`` At least one step names a tool. |
+| `## Inputs` | no | ``- `name`: what it is, e.g. an example``. The name is snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
+| `## Steps` | yes, 1–10 | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). What to do.`` The link goes to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. A step the agent does itself has no link: ``3. **Write emails**. Draft …`` At least one step names a tool. |
 | `## Done when` | yes | `- A check that means the job is finished.` |
-| `## Notes` | no | Free markdown, to the end of the file — with `###` and smaller headings, none named like a section the file writes (Set up, Steps, Rules…). |
+| `## Notes` | no | Free markdown to the end of the file, with `###` and smaller headings, none named like a section the file writes (Set up, Steps, Rules…). |
 
 A long entry can wrap onto the next line; keep each entry to one paragraph.
 
@@ -86,9 +86,9 @@ A long entry can wrap onto the next line; keep each entry to one paragraph.
 
 - One tool per step, or none when the agent can do it alone: writing a draft
   needs no service, so leave the link out rather than add a text API.
-- Say what to do with the tool, not how it works — the
-  tool's file already explains setup, and its `notes` (an id to fetch first,
-  a result to poll for) print in your workflow's Set up.
+- Say what to do with the tool, not how it works. The tool's file already
+  explains setup, and its `notes` (an id to fetch first, a result to poll for)
+  print in your workflow's Set up.
 - End a step with **Keep …** when a later step needs its result: "Keep each
   buyer's name, title and work email." The agent carries exactly that
   forward, so nothing a later step needs is left to guesswork.
@@ -102,6 +102,6 @@ A long entry can wrap onto the next line; keep each entry to one paragraph.
 ## Checking your work
 
 ```bash
-pnpm content:check   # every step resolves, every tag exists, the file renders within its caps — each problem names its file, and its line in the body
-pnpm dev             # then open /workflows/<name>.md — the file an agent gets
+pnpm content:check   # every step resolves, every tag exists, the file renders within its caps; each problem names its file, and its line in the body
+pnpm dev             # then open /workflows/<name>.md, the file an agent gets
 ```

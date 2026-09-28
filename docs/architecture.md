@@ -52,8 +52,11 @@ public.
 directly, with no `<Suspense>` and nothing that loads — except the copy
 counts (`lib/usage/copies.ts`), the one request-time datum: each sits in a
 `<Suspense>` hole that streams into the prerendered shell in the same
-response, its fallback holding the space. Detail routes declare
-`generateStaticParams` from `lib/catalog/static-params.ts`, await their params
+response, its fallback holding the space. The header's GitHub star count
+(`lib/github-stars.ts`) is a build-time read, not a hole: a `'use cache'`
+with `revalidate: Infinity` fetches it once while the pages prerender, so it
+is part of every static page and the next deploy refreshes it. Detail routes
+declare `generateStaticParams` from `lib/catalog/static-params.ts`, await their params
 themselves and prerender in full, content inline. The
 listings prerender EVERY item and hand them to a client component
 (`ToolsExplorer`, `CompanyDirectory`, `WorkflowsIndex`) that reads the URL

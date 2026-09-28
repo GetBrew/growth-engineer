@@ -1,160 +1,232 @@
-# growth.engineer
+<div align="center">
 
-The open-source catalog of go-to-market tools and workflows, ready for any agent.
+<img src="https://cdn.growth.engineer/assets/2026/09/growth-engineer-home-e4cdffcb.webp" alt="The growth.engineer home page, with the card that connects Claude to the MCP server">
 
-**Companies** make **tools**; **workflows** put tools to work. Every tool and
-workflow is **one markdown file any agent can run** — the setup, the inputs,
-the steps and the rules, inline. Copying that file is the whole product
-action. The catalog itself is markdown too: every entry is a file in this
-repository, and the site is built from them.
+<h1>growth.engineer</h1>
 
-Brought to you by [Brew](https://brew.new). MIT licensed.
+**Go-to-market tools and workflows, written as files any agent can run.**
 
-## Run a workflow
+An open-source catalog of go-to-market companies, the functions an agent can
+call on each one, and workflows that chain those functions into a result.
+Every entry is a markdown file in this repository.
 
-1. **Pick one** on the site's `/workflows` page, or in [`workflows/`](workflows/).
-2. **Copy its file**: the Copy button on its page, or its URL with `.md`
-   (`/workflows/funding-signal-outbound.md`).
-3. **Paste it into any agent** — Claude, ChatGPT, Cursor, your own. The file
-   tells it what to ask you for (inputs, API keys or sign-ins), how to set up
-   each tool, and the steps; it asks before it sends, spends or changes
-   anything.
+<p>
+  <a href="https://www.growth.engineer"><b>growth.engineer</b></a> &nbsp;·&nbsp;
+  <a href="#connect-your-agent">Connect your agent</a> &nbsp;·&nbsp;
+  <a href="#contribute">Contribute</a> &nbsp;·&nbsp;
+  <a href="#local-development">Develop</a>
+</p>
 
-Or connect your agent to the read-only MCP server at `/mcp` and ask it to
-find a play. Have a play that works? [Add it](CONTRIBUTING.md) — or ask your
-agent to, with the [`add-workflow`](.agents/skills/add-workflow/SKILL.md)
-skill.
+<p>
+  <a href="https://www.growth.engineer"><img alt="Live site" src="https://img.shields.io/website?url=https%3A%2F%2Fwww.growth.engineer&style=flat-square&label=growth.engineer&up_message=live&up_color=2ea44f"></a>
+  <a href="https://github.com/GetBrew/growth-engineer/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/GetBrew/growth-engineer/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <img alt="Read-only MCP server" src="https://img.shields.io/badge/MCP-read--only_server-111?style=flat-square">
+  <img alt="Built with Next.js" src="https://img.shields.io/badge/built_with-Next.js-111?style=flat-square&logo=nextdotjs&logoColor=white">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-111?style=flat-square"></a>
+  <a href="https://github.com/GetBrew/growth-engineer/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/GetBrew/growth-engineer?style=flat-square"></a>
+</p>
 
-## The catalog is the repo
+</div>
+
+---
+
+## What is this?
+
+Handing a go-to-market tool to an agent means digging through docs written for
+people: which key to create, which endpoint to call, whether there is an MCP
+server, what a call costs. And a growth play that works usually lives in
+someone's notes, where no agent can run it.
+
+growth.engineer writes both down as markdown files an agent can follow:
+
+| Entry | Example key | What the file holds |
+| --- | --- | --- |
+| **Company** | `apollo` | Who the company is and how an agent reaches it: MCP server, CLI or API, and the credential each one needs. |
+| **Tool** | `apollo/enrich-person` | One function an agent can call: the exact MCP tool, CLI command or API endpoint, and the docs page that names it. |
+| **Workflow** | `funding-signal-outbound` | Up to ten steps across tools that reach a result: the inputs to ask for, how to set up each tool, the steps, and the checks that mean it is done. |
+
+Paste a workflow file into Claude, ChatGPT, Cursor or any other agent and it
+can run the play. The file tells the agent to ask before it sends a message,
+spends money or changes data.
+
+Facts come from each vendor's own documentation, and every tool links the page
+that documents its call.
+
+---
+
+## Connect your agent
+
+The site runs a read-only MCP server at `https://www.growth.engineer/mcp`
+(Streamable HTTP, no sign-in). Its `search` tool finds workflows, tools and
+companies, and `get` returns a file. Every workflow is also an MCP prompt that
+takes the workflow's inputs as arguments, and three more prompts
+(`contribute-workflow`, `contribute-tool`, `contribute-company`) walk an agent
+through adding to the catalog.
+
+| Client | How to add it |
+| --- | --- |
+| Claude | Settings → Connectors → Add custom connector, then paste the URL. |
+| Claude Code | `claude mcp add --transport http growth-engineer https://www.growth.engineer/mcp` |
+| ChatGPT | Settings → Apps & Connectors → Advanced settings, turn on Developer mode, then Create. Paste the URL and pick No authentication. |
+| Codex | In `~/.codex/config.toml`, add a `[mcp_servers.growth-engineer]` table with `url = "https://www.growth.engineer/mcp"`. |
+| Cursor | In `mcp.json`, add `"growth-engineer": { "url": "https://www.growth.engineer/mcp" }` under `mcpServers`. |
+
+### Or fetch the files
+
+Every file is public. There is no key and no sign-in.
+
+| URL | Returns |
+| --- | --- |
+| `/workflows/<name>.md` | A workflow, ready to paste into an agent |
+| `/tools/<company>/<name>.md` | One tool |
+| `/companies/<handle>.md` | A company and its tools |
+| `/tags/<namespace>/<slug>.md` | Everything with a tag, such as `/tags/capability/enrich-contacts.md` |
+| `/llms.txt` | The catalog's definitions and an index of every file |
+| `/llms-full.txt` | Every company, tool and workflow file in one document |
+
+A company, tool or workflow page also returns its file to a request with
+`Accept: text/markdown`.
+
+```bash
+# A workflow file
+curl https://www.growth.engineer/workflows/funding-signal-outbound.md
+
+# The same file, by content negotiation
+curl -H 'Accept: text/markdown' https://www.growth.engineer/workflows/funding-signal-outbound
+```
+
+---
+
+## Contribute
+
+The catalog lives in this repository, and every addition or fix is a pull
+request.
+
+| To | Add or edit | Field reference | Agent skill |
+| --- | --- | --- | --- |
+| Share a workflow | `workflows/<name>.md` | [`workflows/README.md`](workflows/README.md) | [`add-workflow`](.agents/skills/add-workflow/SKILL.md) |
+| Add a company and its tools | `companies/<handle>/company.md` and `tools/<name>.md` | [`companies/README.md`](companies/README.md) | [`research-company`](.agents/skills/research-company/SKILL.md) |
+| Fix a fact | The file that states it | The same READMEs | |
+
+Check your work before you open the pull request. CI runs the same check.
+
+```bash
+pnpm content:check   # every problem in the catalog, each with its file
+```
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) covers the few rules worth knowing first.
+
+---
+
+## How it works
+
+There is no backend and no database. At build time, a compiler in
+`lib/content/` reads every file, validates it against a strict schema and
+resolves every reference. One renderer turns each company, tool and workflow
+into the file agents fetch, and Next.js prerenders every page from the same
+data. Deploying the site publishes the catalog.
 
 ```
-companies/<handle>/company.md        who the company is, its ways in → /companies/apollo
-companies/<handle>/logo.<ext>        its logo, optional            → /logos/apollo.webp
-companies/<handle>/tools/<name>.md   each function an agent calls  → /tools/apollo/enrich-person
-workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
-tags.yml                             the vocabulary                → capability, motion, channel, category
+companies/  workflows/  tags.yml
+        │
+        ▼
+lib/content/                     read, validate, resolve, derive
+        │
+        ▼
+lib/catalog/render-markdown.ts   one renderer, golden-tested
+        │
+        ├─▶ pages, prerendered at build
+        ├─▶ .md files, /llms.txt, /llms-full.txt
+        └─▶ /mcp, the read-only MCP server
 ```
 
-- A **company** is a folder named by its permanent handle.
-- A **tool is ONE function** — one thing an agent calls, tied to a specific
-  MCP tool, CLI command or API endpoint. A product with three functions is
-  three files, each named after its function and shelved under a capability
-  from `tags.yml`.
-- A **workflow** is up to ten steps, each naming one tool (or none, when the
-  agent does it itself), phrased as the result it reaches, written by a
-  person (`author:` is a GitHub login). A growth hack is a workflow; there is
-  no second kind. The build links every workflow to its tools and every tool
-  to the workflows that use it.
+The one runtime store is optional: an Upstash Redis that counts how often each
+workflow is copied, for its "Uses" and the Hot and Popular lists. Without it,
+the counts are hidden.
 
-Adding your company is a `company.md`, one file per function, and a pull request:
-[`CONTRIBUTING.md`](CONTRIBUTING.md). Each folder's README has the full
-field reference: [`companies/`](companies/README.md),
-[`workflows/`](workflows/README.md), and the vocabulary in
-[`tags.yml`](tags.yml).
+---
 
-## How a file becomes the product
-
-At build time the compiler under `lib/content/` reads every file, validates
-it (strict schemas, resolved references, at most ten steps, unique keys),
-computes what no file states (`has:*` tags, counts, search text) and
-renders each company, tool and workflow through the
-one renderer in `lib/catalog/render-markdown.ts` — the file agents fetch,
-golden-tested byte for byte. Nothing renders at request time; nobody
-hand-edits a rendered file. A deploy is the publish.
+## Project layout
 
 ```
-companies/ workflows/ tags.yml ─▶ lib/content/build-catalog.ts  ─▶  the Catalog (in memory)
-                                        │                              ├▶ pages (prerendered)
-                                        └▶ lib/catalog/render-markdown ├▶ /…/*.md files (prerendered)
-                                                                       └▶ /llms.txt
+growth-engineer/
+├─ companies/<handle>/    company.md, an optional logo, tools/<name>.md
+├─ workflows/<name>.md    one file per workflow
+├─ tags.yml               the tag vocabulary
+├─ app/                   Next.js routes: pages, .md files, /mcp, llms.txt, sitemap
+├─ components/            layout, catalog lists, detail pages, UI primitives
+├─ lib/
+│  ├─ content/            the build-time compiler
+│  ├─ catalog/            keys, the markdown renderer, search, loaders
+│  ├─ mcp/                the MCP server's tools and prompts
+│  ├─ seo/                metadata, structured data, llms.txt
+│  └─ usage/              the optional copy counter
+├─ tests/                 Vitest: golden files, the content suite, schema checks
+├─ docs/                  architecture, data model, file format, setup
+└─ .agents/skills/        add-workflow, research-company
 ```
 
-## For agents
+---
 
-Every company, tool and workflow page answers `Accept: text/markdown` with
-its file, or append `.md`: `/tools/apollo/enrich-person.md`,
-`/workflows/funding-signal-outbound.md`, `/companies/apollo.md`. Each tag has a
-file too, listing everything carrying it: `/tags/capability/enrich-contacts.md`.
-`/llms.txt` defines the four words the catalog uses and
-links every file with a one-line summary; `/llms-full.txt` is every company,
-tool and workflow file in one document. Every HTML page declares its file as a `text/markdown`
-alternate and carries schema.org data (a company is an `Organization`, a tool
-a `SoftwareApplication`, a workflow a `HowTo` with one step per step). No
-sign-in, no rate limit, no key. Any MCP client can connect to `/mcp`
-(Streamable HTTP, read-only): `search` finds workflows, tools and
-companies by words and filters; `get` returns a file, or every tool, workflow
-and company carrying a tag. Every workflow is also an MCP **prompt**, with its
-inputs as arguments, so it runs straight from a client's prompt list, and the
-`contribute-workflow`, `contribute-tool` and `contribute-company` prompts set
-an agent up to add to the catalog.
+## Local development
 
-The definitions themselves live in ONE place, `lib/catalog/definitions.ts`,
-and feed `/llms.txt` and the structured data.
-
-## Running the site
+**Prerequisites:** Node 22+ and pnpm 11 (`corepack enable` installs the pinned
+version).
 
 ```bash
 pnpm install
-pnpm dev                 # http://localhost:3000 — edits under companies/ etc. show on refresh
-pnpm content:check       # validate the catalog: every problem with its file path
+pnpm dev             # http://localhost:3000
 ```
 
-There is no backend and no environment to configure. `.env.example` lists
-the optional variables: the site origin, and the Redis store that counts
-workflow copies for Uses, Hot and Popular ([`docs/setup.md`](docs/setup.md)).
+Edits to `companies/`, `workflows/` and `tags.yml` show on the next refresh.
+Add `.md` to a company, tool or workflow URL to see the file an agent gets.
 
-| Command | What it does |
+Nothing needs configuring. [`.env.example`](.env.example) lists the optional
+variables:
+
+| Variable | Used for |
 | --- | --- |
-| `pnpm content:check` | Parse, validate and render the whole catalog (also part of `pnpm test:run`) |
-| `pnpm check` | Biome + fast typecheck — once per unit of work |
-| `pnpm tsc` / `pnpm lint` | The full gate, at handoff |
-| `pnpm test:run` | The unit suite: goldens, key grammar, search grammar, the content suite |
-| `pnpm build` · `pnpm perf:bundle` | Production build · client bundle ratchet |
-| `pnpm hygiene` | Docs links, the content tree, knip, duplicate deps |
+| `NEXT_PUBLIC_SITE_URL` | The origin printed in `/llms.txt` and page metadata. On Vercel it defaults to the deployment's hostname. |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN` | The copy counter. Without them, the counts are hidden. |
+| `GITHUB_TOKEN` | The star count in the header. Without it, GitHub allows 60 unauthenticated requests an hour. |
 
-## The routes
+### Scripts
 
-| Route | Shows |
+| Script | Does |
 | --- | --- |
-| `/` | Connect over MCP; the newest workflows and tools, companies |
-| `/companies`, `/companies/[handle]` | The directory by category; a company, its tools, workflows using them |
-| `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
-| `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
-| `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
-| `/docs`, `/docs/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository (`/contribute/*` redirects here) |
-| `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
-| `/mcp` | The read-only MCP server — `search` (words, tags, company, author, the tool a workflow uses) and `get` (a file, or a tag's members) — the one dynamic route |
-| `/robots.txt`, `/sitemap.xml`, `…/opengraph-image` | Every crawler allowed (AI crawlers named); every page with its `updated` date; one social card per page, drawn at build |
+| `pnpm dev` | Starts the dev server |
+| `pnpm content:check` | Parses, validates and renders the whole catalog |
+| `pnpm check` | Biome and a fast typecheck |
+| `pnpm test:run` | The unit suite, including the content checks |
+| `pnpm tsc` / `pnpm lint` | The full typecheck and lint |
+| `pnpm build` | Production build |
+| `pnpm validate` | Lint, typecheck and tests together |
+| `pnpm hygiene` | Docs links, the content tree, unused code, duplicate dependencies |
 
-## Layout
+Heavy commands wait their turn behind a lock, so several worktrees can run
+checks without running out of memory. See
+[`docs/maintainers/validation.md`](docs/maintainers/validation.md).
 
-```
-companies/ workflows/ tags.yml  THE DATA — see CONTRIBUTING.md
-app/
-  (site)/                     every page: /, companies, tools, workflows, docs
-  api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
-  mcp/                        the read-only MCP server (lib/mcp/: server.ts is the JSON-RPC, tools.ts the two tools, prompts.ts the prompts)
-  llms.txt, llms-full.txt     the file index with definitions; the whole corpus
-  robots.ts, sitemap.ts       every crawler allowed; every page, with its date
-  **/opengraph-image.tsx      the social cards, one per page, drawn at build
-lib/
-  content/                    the compiler: read the tree, validate, resolve, derive, render
-  catalog/                    PURE: keys, THE renderer, search grammar
-  catalog/definitions.ts      THE definitions (company, tool, workflow, tag), stated once
-  catalog/loaders.ts          what pages read; catalog.ts builds the catalog once per process
-  catalog/discovery.ts        what the sitemap and llms.txt read
-  schemas/content.ts          the strict header schemas (zod)
-  types/catalog.ts            the catalog's types
-  seo/                        per-page metadata, schema.org builders, the llms preamble
-components/                   site chrome, catalog rows and detail pages, ui primitives
-tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives
-docs/                         vision, data model, file format, architecture, setup; maintainers/ for validation, ci, performance
-```
+---
+
+## Deploy
+
+The site runs on Vercel with the settings in [`vercel.json`](vercel.json).
+Every page and file is generated at build time, so merging to `main` publishes
+the catalog. [`docs/setup.md`](docs/setup.md) has the details.
+
+---
 
 ## Docs
 
-[`AGENTS.md`](AGENTS.md) holds the engineering invariants and routes to
-everything else: [`docs/vision.md`](docs/vision.md) ·
-[`docs/data-model.md`](docs/data-model.md) ·
-[`docs/markdown-files.md`](docs/markdown-files.md) ·
-[`docs/architecture.md`](docs/architecture.md) · [`docs/setup.md`](docs/setup.md).
+- [`AGENTS.md`](AGENTS.md): the rules for changing the site, for people and coding agents
+- [`docs/architecture.md`](docs/architecture.md): the request path and what prerenders
+- [`docs/data-model.md`](docs/data-model.md): what the build derives and every rule it enforces
+- [`docs/markdown-files.md`](docs/markdown-files.md): the format of a rendered file
+- [`docs/vision.md`](docs/vision.md): why the catalog exists and where it is going
+
+---
+
+## License
+
+[MIT](LICENSE) © Brew

@@ -4,9 +4,10 @@ import { z } from 'zod'
  * Environment access, validated once, at the edge of the process. A missing
  * variable fails loudly and names itself instead of surfacing three layers
  * away as a 500. The catalog is built from the repository, so what ships to
- * the browser is `NEXT_PUBLIC_*` only. The one server secret is the copy
- * counter's store, read by `copyCounterEnv()` when called — never at import,
- * so no bundle carries it.
+ * the browser is `NEXT_PUBLIC_*` only. The server secrets are the copy
+ * counter's store (`copyCounterEnv()`) and an optional GitHub token
+ * (`githubToken()`), each read when called — never at import, so no bundle
+ * carries them.
  */
 
 /**
@@ -73,4 +74,14 @@ export function copyCounterEnv(): {
     readToken: process.env.KV_REST_API_READ_ONLY_TOKEN,
   })
   return url && token ? { url, token, readToken: readToken ?? token } : null
+}
+
+/**
+ * An optional GitHub token for the header's star count (lib/github-stars.ts).
+ * Without one the GitHub API allows 60 requests an hour per address, and a
+ * build machine often shares its address; any token raises that to 5,000.
+ * It needs no scopes: the repository is public. SERVER ONLY, read when called.
+ */
+export function githubToken(): string | undefined {
+  return present(z.string().optional()).parse(process.env.GITHUB_TOKEN)
 }

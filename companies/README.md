@@ -1,6 +1,6 @@
 # companies/
 
-One folder per company, named by its **handle** — the permanent key that
+One folder per company, named by its **handle**: the permanent key that
 becomes its URL (`/companies/apollo`) and the first half of every tool key
 (`apollo/enrich-person`). Lowercase letters, digits and hyphens; 2–39
 characters; not a reserved word (`tools`, `workflows`, `mcp`, …).
@@ -9,7 +9,7 @@ characters; not a reserved word (`tools`, `workflows`, `mcp`, …).
 companies/<handle>/
   company.md            who they are, and how an agent reaches them: the MCP server, the CLI, the API
   logo.svg              optional: the logo (or logo.png, logo.jpg, logo.webp)
-  tools/<name>.md       one FUNCTION per file: the call on each way in, and where it is documented
+  tools/<name>.md       one function per file: the call on each way in, and where it is documented
 ```
 
 Every file is a YAML header between `---` lines; `company.md` may add a
@@ -62,16 +62,16 @@ Links, Set up, Rules…), and never a `---` or `===` underline.
 | `name` | yes | Display name. |
 | `domain` | yes | Bare domain, no scheme. The website is always `https://<domain>`. |
 | `category` | yes | Must be a `category:` entry in `tags.yml`. |
-| `updated` | yes | `YYYY-MM-DD` — the day these facts were last checked. |
+| `updated` | yes | `YYYY-MM-DD`: the day these facts were last checked. |
 | `tagline`, `docs`, `github` | no | Shown when present. |
-| `mcp`, `cli`, `api` | no | The ways in, at most one of each — see below. |
+| `mcp`, `cli`, `api` | no | The ways in, at most one of each (see below). |
 | `aliases` | no | Old handles that should redirect here after a rename. |
 | `status` | no | `published` (default) or `deprecated`. |
 
 ### The logo
 
 Optional: `logo.svg` beside `company.md` (or `logo.png`, `logo.jpg`,
-`logo.webp`), at most 32 KB — an SVG, or a PNG at most 128px square. It is
+`logo.webp`), at most 32 KB: an SVG, or a PNG no larger than 128px square. It is
 served as is at `/logos/<handle>.<ext>`. Without one, the site draws the
 name's first letter.
 
@@ -88,7 +88,7 @@ below. Each way says how it authenticates:
 
 - `auth` is `none`, `oauth` or `api_key`. An API key names the environment
   variable it goes in (`env: ACME_API_KEY`) and, optionally, where a person
-  gets one (`keyUrl`) — a file never holds a key. Only `api_key` takes `env`
+  gets one (`keyUrl`). A file never holds a key. Only `api_key` takes `env`
   and `keyUrl`.
 - A remote MCP server that takes an API key can't be set up from a file yet;
   list its API instead.
@@ -101,16 +101,16 @@ below. Each way says how it authenticates:
 - Basic auth is `scheme: Basic`, and the variable holds the base64 of the
   pair the docs define (`<key>:`, `<email>:<token>`); the way's `notes` say
   which.
-- `notes` is one line of plain prose, at most 280 characters: what an agent
-  must know to use this way — where a placeholder comes from, how a key is
-  encoded, a setting an admin turns on first. It prints under the way in
+- `notes` is one line of plain prose, at most 280 characters, saying what an
+  agent must know to use this way: where a placeholder comes from, how a key
+  is encoded, a setting an admin turns on first. It prints under the way in
   every tool and workflow file.
 - `docs` links the way's own documentation. `maintainer: <who>` marks a
   community-run way; without it, the way is the vendor's own.
 
 ## tools/\<name\>.md
 
-**A tool is ONE function** — one thing an agent calls. Name the file after
+**A tool is one function**, one thing an agent calls. Name the file after
 the function (`find-work-emails.md`, `create-payment-link.md`); the key is
 `<handle>/<name>`. A product with three functions is three files.
 
@@ -131,18 +131,18 @@ updated: 2026-09-16
   "Enrich a person", "Search people", "Add a lead to a campaign". Name the
   file after it (`enrich-person.md`).
 
-- Each call — `mcp:`, `cli:`, `api:` — must be a way `company.md` declares,
+- Each call (`mcp:`, `cli:`, `api:`) must be a way `company.md` declares,
   written exactly as the vendor's docs print it. A CLI call starts with the
   binary (`acme people enrich`); an API path puts its parameters in braces
   (`POST /contacts/{contact_id}/notes`).
 - `capability` puts the tool on a shelf with every other vendor's version of
   the same job; add one to `tags.yml` in the same pull request if none fits.
 - A published tool needs at least one call and `docs:`, the page that names
-  it. Until it has both, set `status: draft` — a draft has no page and no
+  it. Until it has both, set `status: draft`; a draft has no page and no
   file. A company whose tools are all drafts has no page either.
 - A tool file is its header and nothing else: `summary` says what the call
   does; `notes`, when there is something to know before calling it, says it
-  in one line of at most 280 characters — an id to fetch first, a result to
+  in one line of at most 280 characters: an id to fetch first, a result to
   poll for, a per-call limit, a cost. Every workflow that uses the tool
   prints its notes. A tool or company file renders to at most 80 lines.
 - `aliases` lists old keys to redirect; `status` is `published`,
