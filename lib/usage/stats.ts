@@ -19,10 +19,10 @@ const NO_COPIES: CopyStats = { total: 0, week: 0, lastWeek: 0 }
 export type CopyAngle = 'hot' | 'popular'
 
 export const COPY_ANGLES: Readonly<
-  Record<CopyAngle, { label: string; title: string; unit: string }>
+  Record<CopyAngle, { label: string; title: string }>
 > = {
-  hot: { label: 'Hot', title: 'Hot this week', unit: 'copies this week' },
-  popular: { label: 'Popular', title: 'Most popular', unit: 'copies' },
+  hot: { label: 'Hot', title: 'Hot this week' },
+  popular: { label: 'Popular', title: 'Most popular' },
 }
 
 export function statsFor(stats: CopyStatsByKey, key: string): CopyStats {

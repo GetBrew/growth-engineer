@@ -2,7 +2,6 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, use } from 'react'
-import { CopyMetric } from '@/components/catalog/copy-metric'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { NoResults } from '@/components/common/no-results'
 import { SectionHeading } from '@/components/layout/section-heading'
@@ -18,11 +17,9 @@ import {
 import { useIsClient } from '@/lib/hooks/use-is-client'
 import type { TagChip } from '@/lib/types/catalog'
 import {
-  angleValue,
   COPY_ANGLES,
   type CopyAngle,
   type CopyStatsByKey,
-  statsFor,
 } from '@/lib/usage/stats'
 
 const BASE = '/workflows'
@@ -134,7 +131,7 @@ function emptyCopy(
 type IndexProps = {
   workflows: ReadonlyArray<WorkflowSearchItem>
   tags: ReadonlyArray<TagChip>
-  /** Opens the Hot and Popular angles and each row's count. */
+  /** Opens the Hot and Popular angles, which order by it. */
   stats: StatsPromise
 }
 
@@ -161,28 +158,6 @@ export function WorkflowsIndex(props: IndexProps) {
 
 function WorkflowsIndexFromUrl(props: IndexProps) {
   return <WorkflowsIndexView {...props} params={useSearchParams()} />
-}
-
-/** A row's count, streamed in with the stats: this week's on Hot, else all. */
-function RowMetric({
-  stats,
-  workflowKey,
-  angle,
-}: {
-  stats: NonNullable<StatsPromise>
-  workflowKey: string
-  angle: CopyAngle
-}) {
-  const resolved = use(stats)
-  if (!resolved) {
-    return null
-  }
-  return (
-    <CopyMetric
-      angle={angle}
-      value={angleValue(statsFor(resolved, workflowKey), angle)}
-    />
-  )
 }
 
 const HEADING: Record<Sort, { title: string; description: string }> = {
@@ -219,10 +194,9 @@ function WorkflowsIndexView({
     q,
     sort,
     ...(tag ? { tag } : {}),
-    // Only an angle needs the counts to ORDER; every row streams its own.
+    // Only an angle needs the counts, to order the list.
     stats: isAngle(sort) && stats ? use(stats) : null,
   })
-  const angle: CopyAngle = sort === 'hot' ? 'hot' : 'popular'
   const hasFilters = Boolean(q || tag || sort !== 'featured')
   const empty = emptyCopy(q, hasFilters)
 
@@ -266,24 +240,7 @@ function WorkflowsIndexView({
             title={empty.title}
           />
         ) : (
-          <CatalogList
-            items={rows.map((row) => ({
-              ...workflowListItem(row),
-              ...(stats
-                ? {
-                    metric: (
-                      <Suspense fallback={null}>
-                        <RowMetric
-                          angle={angle}
-                          stats={stats}
-                          workflowKey={row.workflow.key}
-                        />
-                      </Suspense>
-                    ),
-                  }
-                : {}),
-            }))}
-          />
+          <CatalogList items={rows.map(workflowListItem)} />
         )}
       </div>
     </div>

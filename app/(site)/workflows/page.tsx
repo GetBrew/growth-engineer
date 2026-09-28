@@ -25,7 +25,7 @@ export const metadata: Metadata = pageMetadata({
 /**
  * Prerendered in full; the index narrows itself in the browser. The copy
  * counts are the one request-time read: handed over as a promise, they
- * stream into the rows and order the Hot and Popular angles.
+ * order the Hot and Popular angles.
  */
 export default function WorkflowsPage() {
   return (

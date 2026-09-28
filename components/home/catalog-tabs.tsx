@@ -2,23 +2,43 @@
 
 import { type ReactNode, useState } from 'react'
 import { EntityIcon, type EntityKind } from '@/components/common/entity-icon'
+import { ViewMenu } from '@/components/home/view-menu'
 import { CatalogSearch } from '@/components/search/catalog-search'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
+/** One way to order a tab's list, and what its search carries along. */
+type CatalogView = {
+  value: string
+  label: string
+  content: ReactNode
+  params?: Record<string, string | undefined>
+}
+
+/**
+ * A tab shows one list (`content`), or the same list in several orders
+ * (`views`), picked from a dropdown beside the search box.
+ */
 export type CatalogTab = {
   value: string
   label: string
   entity: EntityKind
 
   href: string
-  content: ReactNode
-}
+} & (
+  | { content: ReactNode; views?: undefined }
+  | { views: ReadonlyArray<CatalogView>; content?: undefined }
+)
 
 export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
   const [active, setActive] = useState(tabs[0]?.value)
+  const [viewOf, setViewOf] = useState<Record<string, string>>({})
 
   const activeTab = tabs.find((tab) => tab.value === active) ?? tabs[0]
   const subject = activeTab?.label.toLowerCase() ?? 'the catalog'
+  const viewFor = (tab: CatalogTab) =>
+    tab.views?.find((view) => view.value === viewOf[tab.value]) ??
+    tab.views?.[0]
+  const activeView = activeTab ? viewFor(activeTab) : undefined
 
   return (
     <Tabs
@@ -41,19 +61,42 @@ export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
         </TabsList>
 
         {activeTab ? (
-          <CatalogSearch
-            action={activeTab.href}
-            className="w-full sm:max-w-xs"
-            key={activeTab.value}
-            label={`Search ${subject}`}
-            placeholder={`Search ${subject}`}
-          />
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <CatalogSearch
+              action={activeTab.href}
+              className="min-w-0 flex-1 sm:w-80 sm:flex-none"
+              key={activeTab.value}
+              label={`Search ${subject}`}
+              params={activeView?.params}
+              placeholder={`Search ${subject}`}
+            />
+            {activeTab.views && activeView ? (
+              <ViewMenu
+                onChange={(value) =>
+                  setViewOf((views) => ({ ...views, [activeTab.value]: value }))
+                }
+                value={activeView.value}
+                views={activeTab.views}
+              />
+            ) : null}
+          </div>
         ) : null}
       </div>
 
+      {/* Every view stays mounted, so the ones read at request time stream
+          in with the page and switching never waits. */}
       {tabs.map((tab) => (
         <TabsContent keepMounted key={tab.value} value={tab.value}>
-          {tab.content}
+          {tab.views
+            ? tab.views.map((view) => (
+                <div
+                  hidden={view.value !== viewFor(tab)?.value}
+                  key={view.value}
+                >
+                  {view.content}
+                </div>
+              ))
+            : tab.content}
         </TabsContent>
       ))}
     </Tabs>

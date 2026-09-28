@@ -7,11 +7,7 @@ import {
 } from '@/components/catalog/list'
 import { CatalogShell } from '@/components/home/catalog-shell'
 import { CatalogTabs } from '@/components/home/catalog-tabs'
-import {
-  RankedWorkflows,
-  WorkflowCopies,
-} from '@/components/home/ranked-workflows'
-import { WorkflowAngles } from '@/components/home/workflow-angles'
+import { RankedWorkflows } from '@/components/home/ranked-workflows'
 import {
   loadCompanies,
   loadNewTools,
@@ -31,18 +27,7 @@ export function HomeCatalog() {
   ]
 
   const isCounting = hasCopyCounter()
-  const workflowItems = workflows.map((row) => ({
-    ...workflowListItem(row),
-    ...(isCounting
-      ? {
-          metric: (
-            <Suspense fallback={null}>
-              <WorkflowCopies workflowKey={row.workflow.key} />
-            </Suspense>
-          ),
-        }
-      : {}),
-  }))
+  const workflowItems = workflows.map(workflowListItem)
 
   const toolItems = tools.map(toolListItem)
 
@@ -73,28 +58,23 @@ export function HomeCatalog() {
     />
   )
 
-  // Workflows open three ways when copies are counted: New is prerendered;
-  // Hot and Popular are read at request time and stream into their holes.
+  // Workflows order three ways when copies are counted, from a dropdown
+  // beside the search: New is prerendered; Hot and Popular are read at
+  // request time and stream into their holes.
   const angles: ReadonlyArray<CopyAngle> = ['hot', 'popular']
-  const workflowsContent = (section: (typeof SECTIONS)[number]) =>
-    isCounting ? (
-      <WorkflowAngles
-        panels={[
-          { value: 'new', label: 'New', content: listOf(section) },
-          ...angles.map((angle) => ({
-            value: angle,
-            label: COPY_ANGLES[angle].label,
-            content: (
-              <Suspense fallback={null}>
-                <RankedWorkflows angle={angle} limit={PREVIEW} />
-              </Suspense>
-            ),
-          })),
-        ]}
-      />
-    ) : (
-      listOf(section)
-    )
+  const workflowViews = (section: (typeof SECTIONS)[number]) => [
+    { value: 'new', label: 'New', content: listOf(section) },
+    ...angles.map((angle) => ({
+      value: angle,
+      label: COPY_ANGLES[angle].label,
+      params: { sort: angle },
+      content: (
+        <Suspense fallback={null}>
+          <RankedWorkflows angle={angle} limit={PREVIEW} />
+        </Suspense>
+      ),
+    })),
+  ]
 
   return (
     <CatalogShell>
@@ -104,10 +84,9 @@ export function HomeCatalog() {
           entity: section.entity,
           href: section.href,
           label: section.label,
-          content:
-            section.entity === 'workflow'
-              ? workflowsContent(section)
-              : listOf(section),
+          ...(isCounting && section.entity === 'workflow'
+            ? { views: workflowViews(section) }
+            : { content: listOf(section) }),
         }))}
       />
     </CatalogShell>

@@ -1,4 +1,3 @@
-import { CopyMetric } from '@/components/catalog/copy-metric'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { loadWorkflows } from '@/lib/catalog/loaders'
 import { loadCopyStats } from '@/lib/usage/copies'
@@ -17,7 +16,7 @@ const EMPTY: Record<CopyAngle, string> = {
 
 /**
  * The home page's Hot or Popular workflows: the most copied this week, or
- * ever, each with its count. Read at request time, so render it inside
+ * ever, ranked by their copies. Read at request time, so render it inside
  * `<Suspense>`. Only workflows with copies on the angle are listed.
  */
 export async function RankedWorkflows({
@@ -53,18 +52,7 @@ export async function RankedWorkflows({
         href: `/workflows?sort=${angle}`,
         label: `View all ${COPY_ANGLES[angle].label.toLowerCase()} workflows`,
       }}
-      items={rows.map(({ row, value }) => ({
-        ...workflowListItem(row),
-        metric: <CopyMetric angle={angle} value={value} />,
-      }))}
+      items={rows.map(({ row }) => workflowListItem(row))}
     />
   )
-}
-
-/** One workflow's copies, all time, streamed into its list row. */
-export async function WorkflowCopies({ workflowKey }: { workflowKey: string }) {
-  const stats = await loadCopyStats()
-  return stats ? (
-    <CopyMetric angle="popular" value={statsFor(stats, workflowKey).total} />
-  ) : null
 }

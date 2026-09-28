@@ -33,13 +33,6 @@ export type CatalogListItem = {
   entity?: EntityKind
 
   companies?: ReadonlyArray<CompanyAvatar>
-
-  /**
-   * A count at the row's right edge (`CopyMetric`), or a `<Suspense>` that
-   * streams one in. Its slot has one width on every row, so the counts line
-   * up and the column beside them stays put while they land.
-   */
-  metric?: ReactNode
 }
 
 const MAX_COMPANIES = 3
@@ -87,7 +80,6 @@ function CatalogListRow({
   contributor,
   companies,
   entity,
-  metric,
 }: CatalogListItem) {
   return (
     <Link
@@ -128,10 +120,6 @@ function CatalogListRow({
           />
         </div>
       ) : null}
-
-      {metric === undefined ? null : (
-        <span className="flex w-12 shrink-0 justify-end">{metric}</span>
-      )}
 
       <span className="hidden size-7 shrink-0 place-items-center text-soft opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 group-focus-visible/row:opacity-100 sm:grid">
         <HugeiconsIcon
