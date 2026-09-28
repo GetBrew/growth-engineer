@@ -904,6 +904,11 @@ describe('content rules', () => {
       /keep-crm-clean\.md:11: the link text must be the tool's key: \[acme\/manage-crm\]/,
     ],
     [
+      'a workflow named like an MCP contribute prompt',
+      () => [...VALID, file('workflows/contribute-workflow.md', WORKFLOW)],
+      /workflows\/contribute-workflow\.md: "contribute-workflow" is reserved/,
+    ],
+    [
       'a workflow that renders past its line cap',
       () =>
         edit(

@@ -59,7 +59,7 @@ prints. The layout, the set-up wording and the Rules come from the renderer.
 | `.md` URL | `/tools/apollo/enrich-person.md`, `/workflows/funding-signal-outbound.md`, `/companies/apollo.md`, and a tag's `/tags/capability/enrich-contacts.md` (everything carrying it, `lib/catalog/render-tag.ts`) |
 | A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file, tags included |
-| MCP, at `/mcp` | `search` finds entries by words and filters; `get` with a ref returns the file (and its links as refs); `get` on a tag returns the tag's file |
+| MCP, at `/mcp` | `search` finds entries by words and filters; `get` with a ref returns the file (and its links as refs); `get` on a tag returns the tag's file; every workflow is a prompt (its inputs are the arguments) whose message is the file, and `contribute-*` prompts hand over the contribute guides |
 
 `proxy.ts` rewrites both forms to `app/api/markdown/[...path]/route.ts`. The
 handler reads the rendered document from the in-memory catalog — the same

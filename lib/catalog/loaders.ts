@@ -1,5 +1,9 @@
 import 'server-only'
 
+import {
+  GUIDE_STEPS,
+  type ResolvedGuideStep,
+} from '@/lib/constants/guide-steps'
 import type {
   Company,
   PaletteItem,
@@ -216,6 +220,30 @@ export function loadPaletteItems(): Array<PaletteItem> {
  * file or the section is missing, so a guide can never show a sample that
  * drifted from the catalog — the build fails instead.
  */
+/**
+ * A guide's steps with each sample resolved: a quoted file read from the
+ * repository, or a command as written. What the guide page shows and what
+ * the guide's markdown (the agent copy, the MCP contribute prompt) carries.
+ */
+export function loadGuideSteps(guideId: string): Array<ResolvedGuideStep> {
+  return (GUIDE_STEPS[guideId] ?? []).map((step) => {
+    const { sample, ...rest } = step
+    if (!sample) {
+      return rest
+    }
+    if ('file' in sample) {
+      return {
+        ...rest,
+        sample: {
+          caption: sample.file,
+          code: loadSourceExcerpt(sample.file, sample.excerpt, sample.omit),
+        },
+      }
+    }
+    return { ...rest, sample }
+  })
+}
+
 export function loadSourceExcerpt(
   path: string,
   excerpt?: Excerpt,

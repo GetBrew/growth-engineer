@@ -1,5 +1,5 @@
 import type { EntityKind } from '@/components/common/entity-icon'
-import { GUIDE_STEPS } from '@/lib/constants/guide-steps'
+import type { ResolvedGuideStep } from '@/lib/constants/guide-steps'
 import { GITHUB_URL, repoFileUrl } from '@/lib/github'
 
 /**
@@ -114,13 +114,23 @@ export function nextGuide(id: string): Guide | undefined {
 
 /**
  * The guide as one markdown file: what the agent menu copies and downloads,
- * the way it copies a tool or workflow file on the catalog's detail pages.
- * It hands an agent everything it needs to start: the repository, the
- * reference to read, the skill that does it end to end, and the steps.
+ * and what the MCP contribute prompt hands over. It gives an agent everything
+ * it needs to start — the repository, the reference, the skill that does it
+ * end to end — then each step with the real file it quotes, so the syntax is
+ * shown, not described. `extra` is a section the caller adds before the steps.
  */
-export function guideMarkdown(guide: Guide): string {
-  const steps = (GUIDE_STEPS[guide.id] ?? [])
-    .map((step, index) => `${index + 1}. ${step.title}\n\n${step.detail}`)
+export function guideMarkdown(
+  guide: Guide,
+  resolvedSteps: ReadonlyArray<ResolvedGuideStep>,
+  extra = ''
+): string {
+  const steps = resolvedSteps
+    .map((step, index) => {
+      const sample = step.sample
+        ? `\n\n\`${step.sample.caption}\`:\n\n\`\`\`\n${step.sample.code}\n\`\`\``
+        : ''
+      return `### ${index + 1}. ${step.title}\n\n${step.detail}${sample}`
+    })
     .join('\n\n')
   const start = [
     `Work in a clone of ${GITHUB_URL}.`,
@@ -130,5 +140,6 @@ export function guideMarkdown(guide: Guide): string {
   ]
     .map((line) => `- ${line}`)
     .join('\n')
-  return `# ${guide.title}\n\n${guide.intro}\n\n## Before you start\n\n${start}\n\n## How to create\n\n${steps}\n`
+  const more = extra ? `\n\n${extra.trim()}` : ''
+  return `# ${guide.title}\n\n${guide.intro}\n\n## Before you start\n\n${start}${more}\n\n## How to create\n\n${steps}\n`
 }

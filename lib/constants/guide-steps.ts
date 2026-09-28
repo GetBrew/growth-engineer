@@ -34,6 +34,11 @@ export type GuideStep = {
   sample?: GuideSample
 }
 
+/** A step with its sample resolved: a quoted file, or a command. */
+export type ResolvedGuideStep = Omit<GuideStep, 'sample'> & {
+  sample?: { caption: string; code: string }
+}
+
 const CHECK_DETAIL =
   'One command parses every file, resolves every reference and renders the result. It reports every problem at once, each with the file that caused it (and the line, for a problem in the body). The same checks run again in CI on your pull request.'
 

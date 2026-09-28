@@ -80,6 +80,16 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   '_next',
 ])
 
+/**
+ * Workflow keys the MCP server's contribute prompts use (lib/mcp/prompts.ts):
+ * a workflow named like one would shadow it in a client's prompt list.
+ */
+export const RESERVED_WORKFLOW_KEYS: ReadonlySet<string> = new Set([
+  'contribute-workflow',
+  'contribute-tool',
+  'contribute-company',
+])
+
 export function isValidKeyPart(value: string): boolean {
   return KEY_PART.test(value)
 }

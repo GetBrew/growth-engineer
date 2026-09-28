@@ -4,10 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CodeText } from '@/components/common/code-text'
-import {
-  GuideSteps,
-  type ResolvedGuideStep,
-} from '@/components/contribute/guide-steps'
+import { GuideSteps } from '@/components/contribute/guide-steps'
 import { GuideVideo } from '@/components/contribute/guide-video'
 import { CopyFileButton } from '@/components/detail/copy-file-button'
 import { DetailHeader } from '@/components/detail/header'
@@ -17,8 +14,7 @@ import { PANEL_HEADING } from '@/components/detail/styles'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
-import { loadSourceExcerpt } from '@/lib/catalog/loaders'
-import { GUIDE_STEPS, type GuideStep } from '@/lib/constants/guide-steps'
+import { loadGuideSteps } from '@/lib/catalog/loaders'
 import {
   findGuide,
   GUIDES,
@@ -61,24 +57,6 @@ export async function generateMetadata({
     : {}
 }
 
-/** A quoted file is read from the repository at build; a command is as written. */
-function resolveStep(step: GuideStep): ResolvedGuideStep {
-  const { sample, ...rest } = step
-  if (!sample) {
-    return rest
-  }
-  if ('file' in sample) {
-    return {
-      ...rest,
-      sample: {
-        caption: sample.file,
-        code: loadSourceExcerpt(sample.file, sample.excerpt, sample.omit),
-      },
-    }
-  }
-  return { ...rest, sample }
-}
-
 /**
  * Built on the same shell as every other detail page: the page container at
  * its usual width, a back link, `DetailHeader`, then the two-column grid with
@@ -102,8 +80,8 @@ async function GuideDetail({ params }: { params: Params }) {
     notFound()
   }
 
-  const markdown = guideMarkdown(found)
-  const steps = (GUIDE_STEPS[found.id] ?? []).map(resolveStep)
+  const steps = loadGuideSteps(found.id)
+  const markdown = guideMarkdown(found, steps)
   const previous = previousGuide(found.id)
   const next = nextGuide(found.id)
 

@@ -1,4 +1,4 @@
-import { isValidKeyPart } from '@/lib/catalog/keys'
+import { isValidKeyPart, RESERVED_WORKFLOW_KEYS } from '@/lib/catalog/keys'
 import type { Tag, Tool, Workflow } from '@/lib/types/catalog'
 import {
   dateToMs,
@@ -149,12 +149,15 @@ function toWorkflow(
     aliases: data.aliases,
     // Both halves of each tool key: `apollo/enrich-person` finds the workflow
     // by "apollo" as well as by "enrich" — its rows show the vendor's logo.
+    // Its step titles and input names too: "trial" finds a `trial_plan`.
     searchText: searchTextOf(
       [
         data.title,
         data.summary,
         data.author,
         ...toolKeys.flatMap((key) => key.split('/')),
+        ...steps.map((step) => step.title),
+        ...data.inputs.map((input) => input.name.replaceAll('_', ' ')),
       ],
       tags,
       context.tags
@@ -164,9 +167,12 @@ function toWorkflow(
 
 /** Why a workflow file cannot be placed, or null when its path is fine. */
 function workflowPathProblem(file: WorkflowFile): string | null {
-  return isValidKeyPart(file.name)
-    ? null
-    : `"${file.name}" is not a valid workflow name: lowercase letters, digits and hyphens`
+  if (!isValidKeyPart(file.name)) {
+    return `"${file.name}" is not a valid workflow name: lowercase letters, digits and hyphens`
+  }
+  return RESERVED_WORKFLOW_KEYS.has(file.name)
+    ? `"${file.name}" is reserved: it names an MCP contribute prompt`
+    : null
 }
 
 export function buildWorkflows(

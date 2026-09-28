@@ -11,10 +11,13 @@ import {
   isValidTagKey,
   parseRef,
   RESERVED_HANDLES,
+  RESERVED_WORKFLOW_KEYS,
   refToFilePath,
   refToPath,
   tagFilePath,
 } from '@/lib/catalog/keys'
+import { GUIDES } from '@/lib/constants/guides'
+import { CONTRIBUTE_PREFIX } from '@/lib/mcp/prompts'
 import { REPO_ROOT } from './helpers/source-files'
 
 describe('key grammar', () => {
@@ -178,5 +181,16 @@ describe('tag files', () => {
     '/tools/capability/enrich-contacts.md',
   ])('%s is not a tag file', (pathname) => {
     expect(filePathToTagKey(pathname)).toBeNull()
+  })
+})
+
+describe('reserved workflow keys', () => {
+  test('every MCP contribute prompt name is reserved from workflows', () => {
+    for (const guide of GUIDES) {
+      expect(
+        RESERVED_WORKFLOW_KEYS.has(`${CONTRIBUTE_PREFIX}${guide.id}`),
+        guide.id
+      ).toBe(true)
+    }
   })
 })

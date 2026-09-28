@@ -5,6 +5,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { GET, OPTIONS, POST } from '@/app/mcp/route'
 import { getCatalog } from '@/lib/catalog/catalog'
+import { GUIDES } from '@/lib/constants/guides'
 import { SITE_ORIGIN } from '@/lib/env'
 import { PROTOCOL_VERSIONS } from '@/lib/mcp/server'
 
@@ -141,6 +142,71 @@ describe('/mcp with the MCP SDK client', () => {
         arguments: { ref: `workflow:${key}@1` },
       })
       expect(pinned.isError).toBe(true)
+    } finally {
+      await client.close()
+    }
+  })
+})
+
+describe('/mcp prompts, with the MCP SDK client', () => {
+  test('every workflow is a prompt that runs it, with its inputs as arguments', async () => {
+    const client = new Client({ name: 'test', version: '1.0.0' })
+    await client.connect(new StreamableHTTPClientTransport(endpoint))
+    try {
+      const catalog = getCatalog()
+      const { prompts } = await client.listPrompts()
+      const names = prompts.map((prompt) => prompt.name)
+      for (const key of catalog.order.workflowsFeatured) {
+        expect(names, key).toContain(key)
+      }
+      for (const guide of GUIDES) {
+        expect(names).toContain(`contribute-${guide.id}`)
+      }
+
+      const [key = ''] = catalog.order.workflowsFeatured
+      const workflow = catalog.workflows.get(key)
+      const listed = prompts.find((prompt) => prompt.name === key)
+      expect(listed?.arguments?.map((argument) => argument.name)).toEqual(
+        workflow?.inputs.map((input) => input.name)
+      )
+
+      const [first] = workflow?.inputs ?? []
+      const filled = await client.getPrompt({
+        name: key,
+        arguments: first ? { [first.name]: 'a value I gave' } : {},
+      })
+      const [message] = filled.messages
+      const text = message?.content.type === 'text' ? message.content.text : ''
+      expect(text).toContain(
+        catalog.documents.get(`workflow:${key}`)?.markdown ?? '∅'
+      )
+      if (first) {
+        expect(text).toContain(`- \`${first.name}\`: a value I gave`)
+      }
+    } finally {
+      await client.close()
+    }
+  })
+
+  test('a contribute prompt hands over the guide, and an unknown name is refused', async () => {
+    const client = new Client({ name: 'test', version: '1.0.0' })
+    await client.connect(new StreamableHTTPClientTransport(endpoint))
+    try {
+      const guide = await client.getPrompt({
+        name: 'contribute-workflow',
+        arguments: { idea: 'alert sales when a trial signs up' },
+      })
+      const [message] = guide.messages
+      const text = message?.content.type === 'text' ? message.content.text : ''
+      expect(text).toContain('# Add a workflow')
+      expect(text).toContain('## With this MCP server')
+      // The real file it quotes, so the syntax is shown, not described.
+      expect(text).toContain('`workflows/funding-signal-outbound.md`:')
+      expect(text).toContain('## Steps')
+      expect(text).toContain('alert sales when a trial signs up')
+      await expect(
+        client.getPrompt({ name: 'no-such-prompt' })
+      ).rejects.toThrow(/Unknown prompt/)
     } finally {
       await client.close()
     }
