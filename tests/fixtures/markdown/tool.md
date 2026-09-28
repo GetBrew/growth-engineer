@@ -1,6 +1,6 @@
 ---
-ref: tool:clay/enrich-contacts
-name: Enrich contacts
+ref: tool:clay/run-routine
+name: Run a routine
 company: company:clay
 workflows: []
 access: [mcp, api]
@@ -8,9 +8,11 @@ tags: [capability:enrich-contacts, category:data-provider, has:api, has:mcp]
 updated: 2026-09-16
 ---
 
-# Enrich contacts
+# Run a routine
 
-Adds firmographic and person data to a contact or account. Clay does this.
+Runs an enrichment function, such as Work Email, on up to 100 records and returns a run id.
+
+Note: List routines first to get the routine id, then poll the run id for results.
 
 ## Set up
 
@@ -24,19 +26,19 @@ Add this server to your agent's MCP settings, then sign in when asked.
 { "mcpServers": { "clay": { "url": "https://mcp.clay.example/mcp" } } }
 ```
 
-Call the MCP tool `clay_enrich_contacts`.
+Call the MCP tool `clay_run_routine`.
 
 Server URL: https://mcp.clay.example/mcp
 
 ### API (official)
 
 - Base URL: https://api.clay.example/v1
-- Endpoint: `POST /enrich-contacts`
+- Endpoint: `POST /routines/{routine_id}/run`
 - Auth: send the header `Authorization: Bearer $CLAY_API_KEY`
 - Get a key: https://app.clay.example/settings/api
 - Docs: https://docs.clay.example
 
-Before doing anything else, make one read-only call to confirm access.
+Before anything else, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.
 
 ## Rules
 

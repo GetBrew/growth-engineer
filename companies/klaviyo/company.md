@@ -21,7 +21,7 @@ api:
   url: https://a.klaviyo.com
   auth: api_key
   env: KLAVIYO_API_KEY
-  header: "Authorization: Klaviyo-API-Key"
+  scheme: Klaviyo-API-Key
   keyUrl: https://www.klaviyo.com/create-private-api-key
   docs: https://developers.klaviyo.com/en/reference/api_overview
 updated: 2026-09-27

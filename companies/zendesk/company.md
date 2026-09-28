@@ -12,6 +12,7 @@ api:
   env: ZENDESK_OAUTH_TOKEN
   keyUrl: https://developer.zendesk.com/documentation/authentication/oauth-migration/#getting-your-first-token
   docs: https://developer.zendesk.com/api-reference/ticketing/introduction/
+  notes: "`{subdomain}` is your Zendesk subdomain, as in `acme.zendesk.com`. Tokens from OAuth clients created since April 30, 2026 expire after 30 minutes."
 updated: 2026-09-27
 ---
 

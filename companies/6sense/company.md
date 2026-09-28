@@ -13,7 +13,7 @@ api:
   url: https://api.6sense.com
   auth: api_key
   env: SIXSENSE_API_KEY
-  header: "Authorization: Token"
+  scheme: Token
   keyUrl: https://abm.6sense.com/login?redirect=%2Fsettings%2Fintegration%2Fapitokenmanagement
   docs: https://api.6sense.com/docs/
 updated: 2026-09-27

@@ -4,7 +4,6 @@ summary: Resend a campaign to the people who never opened it, with a subject lin
 author: thedogwiththedataonit
 tags:
   - channel:email
-featured: 12
 updated: 2026-09-27
 ---
 

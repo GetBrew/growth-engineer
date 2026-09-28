@@ -128,13 +128,14 @@ describe('the content tree', () => {
     }
   })
 
-  test('workflow orders: featured is editorial, new is by date, same set', () => {
-    const ranked = [...catalog.workflows.values()]
-      .filter((workflow) => workflow.featured !== undefined)
-      .sort((a, b) => (a.featured ?? 0) - (b.featured ?? 0))
-    expect(catalog.order.workflowsFeatured.slice(0, ranked.length)).toEqual(
-      ranked.map((workflow) => workflow.key)
+  test('workflow orders: featured first, new is by date, same set', () => {
+    const featured = [...catalog.workflows.values()].filter(
+      (workflow) => workflow.isFeatured
     )
+    expect(featured.length).toBeGreaterThan(0)
+    expect(
+      new Set(catalog.order.workflowsFeatured.slice(0, featured.length))
+    ).toEqual(new Set(featured.map((workflow) => workflow.key)))
     expect([...catalog.order.workflowsNew].sort()).toEqual(
       [...catalog.order.workflowsFeatured].sort()
     )

@@ -5,7 +5,7 @@ capability: track-product-usage
 docs: https://posthog.com/docs/api/query
 mcp: execute-sql
 cli: posthog-cli api call execute-sql
-api: POST /api/projects/:project_id/query/
+api: POST /api/projects/{project_id}/query/
 aliases:
   - posthog/track-product-usage
   - posthog/track-intent

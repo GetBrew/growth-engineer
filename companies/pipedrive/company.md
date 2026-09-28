@@ -11,12 +11,13 @@ mcp:
   auth: oauth
   docs: https://support.pipedrive.com/en/article/mcp
 api:
-  url: https://{companydomain}.pipedrive.com
+  url: https://{company_domain}.pipedrive.com
   auth: api_key
   env: PIPEDRIVE_API_KEY
   header: x-api-token
   keyUrl: https://app.pipedrive.com/settings/api
   docs: https://developers.pipedrive.com/docs/api/v1
+  notes: "`{company_domain}` comes from `GET https://api.pipedrive.com/v1/users/me`. Persons, organizations, deals and activities are on `/api/v2/`; leads and notes on `/api/v1/`."
 updated: 2026-09-27
 ---
 

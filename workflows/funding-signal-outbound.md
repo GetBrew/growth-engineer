@@ -5,7 +5,7 @@ author: thedogwiththedataonit
 tags:
   - motion:outbound
   - channel:email
-featured: 1
+featured: true
 updated: 2026-09-27
 ---
 

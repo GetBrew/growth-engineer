@@ -6,7 +6,6 @@ tags:
   - motion:midbound
   - motion:plg
   - channel:chat
-featured: 7
 updated: 2026-09-27
 ---
 

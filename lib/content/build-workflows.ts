@@ -138,7 +138,7 @@ function toWorkflow(
     steps,
     doneWhen: data.doneWhen,
     ...(notes ? { notes } : {}),
-    ...(data.featured === undefined ? {} : { featured: data.featured }),
+    isFeatured: data.featured,
     toolKeys,
     toolCount: toolKeys.length,
     status: data.status === 'deprecated' ? 'deprecated' : 'published',
@@ -173,7 +173,6 @@ export function buildWorkflows(
 ): { workflows: Map<string, Workflow>; drafts: Set<string> } {
   const workflows = new Map<string, Workflow>()
   const drafts = new Set<string>()
-  const featuredRanks = new Map<number, string>()
   for (const file of files) {
     if (file.kind !== 'workflow') {
       continue
@@ -189,19 +188,6 @@ export function buildWorkflows(
     }
     checkTags(file, parsed.data.tags, context.tags, problems)
     checkSteps(file, parsed, context, problems)
-    // A rank is unique across every file, drafts included: publishing one
-    // must not collide with a rank already taken.
-    const { featured } = parsed.data
-    if (featured !== undefined) {
-      const holder = featuredRanks.get(featured)
-      if (holder) {
-        problems.add(
-          file.path,
-          `featured: rank ${featured} is already taken by ${holder}`
-        )
-      }
-      featuredRanks.set(featured, file.name)
-    }
     if (parsed.data.status === 'draft') {
       drafts.add(file.name)
     } else {

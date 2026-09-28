@@ -17,7 +17,9 @@ import { formatRef } from './keys'
  * connected" into "call `apollo_people_match`".
  *
  * A way in belongs to the COMPANY, so a workflow using several of one
- * company's tools sets the way up once and lists every call on it.
+ * company's tools sets the way up once and lists every call on it. What an
+ * agent must know before calling travels with it: a way's `notes` under the
+ * way, a tool's `notes` under its company's setup.
  *
  * PURE MODULE: no I/O, deterministic.
  */
@@ -71,22 +73,23 @@ function mcpConfig(
   return `{ "mcpServers": { ${slug}: { "command": ${JSON.stringify(command)}, "args": ${JSON.stringify(args)} } } }`
 }
 
+/**
+ * The header an API key travels in: `Authorization: Bearer` when the file
+ * names neither, the scheme word when it names one, the key as is otherwise.
+ */
 function authHeaderLine(access: Access): string | null {
   const { auth } = access
   switch (auth.method) {
     case 'api_key': {
-      // `header` is the header name plus any scheme: "Authorization: Bearer",
-      // "X-Api-Key". A bare name gets its colon; a scheme already has one.
-      const header = auth.header ?? 'Authorization: Bearer'
-      const separator = header.includes(':') ? '' : ':'
-      return `- Auth: send the header \`${header}${separator} $${auth.envVar}\``
+      const header = auth.header ?? 'Authorization'
+      const scheme = auth.scheme ?? (auth.header ? undefined : 'Bearer')
+      const value = scheme ? `${scheme} $${auth.envVar}` : `$${auth.envVar}`
+      return `- Auth: send the header \`${header}: ${value}\``
     }
     case 'oauth':
       return '- Auth: OAuth; sign in when the agent asks'
-    case 'none':
-      return '- Auth: none'
     default:
-      return null
+      return '- Auth: none'
   }
 }
 
@@ -94,13 +97,6 @@ function keyLine(access: Access): string | null {
   return access.auth.method === 'api_key' && access.auth.keyUrl
     ? `- Get a key: ${access.auth.keyUrl}`
     : null
-}
-
-function mcpSetupSentence(access: Extract<Access, { type: 'mcp' }>): string {
-  const base = "Add this server to your agent's MCP settings"
-  return access.auth.method === 'oauth'
-    ? `${base}, then sign in when asked.`
-    : `${base}.`
 }
 
 function envVarLine(access: Access): string | null {
@@ -140,10 +136,10 @@ function callLines(calls: ReadonlyArray<WayCall>): Array<string> {
   })
 }
 
-function maintainerLine(access: Access): string | null {
+function maintainerPrefix(access: Access): Array<string> {
   return access.official || !access.maintainer
-    ? null
-    : `Community-maintained by ${access.maintainer}.`
+    ? []
+    : [`Community-maintained by ${access.maintainer}.`, '']
 }
 
 function withEnvVar(lines: Array<string>, access: Access): Array<string> {
@@ -151,98 +147,96 @@ function withEnvVar(lines: Array<string>, access: Access): Array<string> {
   return env ? [...lines, '', env] : lines
 }
 
-function mcpBody(
+/** A way's own notes: where a `{placeholder}` comes from, how a key is encoded. */
+export function wayNoteLines(access: Access): Array<string> {
+  return access.notes ? ['', `Note: ${access.notes}`] : []
+}
+
+function mcpSentence(
   access: Extract<Access, { type: 'mcp' }>,
-  calls: ReadonlyArray<WayCall>,
-  companyKey: string,
-  sentence: string
-): Array<string> {
-  return withEnvVar(
-    [
-      sentence,
-      '',
-      '```json',
-      mcpConfig(access, companyKey),
-      '```',
-      '',
-      ...callLines(calls),
-    ],
-    access
-  )
+  isOnlyWay: boolean
+): string {
+  const base = isOnlyWay
+    ? "Use the MCP server. Add it to your agent's MCP settings"
+    : "Add this server to your agent's MCP settings"
+  return access.auth.method === 'oauth'
+    ? `${base}, then sign in when asked.`
+    : `${base}.`
 }
 
-function cliBody(
-  access: Extract<Access, { type: 'cli' }>,
-  calls: ReadonlyArray<WayCall>,
-  sentence: string
-): Array<string> {
-  return withEnvVar(
-    [
-      sentence,
-      '',
-      '```sh',
-      access.installCommand,
-      `${access.binary} --version`,
-      '```',
-      '',
-      ...callLines(calls),
-    ],
-    access
-  )
-}
-
-function apiBody(
+function apiLines(
   access: Extract<Access, { type: 'api' }>,
   calls: ReadonlyArray<WayCall>,
-  options: { includeDocs: boolean }
+  includeDocs: boolean
 ): Array<string> {
-  const lines = [`- Base URL: ${access.baseUrl}`, ...callLines(calls)]
-  const auth = authHeaderLine(access)
-  if (auth) {
-    lines.push(auth)
-  }
-  const key = keyLine(access)
-  if (key) {
-    lines.push(key)
-  }
-  if (options.includeDocs && access.docsUrl) {
-    lines.push(`- Docs: ${access.docsUrl}`)
-  }
-  return lines
+  return [
+    `- Base URL: ${access.baseUrl}`,
+    ...callLines(calls),
+    ...[authHeaderLine(access), keyLine(access)].filter(
+      (line): line is string => line !== null
+    ),
+    ...(includeDocs && access.docsUrl ? [`- Docs: ${access.docsUrl}`] : []),
+  ]
 }
 
 /**
- * The body of one way in, without its heading: set up once, then the call of
- * every tool given. The ways are one company's, so they share everything but
- * the call.
+ * The body of one way in, without its heading and notes: set up once, then
+ * the call of every tool given. The ways are one company's, so they share
+ * everything but the call. `isOnlyWay` is a workflow company with one way
+ * shown: the body then names which way it is.
  */
 export function accessBody(
   calls: ReadonlyArray<WayCall>,
   companyKey: string,
-  options: { includeDocs: boolean }
+  options: { includeDocs: boolean; isOnlyWay?: boolean }
 ): Array<string> {
   const [first] = calls
   if (!first) {
     return []
   }
   const { access } = first
-  const maintainer = maintainerLine(access)
-  const prefix = maintainer ? [maintainer, ''] : []
+  const isOnlyWay = options.isOnlyWay ?? false
+  const prefix = maintainerPrefix(access)
   switch (access.type) {
     case 'mcp':
       return [
         ...prefix,
-        ...mcpBody(access, calls, companyKey, mcpSetupSentence(access)),
+        ...withEnvVar(
+          [
+            mcpSentence(access, isOnlyWay),
+            '',
+            '```json',
+            mcpConfig(access, companyKey),
+            '```',
+            '',
+            ...callLines(calls),
+          ],
+          access
+        ),
       ]
     case 'cli':
       return [
         ...prefix,
-        ...cliBody(access, calls, 'Install the command, then confirm it runs.'),
+        ...withEnvVar(
+          [
+            isOnlyWay
+              ? 'Use the CLI. Install the command, then confirm it runs.'
+              : 'Install the command, then confirm it runs.',
+            '',
+            '```sh',
+            access.installCommand,
+            `${access.binary} --version`,
+            '```',
+            '',
+            ...callLines(calls),
+          ],
+          access
+        ),
       ]
-    case 'api':
-      return [...prefix, ...apiBody(access, calls, options)]
-    default:
-      return prefix
+    default: {
+      const lines = [...prefix, ...apiLines(access, calls, options.includeDocs)]
+      return isOnlyWay ? ['Use the API.', '', ...lines] : lines
+    }
   }
 }
 
@@ -253,10 +247,8 @@ export function accessHeading(access: Access): string {
       return `MCP (${origin}, ${access.transport})`
     case 'cli':
       return `CLI (${origin})`
-    case 'api':
-      return `API (${origin})`
     default:
-      return origin
+      return `API (${origin})`
   }
 }
 
@@ -267,47 +259,6 @@ export function serverUrlLine(access: Access): string | null {
     : null
 }
 
-/** A company's setup in a workflow when exactly one way in is shown. */
-function singleAccessSetup(
-  calls: ReadonlyArray<WayCall>,
-  companyKey: string
-): Array<string> {
-  const [first] = calls
-  if (!first) {
-    return []
-  }
-  const { access } = first
-  const maintainer = maintainerLine(access)
-  const prefix = maintainer ? [maintainer, ''] : []
-  switch (access.type) {
-    case 'mcp': {
-      const sentence = mcpSetupSentence(access).replace(
-        "Add this server to your agent's MCP settings",
-        "Use the MCP server. Add it to your agent's MCP settings"
-      )
-      return [...prefix, ...mcpBody(access, calls, companyKey, sentence)]
-    }
-    case 'cli':
-      return [
-        ...prefix,
-        ...cliBody(
-          access,
-          calls,
-          'Use the CLI. Install the command, then confirm it runs.'
-        ),
-      ]
-    case 'api':
-      return [
-        'Use the API.',
-        '',
-        ...prefix,
-        ...apiBody(access, calls, { includeDocs: false }),
-      ]
-    default:
-      return prefix
-  }
-}
-
 /** A tool as a workflow's setup sees it. */
 export type SetupTool = {
   key: string
@@ -315,11 +266,31 @@ export type SetupTool = {
   /** Who makes it: two vendors' "Enrich contacts" must read differently. */
   companyName: string
   access: ReadonlyArray<Access>
+  /** What an agent must know before it calls. */
+  notes?: string
 }
 
 /** A tool key's company: `apollo/search-people` → `apollo`. */
 function companyOf(tool: SetupTool): string {
   return tool.key.split('/')[0] ?? tool.key
+}
+
+/** The group's tool notes: one `Note:` for a lone tool, a list for several. */
+function toolNoteLines(group: ReadonlyArray<SetupTool>): Array<string> {
+  const noted = group.filter((tool) => tool.notes)
+  const [only] = noted
+  if (!only) {
+    return []
+  }
+  if (group.length === 1) {
+    return ['', `Note: ${only.notes}`]
+  }
+  return [
+    '',
+    'Notes:',
+    '',
+    ...noted.map((tool) => `- ${tool.name}: ${tool.notes}`),
+  ]
 }
 
 /**
@@ -354,15 +325,22 @@ function companySetup(group: ReadonlyArray<SetupTool>): Array<string> {
     )
   ).map((access) => callsByType.get(access.type) ?? [])
   const companyKey = companyOf(first)
-  if (ways.length === 0) {
+  const notes = toolNoteLines(group)
+  const [only] = ways
+  if (!only?.[0]) {
     return [
       ...heading,
       'No documented way in yet. Ask the user how they reach this tool.',
+      ...notes,
     ]
   }
-  const [only] = ways
-  if (ways.length === 1 && only) {
-    return [...heading, ...singleAccessSetup(only, companyKey)]
+  if (ways.length === 1) {
+    return [
+      ...heading,
+      ...accessBody(only, companyKey, { includeDocs: false, isOnlyWay: true }),
+      ...wayNoteLines(only[0].access),
+      ...notes,
+    ]
   }
   const options = ways.flatMap((calls) =>
     calls[0]
@@ -371,6 +349,7 @@ function companySetup(group: ReadonlyArray<SetupTool>): Array<string> {
           `#### ${accessHeading(calls[0].access)}`,
           '',
           ...accessBody(calls, companyKey, { includeDocs: false }),
+          ...wayNoteLines(calls[0].access),
         ]
       : []
   )
@@ -383,6 +362,7 @@ function companySetup(group: ReadonlyArray<SetupTool>): Array<string> {
       ? 'Use the first option your agent supports.'
       : 'For each call, use the first option your agent supports that lists it.',
     ...options,
+    ...notes,
   ]
 }
 
@@ -397,8 +377,8 @@ export function workflowSetup(tools: ReadonlyArray<SetupTool>): Array<string> {
     '## Set up',
     ...[...groups.values()].flatMap(companySetup),
     '',
-    tools.length > 1
-      ? 'Make one read-only call to each tool to confirm access.'
-      : 'Make one read-only call to confirm access.',
+    groups.size > 1
+      ? 'Before step 1, confirm access to each service with one read-only call, like a list or a search. Never send, create or spend anything to test access.'
+      : 'Before step 1, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.',
   ]
 }

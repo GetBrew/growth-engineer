@@ -9,13 +9,15 @@ mcp:
   url: https://mcp.gong.io/mcp
   auth: oauth
   docs: https://help.gong.io/docs/about-gong-mcp-server
+  notes: A Gong tech admin registers the MCP integration first. It is read-only, and every answer spends Gong credits.
 api:
   url: https://{company}.api.gong.io
   auth: api_key
   env: GONG_API_KEY
-  header: "Authorization: Basic"
+  scheme: Basic
   keyUrl: https://app.gong.io/company/api
   docs: https://help.gong.io/apidocs/introduction-2
+  notes: "`{company}` is your API host prefix from Gong's API settings, as in `company-17.api.gong.io`. `GONG_API_KEY` holds the base64 of `<access key>:<secret>`; 3 calls a second, 10,000 a day."
 updated: 2026-09-27
 ---
 

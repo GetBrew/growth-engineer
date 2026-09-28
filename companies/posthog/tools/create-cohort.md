@@ -5,6 +5,6 @@ capability: build-audience
 docs: https://posthog.com/docs/api/cohorts
 mcp: cohorts-create
 cli: posthog-cli api call cohorts-create
-api: POST /api/projects/:project_id/cohorts/
+api: POST /api/projects/{project_id}/cohorts/
 updated: 2026-09-26
 ---

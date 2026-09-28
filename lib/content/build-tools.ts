@@ -21,8 +21,8 @@ import type { ContentFile } from './read-tree'
  * Tools: one function each, `companies/<handle>/tools/<name>.md`. The file
  * names the call on each of its company's ways in (`mcp:`, `cli:`, `api:`);
  * a way plus a call is one `Access`. It is a header and nothing else: the
- * `summary` says what the call does. Every miss is a problem with a file
- * path, never a crash.
+ * `summary` says what the call does, `notes` what to know before calling.
+ * Every miss is a problem with a file path, never a crash.
  */
 
 type ToolFile = ContentFile & { kind: 'tool' }
@@ -43,6 +43,7 @@ function authOf(way: Way): Auth {
       method: 'api_key',
       envVar: way.env ?? '',
       ...('header' in way && way.header ? { header: way.header } : {}),
+      ...('scheme' in way && way.scheme ? { scheme: way.scheme } : {}),
       ...(way.keyUrl ? { keyUrl: way.keyUrl } : {}),
     }
   }
@@ -57,6 +58,7 @@ function common(way: Way, operation: string) {
     auth: authOf(way),
     ...(way.maintainer ? { maintainer: way.maintainer } : {}),
     ...(way.docs ? { docsUrl: way.docs } : {}),
+    ...(way.notes ? { notes: way.notes } : {}),
   }
 }
 
@@ -166,6 +168,7 @@ function toTool(
     name: data.name,
     summary: data.summary,
     capability: data.capability,
+    ...(data.notes ? { notes: data.notes } : {}),
     ...(data.docs ? { docs: data.docs } : {}),
     access,
     tags,
@@ -235,7 +238,7 @@ export function buildTools(
     if (parsed.body) {
       problems.add(
         file.path,
-        'a tool file ends at its header: say what the call does in `summary`',
+        'a tool file ends at its header: say what the call does in `summary`, and what to know before calling in `notes`',
         parsed.bodyLine
       )
     }

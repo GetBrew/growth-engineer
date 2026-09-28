@@ -6,6 +6,7 @@ import {
   orderAccess,
   type SetupTool,
   serverUrlLine,
+  wayNoteLines,
   workflowSetup,
 } from './render-access'
 import { yamlList, yamlScalar } from './render-header'
@@ -21,7 +22,8 @@ import { yamlList, yamlScalar } from './render-header'
  *   - everything needed to run is inline; links only for keys and reading more
  *   - setup picks the best way in (./render-access.ts)
  *   - inputs are named in backticks, never templated
- *   - the file tells the agent to check access before running anything
+ *   - what to know before a call travels with it (`notes`), into workflows too
+ *   - the file tells the agent to check access, read-only, before anything
  *   - Rules come last and nobody can edit them
  *   - a deprecated file says so, in its header and under its title
  *   - tool files stay under ~80 lines, workflow files under ~150, ≤ 10 steps
@@ -39,6 +41,8 @@ export type ToolFileInput = {
   /** Computed tag keys: capability, category, ways in. */
   tags: ReadonlyArray<string>
   summary: string
+  /** What an agent must know before it calls: a prerequisite, a poll, a limit, a cost. */
+  notes?: string
   /** The page that documents the call. */
   docs?: string
   access: ReadonlyArray<Access>
@@ -101,7 +105,10 @@ const TOOL_RULES = [
   'Ask the user before anything that sends messages, costs money, or changes data.',
   'Never print API keys.',
 ]
-const WORKFLOW_RULES = ['Only use the tools listed above.', ...TOOL_RULES]
+const WORKFLOW_RULES = [
+  'Use only the services set up above. The read-only calls they need, like listing ids or polling for results, are fine.',
+  ...TOOL_RULES,
+]
 
 const BLANK_RUNS = /\n{3,}/g
 
@@ -157,6 +164,7 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     ...deprecated.notice,
     '',
     tool.summary,
+    ...(tool.notes ? ['', `Note: ${tool.notes}`] : []),
   ]
 
   if (ordered.length > 0) {
@@ -172,10 +180,11 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
       if (serverUrl) {
         lines.push('', serverUrl)
       }
+      lines.push(...wayNoteLines(access))
     }
     lines.push(
       '',
-      'Before doing anything else, make one read-only call to confirm access.'
+      'Before anything else, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.'
     )
   }
 
@@ -271,8 +280,8 @@ export function renderWorkflowDocument(
     ...deprecated.notice,
     '',
     soleTool
-      ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user.`
-      : 'Set up the tools below, then run the steps in order for the user.',
+      ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user, carrying each step's results into the next.`
+      : "Set up the tools below, then run the steps in order for the user, carrying each step's results into the next.",
     ...inputsSection(workflow.inputs),
     ...workflowSetup(usedTools),
     ...stepsSection(workflow.steps, toolsByKey, soleTool !== undefined),

@@ -34,7 +34,7 @@ export type WorkflowSearchItem = WorkflowListItem & {
   tags: ReadonlyArray<string>
   searchText: string
   updatedAt: number
-  /** Position on the featured list (editorial rank first, then newest). */
+  /** Position on the featured list (featured first, then newest). */
   featuredIndex: number
 }
 
