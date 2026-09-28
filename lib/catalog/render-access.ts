@@ -107,13 +107,18 @@ function envVarLine(access: Access): string | null {
   return `Set \`$${access.auth.envVar}\` in your environment first${suffix}.`
 }
 
+/** ` with `GET /v1/subscriptions``: the call a shared, generic operation runs. */
+function endpointOf(access: Access): string {
+  return access.endpoint ? ` with \`${access.endpoint}\`` : ''
+}
+
 /** The exact call this way in names — the reason a tool is one function. */
 function operationLine(access: Access): string {
   switch (access.type) {
     case 'mcp':
-      return `Call the MCP tool \`${access.operation}\`.`
+      return `Call the MCP tool \`${access.operation}\`${endpointOf(access)}.`
     case 'cli':
-      return `Run \`${access.operation}\`.`
+      return `Run \`${access.operation}\`${endpointOf(access)}.`
     default:
       return `- Endpoint: \`${access.operation}\``
   }
@@ -127,9 +132,9 @@ function callLines(calls: ReadonlyArray<WayCall>): Array<string> {
     }
     switch (access.type) {
       case 'mcp':
-        return `- ${toolName}: call the MCP tool \`${access.operation}\``
+        return `- ${toolName}: call the MCP tool \`${access.operation}\`${endpointOf(access)}`
       case 'cli':
-        return `- ${toolName}: run \`${access.operation}\``
+        return `- ${toolName}: run \`${access.operation}\`${endpointOf(access)}`
       default:
         return `- ${toolName}: \`${access.operation}\``
     }
@@ -358,13 +363,15 @@ function companySetup(group: ReadonlyArray<SetupTool>): Array<string> {
   // One option may not run every call (an MCP server without the note
   // endpoint): then the choice is per call, not per company.
   const coversAll = ways.every((calls) => calls.length === group.length)
+  // The tools' notes hold whichever option the agent picks, so they come
+  // before the options, never inside the last one.
   return [
     ...heading,
     coversAll
       ? 'Use the first option your agent supports.'
       : 'For each call, use the first option your agent supports that lists it.',
-    ...options,
     ...notes,
+    ...options,
   ]
 }
 

@@ -210,6 +210,37 @@ function toolPathProblem(
   return null
 }
 
+/**
+ * A generic operation several of a company's tools share — `stripe_api_read`
+ * runs any GET — names nothing on its own. Each such call carries its tool's
+ * API endpoint, so the file says what to pass: `stripe_api_read` with
+ * `GET /v1/subscriptions`.
+ */
+function withEndpoints(tools: Map<string, Tool>): Map<string, Tool> {
+  const uses = new Map<string, number>()
+  const id = (tool: Tool, access: Access) =>
+    `${tool.companyKey}|${access.type}|${access.operation}`
+  for (const tool of tools.values()) {
+    for (const access of tool.access) {
+      uses.set(id(tool, access), (uses.get(id(tool, access)) ?? 0) + 1)
+    }
+  }
+  return new Map(
+    [...tools].map(([key, tool]) => {
+      const api = tool.access.find((entry) => entry.type === 'api')
+      if (!api) {
+        return [key, tool]
+      }
+      const access = tool.access.map((entry) =>
+        entry.type !== 'api' && (uses.get(id(tool, entry)) ?? 0) > 1
+          ? { ...entry, endpoint: api.operation }
+          : entry
+      )
+      return [key, { ...tool, access }]
+    })
+  )
+}
+
 export function buildTools(
   files: ReadonlyArray<ContentFile>,
   context: {
@@ -261,5 +292,5 @@ export function buildTools(
       tools.set(tool.key, tool)
     }
   }
-  return { tools, drafts }
+  return { tools: withEndpoints(tools), drafts }
 }

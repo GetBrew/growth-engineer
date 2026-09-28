@@ -189,13 +189,13 @@ const workEmails: WorkflowFileInput = {
       title: 'Start runs',
       toolKey: 'clay/run-routine',
       instruction:
-        'of the Work Email routine on `contacts`, up to 100 per run. Keep each run id.',
+        'Run the Work Email routine on `contacts`, up to 100 per run. Keep each run id.',
     },
     {
       title: 'Collect results',
       toolKey: 'clay/run-routine',
       instruction:
-        "for every run id once it finishes. Keep each contact's work email, or a note that none was found.",
+        "Read the results of every run id once it finishes. Keep each contact's work email, or a note that none was found.",
     },
   ],
   doneWhen: [
@@ -416,6 +416,27 @@ describe('what to know before calling', () => {
     expect(workflow).toContain(
       'Call the MCP tool `clay_run_routine`.\n\nNote: An admin turns on MCP access first.'
     )
+  })
+
+  test('with two options, the notes come before them, not inside the last', () => {
+    const setup = renderWorkflowDocument({
+      ...workEmails,
+      tools: [{ ...clayRunRoutine, access: [clayMcp, clayApi] }],
+    }).markdown
+    const note = setup.indexOf('Note: List routines first')
+    expect(note).toBeGreaterThan(-1)
+    expect(note).toBeLessThan(setup.indexOf('#### MCP (official, remote)'))
+  })
+
+  test('a generic operation several tools share names the call it runs', () => {
+    const shared: Access = {
+      ...clayMcp,
+      operation: 'clay_api_read',
+      endpoint: 'GET /routines',
+    }
+    expect(
+      renderToolDocument({ ...clay, access: [shared] }).markdown
+    ).toContain('Call the MCP tool `clay_api_read` with `GET /routines`.')
   })
 
   test('several tools of one company list their notes by name', () => {

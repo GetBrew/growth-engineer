@@ -68,6 +68,10 @@ const INPUT = /^`([^`]+)`\s*:\s*(.+)$/
 const EXAMPLE = ', e.g. '
 const STEP =
   /^\*\*(.+?)\*\*(?:\s+with\s+\[([^\]\s]+)\]\(([^)\s]+)\))?\.\s+(\S.*)$/
+/** A link to a tool's source file, wherever it sits in a step. */
+const TOOL_LINK = /\]\(\.\.\/companies\/[^)\s]*\/tools\/[^)\s]*\)/
+/** The key a tool's source link names: `../companies/apollo/tools/x.md` → `apollo/x`. */
+const LINK_TARGET = /^\.\.\/companies\/([^/]+)\/tools\/([^/]+)\.md$/
 
 const SHAPE: Record<Exclude<SectionId, 'notes'>, string> = {
   inputs: 'an input reads ``- `name`: what it is, e.g. an example``',
@@ -109,11 +113,23 @@ function parseStep(item: Item, problems: Array<BodyProblem>): BodyStep {
     problems.push({ line: item.line, message: SHAPE.steps })
     return { title: '', tool: '', instruction: '' }
   }
-  const [, title = '', tool, linkTarget, instruction = ''] = match
-  if (tool !== undefined && linkTarget !== toolSourceLink(tool)) {
+  const [, title = '', tool, linkTarget = '', instruction = ''] = match
+  // A step names its tool right after the title, or it has none: a tool
+  // linked anywhere else would be silently dropped from the file's setup.
+  if (TOOL_LINK.test(instruction)) {
     problems.push({
       line: item.line,
-      message: `the link to ${tool} must point at ${toolSourceLink(tool)}, its source file`,
+      message:
+        'name the tool right after the title — ``**Title** with [handle/slug](../companies/handle/tools/slug.md). What to do.`` — not inside the instruction; one tool per step',
+    })
+  }
+  if (tool !== undefined && linkTarget !== toolSourceLink(tool)) {
+    const target = LINK_TARGET.exec(linkTarget)
+    problems.push({
+      line: item.line,
+      message: target
+        ? `the link text must be the tool's key: [${target[1]}/${target[2]}](${linkTarget})`
+        : `the link to ${tool} must point at ${toolSourceLink(tool)}, its source file`,
     })
   }
   return {

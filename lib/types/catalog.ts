@@ -42,6 +42,11 @@ type AccessCommon = {
   docsUrl?: string
   /** What to know about this way in: where a `{placeholder}` comes from, how a key is encoded. */
   notes?: string
+  /**
+   * Derived: when this operation is a generic one several tools share
+   * (`stripe_api_read`), the API call this tool runs through it.
+   */
+  endpoint?: string
 }
 
 export type Access =

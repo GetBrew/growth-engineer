@@ -881,6 +881,26 @@ describe('content rules', () => {
       /logo "missing\.png" is not under public\/logos\//,
     ],
     [
+      'a tool linked inside a step instead of after its title',
+      () =>
+        edit(
+          'workflow',
+          '1. **Dedupe** with [acme/manage-crm](../companies/acme/tools/manage-crm.md). Merge duplicates.',
+          '1. **Dedupe**. Use [acme/manage-crm](../companies/acme/tools/manage-crm.md) to merge duplicates.'
+        ),
+      /keep-crm-clean\.md:11: name the tool right after the title/,
+    ],
+    [
+      'a step link whose text is not the tool key',
+      () =>
+        edit(
+          'workflow',
+          '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
+          '[Acme](../companies/acme/tools/manage-crm.md)'
+        ),
+      /keep-crm-clean\.md:11: the link text must be the tool's key: \[acme\/manage-crm\]/,
+    ],
+    [
       'a workflow whose steps name no tool at all',
       () =>
         edit(

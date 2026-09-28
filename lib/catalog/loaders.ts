@@ -149,7 +149,7 @@ export async function loadCompanies(limit = MAX_LIST) {
     })
 }
 
-/** Featured (editorial rank, then newest) or New. */
+/** Featured (featured first, then newest) or New. */
 export async function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
   const catalog = getCatalog()
   const order =

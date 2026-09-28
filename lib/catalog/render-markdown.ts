@@ -237,7 +237,7 @@ function stepsSection(
       const tool = tools.get(step.toolKey)
       const label = tool ? toolLabel(tool) : step.toolKey
       const lead = hasSoleTool
-        ? `**${step.title}**`
+        ? `**${step.title}**.`
         : `**${step.title}** with ${label}.`
       return `${index + 1}. ${lead} ${step.instruction}`
     }),

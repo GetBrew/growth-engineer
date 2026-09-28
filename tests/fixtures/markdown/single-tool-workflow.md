@@ -35,8 +35,8 @@ Before step 1, confirm access with the cheapest read-only call, like a list or a
 
 ## Steps
 
-1. **Start runs** of the Work Email routine on `contacts`, up to 100 per run. Keep each run id.
-2. **Collect results** for every run id once it finishes. Keep each contact's work email, or a note that none was found.
+1. **Start runs**. Run the Work Email routine on `contacts`, up to 100 per run. Keep each run id.
+2. **Collect results**. Read the results of every run id once it finishes. Keep each contact's work email, or a note that none was found.
 
 ## Done when
 

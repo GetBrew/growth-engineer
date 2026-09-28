@@ -17,7 +17,7 @@
 capability:
   analyze-product-usage:
     label: Analyze product usage
-    synonyms: [product analytics, usage, funnels, retention, cohorts, sql, queries]
+    synonyms: [product analytics, usage, funnels, retention, cohorts, sql, queries, track product usage]
   authenticate-users:
     label: Authenticate users
     synonyms: [auth, authentication, login, sign up]
