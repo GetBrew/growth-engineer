@@ -1,6 +1,8 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import { Suspense, use } from 'react'
+import { CopyMetric } from '@/components/catalog/copy-metric'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { NoResults } from '@/components/common/no-results'
 import { SectionHeading } from '@/components/layout/section-heading'
@@ -9,18 +11,37 @@ import type { FilterOption } from '@/components/search/filter-types'
 import { ListingToolbar } from '@/components/search/listing-toolbar'
 import { isValidTagKey, TAG_NAMESPACES } from '@/lib/catalog/keys'
 import {
+  type WorkflowSort as Sort,
   searchWorkflowItems,
   type WorkflowSearchItem,
 } from '@/lib/catalog/search'
 import { useIsClient } from '@/lib/hooks/use-is-client'
 import type { TagChip } from '@/lib/types/catalog'
-
-type Sort = 'featured' | 'new'
+import {
+  angleValue,
+  COPY_ANGLES,
+  type CopyAngle,
+  type CopyStatsByKey,
+  statsFor,
+} from '@/lib/usage/stats'
 
 const BASE = '/workflows'
 
-function parseSort(value: string | null): Sort {
-  return value === 'new' ? 'new' : 'featured'
+/** The copy counts, read at request time; `null` when nothing counts them. */
+type StatsPromise = Promise<CopyStatsByKey | null> | null
+
+function parseSort(value: string | null, isCounting: boolean): Sort {
+  if (value === 'new') {
+    return 'new'
+  }
+  if (isCounting && (value === 'hot' || value === 'popular')) {
+    return value
+  }
+  return 'featured'
+}
+
+function isAngle(sort: Sort): sort is CopyAngle {
+  return sort === 'hot' || sort === 'popular'
 }
 
 /** `motion:outbound` as the query writes it: `?motion=outbound`. */
@@ -63,16 +84,18 @@ function viewFilters(
   tags: ReadonlyArray<TagChip>,
   sort: Sort,
   q: string,
-  tag: string
+  tag: string,
+  isCounting: boolean
 ): { all: { href: string; active: boolean }; options: Array<FilterOption> } {
-  const orders: Array<FilterOption> = [
-    {
-      key: 'new',
-      label: 'New',
-      href: href('new', q, tag),
-      active: sort === 'new',
-    },
-  ]
+  const angles: Array<Sort> = isCounting ? ['hot', 'popular'] : []
+  const orders: Array<FilterOption> = [...angles, 'new' as const].map(
+    (order) => ({
+      key: order,
+      label: isAngle(order) ? COPY_ANGLES[order].label : 'New',
+      href: href(order, q, tag),
+      active: sort === order,
+    })
+  )
   const tagOptions: Array<FilterOption> = tags.map((entry) => ({
     key: entry.key,
     label: entry.label,
@@ -111,6 +134,8 @@ function emptyCopy(
 type IndexProps = {
   workflows: ReadonlyArray<WorkflowSearchItem>
   tags: ReadonlyArray<TagChip>
+  /** Opens the Hot and Popular angles and each row's count. */
+  stats: StatsPromise
 }
 
 /** No query: what the prerendered page shows before the URL is read. */
@@ -122,10 +147,15 @@ const NO_PARAMS = new URLSearchParams()
  * static); once hydrated it reads the URL and follows it.
  */
 export function WorkflowsIndex(props: IndexProps) {
+  const unread = <WorkflowsIndexView {...props} params={NO_PARAMS} />
+  // Hot and Popular order by the counts, which may still be streaming in
+  // after a client navigation: until they land, the list in its usual order.
   return useIsClient() ? (
-    <WorkflowsIndexFromUrl {...props} />
+    <Suspense fallback={unread}>
+      <WorkflowsIndexFromUrl {...props} />
+    </Suspense>
   ) : (
-    <WorkflowsIndexView {...props} params={NO_PARAMS} />
+    unread
   )
 }
 
@@ -133,27 +163,74 @@ function WorkflowsIndexFromUrl(props: IndexProps) {
   return <WorkflowsIndexView {...props} params={useSearchParams()} />
 }
 
+/** A row's count, streamed in with the stats: this week's on Hot, else all. */
+function RowMetric({
+  stats,
+  workflowKey,
+  angle,
+}: {
+  stats: NonNullable<StatsPromise>
+  workflowKey: string
+  angle: CopyAngle
+}) {
+  const resolved = use(stats)
+  if (!resolved) {
+    return null
+  }
+  return (
+    <CopyMetric
+      angle={angle}
+      value={angleValue(statsFor(resolved, workflowKey), angle)}
+    />
+  )
+}
+
+const HEADING: Record<Sort, { title: string; description: string }> = {
+  featured: {
+    title: 'Discover workflows',
+    description:
+      'Steps across tools that reach a result. Copy the file; run it with any agent.',
+  },
+  new: {
+    title: 'New workflows',
+    description: 'The newest and latest-updated workflows first.',
+  },
+  hot: {
+    title: COPY_ANGLES.hot.title,
+    description: 'The workflows copied into agents most over the last 7 days.',
+  },
+  popular: {
+    title: COPY_ANGLES.popular.title,
+    description: 'The workflows copied into agents most, all time.',
+  },
+}
+
 function WorkflowsIndexView({
   workflows,
   tags,
+  stats,
   params: searchParams,
 }: IndexProps & { params: URLSearchParams }) {
-  const sort = parseSort(searchParams.get('sort'))
+  const isCounting = stats !== null
+  const sort = parseSort(searchParams.get('sort'), isCounting)
   const tag = tagFrom(searchParams)
   const q = (searchParams.get('q') ?? '').trim()
   const rows = searchWorkflowItems(workflows, {
     q,
     sort,
     ...(tag ? { tag } : {}),
+    // Only an angle needs the counts to ORDER; every row streams its own.
+    stats: isAngle(sort) && stats ? use(stats) : null,
   })
+  const angle: CopyAngle = sort === 'hot' ? 'hot' : 'popular'
   const hasFilters = Boolean(q || tag || sort !== 'featured')
   const empty = emptyCopy(q, hasFilters)
 
   return (
     <div className="flex flex-col gap-(--space-lg)">
       <SectionHeading
-        description="Steps across tools that reach a result. Copy the file; run it with any agent."
-        title={q ? `Results for “${q}”` : 'Discover workflows'}
+        description={HEADING[sort].description}
+        title={q ? `Results for “${q}”` : HEADING[sort].title}
       />
 
       <div className="flex flex-col gap-1">
@@ -163,8 +240,8 @@ function WorkflowsIndexView({
               key: 'view',
               label: 'Filter workflows',
               moreTitle: 'More filters',
-              top: 3,
-              ...viewFilters(tags, sort, q, tag),
+              top: isCounting ? 5 : 3,
+              ...viewFilters(tags, sort, q, tag, isCounting),
             },
           ]}
           search={
@@ -189,7 +266,24 @@ function WorkflowsIndexView({
             title={empty.title}
           />
         ) : (
-          <CatalogList items={rows.map(workflowListItem)} />
+          <CatalogList
+            items={rows.map((row) => ({
+              ...workflowListItem(row),
+              ...(stats
+                ? {
+                    metric: (
+                      <Suspense fallback={null}>
+                        <RowMetric
+                          angle={angle}
+                          stats={stats}
+                          workflowKey={row.workflow.key}
+                        />
+                      </Suspense>
+                    ),
+                  }
+                : {}),
+            }))}
+          />
         )}
       </div>
     </div>

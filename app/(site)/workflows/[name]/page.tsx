@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
+import { Suspense } from 'react'
 import {
   CopyCountProvider,
-  CopyCountStat,
+  UsesStatFallback,
 } from '@/components/detail/copy-count'
 import { CopyFileButton } from '@/components/detail/copy-file-button'
 import {
@@ -17,6 +18,7 @@ import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
 import { TagBox } from '@/components/detail/tag-box'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
+import { WorkflowUses } from '@/components/detail/workflow-uses'
 import { BackLink } from '@/components/layout/back-link'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { Page } from '@/components/layout/page'
@@ -28,7 +30,7 @@ import { SITE_ORIGIN } from '@/lib/env'
 import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { workflowJsonLd } from '@/lib/seo/structured-data'
-import { loadCopyCount } from '@/lib/usage/copies'
+import { hasCopyCounter } from '@/lib/usage/copies'
 
 type Params = Promise<{ name: string }>
 
@@ -39,8 +41,9 @@ async function resolveKey(params: Params): Promise<string | null> {
 
 /**
  * Every page here is prerendered from `generateStaticParams`, and reading
- * `params` outside `<Suspense>` is deliberate: nothing loads. So navigating
- * here may block rather than show a fallback; `instant = false` says so.
+ * `params` outside `<Suspense>` is deliberate: nothing loads — only the copy
+ * count streams into its hole. So navigating here may block rather than show
+ * a fallback; `instant = false` says so.
  */
 export const instant = false
 
@@ -100,7 +103,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
   const { workflow, updatedAt, tools, tags } = result
   const filePath = refToFilePath({ type: 'workflow', key: workflow.key })
-  const copies = await loadCopyCount(workflow.key)
+  const isCounting = hasCopyCounter()
 
   const author = {
     name: workflow.author,
@@ -146,7 +149,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
         {/* The actions head the side column, so the title and summary above
             take the page's full width; from lg the column stays in view. */}
-        <CopyCountProvider count={copies} workflowKey={workflow.key}>
+        <CopyCountProvider isCounting={isCounting} workflowKey={workflow.key}>
           <aside className="flex flex-col gap-(--space-xl) max-lg:order-first lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
             {/* One row under lg, Copy taking the rest of it; from lg, Copy
                 spans the column and the others sit on the line below. */}
@@ -167,7 +170,13 @@ async function WorkflowDetail({ params }: { params: Params }) {
                 />
               </div>
             </div>
-            <CopyCountStat />
+            {/* The one part read at request time: the rest of the page is
+                prerendered, and the count streams into this hole. */}
+            {isCounting ? (
+              <Suspense fallback={<UsesStatFallback />}>
+                <WorkflowUses workflowKey={workflow.key} />
+              </Suspense>
+            ) : null}
             <TagBox
               tags={[
                 ...(workflow.status === 'deprecated'

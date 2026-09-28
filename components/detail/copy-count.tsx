@@ -1,39 +1,38 @@
 'use client'
 
+import Link from 'next/link'
 import { createContext, type ReactNode, useContext, useState } from 'react'
 import { SIDE_HEADING } from '@/components/detail/styles'
+import { formatCount, formatExact } from '@/lib/usage/stats'
 
-type CopyCount = { count: number | null; record: () => void }
+type CopyCount = { added: number; record: () => void }
 
 const CopyCountContext = createContext<CopyCount | null>(null)
 
 /**
- * A workflow page's copy count: the number prerendered with the page
- * (lib/usage/copies.ts), plus the copies made here, so a copy shows at once
- * rather than on the next refresh. Each copy is sent with `sendBeacon`, which
- * nothing waits on.
+ * Counts the copies made on a workflow's page: each is sent with `sendBeacon`
+ * (nothing waits on it) and added to the count shown here at once, rather
+ * than on the next read of the store.
  */
 export function CopyCountProvider({
   workflowKey,
-  count,
+  isCounting,
   children,
 }: {
   workflowKey: string
-  /** `null` when this deployment has no count: the stat is hidden. */
-  count: number | null
+  /** False when this deployment has no store: nothing is sent. */
+  isCounting: boolean
   children: ReactNode
 }) {
   const [added, setAdded] = useState(0)
   const record = () => {
-    navigator.sendBeacon(`/api/workflows/${workflowKey}/copies`)
+    if (isCounting) {
+      navigator.sendBeacon(`/api/workflows/${workflowKey}/copies`)
+    }
     setAdded((value) => value + 1)
   }
   return (
-    <CopyCountContext
-      value={{ count: count === null ? null : count + added, record }}
-    >
-      {children}
-    </CopyCountContext>
+    <CopyCountContext value={{ added, record }}>{children}</CopyCountContext>
   )
 }
 
@@ -42,27 +41,63 @@ export function useRecordCopy(): (() => void) | undefined {
   return useContext(CopyCountContext)?.record
 }
 
-const COMPACT = new Intl.NumberFormat('en-US', {
-  notation: 'compact',
-  maximumFractionDigits: 1,
-})
-const EXACT = new Intl.NumberFormat('en-US')
+const VALUE = 'font-medium text-[32px] tabular-nums leading-none tracking-tight'
 
-/** "Uses": how many times the file was copied into an agent. */
-export function CopyCountStat() {
-  const count = useContext(CopyCountContext)?.count
-  if (count === null || count === undefined) {
-    return null
-  }
+/**
+ * "Uses": how many times the file was copied into an agent, with this week's
+ * copies — its velocity — and its place on Hot when it has one.
+ */
+export function UsesStat({
+  total,
+  week,
+  hotPlace,
+}: {
+  total: number
+  week: number
+  hotPlace: number | null
+}) {
+  const added = useContext(CopyCountContext)?.added ?? 0
+  const uses = total + added
+  const thisWeek = week + added
   return (
     <section className="flex flex-col gap-2">
       <h2 className={SIDE_HEADING}>Uses</h2>
-      <p className="font-medium text-[32px] tabular-nums leading-none tracking-tight">
-        <span aria-hidden="true">{COMPACT.format(count)}</span>
+      <p className={VALUE}>
+        <span aria-hidden="true">{formatCount(uses)}</span>
         <span className="sr-only">
-          Copied {EXACT.format(count)} {count === 1 ? 'time' : 'times'}
+          Copied {formatExact(uses)} {uses === 1 ? 'time' : 'times'}
         </span>
       </p>
+      {thisWeek > 0 ? (
+        <p className="type-label text-subtle">
+          +{formatExact(thisWeek)} this week
+          {hotPlace ? (
+            <>
+              {' · '}
+              <Link
+                className="focus-ring rounded-sm text-soft underline-offset-4 hover:text-foreground hover:underline"
+                href="/workflows?sort=hot"
+              >
+                #{hotPlace} on Hot
+              </Link>
+            </>
+          ) : null}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+/**
+ * The stat's place while its number streams in: the label and an empty line
+ * of the number's height — no pulse, no spinner, and nothing moves when it
+ * lands.
+ */
+export function UsesStatFallback() {
+  return (
+    <section aria-hidden="true" className="flex flex-col gap-2">
+      <h2 className={SIDE_HEADING}>Uses</h2>
+      <p className={VALUE}>&nbsp;</p>
     </section>
   )
 }

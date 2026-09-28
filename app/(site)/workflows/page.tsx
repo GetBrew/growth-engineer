@@ -7,6 +7,7 @@ import { loadTagChips, loadWorkflowSearchItems } from '@/lib/catalog/loaders'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { collectionJsonLd, listingItems } from '@/lib/seo/structured-data'
+import { hasCopyCounter, loadCopyStats } from '@/lib/usage/copies'
 
 const PAGE = {
   path: '/workflows',
@@ -21,7 +22,11 @@ export const metadata: Metadata = pageMetadata({
   path: PAGE.path,
 })
 
-/** Prerendered in full; the index narrows itself in the browser. */
+/**
+ * Prerendered in full; the index narrows itself in the browser. The copy
+ * counts are the one request-time read: handed over as a promise, they
+ * stream into the rows and order the Hot and Popular angles.
+ */
 export default function WorkflowsPage() {
   return (
     <>
@@ -41,6 +46,7 @@ function Index() {
         data={collectionJsonLd(SITE_ORIGIN, PAGE, listingItems(workflows))}
       />
       <WorkflowsIndex
+        stats={hasCopyCounter() ? loadCopyStats() : null}
         tags={tags.filter((tag) => tag.counts.workflows > 0)}
         workflows={workflows}
       />

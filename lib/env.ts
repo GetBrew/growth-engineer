@@ -50,20 +50,27 @@ export const SITE_ORIGIN = clientEnv.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
 const counterSchema = z.object({
   url: present(z.url().optional()),
   token: present(z.string().optional()),
+  readToken: present(z.string().optional()),
 })
 
 /**
  * The copy counter's store: Upstash Redis over REST, under the names the
  * Vercel Marketplace integration sets (`KV_REST_API_*`) or Upstash's own
- * (`UPSTASH_REDIS_REST_*`). SERVER ONLY. Optional on purpose — a fresh clone,
- * a fork and the test suite have no store — so `null` turns the counter off
- * and the page hides the count rather than show a number it does not have.
+ * (`UPSTASH_REDIS_REST_*`). SERVER ONLY. Pages read with the read-only token
+ * when there is one; only the count route writes. Optional on purpose — a
+ * fresh clone, a fork and the test suite have no store — so `null` turns the
+ * counter off and the pages hide every count rather than show one they lack.
  */
-export function copyCounterEnv(): { url: string; token: string } | null {
-  const { url, token } = counterSchema.parse({
+export function copyCounterEnv(): {
+  url: string
+  token: string
+  readToken: string
+} | null {
+  const { url, token, readToken } = counterSchema.parse({
     url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
     token:
       process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+    readToken: process.env.KV_REST_API_READ_ONLY_TOKEN,
   })
-  return url && token ? { url, token } : null
+  return url && token ? { url, token, readToken: readToken ?? token } : null
 }

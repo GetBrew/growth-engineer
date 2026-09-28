@@ -101,7 +101,7 @@ pnpm content:check       # validate the catalog: every problem with its file pat
 
 There is no backend and no environment to configure. `.env.example` lists
 the optional variables: the site origin, and the Redis store that counts
-workflow copies ([`docs/setup.md`](docs/setup.md)).
+workflow copies for Uses, Hot and Popular ([`docs/setup.md`](docs/setup.md)).
 
 | Command | What it does |
 | --- | --- |

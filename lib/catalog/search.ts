@@ -4,6 +4,11 @@ import type {
   ToolListItem,
   WorkflowListItem,
 } from '@/lib/types/catalog'
+import {
+  type CopyAngle,
+  type CopyStatsByKey,
+  rankByAngle,
+} from '@/lib/usage/stats'
 import { TAG_NAMESPACES, type TagNamespace } from './keys'
 import { MAX_CHIPS } from './query'
 import { matchWords, queryWords } from './search-words'
@@ -171,23 +176,40 @@ export function searchToolItems(
   }
 }
 
-/** Workflows: featured order or newest, within one tag, narrowed by words. */
+export type WorkflowSort = 'featured' | 'new' | CopyAngle
+
+/**
+ * Workflows: featured order, newest, or ranked by copies (Hot: this week;
+ * Popular: all time — ties in featured order), within one tag, narrowed by
+ * words. A copy angle with no `stats` is the featured order.
+ */
 export function searchWorkflowItems(
   items: ReadonlyArray<WorkflowSearchItem>,
-  input: { q: string; sort: 'featured' | 'new'; tag?: string; limit?: number }
+  input: {
+    q: string
+    sort: WorkflowSort
+    tag?: string
+    limit?: number
+    stats?: CopyStatsByKey | null
+  }
 ): Array<WorkflowSearchItem> {
   const words = listingWords(input.q)
   if (words === null) {
     return []
   }
-  const ordered = items
+  const { sort, stats } = input
+  const inTag = items
     .filter((item) => !input.tag || item.tags.includes(input.tag))
     .sort((a, b) =>
-      input.sort === 'new'
+      sort === 'new'
         ? b.updatedAt - a.updatedAt ||
           a.workflow.key.localeCompare(b.workflow.key)
         : a.featuredIndex - b.featuredIndex
     )
+  const ordered =
+    (sort === 'hot' || sort === 'popular') && stats
+      ? rankByAngle(inTag, (item) => item.workflow.key, stats, sort)
+      : inTag
   const ranked = rank(
     ordered.map((item, index) => ({
       item,

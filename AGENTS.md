@@ -37,7 +37,7 @@ Next.js 16 (App Router, Cache Components, Turbopack) · a build-time content
 compiler (`lib/content/`) · Tailwind v4 · shadcn on Base UI · Biome · Vitest
 · pnpm. **The catalog has no backend, no database and no auth provider**;
 the one runtime store is an optional Upstash Redis counting workflow copies
-(`lib/usage/copies.ts`). Every route is public; the environment is an
+(`lib/usage/copies.ts`: Uses, Hot, Popular). Every route is public; the env is an
 optional `NEXT_PUBLIC_SITE_URL` and the counter's optional `KV_REST_API_*`.
 
 ## Validation — proportional, not ceremonial
@@ -136,8 +136,8 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   PRERENDER with no `'use cache'` and no `connection()`; detail routes list
   params with `generateStaticParams` (`lib/catalog/static-params.ts`). Never
   `export const dynamic`, `revalidate` or `dynamicParams`. The ONE
-  `'use cache'` is a workflow's copy count: prerendered with its page and
-  refreshed in the background, so it never loads.
+  `'use cache'` (+ `connection()`) is the copy counts: read per request, cached
+  a minute, streamed into `<Suspense>` holes in an otherwise prerendered page.
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
@@ -146,7 +146,7 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   (`/api/workflows/<name>/copies`); the proxy runs only for `.md` files
   and `Accept: text/markdown`. A detail page says `export const instant = false`.
 - NOTHING LOADS: no skeletons, no spinners, no fetch after load, no
-  `<Suspense>` in a page. A page renders its data directly and a page with
+  `<Suspense>` in a page but a copy-count hole. A page renders directly; one with
   params awaits them itself: every known key is in `generateStaticParams`,
   so its HTML is complete and inline. Only an unknown key renders on demand.
 - Internal navigation is ALWAYS `next/link` (never a raw `<a href="/…">`):

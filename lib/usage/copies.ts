@@ -1,86 +1,149 @@
 import 'server-only'
 import { Redis } from '@upstash/redis'
 import { cacheLife } from 'next/cache'
+import { connection } from 'next/server'
+import { cache } from 'react'
 import { copyCounterEnv } from '@/lib/env'
+import type { CopyStats, CopyStatsByKey } from '@/lib/usage/stats'
 
 /**
- * How many times each workflow's file was copied — the "Uses" on its page.
- * One Redis hash, workflow key → count, in the Upstash store from lib/env.ts.
+ * How many times each workflow's file was copied — the "Uses" on its page and
+ * the Hot and Popular angles on the listings. Upstash Redis, from lib/env.ts:
  *
- * The site's one runtime datum, and it still never LOADS: the count is read
- * inside `'use cache'`, so it is prerendered into the page at build and
- * refreshed in the background (stale-while-revalidate) at most every
- * `REFRESH_SECONDS`. Every page is still served whole from the CDN.
+ *   workflow:copies               hash  key → copies, all time
+ *   workflow:copies:<YYYY-MM-DD>  hash  key → copies that UTC day, kept 60 days
+ *
+ * A production deployment owns those keys; a preview writes `preview:…` and
+ * development `development:…`, so testing a Copy never moves a real count.
+ *
+ * The pages stay STATIC: each count sits in a `<Suspense>` hole, read at
+ * request time (`connection()`) through a time-based `'use cache'`, so the
+ * store is asked at most once a minute and the prerendered shell never waits
+ * on it. A page with no store has no hole at all.
  */
 
-const COPIES = 'workflow:copies'
+function namespace(): string {
+  if (process.env.VERCEL_ENV === 'preview') {
+    return 'preview:'
+  }
+  return process.env.NODE_ENV === 'production' ? '' : 'development:'
+}
 
-const REFRESH_SECONDS = 5 * 60
-
-/** Past this, a count is left out of the page rather than hold it up. */
+const TOTALS = `${namespace()}workflow:copies`
+const DAY_BUCKET_TTL_SECONDS = 60 * 24 * 60 * 60
+/** Two weeks of days: this week's velocity, and last week's to compare. */
+const DAYS_READ = 14
+/** Past this, the store is skipped for this read rather than hold a page. */
 const TIMEOUT_MS = 2000
 
-let client: Redis | null | undefined
+function dayKey(daysAgo: number, now: number): string {
+  const day = new Date(now - daysAgo * 24 * 60 * 60 * 1000)
+  return `${TOTALS}:${day.toISOString().slice(0, 10)}`
+}
 
-function store(): Redis | null {
-  if (client === undefined) {
+type Clients = { reader: Redis; writer: Redis }
+let clients: Clients | null | undefined
+
+function client(url: string, token: string): Redis {
+  return new Redis({
+    url,
+    token,
+    retry: { retries: 1 },
+    signal: () => AbortSignal.timeout(TIMEOUT_MS),
+    enableTelemetry: false,
+  })
+}
+
+function store(): Clients | null {
+  if (clients === undefined) {
     const env = copyCounterEnv()
-    client = env
-      ? new Redis({
-          url: env.url,
-          token: env.token,
-          retry: { retries: 1 },
-          signal: () => AbortSignal.timeout(TIMEOUT_MS),
-          enableTelemetry: false,
-        })
+    clients = env
+      ? {
+          reader: client(env.url, env.readToken),
+          writer: client(env.url, env.token),
+        }
       : null
   }
-  return client
+  return clients
+}
+
+/** Whether this deployment counts copies. Known at build: no store, no hole. */
+export function hasCopyCounter(): boolean {
+  return store() !== null
+}
+
+function toCount(value: unknown): number {
+  const count = Number(value ?? 0)
+  return Number.isSafeInteger(count) && count > 0 ? count : 0
 }
 
 /**
- * Every workflow's count, in one read shared by every page. `null` when the
- * store did not answer: the page hides the count then, and the next refresh
- * tries again.
+ * Every workflow's stats in one round trip: the totals and 14 day buckets.
+ * `null` when the store did not answer — the counts stay hidden until the
+ * next read tries again.
  */
-async function readCopyCounts(): Promise<Record<string, number> | null> {
+async function readCopyStats(): Promise<CopyStatsByKey | null> {
   'use cache'
-  cacheLife({
-    stale: REFRESH_SECONDS,
-    revalidate: REFRESH_SECONDS,
-    expire: 30 * 24 * 60 * 60,
-  })
-  const redis = store()
-  if (!redis) {
+  cacheLife({ stale: 60, revalidate: 60, expire: 24 * 60 * 60 })
+  const reader = store()?.reader
+  if (!reader) {
     return null
   }
+  const now = Date.now()
+  const pipeline = reader.pipeline()
+  pipeline.hgetall(TOTALS)
+  for (let day = 0; day < DAYS_READ; day += 1) {
+    pipeline.hgetall(dayKey(day, now))
+  }
   try {
-    return (await redis.hgetall<Record<string, number>>(COPIES)) ?? {}
+    const [totals, ...days] =
+      await pipeline.exec<Array<Record<string, unknown> | null>>()
+    const stats: Record<string, CopyStats> = {}
+    const entry = (key: string): CopyStats => {
+      stats[key] ??= { total: 0, week: 0, lastWeek: 0 }
+      return stats[key]
+    }
+    for (const [key, value] of Object.entries(totals ?? {})) {
+      entry(key).total = toCount(value)
+    }
+    days.forEach((bucket, day) => {
+      for (const [key, value] of Object.entries(bucket ?? {})) {
+        entry(key)[day < 7 ? 'week' : 'lastWeek'] += toCount(value)
+      }
+    })
+    return stats
   } catch (error) {
     console.error('[copies] read failed:', error)
     return null
   }
 }
 
-/** Times `workflowKey` was copied; `null` when there is no count to show. */
-export async function loadCopyCount(
-  workflowKey: string
-): Promise<number | null> {
-  // No store, no cache: the page stays fully static and hides the count.
-  if (!store()) {
+/**
+ * Every workflow's copy stats, read at REQUEST time: await it inside a
+ * `<Suspense>` boundary, or hand the promise to a client component that reads
+ * it inside one. `null` with no store, or when it did not answer. One read
+ * per request, however many holes ask.
+ */
+export const loadCopyStats = cache(async (): Promise<CopyStatsByKey | null> => {
+  if (!hasCopyCounter()) {
     return null
   }
-  const counts = await readCopyCounts()
-  const count = counts ? Number(counts[workflowKey] ?? 0) : Number.NaN
-  return Number.isSafeInteger(count) && count >= 0 ? count : null
-}
+  await connection()
+  return await readCopyStats()
+})
 
 /** Count one copy. `false` when there is no store to count it in. */
 export async function recordCopy(workflowKey: string): Promise<boolean> {
-  const redis = store()
-  if (!redis) {
+  const writer = store()?.writer
+  if (!writer) {
     return false
   }
-  await redis.hincrby(COPIES, workflowKey, 1)
+  const today = dayKey(0, Date.now())
+  await writer
+    .pipeline()
+    .hincrby(TOTALS, workflowKey, 1)
+    .hincrby(today, workflowKey, 1)
+    .expire(today, DAY_BUCKET_TTL_SECONDS)
+    .exec()
   return true
 }

@@ -13,8 +13,8 @@ pnpm install
 
 `.env.example` lists every variable, all optional:
 `NEXT_PUBLIC_SITE_URL`, the absolute origin `/llms.txt`, the MCP card and the
-metadata print, and the copy counter's `KV_REST_API_URL` /
-`KV_REST_API_TOKEN`. Copy it to `.env.local` only if you need one.
+metadata print, and the copy counter's `KV_REST_API_*`. Copy it to
+`.env.local` only if you need one; development counts under its own keys.
 
 ## 2. Run it
 
@@ -52,13 +52,18 @@ READMEs have the field reference and templates.
 - **Environment variables**: none required. `/llms.txt` and `metadataBase`
   use `NEXT_PUBLIC_SITE_URL` when set (a custom domain), otherwise the
   deployment's own Vercel hostname.
-- **The copy counter** (a workflow's "Uses"): add Upstash for Redis from the
-  Vercel Marketplace to the project; it sets `KV_REST_API_URL` and
-  `KV_REST_API_TOKEN`, the one secret (`UPSTASH_REDIS_REST_*` works too).
-  The count is prerendered with each workflow page and refreshed in the
-  background every five minutes (`lib/usage/copies.ts`); each Copy is one
-  `HINCRBY` on the hash `workflow:copies`. Without the store the count is
-  hidden and nothing else changes.
+- **The copy counter** (a workflow's "Uses", and the Hot and Popular
+  angles): add Upstash for Redis from the Vercel Marketplace to the project.
+  It sets `KV_REST_API_URL`, `KV_REST_API_TOKEN` (the one secret; only the
+  count route writes with it) and `KV_REST_API_READ_ONLY_TOKEN` (what pages
+  read with). `KV_URL` and `REDIS_URL` are unused. Each Copy adds one to the
+  hash `workflow:copies` and to that UTC day's `workflow:copies:<date>`
+  (kept 60 days); Hot is the last 7 days. Pages read every count in one
+  round trip at most once a minute and stream them into `<Suspense>` holes;
+  the rest of each page is prerendered (`lib/usage/copies.ts`). A preview
+  counts under `preview:…` and development under `development:…`, so testing
+  never moves production's numbers. Without a store every count is hidden
+  and the pages are fully static.
 - **Preview deployments** need nothing extra: each builds its branch's tree.
 - **Function bundles**: every page prerenders; only an unknown key on a
   detail route and the `/mcp` endpoint read the tree at request time, so
