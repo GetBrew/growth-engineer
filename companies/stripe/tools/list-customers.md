@@ -1,6 +1,7 @@
 ---
 name: List customers
 summary: Returns customers newest first; pass an email to get only the customers with exactly that address.
+notes: The `email` filter is case-sensitive.
 capability: track-revenue
 docs: https://docs.stripe.com/api/customers/list
 mcp: stripe_api_read

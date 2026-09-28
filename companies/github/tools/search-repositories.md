@@ -1,7 +1,7 @@
 ---
 name: Search repositories
 summary: Returns repositories that match a query on name, topic, language, stars or owner.
-capability: research-accounts
+capability: manage-code
 docs: https://docs.github.com/en/rest/search/search#search-repositories
 mcp: search_repositories
 cli: gh search repos

@@ -1,6 +1,7 @@
 ---
 name: Generate a design
 summary: Generates design candidates from a natural-language brief and returns each candidate's id, preview link and thumbnails.
+notes: "Candidates are not editable designs yet: show them to the user rather than picking one, then call `create-design-from-candidate` with the chosen `candidate_id` and the job id."
 capability: design-assets
 docs: https://www.canva.dev/docs/apps/mcp/tools/generate-design/
 mcp: generate-design

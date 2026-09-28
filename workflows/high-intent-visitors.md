@@ -13,15 +13,18 @@ updated: 2026-09-27
 ## Inputs
 
 - `pricing_path`: the page that signals intent, e.g. /pricing
-- `alerts_channel`: where to post, e.g. #sales-signals
+- `min_views`: how many views count as intent, e.g. 2
+- `lookback_days`: the window to count in, e.g. 7
+- `alerts_channel`: the Slack channel to post in, e.g. #sales-signals
 
 ## Steps
 
-1. **Find repeat visitors** with [posthog/run-sql-query](../companies/posthog/tools/run-sql-query.md). List identified accounts that viewed `pricing_path` at least twice in the last 7 days.
-2. **Enrich** with [clay/run-routine](../companies/clay/tools/run-routine.md). For each account domain, add company size, industry and any open hiring for sales or marketing.
-3. **Alert** with [slack/post-message](../companies/slack/tools/post-message.md). Post one message per account to `alerts_channel` with the enrichment and a suggested owner. Ask the user before posting the first one.
+1. **Find repeat visitors** with [posthog/run-sql-query](../companies/posthog/tools/run-sql-query.md). List the company email domains of identified users who viewed `pricing_path` at least `min_views` times in the last `lookback_days`, leaving out free email domains. Keep each domain with its view count.
+2. **Enrich** with [apollo/enrich-company](../companies/apollo/tools/enrich-company.md). For each domain, keep the company's name, employee count, industry and latest funding round.
+3. **Find the owner** with [hubspot/search-crm-records](../companies/hubspot/tools/search-crm-records.md). Search companies by `domain`. Keep each company's `hubspot_owner_id`, or note that it has no record or no owner.
+4. **Alert** with [slack/post-message](../companies/slack/tools/post-message.md). Post one message per account to `alerts_channel` with the view count, the enrichment and the owner. Ask the user before posting the first one.
 
 ## Done when
 
 - Every qualifying account was posted once, with no duplicates.
-- The user has the list of accounts and suggested owners.
+- The user has the list of accounts with their owners, and the ones with no owner.

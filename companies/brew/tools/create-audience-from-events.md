@@ -1,6 +1,7 @@
 ---
 name: Create an audience from email events
 summary: Saves a frozen cohort of the contacts who opened, clicked or otherwise engaged in a time window or send, or with an exclude rule those who did not.
+notes: "Builds in the background: poll the audience with `include=build` until it is ready before sending to it."
 capability: build-audience
 docs: https://docs.brew.new/api-reference/public-v1/audiences/create-an-audience-from-analytics-events
 mcp: create_audience_from_events

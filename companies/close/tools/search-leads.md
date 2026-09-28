@@ -1,6 +1,7 @@
 ---
 name: Search leads and contacts
 summary: Returns the leads or contacts that match a query, such as contacts with CTO in their title or leads not contacted in the past week.
+notes: The API returns only IDs unless you pass `_fields`. The MCP tool takes a plain-language query and pages with `paginate_search`.
 capability: manage-crm
 docs: https://developer.close.com/api/resources/advanced-filtering
 mcp: search

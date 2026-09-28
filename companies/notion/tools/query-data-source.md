@@ -1,6 +1,7 @@
 ---
 name: Query a data source
 summary: Returns the pages in a data source that match a filter, in the requested sort order.
+notes: Over MCP, SQL is unlimited only on Business and Enterprise plans with Notion AI; on other plans, rows mode and single-data-source SQL share a per-workspace allowance.
 capability: manage-docs
 docs: https://developers.notion.com/reference/query-a-data-source
 mcp: notion-query-data-sources

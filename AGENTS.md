@@ -74,7 +74,7 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   flat YAML header, setup picks the best way in (official MCP → CLI → API →
   community; tool files list every option, workflow files ≤ 2 per tool, each
   company's ways once), inputs in backticks, ≤ 10 steps, Rules last and
-  immutable, tool ≈ 80 lines, workflow ≈ 150. Change the format and the
+  immutable, tool ≈ 80 lines, workflow ≈ 200. Change the format and the
   golden fixtures in `tests/fixtures/markdown/` in the same commit.
 - A file's `updated` date is the newest ENTITY date of every file that fed
   it (tool ← company, workflows; workflow ← tools, their companies).

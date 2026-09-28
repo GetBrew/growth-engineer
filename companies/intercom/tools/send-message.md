@@ -1,6 +1,7 @@
 ---
 name: Send a message
 summary: Sends an email, in-app or WhatsApp message from a teammate to a user or lead and returns the created message.
+notes: Sends for real. A contact created moments earlier can return 404 until it is ready to be messaged, and no conversation exists until the contact replies.
 capability: send-email
 docs: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/messages/createmessage
 api: POST /messages

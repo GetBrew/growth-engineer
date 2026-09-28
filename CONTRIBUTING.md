@@ -68,7 +68,7 @@ every tool back to the workflows that use it.
   workflow's capabilities are computed and cannot be written.
 - **Facts carry a date.** `updated` is when someone last checked the file.
 - **Files stay short.** Tool files render to about 80 lines, workflows to
-  about 150, with at most ten steps.
+  about 200, with at most ten steps.
 - **Nothing invented.** No placeholder companies, invented endpoints or
   made-up customers. If a fact is not public, leave the field out.
 

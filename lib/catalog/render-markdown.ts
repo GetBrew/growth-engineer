@@ -26,7 +26,7 @@ import { yamlList, yamlScalar } from './render-header'
  *   - the file tells the agent to check access, read-only, before anything
  *   - Rules come last and nobody can edit them
  *   - a deprecated file says so, in its header and under its title
- *   - tool files stay under ~80 lines, workflow files under ~150, ≤ 10 steps
+ *   - tool files stay under ~80 lines, workflow files under ~200, ≤ 10 steps
  *
  * PURE MODULE: type-only imports, deterministic for a given `now`. The
  * golden tests reproduce the design doc's example files byte for byte.
@@ -97,7 +97,7 @@ export type RenderedDocument = {
 }
 
 export const TOOL_FILE_MAX_LINES = 80
-export const WORKFLOW_FILE_MAX_LINES = 150
+export const WORKFLOW_FILE_MAX_LINES = 200
 export const MAX_WORKFLOW_STEPS = 10
 
 /** Immutable. Always the last section; nobody can edit these lines. */

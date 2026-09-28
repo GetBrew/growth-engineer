@@ -38,8 +38,8 @@ updated: 2026-09-16
 
 ## Steps
 
-1. **Find funded companies** with [people-data-labs/search-companies](../companies/people-data-labs/tools/search-companies.md). List companies matching `target_segment` whose `last_funding_date` falls in the last 30 days.
-2. **Find the buyer** with [apollo/search-people](../companies/apollo/tools/search-people.md). For each company, find the head of growth or marketing.
+1. **Find funded companies** with [people-data-labs/search-companies](../companies/people-data-labs/tools/search-companies.md). List companies matching `target_segment` whose `last_funding_date` falls in the last 30 days. Keep name and domain.
+2. **Find the buyer** with [apollo/search-people](../companies/apollo/tools/search-people.md). For each company, find the head of growth or marketing. Keep their name and title.
 3. **Write emails** with [anthropic/create-message](../companies/anthropic/tools/create-message.md). Draft a three-sentence email per buyer. Show the drafts to the user.
 4. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each buyer to `campaign_id`, with `findEmail` so lemlist finds their work email.
 
@@ -62,7 +62,7 @@ Optional. Anything else the agent should know, in any markdown.
 | `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
 | `tags` | no | The `motion:` and `channel:` entries from `tags.yml` it serves. Its capabilities come from its tools, and `has:*` from their ways in — both computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
-| `featured` | no | Editorial rank on `/workflows`, set by maintainers; must be unique. Unranked workflows follow by date. |
+| `featured` | no | `true` puts it on the featured list at the top of `/workflows`. Set by maintainers; leave it out. |
 | `aliases`, `status` | no | Old names to redirect; `published` (default), `deprecated`, or `draft` — checked, never published, and free to use draft tools. A published workflow uses published tools only. |
 
 ### The body
@@ -82,11 +82,17 @@ A long entry can wrap onto the next line; keep each entry to one paragraph.
 ## Writing good steps
 
 - One tool per step. Say what to do with it, not how the tool works — the
-  tool's file already explains setup.
+  tool's file already explains setup, and its `notes` (an id to fetch first,
+  a result to poll for) print in your workflow's Set up.
+- End a step with **Keep …** when a later step needs its result: "Keep each
+  buyer's name, title and work email." The agent carries exactly that
+  forward, so nothing a later step needs is left to guesswork.
+- Make a number the user might change an input (`lookback_days`, e.g. 30),
+  not a constant in a step.
 - Inputs in backticks (`target_segment`), never `{{templates}}`.
 - Ask before anything that sends, spends or changes data. The rendered file
   adds these rules itself; do not duplicate them.
-- Keep the whole file under 150 lines when rendered.
+- Keep the whole file under 200 lines when rendered: each tool you add brings its setup.
 
 ## Checking your work
 

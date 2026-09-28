@@ -1,7 +1,8 @@
 ---
 name: Fire a trigger event
 summary: Validates an event payload, upserts the contact it describes and starts one run of every published automation listening to that trigger.
-capability: send-email
+notes: Always pass an idempotency key, such as the event name, user id and event timestamp.
+capability: track-events
 docs: https://docs.brew.new/api-reference/public-v1/automations/fire-a-trigger
 mcp: fire_trigger_event
 cli: brew-cli automations triggers fire

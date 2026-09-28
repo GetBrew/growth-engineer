@@ -1,6 +1,7 @@
 ---
 name: Create a file request
 summary: Creates a file request for a destination folder and returns the URL others use to upload files into it.
+notes: Needs the `file_requests.write` scope; only Professional and Business accounts can set a deadline.
 capability: store-files
 docs: https://docs.dropboxapi.com/dropbox-api/api-reference/user-endpoints/file-requests/create
 api: POST /2/file_requests/create

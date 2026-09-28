@@ -10,7 +10,7 @@ mcp:
   url: https://mcp.mixpanel.com/mcp
   auth: oauth
   docs: https://docs.mixpanel.com/docs/mcp
-  notes: EU and India projects use `https://mcp-eu.mixpanel.com/mcp` and `https://mcp-in.mixpanel.com/mcp`.
+  notes: An organization admin enables MCP in Settings > Org > Overview first. EU and India projects use `https://mcp-eu.mixpanel.com/mcp` and `https://mcp-in.mixpanel.com/mcp`.
 cli:
   install: pip install mixpanel-headless
   binary: mp

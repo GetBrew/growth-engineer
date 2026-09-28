@@ -1,7 +1,8 @@
 ---
 name: Enrich a company
 summary: Returns a company's firmographics, such as industry, employee and revenue range, address and SIC and NAICS codes, plus its 6sense segments, found from an email or a domain.
-capability: research-accounts
+notes: Costs one 6sense Credit per enriched company and needs the 6sense Platform or Sales Intelligence package. Segment names come back only when they are turned on in API Settings.
+capability: enrich-companies
 docs: https://api.6sense.com/docs/#company-firmographics-api-v3
 api: POST /v1/enrichment/company
 updated: 2026-09-27

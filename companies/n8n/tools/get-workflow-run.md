@@ -1,6 +1,7 @@
 ---
 name: Get a workflow run
 summary: Returns one n8n execution's status and start and stop times and, when asked, the data each node produced.
+notes: Returns metadata only unless you pass `includeData`. The MCP tool also needs the `workflowId`.
 capability: automate-workflows
 docs: https://docs.n8n.io/connect/n8n-api/executions
 mcp: get_workflow_execution

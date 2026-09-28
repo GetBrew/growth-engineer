@@ -26,7 +26,7 @@ names the tools, and appends the rules.
 | The header parses as written. | Every value an author wrote is quoted when it has to be (`yamlScalar`, `lib/catalog/render-header.ts`), so a title with a colon or a login like `true` reads back exactly, and no value can add a field. |
 | Deprecated says so. | `status: deprecated` in the header and one warning line under the title; an agent asks the user before using it. |
 | Prose never poses as structure. | A company's description or a workflow's Notes may use `###` and smaller headings only, never one named like a section the file writes (Set up, Steps, Rules…). |
-| Files stay short. | Tool files under ~80 lines; workflow files under ~150, at most 10 steps. |
+| Files stay short. | Tool files under ~80 lines; workflow files under ~200, at most 10 steps. |
 
 ## Layout
 

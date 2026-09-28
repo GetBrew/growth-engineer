@@ -10,6 +10,7 @@ mcp:
   url: https://mcp.frontapp.com/mcp
   auth: oauth
   docs: https://dev.frontapp.com/docs/mcp-server
+  notes: "Connect with the client ID and secret of a Front developer app that has MCP Server access: Front has no dynamic client registration."
 api:
   url: https://api2.frontapp.com
   auth: api_key

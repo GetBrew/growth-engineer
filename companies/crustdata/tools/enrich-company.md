@@ -1,7 +1,7 @@
 ---
 name: Enrich a company
 summary: Returns a company's firmographics, headcount, funding, web traffic, employee reviews, key people and news, found by domain, name, profile URL or Crustdata ID.
-capability: research-accounts
+capability: enrich-companies
 docs: https://docs.crustdata.com/api-reference/company-apis/get-full-company-enrichment
 cli: crustdata company enrich
 api: POST /company/enrich
