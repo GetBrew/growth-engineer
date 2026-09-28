@@ -22,8 +22,8 @@ With Node 22+ and pnpm 11 (`corepack enable` gives you the pinned pnpm):
 
 ```bash
 pnpm install
-pnpm content:check      # every problem in the catalog, each with its file (and line)
-pnpm dev                # http://localhost:3000 — append .md to a page for the file an agent gets
+pnpm content:check      # every problem in the catalog, each with its file (and line, in a workflow's body)
+pnpm dev                # http://localhost:3000 (pnpm dev -p 3001 for another port); append .md to a page for its file
 ```
 
 CI runs the same check on every pull request, so you can also open one and

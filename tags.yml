@@ -4,8 +4,13 @@
 #   capability  what a tool does. Every tool names one (`capability:` in its
 #               header); a workflow gets its tools' capabilities automatically.
 #   category    what kind of company it is (`category:` in company.md).
-#   channel     where a workflow reaches people (`tags:` in its header).
-#   motion      which go-to-market motion a workflow serves (`tags:` too).
+#   channel     where a workflow reaches people — customers, or your own team
+#               (a Slack alert is `channel:chat`) — in its `tags:`.
+#   motion      which go-to-market motion a workflow serves, in `tags:` too:
+#               inbound (they came to you), outbound (you go to them),
+#               midbound (signals from people already engaging: visitors,
+#               users), plg (the product sells itself), retention (keep and
+#               grow customers). Tag every one that fits; usually one.
 #
 # One more namespace is computed, never written here: has:mcp|cli|api, the
 # ways in. `label` is what the site shows; `synonyms` feed search, so

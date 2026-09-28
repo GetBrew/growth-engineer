@@ -152,5 +152,5 @@ updated: 2026-09-16
 
 ```bash
 pnpm content:check   # parses every file, resolves every reference, renders every file
-pnpm dev             # then open /companies/<handle>
+pnpm dev             # then open /companies/<handle>, and /tools/<handle>/<name>.md for the file an agent gets
 ```

@@ -11,7 +11,10 @@ done. The format is defined in `workflows/README.md` — read it first and copy
 its template; this skill says how to write one that runs.
 
 **Input:** the play, in the user's words ("when someone stars our repo, find
-out who they are and reach out"), and the user's GitHub login for `author`.
+out who they are and reach out"), the user's GitHub login for `author`, and
+the services they use. When they don't say which CRM, data provider or email
+tool, ask; if they can't say, pick the most widely used tool the catalog has
+for the job and name the choice in `## Notes`.
 **Output:** `workflows/<name>.md`, any missing tool files, a passing
 `pnpm content:check`, and a pull request.
 
@@ -29,11 +32,15 @@ Every step that calls a service names ONE published tool. Find them in the
 catalog, never from memory:
 
 - `ls companies/*/tools/` and `grep -l "^capability: <slug>" companies/*/tools/*.md`
-  (the capabilities are in `tags.yml`), or over MCP: `search` with words or a
-  `capability` filter, then `get` a tool to read its calls and `notes`.
+  (the capabilities are in `tags.yml`), or over MCP at the site's `/mcp`
+  endpoint: `search` with words or a `capability` filter, then `get` a tool to
+  read its calls and `notes`.
 - Read each tool's `summary` and `notes`: they say what the call returns and
   what it needs first (an id, a poll, a credit). A step must ask only for what
   the call can do.
+- A step that relies on a filter or parameter (sign-ups since a date, deals in
+  a stage) names it when the tool's `notes` or its `docs:` page gives it, so
+  the running agent doesn't have to look it up.
 - A tool you need is missing? Add it with the `research-company` skill (from
   the vendor's own docs) in the same pull request. Never link a tool that does
   not exist, and never invent a call.
@@ -59,6 +66,9 @@ key, as in the template in `workflows/README.md`), then what to do.
 - **Ask before it acts.** Show drafts before anything is sent. The file's Rules
   already say to ask before sending, spending or changing data; don't repeat
   them in every step.
+- **Triggers are runs.** A workflow runs when someone runs it. For a "when X
+  happens" play, take a `since` input (the last run) so each run handles only
+  what is new, and say in `## Notes` to run it on a schedule.
 - **Cap the spend.** A step that costs credits per record gets a
   `max_…` input.
 - **Consent.** A marketing send goes only to people who opted in: filter on it,
@@ -71,14 +81,15 @@ key, as in the template in `workflows/README.md`), then what to do.
 - `## Done when`: the checks that mean the job is finished, as results
   ("Every funded company has a contact, or a note explaining why not").
 - Header: `title`, `summary` (one sentence), `author` (the GitHub login),
-  `tags` (`motion:` and `channel:` entries from `tags.yml` only), `updated`
-  (today). Leave `featured` to maintainers.
+  `tags` (`motion:` and `channel:` entries from `tags.yml` only — its header
+  says what each motion means), `updated` (today). Leave `featured` to
+  maintainers.
 
 ## 5. Check it runs
 
 ```bash
 pnpm content:check      # every step resolves, every tag exists, the file renders within its caps
-pnpm dev                # then open /workflows/<name>.md — the file an agent gets
+pnpm dev                # then open /workflows/<name>.md — the file an agent gets (-p <port> for another port)
 ```
 
 Then read the rendered file as the agent that will run it: list what you
