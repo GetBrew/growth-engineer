@@ -1,20 +1,21 @@
 import { SITE } from '@/lib/catalog/definitions'
 import type { Catalog } from '@/lib/content/build-catalog'
 import { getPrompt, listPrompts } from './prompts'
-import { instructions, registry } from './tools'
+import { type Caller, instructions, registry } from './tools'
 
 /**
- * The catalog over MCP: a read-only, stateless server with two tools —
- * `search` and `get` (./tools.ts) — and a prompt per workflow and per
- * contribute guide (./prompts.ts), over the Streamable HTTP transport
- * (app/mcp/route.ts carries the HTTP; this module is the JSON-RPC). Every
- * answer comes from the same in-memory catalog the pages and the `.md` URLs
- * read, passed in, so tests can hand it a fixture catalog.
+ * The catalog over MCP: a stateless server with three tools — `search` and
+ * `get`, which read the catalog, and `submit_feedback`, which sends a note to
+ * the publisher (./tools.ts) — and a prompt per workflow and per contribute
+ * guide (./prompts.ts), over the Streamable HTTP transport (app/mcp/route.ts
+ * carries the HTTP; this module is the JSON-RPC). Every answer comes from the
+ * same in-memory catalog the pages and the `.md` URLs read, passed in, so
+ * tests can hand it a fixture catalog.
  *
- * No sessions, no auth, no side effects: the files are public, and nothing a
- * client sends can change anything. A malformed message is a JSON-RPC
- * error; a mistake inside a tool call is a result with `isError` the agent
- * can act on.
+ * No sessions and no auth: the files are public, and nothing a client sends
+ * can change them. The one call that leaves the server is `submit_feedback`,
+ * to Notra. A malformed message is a JSON-RPC error; a mistake inside a tool
+ * call is a result with `isError` the agent can act on.
  */
 
 type JsonRpcId = string | number
@@ -26,7 +27,7 @@ export type JsonRpcResponse =
       error: { code: number; message: string }
     }
 
-type Context = { catalog: Catalog; origin: string }
+type Context = Caller & { catalog: Catalog }
 
 /** Newest first: the one a client that asks for something else is offered. */
 export const PROTOCOL_VERSIONS = [
@@ -61,12 +62,12 @@ function idOf(message: Record<string, unknown>): JsonRpcId | null {
   return typeof id === 'string' || typeof id === 'number' ? id : null
 }
 
-function answer(
+async function answer(
   method: string,
   id: JsonRpcId,
   params: Record<string, unknown>,
   context: Context
-): JsonRpcResponse {
+): Promise<JsonRpcResponse> {
   switch (method) {
     case 'initialize': {
       const requested = params.protocolVersion
@@ -133,10 +134,10 @@ function answer(
       if (args !== undefined && !isObject(args)) {
         return failure(id, ERROR.invalidParams, '`arguments` must be an object')
       }
-      const result = registry(context.catalog).call(
+      const result = await registry(context.catalog).call(
         name,
         args ?? {},
-        context.origin
+        context
       )
       return result
         ? { jsonrpc: '2.0', id, result }
@@ -151,10 +152,10 @@ function answer(
  * One JSON-RPC message → its response, or null for a notification or a
  * client's reply (neither gets one back).
  */
-export function handleMessage(
+export async function handleMessage(
   message: unknown,
   context: Context
-): JsonRpcResponse | null {
+): Promise<JsonRpcResponse | null> {
   if (!isObject(message)) {
     return failure(null, ERROR.invalidRequest, 'Not a JSON-RPC request')
   }
@@ -188,7 +189,7 @@ export function handleMessage(
     return failure(id, ERROR.invalidParams, '`params` must be an object')
   }
   try {
-    return answer(method, id, params, context)
+    return await answer(method, id, params, context)
   } catch (error) {
     // A server fault reaches the logs, never the client as an HTML page.
     console.error('[mcp]', error)

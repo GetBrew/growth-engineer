@@ -110,6 +110,9 @@ capability:
   send-email:
     label: Send email
     synonyms: [email sending, sending, campaigns, broadcasts, transactional email]
+  send-linkedin-messages:
+    label: Send LinkedIn messages
+    synonyms: [linkedin message, linkedin dm, connection request, inmail, linkedin outreach]
   send-sms:
     label: Send SMS
     synonyms: [sms, text message, texting, mms, whatsapp]
@@ -122,6 +125,9 @@ capability:
   track-events:
     label: Track events
     synonyms: [events, event tracking, identify, capture, trigger event]
+  track-ai-visibility:
+    label: Track AI visibility
+    synonyms: [geo, aeo, ai search, ai visibility, llm visibility, answer engine optimization, brand mentions, share of voice]
   track-revenue:
     label: Track revenue
     synonyms: [revenue, mrr, arr, invoices]
@@ -172,6 +178,9 @@ category:
   forms:
     label: Forms
     synonyms: [surveys, quizzes, form builder]
+  geo:
+    label: AI search visibility
+    synonyms: [geo, generative engine optimization, aeo, ai seo, llm seo, ai visibility]
   intent:
     label: Intent
     synonyms: [intent data, signals]

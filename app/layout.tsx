@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 import { Footer } from '@/components/layout/footer'
 import { Navbar } from '@/components/layout/navbar'
+import { VercelAnalytics } from '@/components/layout/vercel-analytics'
 import { JsonLd } from '@/components/seo/json-ld'
 import { SITE } from '@/lib/catalog/definitions'
 import { clientEnv, SITE_ORIGIN } from '@/lib/env'
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
+        <VercelAnalytics />
       </body>
     </html>
   )

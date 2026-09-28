@@ -22,6 +22,7 @@ you need one.
 | `NEXT_PUBLIC_SITE_URL` | The absolute origin printed in `/llms.txt`, the MCP card and page metadata. |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN` | The copy counter's store. Development counts under its own keys. |
 | `GITHUB_TOKEN` | Raises the GitHub API limit for the header's star count. It needs no scopes. |
+| `NOTRA_GEO_TOKEN` | Notra's ingest token for AI-traffic analytics. Leave it unset locally. |
 
 ## 2. Run it
 
@@ -83,6 +84,18 @@ and the folder READMEs have the field reference and templates.
   - A preview counts under `preview:…` and development under
     `development:…`, so testing never moves production's numbers.
   - Without a store every count is hidden and the pages are fully static.
+- **Web Analytics and Speed Insights.** Turn both on in the Vercel project
+  (the Analytics and Speed Insights tabs), then deploy. The root layout loads
+  their scripts from `/_vercel/…`, which only a Vercel deployment with them
+  turned on serves; locally and before that, the scripts 404 and nothing is
+  counted.
+- **AI-traffic analytics.** Set `NOTRA_GEO_TOKEN` for Production only, so
+  previews and local runs send nothing. The proxy then reports each page
+  view, file and `/llms.txt` fetch to Notra after the response, and Notra
+  keeps AI crawlers and visits referred by an AI assistant.
+- **Agent feedback.** The MCP server's `submit_feedback` tool posts to the
+  Notra feedback URL in `lib/mcp/feedback-tool.ts`. It needs no token. A fork
+  should point it at its own inbox.
 - **Preview deployments** need nothing extra: each builds its branch's tree.
 - **Function bundles.** Every page prerenders. Only an unknown key on a
   detail route and the `/mcp` endpoint read the tree at request time, so
