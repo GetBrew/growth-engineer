@@ -119,6 +119,7 @@ export function instructions(): string {
     ...DEFINITIONS.map(
       (entry) => `- ${entry.term} (\`${entry.example}\`): ${entry.definition}`
     ),
-    'Use `search` to find a workflow or tool for the job — by words, tags (capability, category, motion, channel, has:mcp), company, author, or the tool a workflow uses. Then `get` its ref and follow the file: it names every tool, how to set it up, the inputs to ask the user for, the steps and the rules. `get` a tag to compare every tool that does one job.',
+    'Use `search` to find a workflow or tool for the job — by words, tags (capability, category, motion, channel, has:mcp), company, author, or the tool a workflow uses. Then `get` its ref and follow the file: it names every tool, how to set it up and what to know before each call, the inputs to ask the user for, the steps and the rules. `get` a tag to compare every tool that does one job.',
+    'Every workflow is also a prompt, named by its key, with its inputs as arguments: pick it to run it. To add to the catalog, use the `contribute-workflow`, `contribute-tool` or `contribute-company` prompt; contributions are pull requests to the repository.',
   ].join('\n')
 }

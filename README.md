@@ -83,7 +83,10 @@ a `SoftwareApplication`, a workflow a `HowTo` with one step per step). No
 sign-in, no rate limit, no key. Any MCP client can connect to `/mcp`
 (Streamable HTTP, read-only): `search` finds workflows, tools and
 companies by words and filters; `get` returns a file, or every tool, workflow
-and company carrying a tag.
+and company carrying a tag. Every workflow is also an MCP **prompt**, with its
+inputs as arguments, so it runs straight from a client's prompt list, and the
+`contribute-workflow`, `contribute-tool` and `contribute-company` prompts set
+an agent up to add to the catalog.
 
 The definitions themselves live in ONE place, `lib/catalog/definitions.ts`,
 and feed `/llms.txt` and the structured data.
@@ -129,7 +132,7 @@ companies/ workflows/ tags.yml  THE DATA — see CONTRIBUTING.md
 app/
   (site)/                     every page: /, companies, tools, workflows, docs
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
-  mcp/                        the read-only MCP server (lib/mcp/: server.ts is the JSON-RPC, tools.ts the two tools)
+  mcp/                        the read-only MCP server (lib/mcp/: server.ts is the JSON-RPC, tools.ts the two tools, prompts.ts the prompts)
   llms.txt, llms-full.txt     the file index with definitions; the whole corpus
   robots.ts, sitemap.ts       every crawler allowed; every page, with its date
   **/opengraph-image.tsx      the social cards, one per page, drawn at build

@@ -34,7 +34,8 @@ catalog, never from memory:
 - `ls companies/*/tools/` and `grep -l "^capability: <slug>" companies/*/tools/*.md`
   (the capabilities are in `tags.yml`), or over MCP at the site's `/mcp`
   endpoint: `search` with words or `tags: ["capability:<slug>"]`, then `get` a tool to
-  read its calls and `notes`.
+  read its calls and `notes`. The same server's `contribute-workflow` prompt
+  hands over this guide's short form.
 - Read each tool's `summary` and `notes`: they say what the call returns and
   what it needs first (an id, a poll, a credit). A step must ask only for what
   the call can do.

@@ -1,10 +1,12 @@
 import { SITE } from '@/lib/catalog/definitions'
 import type { Catalog } from '@/lib/content/build-catalog'
+import { getPrompt, listPrompts } from './prompts'
 import { instructions, registry } from './tools'
 
 /**
  * The catalog over MCP: a read-only, stateless server with two tools —
- * `search` and `get` (./tools.ts) — over the Streamable HTTP transport
+ * `search` and `get` (./tools.ts) — and a prompt per workflow and per
+ * contribute guide (./prompts.ts), over the Streamable HTTP transport
  * (app/mcp/route.ts carries the HTTP; this module is the JSON-RPC). Every
  * answer comes from the same in-memory catalog the pages and the `.md` URLs
  * read, passed in, so tests can hand it a fixture catalog.
@@ -78,7 +80,10 @@ function answer(
         id,
         result: {
           protocolVersion,
-          capabilities: { tools: { listChanged: false } },
+          capabilities: {
+            tools: { listChanged: false },
+            prompts: { listChanged: false },
+          },
           serverInfo: {
             name: SITE.name,
             title: SITE.name,
@@ -97,6 +102,29 @@ function answer(
         id,
         result: { tools: registry(context.catalog).tools },
       }
+    case 'prompts/list':
+      return {
+        jsonrpc: '2.0',
+        id,
+        result: { prompts: listPrompts(context.catalog) },
+      }
+    case 'prompts/get': {
+      const { name, arguments: args } = params
+      if (typeof name !== 'string') {
+        return failure(id, ERROR.invalidParams, '`name` must be a prompt name')
+      }
+      if (args !== undefined && !isObject(args)) {
+        return failure(id, ERROR.invalidParams, '`arguments` must be an object')
+      }
+      const prompt = getPrompt(context.catalog, name, args ?? {})
+      return prompt
+        ? { jsonrpc: '2.0', id, result: prompt }
+        : failure(
+            id,
+            ERROR.invalidParams,
+            `Unknown prompt: ${name}. List them with prompts/list.`
+          )
+    }
     case 'tools/call': {
       const { name, arguments: args } = params
       if (typeof name !== 'string') {

@@ -85,5 +85,5 @@ export const AGENT_ACCESS = [
   'Append `.md` to any company, tool or workflow URL to get its file.',
   'Or request a company, tool or workflow page with `Accept: text/markdown`.',
   '`/llms.txt` lists every file, tags included; `/llms-full.txt` is every company, tool and workflow file in one document.',
-  `Or connect an MCP client to \`${MCP_PATH}\` (Streamable HTTP, no sign-in): \`search\` finds entries by words and filters, \`get\` returns a file — a tag’s included.`,
+  `Or connect an MCP client to \`${MCP_PATH}\` (Streamable HTTP, no sign-in): \`search\` finds entries by words and filters, \`get\` returns a file — a tag’s included — and every workflow is a prompt that runs it, with its inputs as arguments.`,
 ] as const

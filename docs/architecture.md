@@ -78,7 +78,7 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 | `/docs`, `/docs/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
-| `/mcp` | on request (`ƒ`) | a POST per tool call; stateless, read-only, the same catalog |
+| `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, read-only, the same catalog |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
 answers with a real 308 or a 404. `dynamicParams`, `dynamic` and
@@ -93,7 +93,7 @@ stated once:
 | --- | --- | --- |
 | Search engines | canonical URL, Open Graph, the social card, schema.org JSON-LD (`Organization`, `SoftwareApplication`, `HowTo`, `CollectionPage`, `BreadcrumbList`), `/sitemap.xml` with per-page `lastmod`, `/robots.txt` | `lib/seo/metadata.ts`, `lib/seo/structured-data.ts`, `app/sitemap.ts`, `app/robots.ts` |
 | Answer engines and AI crawlers | the same, plus `/llms.txt` (llmstxt.org: definitions, then every file with a summary) and `/llms-full.txt` (every company, tool and workflow file in one document); every AI crawler is named in `/robots.txt` | `lib/seo/llms.ts`, `lib/catalog/discovery.ts` |
-| Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the read-only MCP server at `/mcp` (`search`, `get`) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
+| Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the read-only MCP server at `/mcp` (`search`, `get`, a prompt per workflow) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
 
 The definitions (company, tool, workflow, tag, how to read a file) live in
 `lib/catalog/definitions.ts` and nowhere else; the llms preamble and the
