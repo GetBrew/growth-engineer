@@ -5,7 +5,6 @@ category: data-provider
 tagline: Go-to-market intelligence to find and enrich companies and contacts and spot buyer intent.
 docs: https://docs.gtm.ai
 github: https://github.com/Zoominfo
-logo: zoominfo.svg
 mcp:
   url: https://mcp.zoominfo.com/mcp
   auth: oauth

@@ -5,7 +5,6 @@ category: code
 tagline: Code hosting, issues and pull requests, with search across public repositories and developers.
 docs: https://docs.github.com
 github: https://github.com/github
-logo: github.png
 mcp:
   url: https://api.githubcopilot.com/mcp/
   auth: oauth

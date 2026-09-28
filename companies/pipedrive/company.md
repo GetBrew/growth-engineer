@@ -5,7 +5,6 @@ category: crm
 tagline: Sales CRM built around deals and pipelines.
 docs: https://developers.pipedrive.com
 github: https://github.com/pipedrive
-logo: pipedrive.png
 mcp:
   url: https://mcp.pipedrive.ai/mcp
   auth: oauth

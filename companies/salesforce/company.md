@@ -4,7 +4,6 @@ domain: salesforce.com
 category: crm
 tagline: CRM for accounts, contacts, leads and opportunities.
 docs: https://developer.salesforce.com/docs
-logo: salesforce.png
 mcp:
   url: https://api.salesforce.com/platform/mcp/v1/platform/sobject-mutations
   auth: oauth

@@ -5,7 +5,6 @@ category: payments
 tagline: Merchant of record for SaaS, apps and AI products; payments, tax and subscriptions in one integration.
 docs: https://developer.paddle.com
 github: https://github.com/PaddleHQ
-logo: paddle.png
 mcp:
   url: https://mcp.paddle.com/mcp
   auth: oauth

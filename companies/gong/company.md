@@ -4,7 +4,6 @@ domain: gong.io
 category: revenue-intelligence
 tagline: Revenue AI that turns the calls and emails your team has with customers into account and deal insights.
 docs: https://help.gong.io
-logo: gong.svg
 mcp:
   url: https://mcp.gong.io/mcp
   auth: oauth

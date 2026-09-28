@@ -4,7 +4,6 @@ domain: instantly.ai
 category: sales-engagement
 tagline: Automated email outreach with a B2B lead database, deliverability tools and an AI-powered CRM.
 docs: https://developer.instantly.ai
-logo: instantly.png
 cli:
   install: npm install -g @instantlyai/cli
   binary: instantly

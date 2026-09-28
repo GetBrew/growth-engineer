@@ -5,7 +5,6 @@ category: crm
 tagline: The CRM for revenue teams, with records, lists, notes and tasks an agent can read and write.
 docs: https://docs.attio.com
 github: https://github.com/attio
-logo: attio.png
 mcp:
   url: https://mcp.attio.com/mcp
   auth: oauth

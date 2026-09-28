@@ -5,7 +5,6 @@ category: data-provider
 tagline: Verified B2B emails, phone numbers and buying signals for prospecting and enrichment.
 docs: https://docs.lusha.com
 github: https://github.com/lusha-oss
-logo: lusha.webp
 mcp:
   url: https://mcp.lusha.com
   auth: oauth

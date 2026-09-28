@@ -5,7 +5,6 @@ category: data-provider
 tagline: Person and company data APIs for enrichment, search and IP-to-company lookups.
 docs: https://docs.peopledatalabs.com
 github: https://github.com/peopledatalabs
-logo: people-data-labs.png
 api:
   url: https://api.peopledatalabs.com
   auth: api_key

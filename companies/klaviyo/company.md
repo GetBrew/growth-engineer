@@ -5,7 +5,6 @@ category: email
 tagline: Email and SMS marketing on a B2C CRM, with profiles, events, campaigns and flows.
 docs: https://developers.klaviyo.com/en
 github: https://github.com/klaviyo
-logo: klaviyo.png
 mcp:
   url: https://mcp.klaviyo.com/mcp
   auth: oauth

@@ -270,7 +270,7 @@ describe('get, on a fixture catalog', () => {
       path: 'companies/acme/company.md',
       handle: 'acme',
       source:
-        '---\nname: Acme\ndomain: acme.example\ncategory: crm\nlogo: acme.png\napi:\n  url: https://api.acme.example\n  auth: none\nupdated: 2026-09-16\n---\n',
+        '---\nname: Acme\ndomain: acme.example\ncategory: crm\napi:\n  url: https://api.acme.example\n  auth: none\nupdated: 2026-09-16\n---\n',
     },
     {
       kind: 'tool',
@@ -296,7 +296,7 @@ describe('get, on a fixture catalog', () => {
         '---\ntitle: The old way\nsummary: Kept for reference.\nauthor: jdoe\naliases: [acme]\nstatus: deprecated\nupdated: 2026-09-16\n---\n\n## Steps\n\n1. **Create** with [acme/create-record](../companies/acme/tools/create-record.md). Make one.\n\n## Done when\n\n- It exists.\n',
     },
   ]
-  const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+  const catalog = buildCatalog(files)
 
   test('an old key returns the current file, under its current ref', () => {
     for (const ref of ['tool:acme/old-record', 'acme/old-record']) {

@@ -5,7 +5,6 @@ category: messaging
 tagline: Team messaging in channels and direct messages.
 docs: https://docs.slack.dev
 github: https://github.com/slackapi
-logo: slack.jpg
 mcp:
   url: https://mcp.slack.com/mcp
   auth: oauth

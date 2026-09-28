@@ -58,6 +58,7 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   'llms-full.txt',
   'llms.txt',
   'login',
+  'logos',
   'manifest.webmanifest',
   'map',
   'mcp',

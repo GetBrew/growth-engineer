@@ -9,7 +9,7 @@ import { dateToMs } from './derive'
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
 import { proseProblems } from './prose'
-import type { ContentFile } from './read-tree'
+import type { ContentFile, LogoExtension } from './read-tree'
 
 /**
  * Companies: one file each, `companies/<handle>/company.md`, holding who
@@ -23,7 +23,8 @@ type CompanyFile = ContentFile & { kind: 'company' }
 
 function toCompany(
   file: CompanyFile,
-  parsed: { data: CompanyFrontmatter; body: string }
+  parsed: { data: CompanyFrontmatter; body: string },
+  logo: LogoExtension | undefined
 ): Company {
   const { data, body } = parsed
   return {
@@ -33,7 +34,8 @@ function toCompany(
     category: data.category,
     ...(data.tagline ? { tagline: data.tagline } : {}),
     ...(body ? { description: body } : {}),
-    logo: { url: `/logos/${data.logo}` },
+    // A logo is optional: with none, the site draws the name's first letter.
+    ...(logo ? { logo: { url: `/logos/${file.handle}.${logo}` } } : {}),
     links: {
       website: `https://${data.domain}`,
       ...(data.docs ? { docs: data.docs } : {}),
@@ -50,7 +52,7 @@ function toCompany(
 export function buildCompanies(
   files: ReadonlyArray<ContentFile>,
   tags: ReadonlyMap<string, Tag>,
-  logos: ReadonlySet<string> | undefined,
+  logos: ReadonlyMap<string, LogoExtension>,
   problems: ProblemList
 ): { companies: Map<string, Company>; ways: Map<string, CompanyWays> } {
   const companies = new Map<string, Company>()
@@ -83,13 +85,7 @@ export function buildCompanies(
     )) {
       problems.add(file.path, problem.message, problem.line)
     }
-    if (logos && !logos.has(parsed.data.logo)) {
-      problems.add(
-        file.path,
-        `logo "${parsed.data.logo}" is not under public/logos/`
-      )
-    }
-    companies.set(file.handle, toCompany(file, parsed))
+    companies.set(file.handle, toCompany(file, parsed, logos.get(file.handle)))
     const { mcp, cli, api } = parsed.data
     ways.set(file.handle, {
       ...(mcp ? { mcp } : {}),

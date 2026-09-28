@@ -87,7 +87,8 @@ Keep an existing logo. For a new company: read the homepage's `<link rel="icon">
 tags — prefer an SVG, then the apple-touch-icon, then a PNG of at least 64 px (a
 vendor CDN the homepage links is fine; `/apple-touch-icon.png` is often a 404) —
 download it, check it's an image (`file`) under 32 KB (`wc -c`), and save it as
-`public/logos/<handle>.<ext>`. If nothing fits, say so.
+`companies/<handle>/logo.<ext>` (svg, png, jpg or webp). If nothing fits, leave
+it out — the logo is optional — and say so.
 
 ## 6. Report
 

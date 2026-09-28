@@ -5,7 +5,6 @@ category: scraper
 tagline: Cloud platform and store of ready-made scrapers, called Actors, that turn websites into data.
 docs: https://docs.apify.com
 github: https://github.com/apify
-logo: apify.svg
 mcp:
   url: https://mcp.apify.com
   auth: oauth

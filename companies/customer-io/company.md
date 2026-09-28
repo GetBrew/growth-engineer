@@ -5,7 +5,6 @@ category: email
 tagline: Messaging automation that sends email, push, SMS and in-app messages from customer data and behavior.
 docs: https://docs.customer.io
 github: https://github.com/customerio
-logo: customer-io.svg
 mcp:
   url: https://mcp.customer.io/mcp
   auth: oauth

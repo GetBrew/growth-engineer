@@ -5,7 +5,6 @@ category: project-management
 tagline: The everything app for work, with tasks, docs, goals and chat in one workspace.
 docs: https://developer.clickup.com
 github: https://github.com/clickup
-logo: clickup.png
 mcp:
   url: https://mcp.clickup.com/mcp
   auth: oauth

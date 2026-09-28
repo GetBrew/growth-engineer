@@ -5,7 +5,6 @@ category: support
 tagline: AI-powered customer service platform, with an API for tickets, users and organizations.
 docs: https://developer.zendesk.com
 github: https://github.com/zendesk
-logo: zendesk.svg
 api:
   url: https://{subdomain}.zendesk.com
   auth: api_key

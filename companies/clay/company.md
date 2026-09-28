@@ -5,7 +5,6 @@ category: data-provider
 tagline: Go-to-market data platform for finding, enriching and watching people and companies.
 docs: https://developers.clay.com
 github: https://github.com/clay-run
-logo: clay.png
 cli:
   install: npm install --global @clay-run/cli
   binary: clay

@@ -40,7 +40,9 @@
       // `node --test .agents/skills/upload-to-growth-cdn/scripts/*.test.mjs`.
       "!!.agents",
       // Static assets: Biome 2.5 parses .svg as HTML and wants <title>s.
+      // Company logos are vendor art, served as they are.
       "!!public",
+      "!!companies/**/logo.svg",
       // The favicon is the same kind of asset; it sits in app/ only because
       // that is where Next.js looks for it, not because it is source.
       "!!app/icon.svg",

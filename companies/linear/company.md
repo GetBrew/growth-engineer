@@ -5,7 +5,6 @@ category: project-management
 tagline: The system for product development, built for planning and building with AI agents.
 docs: https://linear.app/developers
 github: https://github.com/linear
-logo: linear.svg
 mcp:
   url: https://mcp.linear.app/mcp
   auth: oauth

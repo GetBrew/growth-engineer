@@ -5,7 +5,6 @@ category: support
 tagline: Customer service helpdesk with a built-in AI agent, Fin.
 docs: https://developers.intercom.com
 github: https://github.com/intercom
-logo: intercom.png
 mcp:
   url: https://mcp.intercom.com/mcp
   auth: oauth

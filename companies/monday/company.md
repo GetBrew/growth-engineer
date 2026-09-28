@@ -5,7 +5,6 @@ category: project-management
 tagline: The AI work platform for people and agents, from projects to sales CRM and service.
 docs: https://developer.monday.com/api-reference/docs
 github: https://github.com/mondaycom
-logo: monday.png
 mcp:
   url: https://mcp.monday.com/mcp
   auth: oauth
