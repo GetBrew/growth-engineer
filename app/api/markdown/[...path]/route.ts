@@ -2,6 +2,7 @@ import {
   filePathToRef,
   filePathToTagKey,
   refToFilePath,
+  refToPath,
 } from '@/lib/catalog/keys'
 import {
   loadDocument,
@@ -9,6 +10,7 @@ import {
   resolveAlias,
 } from '@/lib/catalog/loaders'
 import { markdownFileParams } from '@/lib/catalog/static-params'
+import { SITE_ORIGIN } from '@/lib/env'
 
 export function generateStaticParams() {
   return markdownFileParams()
@@ -44,16 +46,25 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
-  return markdownResponse(document.markdown)
+  return markdownResponse(document.markdown, refToPath(ref))
 }
 
-function markdownResponse(markdown: string): Response {
+/**
+ * A company, tool or workflow file is the content of its page, so it names
+ * the page as its canonical URL: a search engine indexes the page instead of
+ * a second copy of it, and an agent still gets the file. A tag's file has no
+ * page, so it names none.
+ */
+function markdownResponse(markdown: string, pagePath?: string): Response {
   return new Response(markdown, {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
       'Cache-Control':
         'public, max-age=60, s-maxage=300, stale-while-revalidate=3600',
       'X-Content-Type-Options': 'nosniff',
+      ...(pagePath
+        ? { Link: `<${SITE_ORIGIN}${pagePath}>; rel="canonical"` }
+        : {}),
     },
   })
 }

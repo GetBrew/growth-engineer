@@ -7,6 +7,7 @@ import { VercelAnalytics } from '@/components/layout/vercel-analytics'
 import { JsonLd } from '@/components/seo/json-ld'
 import { SITE } from '@/lib/catalog/definitions'
 import { clientEnv, SITE_ORIGIN } from '@/lib/env'
+import { SITE_OPEN_GRAPH } from '@/lib/seo/metadata'
 import { websiteJsonLd } from '@/lib/seo/structured-data'
 
 import './globals.css'
@@ -31,19 +32,18 @@ export const metadata: Metadata = {
   },
   description: SITE.tagline,
   applicationName: SITE.name,
-  // Open Graph and Twitter facts every page shares; each page adds its own
-  // title, description, url and card (lib/seo/metadata.ts).
-  openGraph: { siteName: SITE.name, type: 'website', locale: 'en_US' },
+  // Open Graph and Twitter facts every page shares; each page restates the
+  // Open Graph ones and adds its own title, description, url and card
+  // (lib/seo/metadata.ts).
+  openGraph: { ...SITE_OPEN_GRAPH, type: 'website' },
   twitter: { card: 'summary_large_image' },
+  // One robots tag for every engine, not a Google-only one: Bing reads the
+  // snippet and image-preview limits too.
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-snippet': -1,
-      'max-image-preview': 'large',
-    },
+    'max-snippet': -1,
+    'max-image-preview': 'large',
   },
 }
 

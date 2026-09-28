@@ -14,7 +14,15 @@ export const SITE = {
   description:
     'Companies, the tools they make, and workflows that put tools to work. Every tool and workflow is one markdown file any agent can run: the setup, the inputs, the steps and the rules, inline. The catalog itself is markdown in a public repository, built into a static site.',
   repository: 'https://github.com/GetBrew/growth-engineer',
-  publisher: { name: 'Brew', url: 'https://brew.new' },
+  publisher: {
+    name: 'Brew',
+    url: 'https://brew.new',
+    /** Brew's own profiles: linked from the footer, named in the structured data. */
+    profiles: [
+      { label: 'X', url: 'https://x.com/brewdotnew' },
+      { label: 'LinkedIn', url: 'https://www.linkedin.com/company/brewdotnew' },
+    ],
+  },
 } as const
 
 export type Definition = {

@@ -125,9 +125,9 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   drawn at build (`generateStaticParams`, `next/og`). Structured data
   (`lib/seo/structured-data.ts`, rendered by `<JsonLd>`) restates facts
   already on the page — never new ones. `/sitemap.xml` lists every indexable
-  page with its `updated` date. `/robots.txt` allows every crawler and names
-  the AI crawlers. `tests/seo.test.tsx` holds the sitemap, `/llms.txt` and
-  `/llms-full.txt` to the catalog exactly. `proxy.ts` reports AI visits to Notra.
+  page with its `updated` date; a `.md` file names its page as canonical.
+  `/robots.txt` allows every crawler outside `/api/` and names the AI crawlers.
+  `tests/seo.test.tsx` pins them all. `proxy.ts` reports AI visits to Notra.
 
 ### Rendering and caching
 
