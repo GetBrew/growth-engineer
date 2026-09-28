@@ -24,9 +24,9 @@ function section(
   ]
 }
 
-export async function GET() {
-  const index = await loadLlmsIndex()
-  const tags = await loadLlmsTags()
+export function GET() {
+  const index = loadLlmsIndex()
+  const tags = loadLlmsTags()
   const lines = [
     ...llmsPreamble(SITE_ORIGIN, SITE.name),
     ...section('Workflows', index.workflow),

@@ -20,11 +20,11 @@ export default async function Image({
   params: Promise<{ handle: string }>
 }) {
   const { handle } = await params
-  const company = isValidHandle(handle) ? await loadCompany(handle) : null
+  const company = isValidHandle(handle) ? loadCompany(handle) : null
   if (!company) {
     return new Response(null, { status: 404 })
   }
-  const tools = await loadToolsByCompany(handle)
+  const tools = loadToolsByCompany(handle)
   const ways = [
     ...new Set(tools.flatMap((tool) => tool.access.map((entry) => entry.type))),
   ]

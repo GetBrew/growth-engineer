@@ -1,8 +1,9 @@
 import { TAG_NAMESPACES, type TagNamespace } from '@/lib/catalog/keys'
 
 /**
- * The search grammar, shared by the search box, the URL and (later) MCP
- * `search`. PURE: no I/O, so the same parse runs in a Server Component, in the
+ * The search grammar, shared by the search box and the URL; MCP `search`
+ * takes the same chips as filters and the same word matching
+ * (./search-words.ts). PURE: no I/O, so the same parse runs in a Server Component, in the
  * proxy, and in a test.
  *
  *   words      free text → the full-text index

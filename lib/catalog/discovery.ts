@@ -34,7 +34,7 @@ function newest(dates: ReadonlyArray<number>): number | undefined {
 }
 
 /** Every indexable page, most important first, dated like its file. */
-export async function loadSitemapEntries(): Promise<Array<SitemapEntry>> {
+export function loadSitemapEntries(): Array<SitemapEntry> {
   const catalog = getCatalog()
   // A page's date is its file's: the newest of everything the file shows.
   const dated = (type: EntityType, keys: Iterable<string>) =>
@@ -115,9 +115,7 @@ export type LlmsEntry = {
 }
 
 /** Every file in key order, with a title and a one-line summary. */
-export async function loadLlmsIndex(): Promise<
-  Record<EntityType, Array<LlmsEntry>>
-> {
+export function loadLlmsIndex(): Record<EntityType, Array<LlmsEntry>> {
   const catalog = getCatalog()
   const byKey = (a: { key: string }, b: { key: string }) =>
     a.key.localeCompare(b.key)
@@ -169,9 +167,11 @@ function plural(count: number, one: string, many: string): string {
 }
 
 /** Every tag's file, by key, with what it gathers. */
-export async function loadLlmsTags(): Promise<
-  Array<{ title: string; file: string; summary: string }>
-> {
+export function loadLlmsTags(): Array<{
+  title: string
+  file: string
+  summary: string
+}> {
   const catalog = getCatalog()
   return [...catalog.tags.values()]
     .sort((a, b) => a.key.localeCompare(b.key))
@@ -194,9 +194,10 @@ export async function loadLlmsTags(): Promise<
 }
 
 /** Every rendered file, in the order `/llms.txt` lists them. */
-export async function loadCorpus(): Promise<
-  Array<{ file: string; document: CatalogDocument }>
-> {
+export function loadCorpus(): Array<{
+  file: string
+  document: CatalogDocument
+}> {
   const catalog = getCatalog()
   const byKey = (a: string, b: string) => a.localeCompare(b)
   const refs = [

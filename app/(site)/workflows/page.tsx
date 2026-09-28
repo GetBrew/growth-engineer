@@ -33,11 +33,8 @@ export default function WorkflowsPage() {
   )
 }
 
-async function Index() {
-  const [workflows, tags] = await Promise.all([
-    loadWorkflowSearchItems(),
-    loadTagChips(),
-  ])
+function Index() {
+  const [workflows, tags] = [loadWorkflowSearchItems(), loadTagChips()]
   return (
     <>
       <JsonLd

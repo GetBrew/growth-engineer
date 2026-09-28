@@ -24,11 +24,6 @@ export type ParsedWorkflow = {
   stepLines: ReadonlyArray<number>
 }
 
-/** Header fields that no longer exist, and what to do instead. */
-const RETIRED_FIELDS: Record<string, string> = {
-  version: 'versions are gone and git history is the archive; delete the line',
-}
-
 const ENTRY_NAME: Record<keyof typeof WORKFLOW_BODY_SECTIONS, string> = {
   inputs: 'input',
   steps: 'step',
@@ -88,7 +83,8 @@ export function parseWorkflowFile(
   }
   const before = problems.size
 
-  // The inputs, steps and checks used to be header fields; say where they went.
+  // Inputs, steps and checks look like header fields but live in the body:
+  // a file that puts them in the header hears where they go.
   const header = { ...split.data }
   for (const [field, section] of Object.entries(WORKFLOW_BODY_SECTIONS)) {
     if (field in header) {
@@ -97,12 +93,6 @@ export function parseWorkflowFile(
         path,
         `\`${field}\` is not a header field: write it in the body under "${section}" (workflows/README.md)`
       )
-    }
-  }
-  for (const [field, advice] of Object.entries(RETIRED_FIELDS)) {
-    if (field in header) {
-      delete header[field]
-      problems.add(path, `\`${field}\`: ${advice}`)
     }
   }
   const parsedHeader = workflowHeaderSchema.safeParse(header)

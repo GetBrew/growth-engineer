@@ -33,11 +33,8 @@ export default function CompaniesPage() {
   )
 }
 
-async function Directory() {
-  const [companies, tags] = await Promise.all([
-    loadCompanySearchItems(),
-    loadTagChips(),
-  ])
+function Directory() {
+  const [companies, tags] = [loadCompanySearchItems(), loadTagChips()]
   const categories = tags.filter(
     (tag) => tag.namespace === 'category' && tag.counts.companies > 0
   )

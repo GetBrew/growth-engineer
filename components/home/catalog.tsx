@@ -15,12 +15,12 @@ import { SECTIONS } from '@/lib/constants/sections'
 
 const PREVIEW = 10
 
-export async function HomeCatalog() {
-  const [workflows, tools, companies] = await Promise.all([
+export function HomeCatalog() {
+  const [workflows, tools, companies] = [
     loadWorkflows('featured', PREVIEW),
     loadNewTools(PREVIEW),
     loadCompanies(PREVIEW),
-  ])
+  ]
 
   const workflowItems = workflows.map(workflowListItem)
 

@@ -9,8 +9,8 @@ const SUGGESTIONS = 4
  * "Try searching" chips are the catalog's most-used capabilities, so they
  * always find something.
  */
-export async function CommandPalette() {
-  const [items, tags] = await Promise.all([loadPaletteItems(), loadTagChips()])
+export function CommandPalette() {
+  const [items, tags] = [loadPaletteItems(), loadTagChips()]
   const suggestions = tags
     .filter((tag) => tag.namespace === 'capability')
     .sort(

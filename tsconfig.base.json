@@ -1,7 +1,7 @@
 {
   // THE ONE compiler-options + path-alias source for every TypeScript program
-  // in the repo. `tsconfig.json` (app + Next), `tests/tsconfig.json` and
-  // `scripts/tsconfig.json` all extend this file, and the Vitest config loads
+  // in the repo. `tsconfig.json` (app + Next) and `tests/tsconfig.json`
+  // extend this file, and the Vitest config loads
   // this `paths` map through `vite-tsconfig-paths` — so an alias is added
   // HERE, once.
   //

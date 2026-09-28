@@ -5,15 +5,15 @@ import { splitFrontmatter } from './frontmatter'
 import type { ContentFile } from './read-tree'
 
 /**
- * Header + schema, or a recorded problem and null. `retired` names header
- * fields that no longer exist and says what to write instead, so a file in
- * an old shape hears where its fields went, not just "unknown field".
+ * Header + schema, or a recorded problem and null. `misplaced` names header
+ * fields a source file must not write and says what to write instead, so a
+ * file copied from the wrong shape hears why, not just "unknown field".
  */
 export function parseFile<T>(
   file: ContentFile,
   schema: z.ZodType<T>,
   problems: ProblemList,
-  retired: Readonly<Record<string, string>> = {}
+  misplaced: Readonly<Record<string, string>> = {}
 ): { data: T; body: string; bodyLine: number } | null {
   let split: ReturnType<typeof splitFrontmatter>
   try {
@@ -26,12 +26,12 @@ export function parseFile<T>(
     return null
   }
   const header = { ...split.data }
-  let isRetired = false
-  for (const [field, advice] of Object.entries(retired)) {
+  let isMisplaced = false
+  for (const [field, advice] of Object.entries(misplaced)) {
     if (field in header) {
       delete header[field]
-      problems.add(file.path, `\`${field}\`: ${advice}`)
-      isRetired = true
+      problems.add(file.path, `\`${field}\` ${advice}`)
+      isMisplaced = true
     }
   }
   const result = schema.safeParse(header)
@@ -39,7 +39,7 @@ export function parseFile<T>(
     problems.add(file.path, formatIssues(result.error))
     return null
   }
-  return isRetired
+  return isMisplaced
     ? null
     : { data: result.data, body: split.body, bodyLine: split.bodyLine }
 }

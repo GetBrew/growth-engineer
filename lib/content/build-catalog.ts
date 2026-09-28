@@ -1,3 +1,8 @@
+import { parseRef, refToSourcePath } from '@/lib/catalog/keys'
+import {
+  TOOL_FILE_MAX_LINES,
+  WORKFLOW_FILE_MAX_LINES,
+} from '@/lib/catalog/render-markdown'
 import type {
   CatalogDocument,
   Company,
@@ -114,6 +119,30 @@ function withTools(
   )
 }
 
+/**
+ * Files stay short enough to paste: a workflow within its cap, a tool or
+ * company within its own. Checked on the rendered file, blamed on the source.
+ */
+function lineCapProblems(
+  documents: ReadonlyMap<string, CatalogDocument>
+): ProblemList {
+  const problems = new ProblemList()
+  for (const document of documents.values()) {
+    const cap =
+      document.entityType === 'workflow'
+        ? WORKFLOW_FILE_MAX_LINES
+        : TOOL_FILE_MAX_LINES
+    const ref = parseRef(document.ref)
+    if (ref && document.lineCount > cap) {
+      problems.add(
+        refToSourcePath(ref),
+        `renders to ${document.lineCount} lines; a ${document.entityType} file stays within ${cap} — shorten its text or its notes`
+      )
+    }
+  }
+  return problems
+}
+
 /** The edges, the listing orders and the files, once every reference has resolved. */
 function assemble(entities: {
   companies: Map<string, Company>
@@ -155,6 +184,7 @@ function assemble(entities: {
     order,
   })
   const documents = buildDocuments({ companies, tools, workflows, relations })
+  lineCapProblems(documents).throwIfAny()
   return {
     companies,
     tools,

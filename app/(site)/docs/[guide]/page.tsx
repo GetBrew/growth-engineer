@@ -62,7 +62,7 @@ export async function generateMetadata({
 }
 
 /** A quoted file is read from the repository at build; a command is as written. */
-async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
+function resolveStep(step: GuideStep): ResolvedGuideStep {
   const { sample, ...rest } = step
   if (!sample) {
     return rest
@@ -72,7 +72,7 @@ async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
       ...rest,
       sample: {
         caption: sample.file,
-        code: await loadSourceExcerpt(sample.file, sample.excerpt, sample.omit),
+        code: loadSourceExcerpt(sample.file, sample.excerpt, sample.omit),
       },
     }
   }
@@ -85,7 +85,7 @@ async function resolveStep(step: GuideStep): Promise<ResolvedGuideStep> {
  * a sticky aside. Every guide is listed by `generateStaticParams`, so the
  * whole page prerenders complete — nothing on it loads.
  */
-export default async function GuidePage({ params }: { params: Params }) {
+export default function GuidePage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/docs" label="Docs" />
@@ -103,9 +103,7 @@ async function GuideDetail({ params }: { params: Params }) {
   }
 
   const markdown = guideMarkdown(found)
-  const steps = await Promise.all(
-    (GUIDE_STEPS[found.id] ?? []).map(resolveStep)
-  )
+  const steps = (GUIDE_STEPS[found.id] ?? []).map(resolveStep)
   const previous = previousGuide(found.id)
   const next = nextGuide(found.id)
 

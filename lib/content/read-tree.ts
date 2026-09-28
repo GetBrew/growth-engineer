@@ -148,11 +148,6 @@ function walkCompany(walk: Walk, handle: string): void {
       }
     } else if (LOGO.test(entry) && walk.isFile(relative)) {
       walkLogo(walk, handle, relative, entry)
-    } else if (entry === 'access') {
-      walk.reject(
-        relative,
-        'ways in live in company.md now, under `mcp:`, `cli:` and `api:` in its header'
-      )
     } else {
       walk.reject(
         relative,
@@ -219,12 +214,6 @@ export function readContentTree(root = process.cwd()): ContentTree {
     walkCompany(walk, handle)
   }
   walkWorkflows(walk)
-  if (walk.isDirectory('tags')) {
-    walk.reject(
-      'tags',
-      `tags live in one file now, ${TAGS_FILE} at the root; move each entry there`
-    )
-  }
   if (walk.isFile(TAGS_FILE)) {
     walk.files.push({
       kind: 'tags',

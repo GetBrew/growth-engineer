@@ -31,32 +31,25 @@ describe('contribute guides', () => {
     )
   })
 
-  test.each(steps)(
-    '$guide › $step.key quotes a real file',
-    async ({ step }) => {
-      const sample = step.sample
-      if (!sample) {
-        return
-      }
-      if ('file' in sample) {
-        const text = await loadSourceExcerpt(
-          sample.file,
-          sample.excerpt,
-          sample.omit
-        )
-        expect(text.trim().length).toBeGreaterThan(0)
-        return
-      }
-      // A listing is captioned by its folder; each line is a file in it.
-      const folder = sample.caption.endsWith('/') ? sample.caption : ''
-      for (const line of sample.code.split('\n')) {
-        const path = `${folder}${line.trim()}`
-        if (/^(companies|workflows|tags)\/\S+\.md$/.test(path)) {
-          expect(getSourceFile(path), path).toBeDefined()
-        }
+  test.each(steps)('$guide › $step.key quotes a real file', ({ step }) => {
+    const sample = step.sample
+    if (!sample) {
+      return
+    }
+    if ('file' in sample) {
+      const text = loadSourceExcerpt(sample.file, sample.excerpt, sample.omit)
+      expect(text.trim().length).toBeGreaterThan(0)
+      return
+    }
+    // A listing is captioned by its folder; each line is a file in it.
+    const folder = sample.caption.endsWith('/') ? sample.caption : ''
+    for (const line of sample.code.split('\n')) {
+      const path = `${folder}${line.trim()}`
+      if (/^(companies|workflows|tags)\/\S+\.md$/.test(path)) {
+        expect(getSourceFile(path), path).toBeDefined()
       }
     }
-  )
+  })
 
   test('a header can leave out fields, and a missing one fails loudly', () => {
     const source = '---\ntitle: x\nfeatured: 1\ntags:\n  - a:b\n---\n'

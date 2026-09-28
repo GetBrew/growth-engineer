@@ -52,7 +52,7 @@ jobs:
         run: pnpm lint
 
   typecheck:
-    # `pnpm tsc` chains THREE TypeScript programs. Here each one is a matrix
+    # `pnpm tsc` chains TWO TypeScript programs. Here each one is a matrix
     # leg, so wall time is the SLOWEST program instead of the sum, and a
     # failure names its program in the job title instead of making you read a
     # log to find out which one went red.
@@ -60,7 +60,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        program: [app, tests, scripts]
+        program: [app, tests]
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
@@ -130,7 +130,7 @@ jobs:
 
   test:
     # THE required check: it needs every other job, so branch protection names
-    # one check and still covers lint, all three typecheck legs, the build and
+    # one check and still covers lint, both typecheck legs, the build and
     # its bundle budget, the unit suite and hygiene. `if: always()` so a failed
     # job shows as a RED `test` instead of a skipped required check that a
     # branch protection rule would happily merge past.

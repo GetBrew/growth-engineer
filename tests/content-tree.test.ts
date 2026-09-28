@@ -103,34 +103,6 @@ describe('the content tree walk', () => {
     rmSync(path.join(root, 'companies/acme/icon.png'))
   })
 
-  test('rejects a leftover access/ folder: ways in live in company.md now', () => {
-    write('companies/acme/access/api.md')
-    const problems = readContentTree(root).problems.map(
-      (problem) => `${problem.file}: ${problem.message}`
-    )
-    expect(problems).toEqual(
-      expect.arrayContaining([
-        expect.stringMatching(
-          /^companies\/acme\/access: ways in live in company\.md now/
-        ),
-      ])
-    )
-    rmSync(path.join(root, 'companies/acme/access'), { recursive: true })
-  })
-
-  test('rejects a leftover tags/ folder: the vocabulary is one file now', () => {
-    write('tags/capability/manage-crm.md')
-    const problems = readContentTree(root).problems.map(
-      (problem) => `${problem.file}: ${problem.message}`
-    )
-    expect(problems).toEqual(
-      expect.arrayContaining([
-        expect.stringMatching(/^tags: tags live in one file now, tags\.yml/),
-      ])
-    )
-    rmSync(path.join(root, 'tags'), { recursive: true })
-  })
-
   test('rejects a nested workflow folder, a stray file and a misplaced folder', () => {
     write('workflows/jdoe/nested.md')
     write('workflows/notes.txt', 'plain')

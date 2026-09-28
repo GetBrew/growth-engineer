@@ -20,7 +20,7 @@ export default async function Image({
   params: Promise<{ name: string }>
 }) {
   const { name: key } = await params
-  const result = isValidKeyPart(key) ? await loadWorkflow(key) : null
+  const result = isValidKeyPart(key) ? loadWorkflow(key) : null
   if (!result) {
     return new Response(null, { status: 404 })
   }

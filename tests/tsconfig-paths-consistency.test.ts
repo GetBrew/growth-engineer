@@ -40,11 +40,7 @@ function normalize(
   )
 }
 
-const MIRRORS = [
-  'tsconfig.json',
-  'tests/tsconfig.json',
-  'scripts/tsconfig.json',
-] as const
+const MIRRORS = ['tsconfig.json', 'tests/tsconfig.json'] as const
 
 describe('tsconfig path maps', () => {
   const base = normalize(pathsOf('tsconfig.base.json'))
@@ -61,11 +57,5 @@ describe('tsconfig path maps', () => {
         `${mirror} is missing the "${alias}" alias — add it, or alias resolution differs between TypeScript and Biome.`
       ).toEqual(targets)
     }
-  })
-
-  test('scripts/ adds only the documented server-only shim', () => {
-    const scripts = normalize(pathsOf('scripts/tsconfig.json'))
-    const extras = Object.keys(scripts).filter((alias) => !(alias in base))
-    expect(extras).toEqual(['server-only'])
   })
 })

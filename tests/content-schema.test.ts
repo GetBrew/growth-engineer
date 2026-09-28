@@ -376,11 +376,6 @@ describe('content rules', () => {
       /steps: a workflow has at most 10 steps/,
     ],
     [
-      'a retired version field',
-      () => edit('workflow', 'author: jdoe\n', 'author: jdoe\nversion: 2\n'),
-      /workflows\/keep-crm-clean\.md: `version`: versions are gone/,
-    ],
-    [
       'a reserved handle',
       () =>
         tree({}, [
@@ -487,7 +482,7 @@ describe('content rules', () => {
       'a tool still written the old way, with `access:`',
       () =>
         edit('tool', 'api: POST /records\n', 'access:\n  api: POST /records\n'),
-      /manage-crm\.md: `access`: calls are top-level now/,
+      /manage-crm\.md: `access` is computed: write each call at the top level/,
     ],
     [
       'a way URL with a stray brace',
@@ -907,6 +902,16 @@ describe('content rules', () => {
           '[Acme](../companies/acme/tools/manage-crm.md)'
         ),
       /keep-crm-clean\.md:11: the link text must be the tool's key: \[acme\/manage-crm\]/,
+    ],
+    [
+      'a workflow that renders past its line cap',
+      () =>
+        edit(
+          'workflow',
+          '- No duplicates remain.\n',
+          `- No duplicates remain.\n\n## Notes\n\n${'A line of notes.\n\n'.repeat(100)}`
+        ),
+      /workflows\/keep-crm-clean\.md: renders to \d+ lines; a workflow file stays within 200/,
     ],
     [
       'a workflow whose steps name no tool at all',

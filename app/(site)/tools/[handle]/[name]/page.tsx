@@ -59,7 +59,7 @@ export async function generateMetadata({
   params: Params
 }): Promise<Metadata> {
   const key = await keyFrom(params)
-  const result = key ? await loadTool(key) : null
+  const result = key ? loadTool(key) : null
   if (!result) {
     return {}
   }
@@ -75,7 +75,7 @@ export async function generateMetadata({
   })
 }
 
-export default async function ToolPage({ params }: { params: Params }) {
+export default function ToolPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/tools" label="All tools" />
@@ -89,13 +89,13 @@ async function ToolDetail({ params }: { params: Params }) {
   if (!key) {
     notFound()
   }
-  const [result, document, workflows] = await Promise.all([
+  const [result, document, workflows] = [
     loadTool(key),
     loadDocument('tool', key),
     loadWorkflowsByTool(key),
-  ])
+  ]
   if (!result) {
-    const alias = await resolveAlias('tool', key)
+    const alias = resolveAlias('tool', key)
     if (alias) {
       permanentRedirect(`/tools/${alias.key}`)
     }
