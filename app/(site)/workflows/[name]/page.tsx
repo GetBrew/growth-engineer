@@ -11,8 +11,8 @@ import { MarkdownFile } from '@/components/detail/markdown-file'
 import { MarkdownPreview } from '@/components/detail/markdown-preview'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
+import { TagBox } from '@/components/detail/tag-box'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
-import { YouWillNeed } from '@/components/detail/you-will-need'
 import { BackLink } from '@/components/layout/back-link'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { Page } from '@/components/layout/page'
@@ -96,8 +96,6 @@ async function WorkflowDetail({ params }: { params: Params }) {
   const { workflow, updatedAt, tools, tags } = result
   const filePath = refToFilePath({ type: 'workflow', key: workflow.key })
 
-  const dates = [`Updated ${DETAIL_DATE.format(updatedAt)}`]
-
   const author = {
     name: workflow.author,
     avatar: githubAvatarUrl(workflow.author),
@@ -142,17 +140,8 @@ async function WorkflowDetail({ params }: { params: Params }) {
             </a>
           </DetailByline>
         }
-        dates={dates}
         description={workflow.summary}
-        tags={[
-          ...(workflow.status === 'deprecated'
-            ? [{ label: 'Deprecated', emphasis: true }]
-            : []),
-          ...tags.map((tag) => ({
-            label: tag.label,
-            href: `/workflows?${tag.key.replace(':', '=')}`,
-          })),
-        ]}
+        meta={`Updated ${DETAIL_DATE.format(updatedAt)}`}
         title={workflow.title}
       />
 
@@ -166,23 +155,16 @@ async function WorkflowDetail({ params }: { params: Params }) {
         </section>
 
         <aside className="flex flex-col gap-(--space-md) max-lg:order-first lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
-          <YouWillNeed
-            inputCount={workflow.inputs.length}
-            tools={workflow.toolKeys.flatMap((toolKey) => {
-              const found = tools.find(({ tool }) => tool.key === toolKey)
-              return found
-                ? [
-                    {
-                      access: found.tool.access,
-                      company: {
-                        key: found.company.key,
-                        name: found.company.name,
-                        logoUrl: found.company.logo?.url,
-                      },
-                    },
-                  ]
-                : []
-            })}
+          <TagBox
+            tags={[
+              ...(workflow.status === 'deprecated'
+                ? [{ label: 'Deprecated', emphasis: true }]
+                : []),
+              ...tags.map((tag) => ({
+                label: tag.label,
+                href: `/workflows?${tag.key.replace(':', '=')}`,
+              })),
+            ]}
           />
           <HowItRuns
             steps={workflow.steps}
