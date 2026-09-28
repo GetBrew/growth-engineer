@@ -2,7 +2,7 @@
 name: Notra
 domain: usenotra.com
 category: geo
-tagline: Track how AI answer engines mention your brand and write the content that closes the gaps.
+tagline: Notra is a modern GEO tool that asks ChatGPT, Claude and Gemini the questions your buyers ask. See if you show up, who shows up instead and how to fix it.
 docs: https://docs.usenotra.com
 github: https://github.com/usenotra
 mcp:
