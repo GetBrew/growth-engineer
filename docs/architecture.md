@@ -49,7 +49,10 @@ There is NO auth gate here and no auth provider anywhere; every route is
 public.
 
 **Pages** (`app/(site)/`) — Server Components that render their data
-directly, with no `<Suspense>` and nothing that loads. Detail routes declare
+directly, with no `<Suspense>` and nothing that loads — except the copy
+counts (`lib/usage/copies.ts`), the one request-time datum: each sits in a
+`<Suspense>` hole that streams into the prerendered shell in the same
+response, its fallback holding the space. Detail routes declare
 `generateStaticParams` from `lib/catalog/static-params.ts`, await their params
 themselves and prerender in full, content inline. The
 listings prerender EVERY item and hand them to a client component
@@ -72,13 +75,15 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 
 | Route | At build | Why |
 | --- | --- | --- |
-| `/companies/[handle]`, `/tools/[handle]/[name]`, `/workflows/[name]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
+| `/companies/[handle]`, `/tools/[handle]/[name]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
+| `/workflows/[name]`, `/workflows`, `/` | partial prerender (`◐`) when the copy counter is on, else fully static (`○`) | the page is the prerendered shell; only the copy counts (a workflow's Uses; the order of Hot and Popular) are holes, read at request time (`connection()`) through a `'use cache'` that asks the store at most once a minute, in one round trip, with the read-only token |
 | `/api/markdown/[...path]` — every file, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
-| `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/` | static | no request-time input |
+| `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 | `/docs`, `/docs/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, read-only, the same catalog |
+| `/api/workflows/[name]/copies` | on request (`ƒ`) | one POST per page view that copies; a visitor counts once per workflow per 24 hours (`SET NX` on a hash of the address), then the total and today's bucket |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
 answers with a real 308 or a 404. `dynamicParams`, `dynamic` and

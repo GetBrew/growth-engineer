@@ -18,9 +18,12 @@ export type FilterGroup = {
 export function ListingToolbar({
   groups,
   search,
+  order,
 }: {
   groups: ReadonlyArray<FilterGroup>
   search: ReactNode
+  /** How the list is ordered (`OrderMenu`), beside the search box. */
+  order?: ReactNode
 }) {
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -43,7 +46,10 @@ export function ListingToolbar({
           </nav>
         ))}
       </div>
-      <div className="lg:w-80 lg:shrink-0">{search}</div>
+      <div className="flex items-center gap-2 lg:shrink-0">
+        <div className="min-w-0 flex-1 lg:w-80 lg:flex-none">{search}</div>
+        {order}
+      </div>
     </div>
   )
 }

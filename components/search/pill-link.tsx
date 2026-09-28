@@ -2,9 +2,13 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils/cn'
 
+/**
+ * A filter pill. `h-10`, like every control beside it — the search box, the
+ * order menu, the tabs — so a toolbar reads as one row.
+ */
 export function pillClass(active: boolean, disabled = false): string {
   return cn(
-    'focus-ring type-control flex h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-4 transition-colors duration-200',
+    'focus-ring type-control flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-4 transition-colors duration-200',
     disabled && 'cursor-not-allowed bg-background text-faint',
     !disabled &&
       (active

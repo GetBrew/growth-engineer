@@ -93,7 +93,9 @@ export function DetailHeader({
   byline: ReactNode
   title: string
   description?: string
-  actions: ReactNode
+  /** Beside the title from lg. A page with a side column (a workflow's) keeps
+      them there instead, and its title and summary take the full width. */
+  actions?: ReactNode
   tags?: ReadonlyArray<DetailTag>
   links?: ReadonlyArray<{ label: string; href: string; icon?: IconSvgElement }>
   dates?: ReadonlyArray<string>
@@ -112,20 +114,37 @@ export function DetailHeader({
         {/* The actions join the title's row only from lg: on a tablet they
             squeezed the title into a column a few words wide. */}
         <div className="mt-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-x-8">
-          <div className="flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-2 lg:col-start-1 lg:row-start-1">
+          <div
+            className={cn(
+              'flex flex-wrap items-center gap-x-3 gap-y-2 lg:col-start-1 lg:row-start-1',
+              actions ? 'max-w-3xl' : 'max-w-5xl'
+            )}
+          >
             <h1 className="type-page-title text-balance">{title}</h1>
           </div>
 
-          <div className="max-w-3xl lg:col-start-1 lg:row-start-2">
-            {description ? <DetailDescription text={description} /> : null}
+          <div
+            className={cn(
+              'lg:col-start-1 lg:row-start-2',
+              actions && 'max-w-3xl'
+            )}
+          >
+            {description ? (
+              <DetailDescription
+                className={actions ? undefined : 'max-w-4xl'}
+                text={description}
+              />
+            ) : null}
             {meta ? (
               <p className="type-label mt-3 text-subtle">{meta}</p>
             ) : null}
           </div>
 
-          <div className="mt-6 flex shrink-0 items-center gap-2 max-lg:-ml-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0">
-            {actions}
-          </div>
+          {actions ? (
+            <div className="mt-6 flex shrink-0 items-center gap-2 max-lg:-ml-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0">
+              {actions}
+            </div>
+          ) : null}
         </div>
       </header>
 

@@ -29,3 +29,6 @@ export const LINK_ICON = {
 export const DETAIL_ACTION_ICON = 16
 
 export const PANEL_HEADING = 'type-category flex min-h-10 items-center'
+
+/** A side column's quiet label: "Uses", "Tags", "How it runs". */
+export const SIDE_HEADING = 'eyebrow uppercase'

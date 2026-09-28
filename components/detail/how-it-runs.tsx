@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { accessTypeLabels } from '@/components/common/badges'
 import { EntityLogo } from '@/components/common/entity-logo'
-import { PANEL_HEADING } from '@/components/detail/styles'
+import { SIDE_HEADING } from '@/components/detail/styles'
 import {
   Tooltip,
   TooltipContent,
@@ -30,8 +30,8 @@ export function HowItRuns({
   const toolByKey = new Map(tools.map((tool) => [tool.key, tool]))
 
   return (
-    <section className="flex flex-col gap-(--space-xs)">
-      <h2 className={PANEL_HEADING}>How it runs</h2>
+    <section className="flex flex-col gap-3">
+      <h2 className={SIDE_HEADING}>How it runs</h2>
       <ol className="rounded-2xl border bg-background p-5">
         {steps.map((step, index) => {
           const tool =
