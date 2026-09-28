@@ -61,6 +61,9 @@ describe('contribute guides', () => {
     expect(() => sourceExcerpt('x.md', source, 'header', ['nope'])).toThrow(
       /no "nope" field/
     )
+    expect(() =>
+      sourceExcerpt('x.md', source, undefined, ['featured'])
+    ).toThrow(/header excerpt only/)
   })
 
   test('a missing section fails loudly', () => {

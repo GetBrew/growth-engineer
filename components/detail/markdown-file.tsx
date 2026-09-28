@@ -56,7 +56,7 @@ export function MarkdownFile({
           <span className="truncate">{fileName}</span>
         </h2>
 
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
+        <div className="flex flex-1 items-center justify-between gap-4">
           <TabsList className="h-9 shrink-0 p-0.5">
             <TabsTrigger className="h-8 px-3" value="preview">
               Preview

@@ -78,7 +78,6 @@ const nextConfig: NextConfig = {
       // in MCP `get`.
       { source: '/map', destination: '/', permanent: true },
       { source: '/map/:path*', destination: '/', permanent: true },
-      // A growth hack IS a workflow; the concept went, the URL keeps its promise.
       // The guides moved from /contribute to /docs, under readable names.
       { source: '/contribute', destination: '/docs', permanent: true },
       {
@@ -97,6 +96,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: '/contribute/:path*', destination: '/docs', permanent: true },
+      // A growth hack IS a workflow; the concept went, the URL keeps its promise.
       { source: '/hacks', destination: '/workflows', permanent: true },
       { source: '/hacks/:path*', destination: '/workflows', permanent: true },
       // Submissions are pull requests: the form and the sign-in are gone.

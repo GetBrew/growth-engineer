@@ -74,8 +74,13 @@ enrich-company.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'A tool file is a YAML header between `---` lines and nothing else. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. The `summary` is one sentence saying what the function does.',
-    sample: { file: 'companies/apollo/tools/enrich-person.md' },
+      'A tool file is a YAML header between `---` lines and nothing else. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. `name` says what the function does (“Enrich a person”), and the `summary` is one sentence about what the call returns or changes.',
+    // `aliases` belongs to this file alone: copied, it claims a key twice.
+    sample: {
+      file: 'companies/apollo/tools/enrich-person.md',
+      excerpt: 'header',
+      omit: ['aliases'],
+    },
   },
   {
     key: 'calls',
@@ -123,20 +128,21 @@ competitor-intent.md`,
     title: 'Write the header',
     detail:
       'Phrase the `title` as the result it reaches, not the tools it uses. The `summary` is one sentence. `author` is your GitHub login — workflows are by people, not companies, so the page shows your avatar and links to your profile. Under `tags`, add the motion and channel it serves (`motion:outbound`, `channel:email`) from `tags.yml`; its capabilities come from its tools.',
-    sample: { file: WORKFLOW, excerpt: 'header' },
+    // `featured` is a maintainer's rank, unique per workflow: never copied.
+    sample: { file: WORKFLOW, excerpt: 'header', omit: ['featured'] },
   },
   {
     key: 'inputs',
     title: 'List what the agent must ask for',
     detail:
-      'Under `## Inputs`, one line per input: its name in `snake_case` and backticks, then what it is. An example after `e.g.` is optional. Steps refer to an input by the same name in backticks, never as `{{templates}}`.',
+      'Under `## Inputs`, one line per input: its name in `snake_case` and backticks, a colon, then what it is. Add `, e.g.` and an example when it helps. Steps refer to an input by the same name in backticks, never as `{{templates}}`.',
     sample: { file: WORKFLOW, excerpt: '## Inputs' },
   },
   {
     key: 'steps',
     title: 'Write the steps',
     detail:
-      'Under `## Steps`, a numbered list of one to ten steps: the step’s title in bold, “with” the tool it uses — a published tool’s key, linked to its file — then what to do with it. Say what to do, not how the tool works: the tool’s own file already covers setup. The build links every step to its tool, and every tool page back to the workflows that use it.',
+      'Under `## Steps`, a numbered list of one to ten steps: the step’s title in bold, “with” the tool it uses — a published tool’s key, linked to `../companies/<handle>/tools/<name>.md` — a full stop, then what to do with it. Say what to do, not how the tool works: the tool’s own file already covers setup. The build links every step to its tool, and every tool page back to the workflows that use it.',
     sample: { file: WORKFLOW, excerpt: '## Steps' },
   },
   {
@@ -175,14 +181,14 @@ tools/enrich-person.md`,
     key: 'company',
     title: 'Write company.md',
     detail:
-      '`name`, a bare `domain` with no scheme, a `category` listed in `tags.yml`, a `logo` file you add to `public/logos/`, and `updated`, the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly.',
+      '`name`, a bare `domain` with no scheme, a `category` listed in `tags.yml`, a `logo` file under 32 KB that you add to `public/logos/`, and `updated`, the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly.',
     sample: { file: 'companies/apollo/company.md' },
   },
   {
     key: 'ways',
     title: 'Say how an agent reaches you',
     detail:
-      'In the same header, `mcp`, `cli` and `api` describe each way into your product, once, for every tool to share: the MCP server’s URL or command, the CLI’s install command and binary, the API’s base URL — each with how it authenticates. An API key names the environment variable it goes in, never the key. A community-run way in names its `maintainer`.',
+      'In the same header, `mcp`, `cli` and `api` describe each way into your product, once, for every tool to share: the MCP server’s URL or command, the CLI’s install command and binary, the API’s base URL — each with how it authenticates. An API key names the environment variable it goes in, never the key; a remote MCP server signs in with `oauth` or needs `none` — if it takes a key, list your API instead. A community-run way in names its `maintainer`.',
     sample: { file: 'companies/stripe/company.md', excerpt: 'header' },
   },
   {

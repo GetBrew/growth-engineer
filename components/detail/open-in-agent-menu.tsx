@@ -69,7 +69,7 @@ export function OpenInAgentMenu({
     { label: 'Open in Claude', href: `https://claude.ai/new?q=${prompt}` },
   ]
   const itemClass =
-    'type-control flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-soft outline-none hover:bg-hover hover:text-foreground focus-visible:bg-hover focus-visible:text-foreground'
+    'type-control flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-soft hover:bg-hover hover:text-foreground focus-ring focus-visible:bg-hover focus-visible:text-foreground'
   const close = () => setOpen(false)
 
   return (

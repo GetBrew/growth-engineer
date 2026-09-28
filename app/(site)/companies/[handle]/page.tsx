@@ -119,9 +119,9 @@ async function CompanyDetail({ params }: { params: Params }) {
               name={company.name}
               size={44}
             />
-            {/* A step smaller on the narrowest phones, so a ten-letter name
-                fits beside the icons instead of truncating. */}
-            <h1 className="type-page-title truncate max-[22.5rem]:text-[26px]">
+            {/* A step smaller on the narrowest phones; a longer name wraps
+                rather than losing its end. */}
+            <h1 className="type-page-title min-w-0 max-[22.5rem]:text-[26px]">
               {company.name}
             </h1>
           </div>

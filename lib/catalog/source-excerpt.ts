@@ -19,6 +19,10 @@ export function sourceExcerpt(
   omit: ReadonlyArray<string> = []
 ): string {
   const text = source.replace(/\r\n/g, '\n')
+  // Fields exist only in the header: anywhere else, `omit` would do nothing.
+  if (omit.length > 0 && excerpt !== 'header') {
+    throw new Error(`${path}: \`omit\` works on the header excerpt only`)
+  }
   if (excerpt === undefined) {
     return text.trimEnd()
   }

@@ -22,15 +22,15 @@ import {
 } from '@/lib/stores/agents'
 import { McpStepsDialog } from './mcp-steps-dialog'
 
+/** The previous / next agent arrows: quiet until hovered. */
+const NAV = 'rounded-lg text-faint hover:bg-hover hover:text-foreground'
+
 /**
  * The connection card: pick an agent, copy the server URL, or copy a prompt
  * that asks the agent to connect itself. `url` is the deployment's own
  * `/mcp` (app/mcp/route.ts), passed from the server so it is the origin the
  * page was built for — never a hardcoded host.
  */
-/** The previous / next agent arrows: quiet until hovered. */
-const NAV = 'rounded-lg text-faint hover:bg-hover hover:text-foreground'
-
 export function McpCard({ url }: { url: string }) {
   const agent = useSelectedAgent()
   const urlCopy = useCopy()
