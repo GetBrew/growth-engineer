@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      <HeroBanner title="Copy a growth workflow into your agent" />
+      <HeroBanner title="See how real growth teams get things done" />
 
       <HomeCatalog />
       <FounderProof />
