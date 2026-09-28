@@ -4,7 +4,6 @@ domain: g2.com
 category: intent
 tagline: The software review marketplace, with buyer intent data on the companies researching your product and its competitors.
 docs: https://documentation.g2.com
-logo: g2.png
 mcp:
   url: https://mcp.g2.com/mcp
   auth: oauth

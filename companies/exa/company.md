@@ -5,7 +5,6 @@ category: web-search
 tagline: Web search for AI agents, with page contents, cited answers, monitors and a research agent.
 docs: https://exa.ai/docs
 github: https://github.com/exa-labs
-logo: exa.png
 mcp:
   url: https://mcp.exa.ai/mcp?login
   auth: oauth

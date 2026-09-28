@@ -40,7 +40,7 @@ describe('the content tree walk', () => {
     write('workflows/README.md')
     write('workflows/keep-crm-clean.md')
     write('tags.yml', 'capability:\n  manage-crm:\n    label: Manage a CRM\n')
-    write('public/logos/acme.png', 'png')
+    write('companies/acme/logo.png', 'png')
 
     const tree = readContentTree(root)
     expect(tree.problems).toEqual([])
@@ -52,7 +52,7 @@ describe('the content tree walk', () => {
       'tool:companies/acme/tools/manage-crm.md',
       'workflow:workflows/keep-crm-clean.md',
     ])
-    expect(tree.logos.has('acme.png')).toBe(true)
+    expect(tree.logos.get('acme')).toBe('png')
     expect(tree.fingerprint).toMatch(/^[0-9a-f]{40}$/)
     // A rename or a new logo changes it; nothing else has to be read to know.
     const before = contentFingerprint(root)
@@ -62,9 +62,11 @@ describe('the content tree walk', () => {
     )
     expect(contentFingerprint(root)).not.toBe(before)
     const renamed = contentFingerprint(root)
-    write('public/logos/other.png', 'png')
+    rmSync(path.join(root, 'companies/acme/logo.png'))
+    write('companies/acme/logo.svg', '<svg/>')
     expect(contentFingerprint(root)).not.toBe(renamed)
-    rmSync(path.join(root, 'public/logos/other.png'))
+    rmSync(path.join(root, 'companies/acme/logo.svg'))
+    write('companies/acme/logo.png', 'png')
     renameSync(
       path.join(root, 'workflows/keep-the-crm-clean.md'),
       path.join(root, 'workflows/keep-crm-clean.md')
@@ -72,16 +74,33 @@ describe('the content tree walk', () => {
   })
 
   test('rejects a logo too heavy to serve as is', () => {
-    write('public/logos/huge.png', 'x'.repeat(MAX_LOGO_BYTES + 1))
+    write('companies/heavy/logo.png', 'x'.repeat(MAX_LOGO_BYTES + 1))
+    const tree = readContentTree(root)
+    const problems = tree.problems.map(
+      (problem) => `${problem.file}: ${problem.message}`
+    )
+    expect(problems).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^companies\/heavy\/logo\.png: 33 KB; a logo/),
+      ])
+    )
+    expect(tree.logos.has('heavy')).toBe(false)
+    rmSync(path.join(root, 'companies/heavy'), { recursive: true })
+  })
+
+  test('rejects a logo under any other name', () => {
+    write('companies/acme/icon.png', 'png')
     const problems = readContentTree(root).problems.map(
       (problem) => `${problem.file}: ${problem.message}`
     )
     expect(problems).toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/^public\/logos\/huge\.png: 33 KB; a logo/),
+        expect.stringMatching(
+          /^companies\/acme\/icon\.png: a company folder holds company\.md, tools\/ and an optional logo/
+        ),
       ])
     )
-    rmSync(path.join(root, 'public/logos/huge.png'))
+    rmSync(path.join(root, 'companies/acme/icon.png'))
   })
 
   test('rejects a leftover access/ folder: ways in live in company.md now', () => {

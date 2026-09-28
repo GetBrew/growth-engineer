@@ -21,8 +21,9 @@ report instead; the caller merges and checks the batch.
 - If `companies/<handle>/` exists, you are updating it: re-verify every fact.
   Rename a tool file whose name isn't its function (`enrich-contacts.md` →
   `enrich-person.md`), list the old key under `aliases:` so its URL redirects,
-  and report the rename; delete a tool whose call doesn't exist and report it —
-  the caller relinks any workflow step that used it.
+  and report the rename. A tool whose call no longer exists gets
+  `status: deprecated` (still visible, with a warning) — never deleted, since
+  its key is a URL — and the report names every workflow step that uses it.
 
 ## 2. Find how an agent connects
 
@@ -87,7 +88,8 @@ Keep an existing logo. For a new company: read the homepage's `<link rel="icon">
 tags — prefer an SVG, then the apple-touch-icon, then a PNG of at least 64 px (a
 vendor CDN the homepage links is fine; `/apple-touch-icon.png` is often a 404) —
 download it, check it's an image (`file`) under 32 KB (`wc -c`), and save it as
-`public/logos/<handle>.<ext>`. If nothing fits, say so.
+`companies/<handle>/logo.<ext>` (svg, png, jpg or webp). If nothing fits, leave
+it out — the logo is optional — and say so.
 
 ## 6. Report
 

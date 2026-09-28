@@ -21,6 +21,13 @@ export function toolParams(): Array<{ handle: string; name: string }> {
   })
 }
 
+/** `/logos/<handle>.<ext>`: every company that has a logo. */
+export function logoParams(): Array<{ file: string }> {
+  return [...getCatalog().companies.values()].flatMap((company) =>
+    company.logo ? [{ file: company.logo.url.slice('/logos/'.length) }] : []
+  )
+}
+
 export function workflowParams(): Array<{ name: string }> {
   return [...getCatalog().workflows.keys()].map((name) => ({ name }))
 }

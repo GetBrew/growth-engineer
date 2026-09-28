@@ -4,7 +4,6 @@ domain: trello.com
 category: project-management
 tagline: Boards, lists and cards for tracking work.
 docs: https://developer.atlassian.com/cloud/trello/
-logo: trello.png
 mcp:
   url: https://mcp.trello.com/v1
   auth: oauth

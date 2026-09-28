@@ -45,7 +45,7 @@ function jsonSchema(schema: z.ZodType, io: 'input' | 'output') {
 function describe(): { search: string; get: string } {
   const [, , workflow, tag] = DEFINITIONS
   return {
-    search: `Search ${SITE.name}: workflows (step-by-step playbooks an agent runs), tools (one vendor function each) and the companies that make them. Give words, filters, or both; with neither you get the featured workflows first. Words match loosely ("enriching" finds "enrich"), and "workflow", "tool" or "company" among them picks the type. Every filter must match. Pass a result's ref to \`get\` — e.g. ${workflow ? `\`workflow:${workflow.example}\`` : 'a workflow'}.`,
+    search: `Search ${SITE.name}: workflows (growth plays an agent runs step by step), tools (one vendor function each) and the companies that make them. Give words, filters, or both; with neither you get the featured workflows first. Words match loosely ("enriching" finds "enrich"), and "workflow", "tool" or "company" among them picks the type. Every filter must match. Pass a result's ref to \`get\` — e.g. ${workflow ? `\`workflow:${workflow.example}\`` : 'a workflow'}.`,
     get: `Read one entry. A workflow or tool comes back as its markdown file, with everything needed to run it — setup for each tool, the inputs to ask the user for, the steps and the rules — plus its links as refs (a workflow's tools, a tool's company and the workflows using it). A tag, like \`${tag?.example ?? 'capability:enrich-contacts'}\`, returns its file: everything carrying it — every vendor's version of one job, to compare.`,
   }
 }

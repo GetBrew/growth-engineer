@@ -1,9 +1,13 @@
-# Data model: the file schema
+# Data model: what the build reads, derives and enforces
 
-The catalog is a tree of markdown files. This page is the map of that tree —
-every entity, every field, every rule the build enforces, and the values it
-derives. The schemas themselves live in `lib/schemas/content.ts`; the types
-in `lib/types/catalog.ts`.
+The catalog is a tree of markdown files. The fields of each file, with
+templates, are in the folder READMEs — [`companies/`](../companies/README.md)
+(companies, their ways in, their tools and logos) and
+[`workflows/`](../workflows/README.md) — and the vocabulary explains itself
+at the top of [`tags.yml`](../tags.yml). This page covers what those READMEs
+don't: identity, status, what the build computes, and every rule it
+enforces. The schemas live in `lib/schemas/content.ts`; the types in
+`lib/types/catalog.ts`.
 
 ## Identity
 
@@ -18,62 +22,12 @@ The public `key` is the path, and the path is the URL:
 
 A key part is lowercase letters, digits and hyphens, 2–39 characters, never
 starting or ending with a hyphen. A company handle is one part that is not a
-reserved route word (`tools`, `workflows`, `mcp`, …;
+reserved route word (`tools`, `workflows`, `mcp`, `logos`, …;
 `lib/catalog/keys.ts`). Keys are never written in a header and never change
 after publishing: a rename lists the old key under `aliases:`, and the old
 URL answers with a 308.
 
-## Companies — `companies/<handle>/company.md`
-
-`name`, `domain`, `category` (a `category:` entry in `tags.yml`), `logo` (a file under
-`public/logos/`), `updated` (ISO date) are required. Optional: `tagline`,
-`docs`, `github`, `aliases`, `status` (`published` default, `deprecated`).
-The website is always `https://<domain>`. The body is the description.
-One-line fields (`name`, `title`, `summary`, `tagline`) never hold a line
-break, and a `summary` or `tagline`, printed as its own paragraph, never
-starts with markdown that opens a block (a heading, quote, list, fence, HTML
-or a rule).
-
-### Ways in — `mcp:`, `cli:`, `api:` in company.md
-
-How an agent reaches the company, at most one of each, shared by all its
-tools. Every way has `auth` (`none`, `oauth`, `api_key`), optional `docs`
-and `notes` (what to know to use the way: where a `{placeholder}` in its URL
-comes from — required when there is one — or how a key is encoded), and
-`maintainer` when community-run (absent = official). An API key names its
-`env` var (required) and optionally a `keyUrl`.
-
-| Way | Fields |
-| --- | --- |
-| `mcp` | exactly one of `url` (remote) or `command` (local; plain words, no quotes); a remote server with `api_key` is refused |
-| `cli` | `install`, `binary` |
-| `api` | `url` (the base), `header?` (a name: `X-Api-Key`), `scheme?` (`Basic`, `Token`) |
-
-## Tools — `companies/<handle>/tools/<name>.md`
-
-A tool is ONE function, and its file is named after it. `name`, `summary`,
-`capability` (a `capability:` entry in `tags.yml`) and `updated` are
-required. The calls are top-level: `mcp:` (the tool name), `cli:` (starting
-with the company's binary) and `api:` (`METHOD /path`), each on a way the
-company declares; a published tool needs at least one, and `docs:`. `docs` is the page
-that names the call. `status` is `published` (default), `deprecated`, or
-`draft` (no page, no file, not listed). `aliases` lists old keys. There is
-no body: `summary` says what the call does, and anything after the header
-is an error. `notes` (optional, one line, at most 280 characters) says what
-to know before calling — an id to fetch first, a result to poll for, a
-limit, a cost — and every workflow using the tool prints it.
-
-## Workflows — `workflows/<name>.md` (flat)
-
-Workflows are by people: `author` is a GitHub login (letters, digits, single
-hyphens), shown as `@login` and linked to the profile; it is never a company.
-
-The HEADER holds the facts: `title` (phrased as the result), `summary`,
-`author` and `updated` are required; `tags` (motion and channel only),
-`featured` (`true` puts it on the featured list; maintainers set it), `aliases` and
-`status` are optional. There are no versions: git history is the archive.
-
-### Status, one rule
+## Status, one rule
 
 `status` is `published` (default), `deprecated` (visible, with a warning) or
 `draft` (checked, never published: no page, no file, no list) — for tools
@@ -83,69 +37,66 @@ draft, any tool file. A company is `published` or `deprecated`, gets a page
 and a file once it has a tool that is not a draft, and is listed once it has
 a published one.
 
-The BODY holds the workflow itself, in the markdown the rendered file uses,
-so the source reads on GitHub the way it reads on the site
-(`lib/content/workflow-body.ts`). Four sections, in order:
+## Tags
 
-| Section | Entries | Becomes |
-| --- | --- | --- |
-| `## Inputs` (optional) | ``- `name`: description, e.g. example`` | `inputs`: `{ name (snake_case), description, example? }` |
-| `## Steps` (1–10) | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). Instruction.`` — a link to the tool's source file | `steps`: `{ title, tool, instruction }` |
-| `## Done when` (≥ 1) | `- A check.` | `doneWhen` |
-| `## Notes` (optional) | free markdown; `###` and smaller headings, none named like a section the file writes | `notes` |
+`tags.yml` holds four curated namespaces: `capability` (what a tool does),
+`category` (of a company), `channel` and `motion` (of a workflow). One
+namespace is derived and never written: `has:<type>`, from each tool's ways
+in.
 
-A step names its tool by a link to the tool's source file (the link must
-point at that file), or has no link when the agent does it itself; at least
-one step names a tool. Every step's tool must be a published tool. Any other
-heading, text
-outside a section, or a header field that belongs in the body is an error
-(with its line number when it is in the body).
-
-## Tags — `tags.yml`
-
-One file holds the whole vocabulary: `<namespace>: { <slug>: { label,
-synonyms? } }`. `label` is required; `synonyms` feed search. Namespaces:
-`capability` (what a tool does), `category` (of a company), `channel` and
-`motion` (of a workflow). One namespace is DERIVED and never written:
-`has:<type>`, computed from each tool's ways in.
-
-Every entity carries the tags it earns, computed at build: a tool its
+Every entry carries the tags it earns, computed at build: a tool its
 capability, its company's category and its ways in; a company its category
 and its published tools' capabilities and ways in; a workflow its motion and
 channel tags, its tools' capabilities, and `has:<type>` when every tool
 offers that way.
 
-## What the build derives (never authored)
+## What the build computes (never written in a file)
 
-| Projection | From | Where |
+| Value | From | Where |
 | --- | --- | --- |
-| every entity's `tags` (capability, category, `has:*`) | its file, its company, its tools | `derive.ts` |
+| every entry's `tags` (capability, category, `has:*`) | its file, its company, its tools | `derive.ts` |
 | `searchText` | its words plus its tags' labels and synonyms | `derive.ts` |
-| `toolKeys`, `toolCount` | steps | `build-workflows.ts` |
-| the edges: company ↔ tools ↔ workflows, tag members — written into both rendered files (`tools:` / `workflows:`) | tool folders, step links, tags | `build-relations.ts`, read through `relationsOf` |
+| a company's `logo` URL | `companies/<handle>/logo.<ext>`, when there is one | `read-tree.ts`, `build-companies.ts` |
+| a shared call's `endpoint` | a generic operation several of a company's tools share (`stripe_api_read`) carries each tool's API call, so files say `with GET /v1/invoices` | `build-tools.ts` |
+| `toolKeys` | the steps that name a tool | `build-workflows.ts` |
+| the links: company ↔ tools ↔ workflows, and each tag's members — written into both rendered files (`tools:` / `workflows:`) | tool folders, step links, tags | `build-relations.ts`, read through `relationsOf` |
 | tag `counts` | the tag's members | `build-relations.ts` |
 | listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
-| the rendered files and their line count | everything above | `build-documents.ts` |
+| the rendered files and their line counts | everything above | `build-documents.ts` |
+
+A rendered file's `updated` is the newest `updated` of every source file
+that fed it: a tool's file moves when its company's ways in change, a
+workflow's when any of its tools or their companies change.
 
 ## Rules the build enforces
 
-Every problem is reported at once, with its file path
-(`pnpm content:check`): unknown header fields; malformed dates, URLs and env
-var names; reserved or malformed handles and names; a capability or category
-missing from `tags.yml`; a call on a way the company does not declare, or in
-the wrong shape; an MCP way with both or neither of `url` and `command`; an
-API key with no `env`; a remote MCP way with an API key; a published tool
-with no call; a tool file with a body; a step whose tool does not fit the
-workflow's status; an unknown or derived tag; an unknown
-category; a missing logo; an alias that shadows an existing key (drafts
-included) or is claimed twice; a `{placeholder}` that is not snake_case or
-has no way `notes`; an API path parameter written `:param`; `notes` over 280
-characters; more than ten steps. `tests/content-schema.test.ts` proves each one fails.
+Every problem is reported at once, with its file path, and its line when it
+is in a workflow's body (`pnpm content:check`):
+
+- unknown header fields; malformed dates, URLs and env var names; one-line
+  fields with a line break, or a `summary` or `tagline` that opens a
+  markdown block
+- reserved or malformed handles and names; a file or folder that fits no slot;
+  a logo over 32 KB
+- a capability, category or tag missing from `tags.yml`, or a derived tag
+  written by hand
+- a call on a way the company does not declare, or in the wrong shape; an API
+  path parameter written `:param`
+- an MCP way with both or neither of `url` and `command`; a remote MCP way
+  with an API key; an API key with no `env`
+- a `{placeholder}` that is not snake_case, or has no way `notes`; `notes`
+  over 280 characters
+- a published tool with no call or no `docs`; a tool file with a body
+- a workflow step whose tool does not exist or does not fit the workflow's
+  status; a workflow whose steps name no tool; more than ten steps; a body
+  section out of order or misnamed
+- an alias that shadows an existing key (drafts included) or is claimed twice
+
+`tests/content-schema.test.ts` proves each one fails.
 
 ## Not in this model, on purpose
 
 Views, copies and ranking counters; teams, reviews and claims; submissions
-and moderation queues; versions and their history. Each was
-designed for in the original schema and can return without changing a key or
-a file — a pull request is the submission pipeline for now, and git history
-is the version history.
+and moderation queues; versions and their history. A pull request is the
+submission pipeline, and git history is the version history. Each could
+return without changing a key or a file.

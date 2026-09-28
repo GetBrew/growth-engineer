@@ -5,7 +5,6 @@ category: product-analytics
 tagline: "Open-source analytics: questions, dashboards and metrics on your own database."
 docs: https://www.metabase.com/docs/latest/
 github: https://github.com/metabase/metabase
-logo: metabase.svg
 mcp:
   url: https://{metabase_host}/api/metabase-mcp
   auth: oauth

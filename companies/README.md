@@ -8,6 +8,7 @@ characters; not a reserved word (`tools`, `workflows`, `mcp`, …).
 ```
 companies/<handle>/
   company.md            who they are, and how an agent reaches them: the MCP server, the CLI, the API
+  logo.svg              optional: the logo (or logo.png, logo.jpg, logo.webp)
   tools/<name>.md       one FUNCTION per file: the call on each way in, and where it is documented
 ```
 
@@ -30,7 +31,6 @@ category: data-provider          # a category from tags.yml
 tagline: Enrich people and companies from one API.
 docs: https://docs.acme.example  # optional
 github: https://github.com/acme  # optional
-logo: acme.png                   # a file you add under public/logos/
 mcp:                             # optional: the MCP server
   url: https://mcp.acme.example/mcp   # or `command: npx -y acme-mcp` for a local one
   auth: oauth                    # none | oauth | api_key
@@ -62,12 +62,18 @@ Links, Set up, Rules…), and never a `---` or `===` underline.
 | `name` | yes | Display name. |
 | `domain` | yes | Bare domain, no scheme. The website is always `https://<domain>`. |
 | `category` | yes | Must be a `category:` entry in `tags.yml`. |
-| `logo` | yes | File name under `public/logos/`; svg, png, jpg or webp, at most 32 KB — an SVG, or 128px square. It is served as is. |
 | `updated` | yes | `YYYY-MM-DD` — the day these facts were last checked. |
 | `tagline`, `docs`, `github` | no | Shown when present. |
 | `mcp`, `cli`, `api` | no | The ways in, at most one of each — see below. |
 | `aliases` | no | Old handles that should redirect here after a rename. |
 | `status` | no | `published` (default) or `deprecated`. |
+
+### The logo
+
+Optional: `logo.svg` beside `company.md` (or `logo.png`, `logo.jpg`,
+`logo.webp`), at most 32 KB — an SVG, or a PNG at most 128px square. It is
+served as is at `/logos/<handle>.<ext>`. Without one, the site draws the
+name's first letter.
 
 ### Ways in: `mcp`, `cli`, `api`
 
@@ -146,5 +152,5 @@ updated: 2026-09-16
 
 ```bash
 pnpm content:check   # parses every file, resolves every reference, renders every file
-pnpm dev             # then open /companies/<handle>
+pnpm dev             # then open /companies/<handle>, and /tools/<handle>/<name>.md for the file an agent gets
 ```

@@ -5,7 +5,6 @@ category: email
 tagline: Email API for developers, with broadcasts, contacts and event-triggered automations.
 docs: https://resend.com/docs
 github: https://github.com/resend
-logo: resend.png
 mcp:
   url: https://mcp.resend.com/mcp
   auth: oauth

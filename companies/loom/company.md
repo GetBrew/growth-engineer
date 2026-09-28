@@ -5,7 +5,6 @@ category: video
 tagline: Screen and meeting recordings with transcripts, AI briefs and action items, shared as a link.
 docs: https://support.atlassian.com/loom/
 github: https://github.com/loomhq
-logo: loom.png
 mcp:
   url: https://mcp.atlassian.com/v2/mcp
   auth: oauth

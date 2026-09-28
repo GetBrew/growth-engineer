@@ -28,7 +28,9 @@ tool you name and the rules; you write the rest.
 title: Turn fresh funding news into qualified outbound
 summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
 author: jdoe
-tags: [motion:outbound, channel:email]
+tags:
+  - motion:outbound
+  - channel:email
 updated: 2026-09-16
 ---
 
@@ -100,6 +102,6 @@ A long entry can wrap onto the next line; keep each entry to one paragraph.
 ## Checking your work
 
 ```bash
-pnpm content:check   # every step resolves, every tag exists, the file renders within its caps — each problem names its file and line
-pnpm dev             # then open /workflows/<name>
+pnpm content:check   # every step resolves, every tag exists, the file renders within its caps — each problem names its file, and its line in the body
+pnpm dev             # then open /workflows/<name>.md — the file an agent gets
 ```

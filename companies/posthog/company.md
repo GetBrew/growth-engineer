@@ -5,7 +5,6 @@ category: product-analytics
 tagline: Product analytics, session replay, feature flags and experiments on one platform.
 docs: https://posthog.com/docs
 github: https://github.com/PostHog/posthog
-logo: posthog.jpg
 mcp:
   url: https://mcp.posthog.com/mcp
   auth: oauth

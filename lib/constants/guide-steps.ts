@@ -74,7 +74,7 @@ enrich-company.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'A tool file is a YAML header between `---` lines and nothing else. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. `name` says what the function does (“Enrich a person”), and the `summary` is one sentence about what the call returns or changes.',
+      'A tool file is a YAML header between `---` lines and nothing else. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. `name` says what the function does, starting with a verb (“Enrich a person”), and the `summary` is one sentence about what the call returns or changes. When there is something to know before calling — an id to fetch first, a result to poll for, a cost — say it in `notes`, one line; every workflow that uses the tool prints it.',
     // `aliases` belongs to this file alone: copied, it claims a key twice.
     sample: {
       file: 'companies/apollo/tools/enrich-person.md',
@@ -128,7 +128,7 @@ competitor-intent.md`,
     title: 'Write the header',
     detail:
       'Phrase the `title` as the result it reaches, not the tools it uses. The `summary` is one sentence. `author` is your GitHub login — workflows are by people, not companies, so the page shows your avatar and links to your profile. Under `tags`, add the motion and channel it serves (`motion:outbound`, `channel:email`) from `tags.yml`; its capabilities come from its tools.',
-    // `featured` is a maintainer's rank, unique per workflow: never copied.
+    // `featured` is set by maintainers: never copied.
     sample: { file: WORKFLOW, excerpt: 'header', omit: ['featured'] },
   },
   {
@@ -142,7 +142,7 @@ competitor-intent.md`,
     key: 'steps',
     title: 'Write the steps',
     detail:
-      'Under `## Steps`, a numbered list of one to ten steps: the step’s title in bold, “with” the tool it uses — a published tool’s key, linked to `../companies/<handle>/tools/<name>.md` — a full stop, then what to do with it. Say what to do, not how the tool works: the tool’s own file already covers setup. The build links every step to its tool, and every tool page back to the workflows that use it.',
+      'Under `## Steps`, a numbered list of one to ten steps: the step’s title in bold, “with” the tool it uses — a published tool’s key, linked to `../companies/<handle>/tools/<name>.md` — a full stop, then what to do with it. A step the agent does itself, like writing a draft, has no link. End a step with “Keep …” when a later step needs its result. Say what to do, not how the tool works: the tool’s own file already covers setup.',
     sample: { file: WORKFLOW, excerpt: '## Steps' },
   },
   {
@@ -174,6 +174,7 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     sample: {
       caption: 'companies/apollo/',
       code: `company.md
+logo.webp
 tools/enrich-person.md`,
     },
   },
@@ -181,7 +182,7 @@ tools/enrich-person.md`,
     key: 'company',
     title: 'Write company.md',
     detail:
-      '`name`, a bare `domain` with no scheme, a `category` listed in `tags.yml`, a `logo` file under 32 KB that you add to `public/logos/`, and `updated`, the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly.',
+      '`name`, a bare `domain` with no scheme, a `category` listed in `tags.yml`, and `updated`, the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly. Add your logo beside it as `logo.svg` (or png, jpg, webp) under 32 KB; without one, the site shows your initial.',
     sample: { file: 'companies/apollo/company.md' },
   },
   {

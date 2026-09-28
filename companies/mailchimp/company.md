@@ -5,7 +5,6 @@ category: email
 tagline: Email and SMS marketing platform, with audiences, campaigns and automation flows.
 docs: https://mailchimp.com/developer/
 github: https://github.com/mailchimp
-logo: mailchimp.png
 api:
   url: https://{dc}.api.mailchimp.com/3.0
   auth: api_key

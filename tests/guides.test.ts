@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { getSourceFile } from '@/lib/catalog/catalog'
 import { loadSourceExcerpt } from '@/lib/catalog/loaders'
@@ -17,6 +19,12 @@ const steps = Object.entries(GUIDE_STEPS).flatMap(([guide, list]) =>
 )
 
 describe('contribute guides', () => {
+  test.each(GUIDES)('$id hands an agent a skill that exists', (guide) => {
+    expect(existsSync(join('.agents/skills', guide.skill, 'SKILL.md'))).toBe(
+      true
+    )
+  })
+
   test('every guide has steps, and every step list has a guide', () => {
     expect(Object.keys(GUIDE_STEPS).sort()).toEqual(
       GUIDES.map((guide) => guide.id).sort()

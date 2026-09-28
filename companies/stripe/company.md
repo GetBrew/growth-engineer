@@ -5,7 +5,6 @@ category: payments
 tagline: Payments, billing and subscriptions for internet businesses.
 docs: https://docs.stripe.com
 github: https://github.com/stripe
-logo: stripe.jpg
 mcp:
   url: https://mcp.stripe.com
   auth: oauth

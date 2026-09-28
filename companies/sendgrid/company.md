@@ -5,7 +5,6 @@ category: email
 tagline: Twilio's email API and marketing campaigns, with contacts, lists, segments and Single Sends.
 docs: https://www.twilio.com/docs/sendgrid
 github: https://github.com/sendgrid
-logo: sendgrid.png
 cli:
   install: brew tap twilio/brew && brew install twilio
   binary: twilio

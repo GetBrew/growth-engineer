@@ -5,7 +5,6 @@ category: database
 tagline: Build AI workflows, apps and agents on your team's shared data.
 docs: https://airtable.com/developers
 github: https://github.com/Airtable
-logo: airtable.png
 mcp:
   url: https://mcp.airtable.com/mcp
   auth: oauth

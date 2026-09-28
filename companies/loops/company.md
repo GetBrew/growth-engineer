@@ -5,7 +5,6 @@ category: email
 tagline: Email platform for software companies, with campaigns, event-triggered workflows and transactional email.
 docs: https://loops.so/docs
 github: https://github.com/loops-so
-logo: loops.png
 mcp:
   url: https://mcp.loops.so
   auth: oauth

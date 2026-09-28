@@ -61,9 +61,9 @@ cannot be published.
 ## Phases
 
 1. **Plan the schema.** Done — the file schema in `docs/data-model.md`.
-2. **Seed from the vendors' docs.** Done — on 2026-09-27, 67 companies, 294
-   published tools and 11 published workflows, every call cited to the page
-   that names it (the `research-company` skill).
+2. **Seed from the vendors' docs.** Done — every company and tool researched
+   from the vendor's own docs, every call cited to the page that names it
+   (the `research-company` skill), and the first workflows written to run.
 3. **Open community contributions.** Now: anyone adds or corrects a file by
    pull request; CI checks every rule; a maintainer reviews the facts;
    vendors maintain their own folder.

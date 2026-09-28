@@ -1,6 +1,6 @@
 name: Request a company or tool
 description: Ask for a company or tool to be listed when you cannot open the pull request yourself.
-title: "Add <company>: <tool or product>"
+title: "Add <company>"
 labels: [catalog, company]
 body:
   - type: input

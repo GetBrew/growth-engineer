@@ -5,7 +5,6 @@ category: crm
 tagline: Marketing, sales and service software on one customer platform, built around a shared CRM.
 docs: https://developers.hubspot.com/docs
 github: https://github.com/HubSpot
-logo: hubspot.png
 mcp:
   url: https://mcp.hubspot.com
   auth: oauth

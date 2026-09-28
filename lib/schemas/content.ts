@@ -242,13 +242,6 @@ export const companySchema = z.strictObject({
   tagline: sentence.optional(),
   docs: url.optional(),
   github: url.optional(),
-  /** A file under public/logos. */
-  logo: z
-    .string()
-    .regex(
-      /^[a-z0-9-]+\.(png|jpg|jpeg|svg|webp)$/,
-      'must name a file under public/logos, like `clay.png`'
-    ),
   mcp: mcpWay.optional(),
   cli: cliWay.optional(),
   api: apiWay.optional(),

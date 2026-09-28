@@ -2,9 +2,9 @@ import { derivedTagKeys } from '@/lib/catalog/derived-tags'
 import type { AccessType, Tag } from '@/lib/types/catalog'
 
 /**
- * The projections: values that used to be database columns rewritten by a
- * job, now computed once per build from the source files. One writer each,
- * here, so nothing can drift from the facts it is derived from.
+ * The computed values — tags and search text — worked out once per build
+ * from the source files. One writer each, here, so nothing can drift from
+ * the facts it is derived from.
  */
 
 /** "2026-09-16" → the UTC midnight it names, in ms. */

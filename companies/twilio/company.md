@@ -5,7 +5,6 @@ category: messaging
 tagline: APIs for SMS, RCS, voice and email, plus phone number lookup and identity verification.
 docs: https://www.twilio.com/docs
 github: https://github.com/twilio
-logo: twilio.png
 cli:
   install: brew tap twilio/brew && brew install twilio
   binary: twilio

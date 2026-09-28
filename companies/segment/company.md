@@ -5,7 +5,6 @@ category: cdp
 tagline: Customer data platform that collects events once and sends them to hundreds of tools.
 docs: https://www.twilio.com/docs/segment
 github: https://github.com/segmentio
-logo: segment.svg
 api:
   url: https://api.segment.io
   auth: api_key

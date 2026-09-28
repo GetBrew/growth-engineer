@@ -33,14 +33,12 @@
       // Generated code: never lint, never format.
       "!!**/*.gen.*",
       "!!**/pnpm-lock.yaml",
-      // Vendored agent skill: the same source also lives in
-      // GetBrew/growth-engineer-proxy, and the two copies are kept BYTE-IDENTICAL
-      // so a drift check is a plain `diff -r`. Formatting it here would fork them
-      // on the first save. It carries its own suite instead:
-      // `node --test .agents/skills/upload-to-growth-cdn/scripts/*.test.mjs`.
+      // Agent skills are prose for agents, not source.
       "!!.agents",
       // Static assets: Biome 2.5 parses .svg as HTML and wants <title>s.
+      // Company logos are vendor art, served as they are.
       "!!public",
+      "!!companies/**/logo.svg",
       // The favicon is the same kind of asset; it sits in app/ only because
       // that is where Next.js looks for it, not because it is source.
       "!!app/icon.svg",

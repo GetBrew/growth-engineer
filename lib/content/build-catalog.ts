@@ -16,7 +16,7 @@ import { buildTools } from './build-tools'
 import { buildWorkflows } from './build-workflows'
 import { companyTags, searchTextOf } from './derive'
 import { type ContentProblem, ProblemList } from './errors'
-import type { ContentFile } from './read-tree'
+import type { ContentFile, LogoExtension } from './read-tree'
 
 /**
  * Source files → the catalog. PURE: takes the files, returns the graph, and
@@ -53,8 +53,8 @@ export type Catalog = {
 }
 
 export type BuildOptions = {
-  /** File names under public/logos; when given, every company logo must exist. */
-  logos?: ReadonlySet<string>
+  /** Each company's logo, by handle (`companies/<handle>/logo.<ext>`). */
+  logos?: ReadonlyMap<string, LogoExtension>
   /** Problems the tree walk found before parsing started. */
   problems?: ReadonlyArray<ContentProblem>
 }
@@ -187,7 +187,7 @@ export function buildCatalog(
   const { companies, ways } = buildCompanies(
     files,
     tags,
-    options.logos,
+    options.logos ?? new Map(),
     problems
   )
   const { tools, drafts } = buildTools(

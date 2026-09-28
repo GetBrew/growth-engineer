@@ -5,7 +5,6 @@ category: storage
 tagline: Store, find, organize and share work files in one place.
 docs: https://docs.dropboxapi.com
 github: https://github.com/dropbox
-logo: dropbox.png
 mcp:
   url: https://mcp.dropbox.com/mcp
   auth: oauth

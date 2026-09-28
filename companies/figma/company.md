@@ -5,7 +5,6 @@ category: design
 tagline: The collaborative canvas where teams design, prototype and build products.
 docs: https://developers.figma.com
 github: https://github.com/figma
-logo: figma.png
 mcp:
   url: https://mcp.figma.com/mcp
   auth: oauth

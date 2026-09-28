@@ -5,7 +5,6 @@ category: forms
 tagline: Forms, surveys and quizzes that capture leads and feedback and trigger automated follow-up.
 docs: https://www.typeform.com/developers/
 github: https://github.com/Typeform
-logo: typeform.png
 mcp:
   url: https://api.typeform.com/mcp
   auth: oauth

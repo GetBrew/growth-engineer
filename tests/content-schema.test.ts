@@ -69,7 +69,6 @@ const FIXTURE = {
       'name: Acme',
       'domain: acme.example',
       'category: crm',
-      'logo: acme.png',
       'api:',
       '  url: https://api.acme.example',
       '  auth: api_key',
@@ -115,7 +114,7 @@ const VALID = tree()
 
 function problemsOf(files: ReadonlyArray<ContentFile>): Array<string> {
   try {
-    buildCatalog(files, { logos: new Set(['acme.png']) })
+    buildCatalog(files, { logos: new Map([['acme', 'png']]) })
   } catch (error) {
     if (error instanceof ContentErrors) {
       return error.problems.map(
@@ -129,9 +128,16 @@ function problemsOf(files: ReadonlyArray<ContentFile>): Array<string> {
 }
 
 describe('content rules', () => {
+  test('a company with no logo is fine: the site draws its initial', () => {
+    const catalog = buildCatalog(VALID)
+    expect(catalog.companies.get('acme')?.logo).toBeUndefined()
+    const withLogo = buildCatalog(VALID, { logos: new Map([['acme', 'svg']]) })
+    expect(withLogo.companies.get('acme')?.logo?.url).toBe('/logos/acme.svg')
+  })
+
   test('the minimal valid set builds', () => {
     expect(problemsOf(VALID)).toEqual([])
-    const catalog = buildCatalog(VALID, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(VALID, { logos: new Map([['acme', 'png']]) })
     expect(catalog.documents.size).toBe(3)
   })
 
@@ -165,7 +171,7 @@ describe('content rules', () => {
       'Merge duplicates.\n2. **Summarize**. List what was merged for the user.\n'
     )
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
     expect(catalog.workflows.get('keep-crm-clean')?.toolKeys).toEqual([
       'acme/manage-crm',
     ])
@@ -197,7 +203,7 @@ describe('content rules', () => {
         '---\nname: Old thing\nsummary: Retired.\ncapability: manage-crm\napi: POST /old\ndocs: https://docs.acme.example/old\nstatus: deprecated\nupdated: 2026-09-25\n---\n'
       ),
     ])
-    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
     expect(
       new Date(catalog.documents.get('company:acme')?.updatedAt ?? 0)
         .toISOString()
@@ -210,7 +216,7 @@ describe('content rules', () => {
       file('companies/acme/tools/create-record.md', FIXTURE.tool.source),
     ])
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
     expect(catalog.tools.get('acme/create-record')?.capability).toBe(
       'manage-crm'
     )
@@ -234,7 +240,7 @@ describe('content rules', () => {
       workflow: WORKFLOW.replace('updated:', 'status: draft\nupdated:'),
     })
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
     expect(catalog.workflows.size).toBe(0)
     expect(catalog.documents.size).toBe(0)
     // A company with nothing but drafts has no page and no file yet.
@@ -259,7 +265,7 @@ describe('content rules', () => {
         'updated: 2026-09-20'
       ),
     })
-    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
     const day = (ref: string) =>
       new Date(catalog.documents.get(ref)?.updatedAt ?? 0)
         .toISOString()
@@ -287,7 +293,7 @@ describe('content rules', () => {
         )
       ),
     ])
-    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
     expect(
       new Date(catalog.documents.get('tool:acme/manage-crm')?.updatedAt ?? 0)
         .toISOString()
@@ -299,7 +305,7 @@ describe('content rules', () => {
     const files = tree({}, [
       file(
         'companies/beta/company.md',
-        '---\nname: Beta\ndomain: beta.example\ncategory: crm\nlogo: acme.png\naliases: [old-beta]\nupdated: 2026-09-16\n---\n'
+        '---\nname: Beta\ndomain: beta.example\ncategory: crm\naliases: [old-beta]\nupdated: 2026-09-16\n---\n'
       ),
       file(
         'companies/beta/tools/later.md',
@@ -307,13 +313,13 @@ describe('content rules', () => {
       ),
     ])
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
     expect(catalog.companies.has('beta')).toBe(false)
     expect(catalog.aliases.has('company:old-beta')).toBe(false)
   })
 
   test('tags are computed onto every entity; nobody writes them twice', () => {
-    const catalog = buildCatalog(VALID, { logos: new Set(['acme.png']) })
+    const catalog = buildCatalog(VALID, { logos: new Map([['acme', 'png']]) })
     expect(catalog.tools.get('acme/manage-crm')?.tags).toEqual([
       'capability:manage-crm',
       'category:crm',
@@ -354,7 +360,7 @@ describe('content rules', () => {
         tree({}, [
           file(
             'companies/other/company.md',
-            '---\nname: Other\ndomain: other.example\ncategory: crm\nlogo: acme.png\naliases: [acme]\nupdated: 2026-09-16\n---\n'
+            '---\nname: Other\ndomain: other.example\ncategory: crm\naliases: [acme]\nupdated: 2026-09-16\n---\n'
           ),
         ]),
       /companies\/other\/company\.md: aliases: "acme" is an existing company key/,
@@ -380,7 +386,7 @@ describe('content rules', () => {
         tree({}, [
           file(
             'companies/tools/company.md',
-            '---\nname: Tools\ndomain: tools.example\ncategory: crm\nlogo: acme.png\nupdated: 2026-09-16\n---\n'
+            '---\nname: Tools\ndomain: tools.example\ncategory: crm\nupdated: 2026-09-16\n---\n'
           ),
         ]),
       /companies\/tools\/company\.md: "tools" is not a usable handle/,
@@ -691,7 +697,8 @@ describe('content rules', () => {
     ],
     [
       'an unknown frontmatter field',
-      () => edit('company', 'logo: acme.png', 'logo: acme.png\nfounder: Jane'),
+      () =>
+        edit('company', 'category: crm\n', 'category: crm\nfounder: Jane\n'),
       /companies\/acme\/company\.md: .*founder/,
     ],
     [
@@ -873,12 +880,13 @@ describe('content rules', () => {
           'updated: 2026-09-16\n---\n',
           'updated: 2026-09-16\n---\n\n## Tools\n'
         ),
-      /company\.md:13: the description: "Tools" is a section the file writes itself/,
+      /company\.md:12: the description: "Tools" is a section the file writes itself/,
     ],
     [
-      'a logo that is not under public/logos',
-      () => edit('company', 'acme.png', 'missing.png'),
-      /logo "missing\.png" is not under public\/logos\//,
+      'a logo field: the logo is a file beside company.md',
+      () =>
+        edit('company', 'category: crm\n', 'category: crm\nlogo: acme.png\n'),
+      /company\.md: Unrecognized key: "logo"/,
     ],
     [
       'a tool linked inside a step instead of after its title',

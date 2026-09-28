@@ -5,7 +5,6 @@ category: video
 tagline: Video meetings and webinars, with chat and phone.
 docs: https://developers.zoom.us
 github: https://github.com/zoom
-logo: zoom.jpg
 mcp:
   url: https://mcp.zoom.us/mcp/zoom/streamable
   auth: oauth
