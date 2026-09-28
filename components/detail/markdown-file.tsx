@@ -28,11 +28,11 @@ export function MarkdownFile({
           <span className="truncate">{fileName}</span>
         </h2>
 
-        <TabsList className="h-9 shrink-0 p-0.5">
-          <TabsTrigger className="h-8 px-3" value="preview">
+        <TabsList className="shrink-0">
+          <TabsTrigger className="px-3" value="preview">
             Preview
           </TabsTrigger>
-          <TabsTrigger className="h-8 px-3" value="markdown">
+          <TabsTrigger className="px-3" value="markdown">
             Markdown
           </TabsTrigger>
         </TabsList>

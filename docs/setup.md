@@ -56,9 +56,12 @@ READMEs have the field reference and templates.
   angles): add Upstash for Redis from the Vercel Marketplace to the project.
   It sets `KV_REST_API_URL`, `KV_REST_API_TOKEN` (the one secret; only the
   count route writes with it) and `KV_REST_API_READ_ONLY_TOKEN` (what pages
-  read with). `KV_URL` and `REDIS_URL` are unused. Each Copy adds one to the
-  hash `workflow:copies` and to that UTC day's `workflow:copies:<date>`
-  (kept 60 days); Hot is the last 7 days. Pages read every count in one
+  read with). `KV_URL` and `REDIS_URL` are unused. A copy counts once per
+  visitor per workflow per 24 hours — a keyed hash of the address (an IPv6
+  client by its /64), claimed with `SET NX`, never the address itself — so a
+  spammed button counts one. A counted copy adds one to the hash
+  `workflow:copies` and to that UTC day's `workflow:copies:<date>` (kept 60
+  days); Hot is the last 7 days. Pages read every count in one
   round trip at most once a minute and stream them into `<Suspense>` holes;
   the rest of each page is prerendered (`lib/usage/copies.ts`). A preview
   counts under `preview:…` and development under `development:…`, so testing

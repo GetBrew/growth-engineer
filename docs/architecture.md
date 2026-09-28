@@ -83,7 +83,7 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 | `/docs`, `/docs/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, read-only, the same catalog |
-| `/api/workflows/[name]/copies` | on request (`ƒ`) | a POST (a `sendBeacon`) per Copy on a workflow page: the total and today's bucket, in one round trip |
+| `/api/workflows/[name]/copies` | on request (`ƒ`) | one POST per page view that copies; a visitor counts once per workflow per 24 hours (`SET NX` on a hash of the address), then the total and today's bucket |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
 answers with a real 308 or a 404. `dynamicParams`, `dynamic` and

@@ -5,6 +5,7 @@ import { connection } from 'next/server'
 import { cache } from 'react'
 import { copyCounterEnv } from '@/lib/env'
 import type { CopyStats, CopyStatsByKey } from '@/lib/usage/stats'
+import { visitorId } from '@/lib/usage/visitor'
 
 /**
  * How many times each workflow's file was copied — the "Uses" on its page and
@@ -12,6 +13,11 @@ import type { CopyStats, CopyStatsByKey } from '@/lib/usage/stats'
  *
  *   workflow:copies               hash  key → copies, all time
  *   workflow:copies:<YYYY-MM-DD>  hash  key → copies that UTC day, kept 60 days
+ *   workflow:copied:<key>:<id>    one visitor's copy of one workflow, for 24h
+ *
+ * A copy counts ONCE per visitor per workflow per 24 hours: the last key is
+ * claimed with `SET NX` before anything is added, so a spammed Copy button,
+ * a reload or a script in a loop from one address adds one, not one each.
  *
  * A production deployment owns those keys; a preview writes `preview:…` and
  * development `development:…`, so testing a Copy never moves a real count.
@@ -41,7 +47,10 @@ function dayKey(daysAgo: number, now: number): string {
   return `${TOTALS}:${day.toISOString().slice(0, 10)}`
 }
 
-type Clients = { reader: Redis; writer: Redis }
+const COPIED = `${namespace()}workflow:copied`
+const REPEAT_WINDOW_SECONDS = 24 * 60 * 60
+
+type Clients = { reader: Redis; writer: Redis; secret: string }
 let clients: Clients | null | undefined
 
 function client(url: string, token: string): Redis {
@@ -61,6 +70,7 @@ function store(): Clients | null {
       ? {
           reader: client(env.url, env.readToken),
           writer: client(env.url, env.token),
+          secret: env.token,
         }
       : null
   }
@@ -132,11 +142,26 @@ export const loadCopyStats = cache(async (): Promise<CopyStatsByKey | null> => {
   return await readCopyStats()
 })
 
-/** Count one copy. `false` when there is no store to count it in. */
-export async function recordCopy(workflowKey: string): Promise<boolean> {
-  const writer = store()?.writer
-  if (!writer) {
-    return false
+/**
+ * Count one copy by the visitor making this request: `counted` the first time
+ * in 24 hours, `repeat` after that (nothing is added), `off` with no store.
+ */
+export async function recordCopy(
+  workflowKey: string,
+  headers: Headers
+): Promise<'counted' | 'repeat' | 'off'> {
+  const current = store()
+  if (!current) {
+    return 'off'
+  }
+  const { writer, secret } = current
+  const claimed = await writer.set(
+    `${COPIED}:${workflowKey}:${visitorId(headers, secret)}`,
+    1,
+    { nx: true, ex: REPEAT_WINDOW_SECONDS }
+  )
+  if (claimed === null) {
+    return 'repeat'
   }
   const today = dayKey(0, Date.now())
   await writer
@@ -145,5 +170,5 @@ export async function recordCopy(workflowKey: string): Promise<boolean> {
     .hincrby(today, workflowKey, 1)
     .expire(today, DAY_BUCKET_TTL_SECONDS)
     .exec()
-  return true
+  return 'counted'
 }

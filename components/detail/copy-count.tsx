@@ -1,7 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { createContext, type ReactNode, useContext, useState } from 'react'
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useRef,
+  useState,
+} from 'react'
 import { SIDE_HEADING } from '@/components/detail/styles'
 import { formatCount, formatExact } from '@/lib/usage/stats'
 
@@ -10,9 +16,11 @@ type CopyCount = { added: number; record: () => void }
 const CopyCountContext = createContext<CopyCount | null>(null)
 
 /**
- * Counts the copies made on a workflow's page: each is sent with `sendBeacon`
- * (nothing waits on it) and added to the count shown here at once, rather
- * than on the next read of the store.
+ * Reports a copy made on a workflow's page — once per page view, however many
+ * times the button is pressed — and adds it to the count shown here only when
+ * the server says it counted: a visitor counts once a day per workflow
+ * (lib/usage/copies.ts), so a second copy tomorrow counts, a tenth today
+ * does not. `keepalive` lets the report outlive a navigation away.
  */
 export function CopyCountProvider({
   workflowKey,
@@ -25,11 +33,23 @@ export function CopyCountProvider({
   children: ReactNode
 }) {
   const [added, setAdded] = useState(0)
+  const hasReported = useRef(false)
   const record = () => {
-    if (isCounting) {
-      navigator.sendBeacon(`/api/workflows/${workflowKey}/copies`)
+    if (!isCounting || hasReported.current) {
+      return
     }
-    setAdded((value) => value + 1)
+    hasReported.current = true
+    fetch(`/api/workflows/${workflowKey}/copies`, {
+      method: 'POST',
+      keepalive: true,
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body: { counted?: boolean } | null) => {
+        if (body?.counted) {
+          setAdded(1)
+        }
+      })
+      .catch(() => undefined)
   }
   return (
     <CopyCountContext value={{ added, record }}>{children}</CopyCountContext>

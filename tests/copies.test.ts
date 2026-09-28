@@ -39,12 +39,13 @@ const READ_TOKEN = 'read-token'
 const WORKFLOW = [...getCatalog().workflows.keys()][0] as string
 const OTHER = [...getCatalog().workflows.keys()][1] as string
 
-/** The fake store: every hash, and every command with the token it came with. */
+/** The fake store: every hash and string, and every command with its token. */
 let hashes = new Map<string, Map<string, number>>()
+let strings = new Map<string, string>()
 let sent: Array<{ token: string; command: Array<string | number> }> = []
 let isDown = false
 
-const WRITES = new Set(['hincrby', 'expire'])
+const WRITES = new Set(['hincrby', 'expire', 'set'])
 
 function run(token: string, command: Array<string | number>): unknown {
   sent.push({ token, command })
@@ -65,6 +66,14 @@ function run(token: string, command: Array<string | number>): unknown {
   }
   if (verb === 'expire') {
     return 1
+  }
+  if (verb === 'set') {
+    const isOnlyNew = args.some((arg) => String(arg).toLowerCase() === 'nx')
+    if (isOnlyNew && strings.has(String(key))) {
+      return null
+    }
+    strings.set(String(key), String(args[0]))
+    return 'OK'
   }
   throw new Error(`unsupported ${verb}`)
 }
@@ -116,6 +125,7 @@ afterAll(async () => {
 
 beforeEach(() => {
   hashes = new Map()
+  strings = new Map()
   sent = []
   isDown = false
   for (const key of ENV_KEYS) {
@@ -153,10 +163,12 @@ function seed(key: string, counts: Record<string, number>) {
   hashes.set(key, new Map(Object.entries(counts)))
 }
 
+const VISITOR = { 'x-real-ip': '203.0.113.7' }
+
 async function post(
   name: string,
-  headers: Record<string, string> = {}
-): Promise<number> {
+  headers: Record<string, string> = VISITOR
+): Promise<{ status: number; counted?: boolean }> {
   const { POST } = await import('@/app/api/workflows/[name]/copies/route')
   const response = await POST(
     new Request(`http://localhost/api/workflows/${name}/copies`, {
@@ -165,7 +177,14 @@ async function post(
     }),
     { params: Promise.resolve({ name }) }
   )
-  return response.status
+  const body = response.headers.get('content-type')?.includes('json')
+    ? ((await response.json()) as { counted: boolean })
+    : {}
+  return { status: response.status, ...body }
+}
+
+function total(key = WORKFLOW): number | undefined {
+  return hashes.get('development:workflow:copies')?.get(key)
 }
 
 describe('the store', () => {
@@ -252,11 +271,27 @@ describe('reading the stats', () => {
 })
 
 describe('counting a copy', () => {
-  test('adds to the total and to today, which expires, with the write token', async () => {
+  const headers = new Headers(VISITOR)
+
+  test('claims the visitor for 24h, then adds to the total and today, with the write token', async () => {
     withStore()
     const { recordCopy } = await import('@/lib/usage/copies')
-    expect(await recordCopy(WORKFLOW)).toBe(true)
-    expect(sent.map(({ token, command }) => [token, ...command])).toEqual([
+    expect(await recordCopy(WORKFLOW, headers)).toBe('counted')
+    const [claim, ...writes] = sent.map(({ token, command }) => [
+      token,
+      ...command,
+    ])
+    expect(claim?.slice(0, 2)).toEqual([TOKEN, 'set'])
+    expect(String(claim?.[2])).toMatch(
+      new RegExp(`^development:workflow:copied:${WORKFLOW}:[0-9a-f]{32}$`)
+    )
+    expect(
+      claim
+        ?.slice(4)
+        .map(String)
+        .map((arg) => arg.toLowerCase())
+    ).toEqual(expect.arrayContaining(['nx', 'ex', String(24 * 60 * 60)]))
+    expect(writes).toEqual([
       [TOKEN, 'hincrby', 'development:workflow:copies', WORKFLOW, 1],
       [TOKEN, 'hincrby', `development:workflow:copies:${day(0)}`, WORKFLOW, 1],
       [
@@ -268,12 +303,34 @@ describe('counting a copy', () => {
     ])
   })
 
+  test('the same visitor again adds nothing', async () => {
+    withStore()
+    const { recordCopy } = await import('@/lib/usage/copies')
+    // Twenty presses at once, as a spammed button sends them: one wins.
+    const presses = await Promise.all(
+      Array.from({ length: 20 }, () => recordCopy(WORKFLOW, headers))
+    )
+    expect(presses.filter((result) => result === 'counted')).toHaveLength(1)
+    expect(await recordCopy(WORKFLOW, headers)).toBe('repeat')
+    expect(total()).toBe(1)
+    // Another workflow is another copy.
+    expect(await recordCopy(OTHER, headers)).toBe('counted')
+    expect(total(OTHER)).toBe(1)
+  })
+
+  test('never stores the address itself', async () => {
+    withStore()
+    const { recordCopy } = await import('@/lib/usage/copies')
+    await recordCopy(WORKFLOW, headers)
+    expect(JSON.stringify(sent)).not.toContain('203.0.113.7')
+  })
+
   test('a preview never touches production keys', async () => {
     withStore()
     process.env.VERCEL_ENV = 'preview'
     vi.stubEnv('NODE_ENV', 'production')
     const { recordCopy } = await import('@/lib/usage/copies')
-    await recordCopy(WORKFLOW)
+    await recordCopy(WORKFLOW, headers)
     const keys = sent.map(({ command }) => String(command[1]))
     expect(keys.every((key) => key.startsWith('preview:workflow:'))).toBe(true)
   })
@@ -283,33 +340,87 @@ describe('counting a copy', () => {
     process.env.VERCEL_ENV = 'production'
     vi.stubEnv('NODE_ENV', 'production')
     const { recordCopy } = await import('@/lib/usage/copies')
-    await recordCopy(WORKFLOW)
-    expect(sent[0]?.command[1]).toBe('workflow:copies')
+    await recordCopy(WORKFLOW, headers)
+    expect(sent.map(({ command }) => String(command[1]))).toEqual([
+      expect.stringMatching(/^workflow:copied:/),
+      'workflow:copies',
+      `workflow:copies:${day(0)}`,
+      `workflow:copies:${day(0)}`,
+    ])
+  })
+})
+
+describe('who a visitor is', () => {
+  test('an IPv4 address is itself; the first forwarded hop when there is no real IP', async () => {
+    const { addressKey } = await import('@/lib/usage/visitor')
+    expect(addressKey(new Headers({ 'x-real-ip': '203.0.113.7' }))).toBe(
+      '203.0.113.7'
+    )
+    expect(
+      addressKey(new Headers({ 'x-forwarded-for': '198.51.100.2, 10.0.0.1' }))
+    ).toBe('198.51.100.2')
+    expect(addressKey(new Headers())).toBe('unknown')
+  })
+
+  test('an IPv6 address is its /64, however it is written', async () => {
+    const { addressKey } = await import('@/lib/usage/visitor')
+    const prefix = (ip: string) => addressKey(new Headers({ 'x-real-ip': ip }))
+    expect(prefix('2001:db8:abcd:12::1')).toBe('2001:db8:abcd:12')
+    expect(prefix('2001:0db8:abcd:0012:ffff:1:2:3')).toBe('2001:db8:abcd:12')
+    expect(prefix('2001:DB8::')).toBe('2001:db8:0:0')
+    // Malformed is still a key, never a crash.
+    expect(prefix('1:2:3:4:5:6:7:8:9::1')).toBe('1:2:3:4')
+  })
+
+  test('the id is opaque, and keyed by the secret', async () => {
+    const { visitorId } = await import('@/lib/usage/visitor')
+    const headers = new Headers({ 'x-real-ip': '203.0.113.7' })
+    const id = visitorId(headers, 'one secret')
+    expect(id).toMatch(/^[0-9a-f]{32}$/)
+    expect(visitorId(headers, 'one secret')).toBe(id)
+    expect(visitorId(headers, 'another secret')).not.toBe(id)
   })
 })
 
 describe('POST /api/workflows/<name>/copies', () => {
-  test('counts one copy of a workflow', async () => {
+  test('counts a visitor once, however often the button is pressed', async () => {
     withStore()
-    expect(await post(WORKFLOW, { 'Sec-Fetch-Site': 'same-origin' })).toBe(204)
-    expect(await post(WORKFLOW)).toBe(204)
-    expect(hashes.get('development:workflow:copies')?.get(WORKFLOW)).toBe(2)
+    expect(await post(WORKFLOW)).toEqual({ status: 200, counted: true })
+    expect(await post(WORKFLOW)).toEqual({ status: 200, counted: false })
+    expect(await post(WORKFLOW)).toEqual({ status: 200, counted: false })
+    expect(total()).toBe(1)
+  })
+
+  test('counts another visitor, but not a new address in the same IPv6 /64', async () => {
+    withStore()
+    await post(WORKFLOW, { 'x-real-ip': '2001:db8:1:2::a' })
+    expect(await post(WORKFLOW, { 'x-real-ip': '2001:db8:1:2::b' })).toEqual({
+      status: 200,
+      counted: false,
+    })
+    expect(await post(WORKFLOW, { 'x-real-ip': '198.51.100.9' })).toEqual({
+      status: 200,
+      counted: true,
+    })
+    expect(total()).toBe(2)
   })
 
   test('refuses a request another site made', async () => {
     withStore()
-    expect(await post(WORKFLOW, { 'Sec-Fetch-Site': 'cross-site' })).toBe(403)
+    expect(
+      await post(WORKFLOW, { ...VISITOR, 'Sec-Fetch-Site': 'cross-site' })
+    ).toEqual({ status: 403 })
     expect(sent).toEqual([])
   })
 
   test('counts only a workflow that has a page', async () => {
     withStore()
-    expect(await post('no-such-workflow')).toBe(404)
-    expect(await post('Not A Key')).toBe(404)
+    expect((await post('no-such-workflow')).status).toBe(404)
+    expect((await post('Not A Key')).status).toBe(404)
     expect(sent).toEqual([])
   })
 
   test('says so when there is nowhere to count', async () => {
-    expect(await post(WORKFLOW)).toBe(503)
+    expect((await post(WORKFLOW)).status).toBe(503)
   })
 })
