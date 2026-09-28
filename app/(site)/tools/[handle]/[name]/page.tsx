@@ -5,7 +5,6 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { accessLabels } from '@/components/common/badges'
 import { NoResults } from '@/components/common/no-results'
-import { BuiltFrom } from '@/components/detail/built-from'
 import {
   DETAIL_DATE,
   DetailByline,
@@ -176,7 +175,6 @@ async function ToolDetail({ params }: { params: Params }) {
             markdown={document.markdown}
             preview={<MarkdownPreview markdown={document.markdown} />}
           />
-          <BuiltFrom sources={document.sources} />
         </section>
         <ToolAccessPanel tool={tool} />
       </div>

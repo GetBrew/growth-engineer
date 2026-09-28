@@ -823,23 +823,3 @@ describe('content rules', () => {
     ).toBe(true)
   })
 })
-
-describe('document sources', () => {
-  test('a file lists the files it was built from, its own first', () => {
-    const catalog = buildCatalog(VALID, { logos: new Set(['acme.png']) })
-    // The ways in a tool file prints live in its company's file.
-    expect(catalog.documents.get('tool:acme/manage-crm')?.sources).toEqual([
-      'companies/acme/tools/manage-crm.md',
-      'companies/acme/company.md',
-    ])
-    expect(catalog.documents.get('workflow:keep-crm-clean')?.sources).toEqual([
-      'workflows/keep-crm-clean.md',
-      'companies/acme/tools/manage-crm.md',
-      'companies/acme/company.md',
-    ])
-    expect(catalog.documents.get('company:acme')?.sources).toEqual([
-      'companies/acme/company.md',
-      'companies/acme/tools/manage-crm.md',
-    ])
-  })
-})

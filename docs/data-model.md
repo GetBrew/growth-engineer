@@ -121,7 +121,6 @@ offers that way.
 | tag `counts` | the tag's members | `build-relations.ts` |
 | listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
 | the rendered files and their line count | everything above | `build-documents.ts` |
-| each file's `sources`: its own file, then every tool file and company file (where the ways in live) whose facts it prints | the files above | `build-documents.ts` |
 
 ## Rules the build enforces
 
