@@ -1,0 +1,35 @@
+---
+name: Notra
+domain: usenotra.com
+category: geo
+tagline: Track how AI answer engines mention your brand and write the content that closes the gaps.
+docs: https://docs.usenotra.com
+github: https://github.com/usenotra
+mcp:
+  url: https://mcp.usenotra.com/mcp
+  auth: oauth
+  docs: https://docs.usenotra.com/devtools/mcp
+cli:
+  install: npm i -g notra
+  binary: notra
+  auth: oauth
+  docs: https://docs.usenotra.com/devtools/cli
+api:
+  url: https://api.usenotra.com
+  auth: api_key
+  env: NOTRA_API_KEY
+  docs: https://docs.usenotra.com/api/authentication
+updated: 2026-09-28
+---
+
+Notra tracks how AI answer engines such as ChatGPT, Perplexity and Gemini
+mention a brand against its competitors, logs the AI crawler and referral
+traffic a site gets, and plans and writes the articles that close the gaps
+it finds. It also turns GitHub and Linear activity into changelogs, blog
+posts and LinkedIn and X posts in the brand's voice.
+
+The hosted MCP server and the `notra` CLI sign in with OAuth; the CLI and
+the REST API also take an API key (`ntra_...`) created under API Keys in the
+dashboard, scoped per organization. GEO calls are scoped to a project and
+need a plan that includes GEO. Scans, sequences and content briefs use billed
+AI credits.
