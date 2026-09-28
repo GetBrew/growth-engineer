@@ -171,7 +171,7 @@ export function DetailHeader({
                   than leaving its last chip alone on a line. */}
               {available.length > 0 ? (
                 <span className="flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="mr-1">Available as</span>
+                  <span className="mr-1">Ways in</span>
                   {available.map((item) => (
                     <Badge key={item} size="label" variant="access">
                       {item}

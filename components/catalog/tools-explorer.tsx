@@ -33,30 +33,42 @@ function toolEntries(cards: ReadonlyArray<ToolCardData>): Array<CategoryEntry> {
   }))
 }
 
-type CategoryGroup = {
-  category: { slug: string; label: string }
+type CapabilityGroup = {
+  capability: { slug: string; label: string }
   cards: Array<ToolCardData>
 }
 
-function groupByCategory(
-  results: ReadonlyArray<ToolCardData>
-): Array<CategoryGroup> {
-  const groups = new Map<string, CategoryGroup>()
-  for (const card of results) {
-    if (!card.category) {
-      continue
-    }
-    const existing = groups.get(card.category.slug)
+/**
+ * Tools shelved by the job they do — every vendor's "Enrich a person" side by
+ * side — which is what makes them comparable.
+ */
+function groupByCapability(
+  results: ReadonlyArray<ToolSearchItem>,
+  labels: ReadonlyMap<string, string>
+): Array<CapabilityGroup> {
+  const groups = new Map<string, CapabilityGroup>()
+  for (const item of results) {
+    const existing = groups.get(item.capability)
     if (existing) {
-      existing.cards.push(card)
+      existing.cards.push(item)
     } else {
-      groups.set(card.category.slug, { category: card.category, cards: [card] })
+      groups.set(item.capability, {
+        capability: {
+          slug: item.capability,
+          label: labels.get(item.capability) ?? item.capability,
+        },
+        cards: [item],
+      })
     }
   }
   return [...groups.values()].sort((a, b) =>
-    a.category.label.localeCompare(b.category.label)
+    a.capability.label.localeCompare(b.capability.label)
   )
 }
+
+/** The one fact filter worth a pill: tools an agent reaches over MCP. */
+const HAS_MCP = 'has:mcp'
+const SHELF = 'capability:'
 
 type ExplorerProps = {
   tools: ReadonlyArray<ToolSearchItem>
@@ -99,44 +111,52 @@ function ToolsExplorerView({
   )
   const state = { words: typed.words, chips }
   const isBrowsing = state.chips.length === 0 && state.words.length === 0
-  const categoryChips = state.chips.filter((chip) =>
-    chip.startsWith('category:')
-  )
-  const searchChips = state.chips.filter(
-    (chip) => !chip.startsWith('category:')
+  const isPill = (chip: string) => chip.startsWith(SHELF) || chip === HAS_MCP
+  const pillChips = state.chips.filter(isPill)
+  const searchChips = state.chips.filter((chip) => !isPill(chip))
+  const toggle = (chip: string) =>
+    searchHref('/tools', {
+      words: state.words,
+      chips: pillChips.includes(chip)
+        ? [...searchChips, ...pillChips.filter((other) => other !== chip)]
+        : [...searchChips, ...pillChips, chip],
+    })
+  const capabilityLabels = new Map(
+    tags
+      .filter((tag) => tag.namespace === 'capability')
+      .map((tag) => [tag.slug, tag.label])
   )
   const { results } = searchToolItems(tools, {
     q: state.words.join(' '),
     chips: state.chips,
   })
-  const categoryGroups = groupByCategory(results)
-  // Counted like /companies' pills, so FilterPills shows the busiest few and
-  // puts the rest under More: an option with no count is always shown, which
-  // laid every category out as a wall of pills.
-  const toolsPerCategory = new Map(
-    groupByCategory(tools).map((group) => [
-      group.category.slug,
+  const shelves = groupByCapability(results, capabilityLabels)
+  // Counted, so FilterPills shows the busiest few and puts the rest under
+  // More; "Has MCP" has no count, so it always keeps its place up front.
+  const toolsPerCapability = new Map(
+    groupByCapability(tools, capabilityLabels).map((group) => [
+      group.capability.slug,
       group.cards.length,
     ])
   )
-  const categoryOptions = tags
-    .filter((tag) => tag.namespace === 'category')
+  const capabilityOptions = tags
+    .filter((tag) => tag.namespace === 'capability')
     .map((tag) => ({
       key: tag.key,
       label: tag.label,
-      count: toolsPerCategory.get(tag.slug) ?? 0,
+      count: toolsPerCapability.get(tag.slug) ?? 0,
     }))
     .filter((option) => option.count > 0)
   const isExpanded = params.view === 'all'
-  const selectedCategories = tags.filter(
-    (tag) => tag.namespace === 'category' && state.chips.includes(tag.key)
+  const selectedShelves = tags.filter(
+    (tag) => tag.namespace === 'capability' && state.chips.includes(tag.key)
   )
   const resultsTitle =
-    selectedCategories.length > 0
-      ? selectedCategories.map((tag) => tag.label).join(' + ')
+    selectedShelves.length > 0
+      ? selectedShelves.map((tag) => tag.label).join(' + ')
       : 'Results'
   const currentHref = searchHref('/tools', state)
-  const hasContent = isBrowsing ? categoryGroups.length > 0 : results.length > 0
+  const hasContent = isBrowsing ? shelves.length > 0 : results.length > 0
 
   let content: ReactNode
   if (!hasContent) {
@@ -150,17 +170,17 @@ function ToolsExplorerView({
   } else if (isBrowsing) {
     content = (
       <div className="flex flex-col gap-(--space-3xl)">
-        {categoryGroups.map(({ category, cards }) => (
+        {shelves.map(({ capability, cards }) => (
           <CategorySection
             entries={toolEntries(cards)}
-            key={category.slug}
+            key={capability.slug}
             moreHref={withExpandedView(
               searchHref('/tools', {
                 words: [],
-                chips: [`category:${category.slug}`],
+                chips: [`${SHELF}${capability.slug}`],
               })
             )}
-            title={category.label}
+            title={capability.label}
           />
         ))}
       </div>
@@ -179,7 +199,7 @@ function ToolsExplorerView({
   return (
     <div className="flex flex-col gap-(--space-lg)">
       <SectionHeading
-        description="Every tool and the company behind it. Reach it over MCP, CLI or API."
+        description="Every tool, shelved by the job it does, so vendors compare side by side. Each one is a single call your agent can make over MCP, CLI or API."
         title="Discover tools"
       />
 
@@ -188,36 +208,36 @@ function ToolsExplorerView({
           <ListingToolbar
             groups={[
               {
-                key: 'category',
-                label: 'Filter tools by category',
+                key: 'capability',
+                label: 'Filter tools by what they do',
                 all: {
                   href: searchHref('/tools', {
                     words: state.words,
                     chips: searchChips,
                   }),
-                  active: categoryChips.length === 0,
+                  active: pillChips.length === 0,
                 },
-                moreTitle: 'More filters',
-                options: categoryOptions.map((category) => ({
-                  ...category,
-                  href: searchHref('/tools', {
-                    words: state.words,
-                    chips: [
-                      ...searchChips,
-                      ...(categoryChips.includes(category.key)
-                        ? []
-                        : [category.key]),
-                    ],
-                  }),
-                  active: categoryChips.includes(category.key),
-                })),
+                moreTitle: 'More jobs',
+                options: [
+                  {
+                    key: HAS_MCP,
+                    label: 'Has MCP',
+                    href: toggle(HAS_MCP),
+                    active: pillChips.includes(HAS_MCP),
+                  },
+                  ...capabilityOptions.map((option) => ({
+                    ...option,
+                    href: toggle(option.key),
+                    active: pillChips.includes(option.key),
+                  })),
+                ],
               },
             ]}
             search={
               <CatalogSearch
                 action="/tools"
                 // A trailing space when chips are shown, so a word typed after
-                // `category:crm` starts a new token instead of joining it.
+                // `capability:enrich-contacts` starts a new token instead of joining it.
                 defaultValue={
                   state.chips.length > 0
                     ? `${searchText(state)} `

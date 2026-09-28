@@ -25,7 +25,7 @@ const COLUMNS = [
     ],
   },
   {
-    heading: 'Company',
+    heading: 'Brew',
     links: [
       ['brew.new', SITE.publisher.url],
       ['X', 'https://x.com/brewdotnew'],

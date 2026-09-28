@@ -5,6 +5,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { accessLabels } from '@/components/common/badges'
 import { NoResults } from '@/components/common/no-results'
+import { CopyFileButton } from '@/components/detail/copy-file-button'
 import {
   DETAIL_DATE,
   DetailByline,
@@ -132,9 +133,11 @@ async function ToolDetail({ params }: { params: Params }) {
             <ViewSourceButton entityKey={tool.key} type="tool" />
             <OpenInAgentMenu
               filePath={filePath}
+              fileUrl={`${SITE_ORIGIN}${filePath}`}
               markdown={document.markdown}
               title={tool.name}
             />
+            <CopyFileButton label="Copy tool" markdown={document.markdown} />
           </>
         }
         available={accessLabels(tool.access)}

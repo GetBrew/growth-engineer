@@ -2,38 +2,58 @@
 
 import {
   ArrowDown01Icon,
-  Copy01Icon,
   Download01Icon,
   LinkSquare02Icon,
-  SparklesIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useEffect, useId, useRef, useState } from 'react'
-import { buttonVariants } from '@/components/ui/button'
-import { useCopy } from '@/lib/hooks/use-copy'
+import {
+  DETAIL_ACTION_ICON,
+  HEADER_ACTION_COLLAPSING,
+} from '@/components/detail/styles'
 import { cn } from '@/lib/utils/cn'
 
 /**
- * "Explore with AI": open the file in ChatGPT or Claude, copy it, or download
- * it. Hand-rolled on purpose: a menu primitive adds ~45 KB to every page this
- * is on, for four links. So it is a disclosure, not an ARIA menu — the items
- * are ordinary links and buttons in the tab order, and Escape, a click
- * outside or tabbing away closes it.
+ * A chat link carries its prompt in the URL, and long URLs get cut. Past this
+ * many encoded characters the prompt points at the file instead of holding it.
+ */
+const MAX_PROMPT_CHARS = 8000
+
+/** The same file the Copy button copies — or, when it is long, where it lives. */
+function agentPrompt(markdown: string, fileUrl: string | undefined): string {
+  const inline = encodeURIComponent(markdown)
+  if (!fileUrl || inline.length <= MAX_PROMPT_CHARS) {
+    return inline
+  }
+  return encodeURIComponent(
+    `Fetch ${fileUrl} and run it for me: set up the tools it names, ask me for its inputs, then follow its steps and its rules.`
+  )
+}
+
+/**
+ * "Open in": the file in ChatGPT or Claude, or downloaded. Copying is the
+ * page's primary button. Hand-rolled on purpose: a menu primitive adds ~45 KB
+ * to every page this is on, for three links. So it is a disclosure, not an
+ * ARIA menu — the items are ordinary links in the tab order, and Escape, a
+ * click outside or tabbing away closes it.
  */
 export function OpenInAgentMenu({
   markdown,
   filePath,
+  fileUrl,
   title,
 }: {
   markdown: string
+  /** What Download saves: the `.md` path, or a data URL. */
   filePath: string
+  /** The file's absolute URL, for a prompt too long to carry inline. */
+  fileUrl?: string
   title: string
 }) {
   const [open, setOpen] = useState(false)
   const container = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const panelId = useId()
-  const { copy } = useCopy()
 
   useEffect(() => {
     if (!open) {
@@ -61,9 +81,7 @@ export function OpenInAgentMenu({
     }
   }, [open])
 
-  const prompt = encodeURIComponent(
-    `Set up and run this for me:\n\n${markdown}`
-  )
+  const prompt = agentPrompt(markdown, fileUrl)
   const agents = [
     { label: 'Open in ChatGPT', href: `https://chatgpt.com/?q=${prompt}` },
     { label: 'Open in Claude', href: `https://claude.ai/new?q=${prompt}` },
@@ -73,25 +91,28 @@ export function OpenInAgentMenu({
   const close = () => setOpen(false)
 
   return (
-    // On phones the primary action takes the rest of the row.
-    <div className="relative max-sm:flex-1" ref={container}>
+    <div className="relative" ref={container}>
       <button
         aria-controls={panelId}
         aria-expanded={open}
-        className={cn(buttonVariants({ size: 'pill' }), 'max-sm:w-full')}
+        className={HEADER_ACTION_COLLAPSING}
         onClick={() => setOpen((value) => !value)}
         ref={trigger}
         type="button"
       >
         <HugeiconsIcon
           aria-hidden="true"
-          className="size-4"
-          icon={SparklesIcon}
+          icon={LinkSquare02Icon}
+          size={DETAIL_ACTION_ICON}
+          strokeWidth={1.8}
         />
-        Explore with AI
+        <span className="max-sm:sr-only">Open in</span>
         <HugeiconsIcon
           aria-hidden="true"
-          className={cn('size-3.5 transition-transform', open && 'rotate-180')}
+          className={cn(
+            'size-3.5 transition-transform max-sm:hidden',
+            open && 'rotate-180'
+          )}
           icon={ArrowDown01Icon}
         />
       </button>
@@ -117,21 +138,6 @@ export function OpenInAgentMenu({
               {agent.label}
             </a>
           ))}
-          <button
-            className={itemClass}
-            onClick={() => {
-              copy(markdown)
-              close()
-            }}
-            type="button"
-          >
-            <HugeiconsIcon
-              aria-hidden="true"
-              className="size-4"
-              icon={Copy01Icon}
-            />
-            Copy for any agent
-          </button>
           <a
             className={itemClass}
             download={`${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`}

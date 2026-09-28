@@ -25,7 +25,7 @@ export const metadata: Metadata = pageMetadata({
 export default function CompaniesPage() {
   return (
     <>
-      <HeroBanner title="The companies behind the tools" />
+      <HeroBanner isCompact title="The companies behind the tools" />
       <Page>
         <Directory />
       </Page>

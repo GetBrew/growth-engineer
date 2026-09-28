@@ -17,7 +17,7 @@ const PREVIEW = 10
 
 export async function HomeCatalog() {
   const [workflows, tools, companies] = await Promise.all([
-    loadWorkflows('new', PREVIEW),
+    loadWorkflows('featured', PREVIEW),
     loadNewTools(PREVIEW),
     loadCompanies(PREVIEW),
   ])

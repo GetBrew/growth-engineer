@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 /**
- * Every pill on a detail page: tags, "Available as" chips, company facts.
+ * Every pill on a detail page: tags, "Ways in" chips, company facts.
  * `badgeVariants` is exported like `buttonVariants`, so a pill that is a link
  * (a tag that filters a listing) takes the same classes as one that is not.
  *
@@ -22,7 +22,7 @@ const badgeVariants = cva(
         plain: '',
         /** A plain pill singled out: a primary tag, "Deprecated". */
         emphasis: 'border-foreground/20 bg-hover text-soft',
-        /** "Available as MCP / API". */
+        /** "Ways in: MCP / API". */
         access: 'bg-hover text-subtle',
         solid: 'border-foreground bg-foreground text-background',
         company: 'border-company/40 bg-company/5 text-company',
