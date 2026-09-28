@@ -54,7 +54,7 @@ prints. The layout, the set-up wording and the Rules come from the renderer.
 
 | Where | Example |
 | --- | --- |
-| Copy prompt button | On every tool and workflow page |
+| Copy button | On every tool and workflow page |
 | `.md` URL | `/tools/apollo/enrich-person.md`, `/workflows/funding-signal-outbound.md`, `/companies/apollo.md`, and a tag's `/tags/capability/enrich-contacts.md` (everything carrying it, `lib/catalog/render-tag.ts`) |
 | A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file, tags included |

@@ -129,8 +129,9 @@ Every problem is reported at once, with its file path
 var names; reserved or malformed handles and names; a capability or category
 missing from `tags.yml`; a call on a way the company does not declare, or in
 the wrong shape; an MCP way with both or neither of `url` and `command`; an
-API key with no `env`; a published tool with no call; a step whose tool does
-not fit the workflow's status; an unknown or derived tag; an unknown
+API key with no `env`; a remote MCP way with an API key; a published tool
+with no call; a tool file with a body; a step whose tool does not fit the
+workflow's status; an unknown or derived tag; an unknown
 category; a missing logo; an alias that shadows an existing key (drafts
 included) or is claimed twice; two workflows with the same `featured` rank;
 more than ten steps. `tests/content-schema.test.ts` proves each one fails.

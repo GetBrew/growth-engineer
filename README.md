@@ -1,6 +1,6 @@
 # growth.engineer
 
-The open-source, agent-friendly catalog of go-to-market tools and workflows.
+The open-source catalog of go-to-market tools and workflows, ready for any agent.
 
 **Companies** make **tools**; **workflows** put tools to work. Every tool and
 workflow is **one markdown file any agent can run** — the setup, the inputs,

@@ -11,9 +11,10 @@ companies/<handle>/
   tools/<name>.md       one FUNCTION per file: the call on each way in, and where it is documented
 ```
 
-Every file is a YAML header between `---` lines, then an optional markdown
-body. Unknown fields are rejected, so a typo fails `pnpm content:check` with
-the file's path instead of vanishing.
+Every file is a YAML header between `---` lines; `company.md` may add a
+markdown body, its description, and a tool file ends at its header. Unknown
+fields are rejected, so a typo fails `pnpm content:check` with the file's
+path instead of vanishing.
 
 ## company.md
 

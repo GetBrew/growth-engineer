@@ -19,8 +19,9 @@ agent / browser ─▶ proxy.ts ──────────▶ app/(site)/…
 
 **The source tree** — `companies/<handle>/{company.md, tools/*.md}`,
 `workflows/<name>.md` (flat; the author is a GitHub login in the header), `tags.yml`.
-Keys are paths; headers are strict YAML; bodies are prose. The community
-edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
+Keys are paths; headers are strict YAML; a company's body is prose, a
+workflow's body holds its steps, and a tool file is its header alone. The
+community edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
 **The compiler** (`lib/content/`) — `read-tree.ts` walks `companies/` and
 `workflows/`, reads `tags.yml`, lists `public/logos/`, and is the only

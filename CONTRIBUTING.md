@@ -26,7 +26,7 @@ at the top of [`tags.yml`](tags.yml).
    after it, with its `capability:` from `tags.yml`, the exact call on each
    way in (`mcp: enrich_person`, `api: POST /v1/people/enrich`) exactly as
    the vendor's docs print it, and `docs:` pointing at the page that names
-   the call.
+   the call. A tool file is its header alone; `summary` says what it does.
 
 Working with an agent? The `research-company` skill
 ([`.agents/skills/research-company/SKILL.md`](.agents/skills/research-company/SKILL.md))
@@ -59,9 +59,9 @@ every tool back to the workflows that use it.
 - **Keys are permanent.** A folder or file name is the key and the URL.
   Rename by adding the old key to `aliases`; the old URL redirects.
 - **A tool is one function** with at least one call on a way in, and
-  `docs:`, the page that names the call. Not there yet? Set `status: draft`;
-  it has no page until it is, and a workflow that needs it waits as a draft
-  too.
+  `docs:`, the page that names the call, and its file ends at its header.
+  Not there yet? Set `status: draft`; it has no page until it is, and a
+  workflow that needs it waits as a draft too.
 - **Steps resolve.** Every step links a tool file that exists and is
   published.
 - **Tags exist.** Every tag is an entry in `tags.yml`; `has:*` and a
