@@ -110,6 +110,9 @@ capability:
   send-email:
     label: Send email
     synonyms: [email sending, sending, campaigns, broadcasts, transactional email]
+  send-linkedin-messages:
+    label: Send LinkedIn messages
+    synonyms: [linkedin message, linkedin dm, connection request, inmail, linkedin outreach]
   send-sms:
     label: Send SMS
     synonyms: [sms, text message, texting, mms, whatsapp]
