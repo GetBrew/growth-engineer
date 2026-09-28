@@ -1,8 +1,8 @@
 {
   // The APP program: what `next build`, `next typegen`, `tsgo` (pnpm check)
   // and `pnpm tsc app` compile — runtime code plus whatever it imports.
-  // tests/ and scripts/ have their own programs so the build and the fast
-  // check never pay for files no runtime depends on. Compiler options come
+  // tests/ has its own program so the build and the fast check never pay for
+  // files no runtime depends on; scripts/ is plain .mjs. Compiler options come
   // from tsconfig.base.json; only the Next-specific bits live here.
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
@@ -18,7 +18,7 @@
     }
   },
   // Explicit directories, not `**/*.ts`: the broad pattern is what pulls
-  // tests/ and scripts/ into every build. Root-level `*.ts` covers
+  // tests/ into every build. Root-level `*.ts` covers
   // next.config.ts, the Vitest config and proxy.ts.
   "include": [
     "next-env.d.ts",

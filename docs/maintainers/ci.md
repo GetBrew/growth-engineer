@@ -8,14 +8,14 @@ secret, and the token is read-only.
 | Job | Proves |
 | --- | --- |
 | `lint` | Biome: style, formatting, AND no import cycles |
-| `typecheck (×3)` | each TypeScript program compiles, in parallel |
+| `typecheck (×2)` | each TypeScript program (app, tests) compiles, in parallel |
 | `build` | the production build works — on the PR — every catalog page and file prerenders, and no route's client JS grew past its budget |
 | `test (unit)` | the hermetic unit suite, including the content suite over the real tree |
 | `hygiene` | docs links, the content tree, dead code, duplicate deps |
 
 ## Why the typecheck is a matrix
 
-`pnpm tsc` chains three programs: app, tests, scripts. Run sequentially, wall
+`pnpm tsc` chains two programs: app and tests. Run sequentially, wall
 time is the SUM. As matrix legs it is the slowest one — and a failure names
 its program in the job title instead of making you read a log to find out
 which one went red.

@@ -52,7 +52,7 @@ jobs:
         run: pnpm lint
 
   typecheck:
-    # `pnpm tsc` chains THREE TypeScript programs. Here each one is a matrix
+    # `pnpm tsc` chains TWO TypeScript programs. Here each one is a matrix
     # leg, so wall time is the SLOWEST program instead of the sum, and a
     # failure names its program in the job title instead of making you read a
     # log to find out which one went red.

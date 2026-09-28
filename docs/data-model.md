@@ -91,6 +91,9 @@ is in a workflow's body (`pnpm content:check`):
   status; a workflow whose steps name no tool; more than ten steps; a body
   section out of order or misnamed
 - an alias that shadows an existing key (drafts included) or is claimed twice
+- a file that renders past its line cap (tool or company ≈ 80, workflow ≈
+  200) — checked once everything above passes, since only a valid catalog
+  renders
 
 `tests/content-schema.test.ts` proves each one fails.
 
