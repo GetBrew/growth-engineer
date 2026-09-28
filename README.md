@@ -20,7 +20,7 @@ Every entry is a markdown file in this repository.
 <p>
   <a href="https://www.growth.engineer"><img alt="Live site" src="https://img.shields.io/website?url=https%3A%2F%2Fwww.growth.engineer&style=flat-square&label=growth.engineer&up_message=live&up_color=2ea44f"></a>
   <a href="https://github.com/GetBrew/growth-engineer/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/GetBrew/growth-engineer/ci.yml?branch=main&style=flat-square&label=CI"></a>
-  <img alt="Read-only MCP server" src="https://img.shields.io/badge/MCP-read--only_server-111?style=flat-square">
+  <img alt="MCP server with a read-only catalog" src="https://img.shields.io/badge/MCP-read--only_catalog-111?style=flat-square">
   <img alt="Built with Next.js" src="https://img.shields.io/badge/built_with-Next.js-111?style=flat-square&logo=nextdotjs&logoColor=white">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-111?style=flat-square"></a>
   <a href="https://github.com/GetBrew/growth-engineer/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/GetBrew/growth-engineer?style=flat-square"></a>
@@ -56,9 +56,11 @@ that documents its call.
 
 ## Connect your agent
 
-The site runs a read-only MCP server at `https://www.growth.engineer/mcp`
+The site runs an MCP server at `https://www.growth.engineer/mcp`
 (Streamable HTTP, no sign-in). Its `search` tool finds workflows, tools and
-companies, and `get` returns a file. Every workflow is also an MCP prompt that
+companies, and `get` returns a file; neither changes anything. A third tool,
+`submit_feedback`, sends a bug report, request or question to the
+maintainers. Every workflow is also an MCP prompt that
 takes the workflow's inputs as arguments, and three more prompts
 (`contribute-workflow`, `contribute-tool`, `contribute-company`) walk an agent
 through adding to the catalog.
@@ -137,12 +139,16 @@ lib/catalog/render-markdown.ts   one renderer, golden-tested
         │
         ├─▶ pages, prerendered at build
         ├─▶ .md files, /llms.txt, /llms-full.txt
-        └─▶ /mcp, the read-only MCP server
+        └─▶ /mcp, the MCP server
 ```
 
 The one runtime store is optional: an Upstash Redis that counts how often each
 workflow is copied, for its "Uses" and the Hot and Popular lists. Without it,
 the counts are hidden.
+
+Visits are measured with Vercel Web Analytics and Speed Insights, and AI
+crawlers and AI-referred visits with Notra. See
+[`docs/setup.md`](docs/setup.md#deploying-to-vercel).
 
 ---
 
@@ -189,6 +195,7 @@ variables:
 | `NEXT_PUBLIC_SITE_URL` | The origin printed in `/llms.txt` and page metadata. On Vercel it defaults to the deployment's hostname. |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN` | The copy counter. Without them, the counts are hidden. |
 | `GITHUB_TOKEN` | The star count in the header. Without it, GitHub allows 60 unauthenticated requests an hour. |
+| `NOTRA_GEO_TOKEN` | AI-traffic analytics: the proxy reports AI crawlers and AI-referred visits to Notra. Without it, nothing is sent. |
 
 ### Scripts
 

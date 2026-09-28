@@ -12,7 +12,8 @@ companies/ workflows/ tags.yml ─▶ lib/content/read-tree.ts ──▶ lib/con
 agent / browser ─▶ proxy.ts ──────────▶ app/(site)/… ────────▶ lib/catalog/loaders.ts ──▶ the Catalog
                     │  .md URL or          (Server Components,    (every read; async,
                     │  Accept: text/markdown  prerendered whole)   resolves in memory)
-                    └─▶ app/api/markdown/[...path] ──▶ loadDocument(ref) ──▶ catalog.documents (prerendered)
+                    ├─▶ app/api/markdown/[...path] ──▶ loadDocument(ref) ──▶ catalog.documents (prerendered)
+                    └─▶ Notra, after the response: the AI-traffic report (page views, files, /llms.txt)
 ```
 
 ## Layers
@@ -41,12 +42,16 @@ SYNCHRONOUS reads and memoized (re-read in development when the tree's
 fingerprint changes). Synchronous is load-bearing: inside Next's prerender a
 value that resolves without I/O keeps a route static.
 
-**`proxy.ts`** — one job: the markdown files. A `.md` URL, or a company,
-tool or workflow page requested with `Accept: text/markdown`, is rewritten to
-the file handler. Its matcher admits only those requests (and paths with a
-backslash or a bad `%`, answered 404), so a page view or a Link prefetch never runs it.
-There is NO auth gate here and no auth provider anywhere; every route is
-public.
+**`proxy.ts`** — two jobs. It serves the markdown files: a `.md` URL, or a
+company, tool or workflow page requested with `Accept: text/markdown`, is
+rewritten to the file handler. And it reports AI traffic: when
+`NOTRA_GEO_TOKEN` is set, each page view, file and `/llms.txt` fetch is sent
+to Notra through `event.waitUntil`, after the response. Notra keeps AI
+crawlers and visits referred by an AI assistant and drops the rest. The
+matcher admits only those requests (and paths with a backslash or a bad `%`,
+answered 404), so a Link prefetch, a client navigation or an asset never runs
+the proxy. There is NO auth gate here and no auth provider anywhere; every
+route is public.
 
 **Pages** (`app/(site)/`) — Server Components that render their data
 directly, with no `<Suspense>` and nothing that loads — except the copy
@@ -71,7 +76,10 @@ every row and link, fully static — and reads the URL once hydrated
 Filters and search are still links and GET forms: the URL is the state. A
 URL whose only job is to redirect is a route handler (`/tools/[handle]`),
 with a relative `Location` so it prerenders too. Internal navigation is
-always `next/link`, which prefetches on viewport and on hover.
+always `next/link`, which prefetches on viewport and on hover. Vercel Web
+Analytics and Speed Insights (`components/layout/vercel-analytics.tsx`, in
+the root layout) read the route too, so they also mount once hydrated; they
+draw nothing and are not in the prerendered HTML.
 
 **Loaders** (`lib/catalog/loaders.ts`) — every server-side read. Async by
 signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
@@ -88,7 +96,7 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 | `/docs`, `/docs/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
-| `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, read-only, the same catalog |
+| `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, the same catalog; read-only except `submit_feedback`, which posts to Notra |
 | `/api/workflows/[name]/copies` | on request (`ƒ`) | one POST per page view that copies; a visitor counts once per workflow per 24 hours (`SET NX` on a hash of the address), then the total and today's bucket |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
@@ -104,12 +112,18 @@ stated once:
 | --- | --- | --- |
 | Search engines | canonical URL, Open Graph, the social card, schema.org JSON-LD (`Organization`, `SoftwareApplication`, `HowTo`, `CollectionPage`, `BreadcrumbList`), `/sitemap.xml` with per-page `lastmod`, `/robots.txt` | `lib/seo/metadata.ts`, `lib/seo/structured-data.ts`, `app/sitemap.ts`, `app/robots.ts` |
 | Answer engines and AI crawlers | the same, plus `/llms.txt` (llmstxt.org: definitions, then every file with a summary) and `/llms-full.txt` (every company, tool and workflow file in one document); every AI crawler is named in `/robots.txt` | `lib/seo/llms.ts`, `lib/catalog/discovery.ts` |
-| Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the read-only MCP server at `/mcp` (`search`, `get`, a prompt per workflow) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
+| Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the MCP server at `/mcp` (`search`, `get`, `submit_feedback`, a prompt per workflow) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
 
 The definitions (company, tool, workflow, tag, how to read a file) live in
 `lib/catalog/definitions.ts` and nowhere else; the llms preamble and the
 structured data import them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
 catalog exactly: every page, every file, nothing invented.
+
+What agents do with it is measured in Notra. The proxy reports AI crawlers
+and AI-referred visits (above), and the MCP server's `submit_feedback` tool
+(`lib/mcp/feedback-tool.ts`) sends an agent's bug report, request or question
+to the same Notra inbox. The server's instructions tell agents when to use
+it.
 
 ## Search (`lib/catalog/search-words.ts`, `lib/catalog/search.ts`)
 
