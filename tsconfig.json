@@ -29,9 +29,6 @@
     "components/**/*.tsx",
     "lib/**/*.ts",
     "lib/**/*.tsx",
-    "hooks/**/*.ts",
-    "hooks/**/*.tsx",
-    "types/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

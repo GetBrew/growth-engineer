@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { SITE } from './lib/catalog/definitions'
 
 const nextConfig: NextConfig = {
   /** AGENTS.md is the canonical, CI-capped agent-policy file — keep the writer off. */
@@ -106,14 +107,12 @@ const nextConfig: NextConfig = {
       // Submissions are pull requests: the form and the sign-in are gone.
       {
         source: '/submit',
-        destination:
-          'https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md',
+        destination: `${SITE.repository}/blob/main/CONTRIBUTING.md`,
         permanent: true,
       },
       {
         source: '/submit-a-workflow',
-        destination:
-          'https://github.com/GetBrew/growth-engineer/blob/main/CONTRIBUTING.md',
+        destination: `${SITE.repository}/blob/main/CONTRIBUTING.md`,
         permanent: true,
       },
     ]

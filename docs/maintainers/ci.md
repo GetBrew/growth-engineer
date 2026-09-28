@@ -58,7 +58,7 @@ failed. One run, the complete list.
 ## Why `test` is a separate aggregator job
 
 `test` is the ONE check branch protection requires, and it `needs` every
-other job — lint, all three typecheck legs, the build and its bundle budget,
+other job — lint, both typecheck legs, the build and its bundle budget,
 the unit suite and hygiene — so one name covers them all and a new job only
 has to be added to that list. `if: always()` matters: without it a failed
 job makes `test` *skipped*, and a required check that is skipped is one a

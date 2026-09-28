@@ -25,8 +25,6 @@ coverage/
 .env.local
 .env.*.local
 
-# Convex local state
-
 # Vercel
 .vercel
 
