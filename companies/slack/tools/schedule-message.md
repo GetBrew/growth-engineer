@@ -1,6 +1,7 @@
 ---
 name: Schedule a message
 summary: Schedules a message to post to a channel at a future Unix time and returns its scheduled message ID.
+notes: Needs the `chat:write` scope. `post_at` can be at most 120 days ahead.
 capability: route-alerts
 docs: https://docs.slack.dev/reference/methods/chat.scheduleMessage
 mcp: slack_schedule_message

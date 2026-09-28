@@ -39,12 +39,13 @@ const sentence = line.refine((value) => !BLOCK_START.test(value), {
 })
 const url = z.url({ protocol: /^https?$/, hostname: z.regexes.domain })
 /** `{subdomain}`: the part of a way's URL that differs per account. */
-const PLACEHOLDER = /\{[A-Za-z][A-Za-z0-9_-]*\}/g
+const PLACEHOLDER = /\{[a-z][a-z0-9_]*\}/g
+const PLACEHOLDER_TEST = /\{[a-z][a-z0-9_]*\}/
 const STRAY = /[{}\s]/
 /**
- * A way's URL. A host that differs per account keeps the placeholder the
- * vendor's docs print, in braces — `https://{subdomain}.zendesk.com` — and
- * the company's description says where the value comes from.
+ * A way's URL. A host that differs per account is a snake_case placeholder
+ * in braces — `https://{subdomain}.zendesk.com` — and the way's `notes` say
+ * where the value comes from.
  */
 const wayUrl = text.refine(
   (value) => {
@@ -53,9 +54,18 @@ const wayUrl = text.refine(
   },
   {
     message:
-      'must be a URL; a part that differs per account goes in braces, like `https://{subdomain}.zendesk.com`',
+      'must be a URL; a part that differs per account is a snake_case placeholder in braces, like `https://{subdomain}.zendesk.com`',
   }
 )
+/**
+ * What an agent must know before it calls: a prerequisite, a poll, a limit,
+ * a cost. One line of plain prose, a sentence or two — a gotcha, not a
+ * description.
+ */
+const NOTES_MAX = 280
+const notes = sentence.refine((value) => value.length <= NOTES_MAX, {
+  message: `must be at most ${NOTES_MAX} characters: keep only what an agent must know before it calls`,
+})
 const isoDate = z.iso.date()
 const keyPart = text.refine(isValidKeyPart, {
   message:
@@ -101,15 +111,27 @@ const wayCommon = {
   docs: url.optional(),
   /** Absent = official; a community-run way names who runs it. */
   maintainer: line.optional(),
+  /** Where a `{placeholder}` comes from, how a key is encoded: one sentence or two. */
+  notes: notes.optional(),
 }
 
 type WayAuth = {
   auth: 'none' | 'api_key' | 'oauth'
   env?: string | undefined
   keyUrl?: string | undefined
+  url?: string | undefined
+  notes?: string | undefined
 }
 
 function authRules(value: WayAuth, context: z.RefinementCtx): void {
+  if (value.url && PLACEHOLDER_TEST.test(value.url) && !value.notes) {
+    context.addIssue({
+      code: 'custom',
+      path: ['notes'],
+      message:
+        'a URL with a `{placeholder}` needs `notes` saying where the value comes from',
+    })
+  }
   if (value.auth === 'api_key' && !value.env) {
     context.addIssue({
       code: 'custom',
@@ -173,19 +195,39 @@ const apiWay = z
     /** The base URL every call's path follows. */
     url: wayUrl,
     /**
-     * `X-Api-Key`, or a name plus scheme: `Authorization: Basic`. Header
-     * names may carry underscores (`api_key`) and schemes hyphens
-     * (`Authorization: Klaviyo-API-Key`), as vendors print them.
+     * The header the key goes in, as the vendor prints it: `X-Api-Key`,
+     * `api_key`. Absent = `Authorization`. With no `scheme`, the key goes in
+     * the header as is.
      */
     header: z
       .string()
       .regex(
-        /^[A-Za-z][A-Za-z0-9_-]*(?:: [A-Za-z][A-Za-z0-9-]*)?$/,
-        'must be a header name, optionally with a scheme: `X-Api-Key`, `Authorization: Bearer`'
+        /^[A-Za-z][A-Za-z0-9_-]*$/,
+        'must be a header name only, like `X-Api-Key`; a scheme like `Basic` goes in `scheme:`'
+      )
+      .optional(),
+    /**
+     * The word before the key: `Basic`, `Token`, `Klaviyo-API-Key`. Absent
+     * with no `header` = `Bearer`.
+     */
+    scheme: z
+      .string()
+      .regex(
+        /^[A-Za-z][A-Za-z0-9-]*$/,
+        'must be one word, like `Basic` or `Token`'
       )
       .optional(),
   })
-  .superRefine(authRules)
+  .superRefine((value, context) => {
+    if ((value.header || value.scheme) && value.auth !== 'api_key') {
+      context.addIssue({
+        code: 'custom',
+        path: [value.header ? 'header' : 'scheme'],
+        message: 'only `auth: api_key` takes `header` and `scheme`',
+      })
+    }
+    authRules(value, context)
+  })
 
 /* ────────────────────────────────── company ─────────────────────────────── */
 
@@ -222,6 +264,8 @@ export const toolSchema = z.strictObject({
   summary: sentence,
   /** A `capability:` slug from tags.yml. */
   capability: keyPart,
+  /** What an agent must know before it calls: a prerequisite, a poll, a limit, a cost. */
+  notes: notes.optional(),
   /** The page that documents the call. */
   docs: url.optional(),
   /** The MCP tool name, as the server lists it. */
@@ -234,13 +278,17 @@ export const toolSchema = z.strictObject({
     .optional(),
   /** The command, starting with the company's CLI binary. */
   cli: text.optional(),
-  /** `METHOD /path`, as the API reference prints it. */
+  /** `METHOD /path`, as the API reference prints it; path parameters in braces. */
   api: z
     .string()
     .regex(
       /^(GET|POST|PUT|PATCH|DELETE) \/\S*$/,
       'must be `METHOD /path`, like `POST /v1/payment_links`'
     )
+    .refine((value) => !value.includes('/:'), {
+      message:
+        'a path parameter goes in braces, like `/contacts/{contact_id}`, not `/contacts/:contact_id`',
+    })
     .optional(),
   aliases: z.array(ownedKey).default([]),
   /** A draft is allowed to have no call; it has no page and no file. */
@@ -263,7 +311,8 @@ export const workflowHeaderSchema = z.strictObject({
   author: githubLogin,
   /** Motion and channel tags; capabilities come from the tools. */
   tags: z.array(tagKey).default([]),
-  featured: z.int().min(1).optional(),
+  /** On the featured list, set by maintainers; featured workflows sort newest first. */
+  featured: z.boolean().default(false),
   aliases: z.array(keyPart).default([]),
   /** A draft is checked but never published: no page, no file. */
   status: z.enum(['published', 'deprecated', 'draft']).default('published'),
@@ -295,12 +344,15 @@ export const workflowBodySchema = z.strictObject({
     .array(
       z.strictObject({
         title: text,
-        /** A tool key: `apollo/enrich-person`. */
-        tool: ownedKey,
+        /** A tool key: `apollo/enrich-person`; absent when the agent does the step itself. */
+        tool: ownedKey.optional(),
         instruction: text,
       })
     )
     .min(1, 'add a `## Steps` section with at least one numbered step')
+    .refine((steps) => steps.some((step) => step.tool !== undefined), {
+      message: 'at least one step names a tool: a workflow puts tools to work',
+    })
     .max(
       MAX_WORKFLOW_STEPS,
       `a workflow has at most ${MAX_WORKFLOW_STEPS} steps`

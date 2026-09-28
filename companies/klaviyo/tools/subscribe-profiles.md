@@ -1,6 +1,7 @@
 ---
 name: Subscribe profiles to marketing
 summary: Records marketing consent for up to 1,000 profiles on email, SMS, WhatsApp or push, optionally adding them to a list.
+notes: Also removes unsubscribe, spam-report and user suppressions, and double opt-in lists send a confirmation first. The MCP tool takes one profile per call. To add to a list without touching consent, use `add_profiles_to_list`.
 capability: build-audience
 docs: https://developers.klaviyo.com/en/reference/bulk_subscribe_profiles
 mcp: subscribe_profile_to_marketing

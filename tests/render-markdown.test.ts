@@ -2,7 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { parse } from 'yaml'
-import { orderAccess, selectWorkflowAccess } from '@/lib/catalog/render-access'
+import {
+  orderAccess,
+  type SetupTool,
+  selectWorkflowAccess,
+} from '@/lib/catalog/render-access'
 import { yamlScalar } from '@/lib/catalog/render-header'
 import {
   MAX_WORKFLOW_STEPS,
@@ -38,7 +42,7 @@ const clayMcp: Access = {
   official: true,
   transport: 'remote',
   url: 'https://mcp.clay.example/mcp',
-  operation: 'clay_enrich_contacts',
+  operation: 'clay_run_routine',
   auth: { method: 'oauth' },
 }
 
@@ -46,7 +50,7 @@ const clayApi: Access = {
   type: 'api',
   official: true,
   baseUrl: 'https://api.clay.example/v1',
-  operation: 'POST /enrich-contacts',
+  operation: 'POST /routines/{routine_id}/run',
   docsUrl: 'https://docs.clay.example',
   auth: {
     method: 'api_key',
@@ -55,11 +59,11 @@ const clayApi: Access = {
   },
 }
 
-// A tool is ONE function of one product — `clay/enrich-contacts`, never
+// A tool is ONE function of one product — `clay/run-routine`, never
 // `clay/clay` — and every way in names the call that performs it.
 const clay: ToolFileInput = {
-  key: 'clay/enrich-contacts',
-  name: 'Enrich contacts',
+  key: 'clay/run-routine',
+  name: 'Run a routine',
   companyKey: 'clay',
   workflows: [],
   tags: [
@@ -69,7 +73,9 @@ const clay: ToolFileInput = {
     'category:data-provider',
   ],
   summary:
-    'Adds firmographic and person data to a contact or account. Clay does this.',
+    'Runs an enrichment function, such as Work Email, on up to 100 records and returns a run id.',
+  notes:
+    'List routines first to get the routine id, then poll the run id for results.',
   // API first on purpose: the renderer must reorder to MCP-first.
   access: [clayApi, clayMcp],
   updatedAt: UPDATED_AT,
@@ -79,7 +85,7 @@ const apolloApi: Access = {
   type: 'api',
   official: true,
   baseUrl: 'https://api.apollo.example/v1',
-  operation: 'POST /find-work-emails',
+  operation: 'POST /people/bulk_match',
   auth: {
     method: 'api_key',
     envVar: 'APOLLO_API_KEY',
@@ -95,6 +101,24 @@ const brewMcp: Access = {
   url: 'https://mcp.brew.example/mcp',
   operation: 'brew_send_email',
   auth: { method: 'none' },
+  notes: 'An admin turns on MCP access under Settings first.',
+}
+
+const apolloBulkEnrich: SetupTool = {
+  key: 'apollo/bulk-enrich-people',
+  name: 'Enrich up to 10 people',
+  companyName: 'Apollo',
+  access: [apolloApi],
+  notes: 'Credits are charged per person, and only when data is found.',
+}
+
+const clayRunRoutine: SetupTool = {
+  key: 'clay/run-routine',
+  name: 'Run a routine',
+  companyName: 'Clay',
+  access: [clayMcp],
+  notes:
+    'List routines first to get the routine id, then poll the run id for results.',
 }
 
 const intentToMeeting: WorkflowFileInput = {
@@ -102,12 +126,7 @@ const intentToMeeting: WorkflowFileInput = {
   title: 'Turn high-intent accounts into booked meetings',
   author: 'jdoe',
   tools: [
-    {
-      key: 'apollo/find-work-emails',
-      name: 'Find work emails',
-      companyName: 'Apollo',
-      access: [apolloApi],
-    },
+    apolloBulkEnrich,
     {
       key: 'brew/send-email',
       name: 'Send email',
@@ -127,13 +146,13 @@ const intentToMeeting: WorkflowFileInput = {
   steps: [
     {
       title: 'Find contacts',
-      toolKey: 'apollo/find-work-emails',
+      toolKey: 'apollo/bulk-enrich-people',
       instruction:
         'For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.',
     },
+    // No tool: the agent writes the drafts itself.
     {
       title: 'Write emails',
-      toolKey: 'brew/send-email',
       instruction:
         'Draft a short, specific email to each contact from step 1. Show the drafts to the user.',
     },
@@ -141,7 +160,7 @@ const intentToMeeting: WorkflowFileInput = {
       title: 'Send',
       toolKey: 'brew/send-email',
       instruction:
-        'After the user approves, send each email from `sender_email`.',
+        'After the user approves, send each one from `sender_email`.',
     },
   ],
   doneWhen: [
@@ -153,49 +172,35 @@ const intentToMeeting: WorkflowFileInput = {
 
 // One tool is not a second kind of document — it is a rendering choice about
 // THESE steps: name the tool once up front instead of on every line.
-const waterfall: WorkflowFileInput = {
-  key: 'clay-waterfall-order',
-  title: 'Find more work emails by ordering providers by hit rate',
+const workEmails: WorkflowFileInput = {
+  key: 'work-emails-for-a-list',
+  title: 'Find work emails for a list of contacts',
   author: 'jdoe',
-  tools: [
-    {
-      key: 'clay/find-work-emails',
-      name: 'Find work emails',
-      companyName: 'Clay',
-      // The same Clay MCP server, a different tool on it.
-      access: [{ ...clayMcp, operation: 'clay_find_work_emails' }],
-    },
-  ],
-  tags: ['capability:find-work-emails'],
+  tools: [clayRunRoutine],
+  tags: ['motion:outbound'],
   inputs: [
     {
-      name: 'contacts_table',
-      description: 'the Clay table with name and company domain columns',
+      name: 'contacts',
+      description: 'the people to enrich, each with a name and company domain',
     },
   ],
   steps: [
     {
-      title: 'Sample',
-      toolKey: 'clay/find-work-emails',
+      title: 'Start runs',
+      toolKey: 'clay/run-routine',
       instruction:
-        "50 rows from `contacts_table` and run each email provider on them. Record each provider's hit rate.",
+        'Run the Work Email routine on `contacts`, up to 100 per run. Keep each run id.',
     },
     {
-      title: 'Reorder',
-      toolKey: 'clay/find-work-emails',
+      title: 'Collect results',
+      toolKey: 'clay/run-routine',
       instruction:
-        'the providers from highest to lowest hit rate, stopping at the first verified email.',
-    },
-    {
-      title: 'Run',
-      toolKey: 'clay/find-work-emails',
-      instruction:
-        'the reordered sequence on the full table, after the user confirms.',
+        "Read the results of every run id once it finishes. Keep each contact's work email, or a note that none was found.",
     },
   ],
   doneWhen: [
-    'The table has a verified email column.',
-    'The user has the hit rate for each provider.',
+    'Every contact has a work email, or a note explaining why not.',
+    'The user has a table of the results.',
   ],
   updatedAt: UPDATED_AT,
 }
@@ -214,7 +219,7 @@ describe('markdown files — goldens from the design doc', () => {
   })
 
   test('a workflow that uses one tool names it once, not per step', () => {
-    const rendered = renderWorkflowDocument(waterfall)
+    const rendered = renderWorkflowDocument(workEmails)
     expect(rendered.markdown).toBe(golden('single-tool-workflow'))
   })
 })
@@ -226,7 +231,7 @@ describe('setup picks the best way in', () => {
     maintainer: 'jdoe',
     installCommand: 'npm install -g clay-cli',
     binary: 'clay',
-    operation: 'clay enrich-contacts',
+    operation: 'clay routines run',
     auth: { method: 'api_key', envVar: 'CLAY_API_KEY' },
   }
 
@@ -246,11 +251,11 @@ describe('setup picks the best way in', () => {
 
   test('two options render under sub-headings with the first-supported line', () => {
     const rendered = renderWorkflowDocument({
-      ...waterfall,
+      ...workEmails,
       tools: [
         {
-          key: 'clay/find-work-emails',
-          name: 'Find work emails',
+          key: 'clay/run-routine',
+          name: 'Run a routine',
           companyName: 'Clay',
           access: [clayMcp, clayApi],
         },
@@ -271,8 +276,8 @@ describe('setup picks the best way in', () => {
       ...intentToMeeting,
       tools: [
         {
-          key: 'clay/enrich-contacts',
-          name: 'Enrich contacts',
+          key: 'clay/run-routine',
+          name: 'Run a routine',
           companyName: 'Clay',
           access: [clayApi, clayMcp],
         },
@@ -288,7 +293,7 @@ describe('setup picks the best way in', () => {
         { title: 'Find', toolKey: 'clay/search-people', instruction: 'Find.' },
         {
           title: 'Enrich',
-          toolKey: 'clay/enrich-contacts',
+          toolKey: 'clay/run-routine',
           instruction: 'Add.',
         },
         { title: 'Again', toolKey: 'clay/search-people', instruction: 'More.' },
@@ -302,7 +307,7 @@ describe('setup picks the best way in', () => {
       [
         '## Set up',
         '',
-        '### Clay (tool:clay/search-people, tool:clay/enrich-contacts)',
+        '### Clay (tool:clay/search-people, tool:clay/run-routine)',
         '',
         // The API runs only one of the two calls, so the choice is per call.
         'For each call, use the first option your agent supports that lists it.',
@@ -316,16 +321,16 @@ describe('setup picks the best way in', () => {
         '```',
         '',
         '- Search people: call the MCP tool `clay_search_people`',
-        '- Enrich contacts: call the MCP tool `clay_enrich_contacts`',
+        '- Run a routine: call the MCP tool `clay_run_routine`',
         '',
         '#### API (official)',
         '',
         '- Base URL: https://api.clay.example/v1',
-        '- Enrich contacts: `POST /enrich-contacts`',
+        '- Run a routine: `POST /routines/{routine_id}/run`',
         '- Auth: send the header `Authorization: Bearer $CLAY_API_KEY`',
         '- Get a key: https://app.clay.example/settings/api',
         '',
-        'Make one read-only call to each tool to confirm access.',
+        'Before step 1, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.',
         '',
         '',
       ].join('\n')
@@ -339,8 +344,8 @@ describe('setup picks the best way in', () => {
       ...intentToMeeting,
       tools: [
         {
-          key: 'clay/enrich-contacts',
-          name: 'Enrich contacts',
+          key: 'clay/run-routine',
+          name: 'Run a routine',
           companyName: 'Clay',
           access: [clayApi, clayMcp],
         },
@@ -355,7 +360,7 @@ describe('setup picks the best way in', () => {
         { title: 'Find', toolKey: 'clay/search-people', instruction: 'Find.' },
         {
           title: 'Enrich',
-          toolKey: 'clay/enrich-contacts',
+          toolKey: 'clay/run-routine',
           instruction: 'Add.',
         },
       ],
@@ -371,17 +376,116 @@ describe('setup picks the best way in', () => {
   })
 })
 
+describe('what to know before calling', () => {
+  const auth = (
+    extra: Partial<Extract<Access['auth'], { method: 'api_key' }>>
+  ) =>
+    renderToolDocument({
+      ...clay,
+      access: [
+        {
+          ...clayApi,
+          auth: { method: 'api_key', envVar: 'CLAY_API_KEY', ...extra },
+        },
+      ],
+    }).markdown
+
+  test.each([
+    [{}, '`Authorization: Bearer $CLAY_API_KEY`'],
+    [{ scheme: 'Basic' }, '`Authorization: Basic $CLAY_API_KEY`'],
+    [{ header: 'X-Api-Key' }, '`X-Api-Key: $CLAY_API_KEY`'],
+    [{ header: 'Authorization' }, '`Authorization: $CLAY_API_KEY`'],
+    [{ header: 'X-Key', scheme: 'Token' }, '`X-Key: Token $CLAY_API_KEY`'],
+  ])('header %j sends %s', (extra, line) => {
+    expect(auth(extra)).toContain(`- Auth: send the header ${line}`)
+  })
+
+  test("a way's notes follow the way, in the tool file and the workflow", () => {
+    const noted: Access = {
+      ...clayMcp,
+      notes: 'An admin turns on MCP access first.',
+    }
+    const tool = renderToolDocument({ ...clay, access: [noted] }).markdown
+    expect(tool).toContain(
+      'Server URL: https://mcp.clay.example/mcp\n\nNote: An admin turns on MCP access first.'
+    )
+    const workflow = renderWorkflowDocument({
+      ...workEmails,
+      tools: [{ ...clayRunRoutine, access: [noted, clayApi] }],
+    }).markdown
+    expect(workflow).toContain(
+      'Call the MCP tool `clay_run_routine`.\n\nNote: An admin turns on MCP access first.'
+    )
+  })
+
+  test('with two options, the notes come before them, not inside the last', () => {
+    const setup = renderWorkflowDocument({
+      ...workEmails,
+      tools: [{ ...clayRunRoutine, access: [clayMcp, clayApi] }],
+    }).markdown
+    const note = setup.indexOf('Note: List routines first')
+    expect(note).toBeGreaterThan(-1)
+    expect(note).toBeLessThan(setup.indexOf('#### MCP (official, remote)'))
+  })
+
+  test('a generic operation several tools share names the call it runs', () => {
+    const shared: Access = {
+      ...clayMcp,
+      operation: 'clay_api_read',
+      endpoint: 'GET /routines',
+    }
+    expect(
+      renderToolDocument({ ...clay, access: [shared] }).markdown
+    ).toContain('Call the MCP tool `clay_api_read` with `GET /routines`.')
+  })
+
+  test('several tools of one company list their notes by name', () => {
+    const setup = renderWorkflowDocument({
+      ...intentToMeeting,
+      tools: [
+        {
+          ...apolloBulkEnrich,
+          key: 'apollo/search-people',
+          name: 'Search people',
+          notes: 'Returns no emails; enrich the matches next.',
+        },
+        apolloBulkEnrich,
+      ],
+      steps: [
+        {
+          title: 'Find',
+          toolKey: 'apollo/search-people',
+          instruction: 'Find.',
+        },
+        {
+          title: 'Enrich',
+          toolKey: 'apollo/bulk-enrich-people',
+          instruction: 'Enrich.',
+        },
+      ],
+    }).markdown
+    expect(setup).toContain(
+      [
+        'Notes:',
+        '',
+        '- Search people: Returns no emails; enrich the matches next.',
+        '- Enrich up to 10 people: Credits are charged per person, and only when data is found.',
+      ].join('\n')
+    )
+  })
+})
+
 describe('file limits', () => {
   test('more than ten steps is refused, not truncated', () => {
     const steps = Array.from(
       { length: MAX_WORKFLOW_STEPS + 1 },
       (_, index) => ({
         title: `Step ${index + 1}`,
-        toolKey: 'clay/find-work-emails',
+        toolKey: 'clay/run-routine',
         instruction: 'do the thing.',
       })
     )
-    expect(() => renderWorkflowDocument({ ...waterfall, steps })).toThrow(
+    expect(() => renderWorkflowDocument({ ...workEmails, steps })).toThrow(
       /at most 10 steps/
     )
   })
@@ -407,9 +511,10 @@ describe('company file', () => {
       links: { website: 'https://clay.example' },
       tools: [
         {
-          key: 'clay/enrich-contacts',
-          name: 'Enrich contacts',
-          summary: 'Adds firmographic and person data to a contact or account.',
+          key: 'clay/run-routine',
+          name: 'Run a routine',
+          summary:
+            'Runs an enrichment function, such as Work Email, on up to 100 records and returns a run id.',
         },
       ],
       updatedAt: UPDATED_AT,
@@ -512,7 +617,7 @@ describe('the header an agent parses', () => {
     const tool = renderToolDocument({ ...clay, isDeprecated: true }).markdown
     expect(header(tool).status).toBe('deprecated')
     expect(tool).toContain(
-      '# Enrich contacts\n\n> This tool is deprecated. Ask the user before using it.'
+      '# Run a routine\n\n> This tool is deprecated. Ask the user before using it.'
     )
     const workflow = renderWorkflowDocument({
       ...intentToMeeting,

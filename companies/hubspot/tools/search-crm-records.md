@@ -1,6 +1,7 @@
 ---
 name: Search CRM records
 summary: Returns contacts, companies, deals or other CRM records that match property filters or a text query.
+notes: The MCP tool takes up to five groups of six filters and returns up to 200 records per page.
 capability: manage-crm
 docs: https://developers.hubspot.com/docs/api-reference/latest/crm/search-the-crm
 mcp: search_crm_objects

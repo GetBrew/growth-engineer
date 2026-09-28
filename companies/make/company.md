@@ -20,8 +20,9 @@ api:
   url: https://{zone_url}/api/v2
   auth: api_key
   env: MAKE_API_KEY
-  header: "Authorization: Token"
+  scheme: Token
   docs: https://developers.make.com/api-documentation
+  notes: "`{zone_url}` is your organization's zone from the Make dashboard's address bar, such as `eu1.make.com`."
 updated: 2026-09-27
 ---
 

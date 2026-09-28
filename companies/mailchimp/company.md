@@ -12,6 +12,7 @@ api:
   env: MAILCHIMP_API_KEY
   keyUrl: https://us1.admin.mailchimp.com/account/api/
   docs: https://mailchimp.com/developer/marketing/api/
+  notes: "`{dc}` is your data center, the part of the API key after the dash, such as `us6`."
 updated: 2026-09-27
 ---
 

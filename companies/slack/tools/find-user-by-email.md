@@ -1,6 +1,7 @@
 ---
 name: Find a user by email
 summary: Returns the workspace member registered with an email address, so a message can mention or reach them.
+notes: Needs the `users:read.email` scope; a deactivated user returns `users_not_found`.
 capability: route-alerts
 docs: https://docs.slack.dev/reference/methods/users.lookupByEmail
 mcp: slack_search_users

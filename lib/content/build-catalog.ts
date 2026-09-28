@@ -70,12 +70,10 @@ function newestFirst<T extends { key: string; updatedAt: number }>(
   return b.updatedAt - a.updatedAt || a.key.localeCompare(b.key)
 }
 
-/** Featured rank first (1 before 2), then the unranked, newest first. */
+/** Featured workflows first, then the rest; newest first within each. */
 function featuredFirst(workflows: ReadonlyArray<Workflow>): Array<Workflow> {
   return [...workflows].sort(
-    (a, b) =>
-      (a.featured ?? Number.POSITIVE_INFINITY) -
-        (b.featured ?? Number.POSITIVE_INFINITY) || newestFirst(a, b)
+    (a, b) => Number(b.isFeatured) - Number(a.isFeatured) || newestFirst(a, b)
   )
 }
 

@@ -84,6 +84,7 @@ export function buildDocuments(
           inputs.relations.get(formatRef('tool', tool.key))?.workflows ?? [],
         tags: tool.tags,
         summary: tool.summary,
+        ...(tool.notes === undefined ? {} : { notes: tool.notes }),
         ...(tool.docs === undefined ? {} : { docs: tool.docs }),
         access: tool.access,
         isDeprecated: tool.status === 'deprecated',
@@ -115,12 +116,13 @@ export function buildDocuments(
           companyName:
             inputs.companies.get(tool.companyKey)?.name ?? tool.companyKey,
           access: tool.access,
+          ...(tool.notes === undefined ? {} : { notes: tool.notes }),
         })),
         tags: [...workflow.tags].sort(),
         inputs: workflow.inputs,
         steps: workflow.steps.map((step) => ({
           title: step.title,
-          toolKey: step.toolKey,
+          ...(step.toolKey === undefined ? {} : { toolKey: step.toolKey }),
           instruction: step.instruction,
         })),
         doneWhen: workflow.doneWhen,

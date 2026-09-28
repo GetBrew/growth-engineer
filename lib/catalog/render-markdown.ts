@@ -6,6 +6,7 @@ import {
   orderAccess,
   type SetupTool,
   serverUrlLine,
+  wayNoteLines,
   workflowSetup,
 } from './render-access'
 import { yamlList, yamlScalar } from './render-header'
@@ -21,10 +22,11 @@ import { yamlList, yamlScalar } from './render-header'
  *   - everything needed to run is inline; links only for keys and reading more
  *   - setup picks the best way in (./render-access.ts)
  *   - inputs are named in backticks, never templated
- *   - the file tells the agent to check access before running anything
+ *   - what to know before a call travels with it (`notes`), into workflows too
+ *   - the file tells the agent to check access, read-only, before anything
  *   - Rules come last and nobody can edit them
  *   - a deprecated file says so, in its header and under its title
- *   - tool files stay under ~80 lines, workflow files under ~150, ≤ 10 steps
+ *   - tool files stay under ~80 lines, workflow files under ~200, ≤ 10 steps
  *
  * PURE MODULE: type-only imports, deterministic for a given `now`. The
  * golden tests reproduce the design doc's example files byte for byte.
@@ -39,6 +41,8 @@ export type ToolFileInput = {
   /** Computed tag keys: capability, category, ways in. */
   tags: ReadonlyArray<string>
   summary: string
+  /** What an agent must know before it calls: a prerequisite, a poll, a limit, a cost. */
+  notes?: string
   /** The page that documents the call. */
   docs?: string
   access: ReadonlyArray<Access>
@@ -50,7 +54,8 @@ type WorkflowFileTool = SetupTool
 
 type WorkflowFileStep = {
   title: string
-  toolKey: string
+  /** Absent when the agent does the step itself. */
+  toolKey?: string
   instruction: string
 }
 
@@ -93,15 +98,18 @@ export type RenderedDocument = {
 }
 
 export const TOOL_FILE_MAX_LINES = 80
-export const WORKFLOW_FILE_MAX_LINES = 150
+export const WORKFLOW_FILE_MAX_LINES = 200
 export const MAX_WORKFLOW_STEPS = 10
 
 /** Immutable. Always the last section; nobody can edit these lines. */
 const TOOL_RULES = [
-  'Ask the user before anything that sends messages, costs money, or changes data.',
+  'Ask the user before anything that sends messages, costs money, or changes data, and say how many records it touches. One approval covers a batch the user has seen.',
   'Never print API keys.',
 ]
-const WORKFLOW_RULES = ['Only use the tools listed above.', ...TOOL_RULES]
+const WORKFLOW_RULES = [
+  'Use only the services set up above. The read-only calls they need, like listing ids or polling for results, are fine.',
+  ...TOOL_RULES,
+]
 
 const BLANK_RUNS = /\n{3,}/g
 
@@ -157,6 +165,7 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     ...deprecated.notice,
     '',
     tool.summary,
+    ...(tool.notes ? ['', `Note: ${tool.notes}`] : []),
   ]
 
   if (ordered.length > 0) {
@@ -172,10 +181,11 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
       if (serverUrl) {
         lines.push('', serverUrl)
       }
+      lines.push(...wayNoteLines(access))
     }
     lines.push(
       '',
-      'Before doing anything else, make one read-only call to confirm access.'
+      'Before anything else, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.'
     )
   }
 
@@ -221,10 +231,13 @@ function stepsSection(
     '## Steps',
     '',
     ...steps.map((step, index) => {
+      if (step.toolKey === undefined) {
+        return `${index + 1}. **${step.title}** yourself. ${step.instruction}`
+      }
       const tool = tools.get(step.toolKey)
       const label = tool ? toolLabel(tool) : step.toolKey
       const lead = hasSoleTool
-        ? `**${step.title}**`
+        ? `**${step.title}**.`
         : `**${step.title}** with ${label}.`
       return `${index + 1}. ${lead} ${step.instruction}`
     }),
@@ -242,7 +255,11 @@ export function renderWorkflowDocument(
   const toolsByKey = new Map(workflow.tools.map((tool) => [tool.key, tool]))
   // Tools in first-use order across the steps — the header and setup follow it.
   const usedTools = [
-    ...new Set(workflow.steps.map((step) => step.toolKey)),
+    ...new Set(
+      workflow.steps.flatMap((step) =>
+        step.toolKey === undefined ? [] : [step.toolKey]
+      )
+    ),
   ].flatMap((key) => {
     const tool = toolsByKey.get(key)
     return tool ? [tool] : []
@@ -271,8 +288,8 @@ export function renderWorkflowDocument(
     ...deprecated.notice,
     '',
     soleTool
-      ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user.`
-      : 'Set up the tools below, then run the steps in order for the user.',
+      ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user, carrying each step's results into the next.`
+      : "Set up the tools below, then run the steps in order for the user, carrying each step's results into the next.",
     ...inputsSection(workflow.inputs),
     ...workflowSetup(usedTools),
     ...stepsSection(workflow.steps, toolsByKey, soleTool !== undefined),

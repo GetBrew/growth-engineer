@@ -10,6 +10,7 @@ mcp:
   url: https://mcp.loops.so
   auth: oauth
   docs: https://loops.so/docs/mcp-server
+  notes: "Every operation runs through three tools: `search` finds it, `describe` shows its inputs, `execute` runs it."
 cli:
   install: brew install loops-so/tap/loops
   binary: loops

@@ -1,25 +1,25 @@
 ---
-ref: workflow:clay-waterfall-order
-title: Find more work emails by ordering providers by hit rate
+ref: workflow:work-emails-for-a-list
+title: Find work emails for a list of contacts
 author: jdoe
-tools: [tool:clay/find-work-emails]
-tags: [capability:find-work-emails]
+tools: [tool:clay/run-routine]
+tags: [motion:outbound]
 updated: 2026-09-16
 ---
 
-# Find more work emails by ordering providers by hit rate
+# Find work emails for a list of contacts
 
-Set up Find work emails (Clay), then run the steps in order for the user.
+Set up Run a routine (Clay), then run the steps in order for the user, carrying each step's results into the next.
 
 ## Inputs
 
 Ask the user for this before you start.
 
-- `contacts_table`: the Clay table with name and company domain columns
+- `contacts`: the people to enrich, each with a name and company domain
 
 ## Set up
 
-### Find work emails (Clay, tool:clay/find-work-emails)
+### Run a routine (Clay, tool:clay/run-routine)
 
 Use the MCP server. Add it to your agent's MCP settings, then sign in when asked.
 
@@ -27,23 +27,24 @@ Use the MCP server. Add it to your agent's MCP settings, then sign in when asked
 { "mcpServers": { "clay": { "url": "https://mcp.clay.example/mcp" } } }
 ```
 
-Call the MCP tool `clay_find_work_emails`.
+Call the MCP tool `clay_run_routine`.
 
-Make one read-only call to confirm access.
+Note: List routines first to get the routine id, then poll the run id for results.
+
+Before step 1, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.
 
 ## Steps
 
-1. **Sample** 50 rows from `contacts_table` and run each email provider on them. Record each provider's hit rate.
-2. **Reorder** the providers from highest to lowest hit rate, stopping at the first verified email.
-3. **Run** the reordered sequence on the full table, after the user confirms.
+1. **Start runs**. Run the Work Email routine on `contacts`, up to 100 per run. Keep each run id.
+2. **Collect results**. Read the results of every run id once it finishes. Keep each contact's work email, or a note that none was found.
 
 ## Done when
 
-- The table has a verified email column.
-- The user has the hit rate for each provider.
+- Every contact has a work email, or a note explaining why not.
+- The user has a table of the results.
 
 ## Rules
 
-- Only use the tools listed above.
-- Ask the user before anything that sends messages, costs money, or changes data.
+- Use only the services set up above. The read-only calls they need, like listing ids or polling for results, are fine.
+- Ask the user before anything that sends messages, costs money, or changes data, and say how many records it touches. One approval covers a batch the user has seen.
 - Never print API keys.

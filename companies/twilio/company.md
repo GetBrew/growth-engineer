@@ -13,6 +13,7 @@ cli:
   env: TWILIO_API_KEY
   keyUrl: https://www.twilio.com/docs/iam/api-keys/keys-in-console
   docs: https://www.twilio.com/docs/twilio-cli
+  notes: Also set `TWILIO_ACCOUNT_SID` and `TWILIO_API_SECRET`, with `TWILIO_API_KEY` holding the API key SID, or sign in once with `twilio login`.
 updated: 2026-09-27
 ---
 

@@ -37,15 +37,17 @@ or a rule).
 ### Ways in — `mcp:`, `cli:`, `api:` in company.md
 
 How an agent reaches the company, at most one of each, shared by all its
-tools. Every way has `auth` (`none`, `oauth`, `api_key`), optional `docs`,
-and `maintainer` when community-run (absent = official). An API key names
-its `env` var (required) and optionally a `keyUrl`.
+tools. Every way has `auth` (`none`, `oauth`, `api_key`), optional `docs`
+and `notes` (what to know to use the way: where a `{placeholder}` in its URL
+comes from — required when there is one — or how a key is encoded), and
+`maintainer` when community-run (absent = official). An API key names its
+`env` var (required) and optionally a `keyUrl`.
 
 | Way | Fields |
 | --- | --- |
 | `mcp` | exactly one of `url` (remote) or `command` (local; plain words, no quotes); a remote server with `api_key` is refused |
 | `cli` | `install`, `binary` |
-| `api` | `url` (the base), `header?` (`X-Api-Key`, `Authorization: Basic`) |
+| `api` | `url` (the base), `header?` (a name: `X-Api-Key`), `scheme?` (`Basic`, `Token`) |
 
 ## Tools — `companies/<handle>/tools/<name>.md`
 
@@ -57,7 +59,9 @@ company declares; a published tool needs at least one, and `docs:`. `docs` is th
 that names the call. `status` is `published` (default), `deprecated`, or
 `draft` (no page, no file, not listed). `aliases` lists old keys. There is
 no body: `summary` says what the call does, and anything after the header
-is an error.
+is an error. `notes` (optional, one line, at most 280 characters) says what
+to know before calling — an id to fetch first, a result to poll for, a
+limit, a cost — and every workflow using the tool prints it.
 
 ## Workflows — `workflows/<name>.md` (flat)
 
@@ -66,7 +70,7 @@ hyphens), shown as `@login` and linked to the profile; it is never a company.
 
 The HEADER holds the facts: `title` (phrased as the result), `summary`,
 `author` and `updated` are required; `tags` (motion and channel only),
-`featured` (a rank unique across every workflow file), `aliases` and
+`featured` (`true` puts it on the featured list; maintainers set it), `aliases` and
 `status` are optional. There are no versions: git history is the archive.
 
 ### Status, one rule
@@ -91,7 +95,8 @@ so the source reads on GitHub the way it reads on the site
 | `## Notes` (optional) | free markdown; `###` and smaller headings, none named like a section the file writes | `notes` |
 
 A step names its tool by a link to the tool's source file (the link must
-point at that file). Every step's tool must be a published tool. Any other
+point at that file), or has no link when the agent does it itself; at least
+one step names a tool. Every step's tool must be a published tool. Any other
 heading, text
 outside a section, or a header field that belongs in the body is an error
 (with its line number when it is in the body).
@@ -133,8 +138,9 @@ API key with no `env`; a remote MCP way with an API key; a published tool
 with no call; a tool file with a body; a step whose tool does not fit the
 workflow's status; an unknown or derived tag; an unknown
 category; a missing logo; an alias that shadows an existing key (drafts
-included) or is claimed twice; two workflows with the same `featured` rank;
-more than ten steps. `tests/content-schema.test.ts` proves each one fails.
+included) or is claimed twice; a `{placeholder}` that is not snake_case or
+has no way `notes`; an API path parameter written `:param`; `notes` over 280
+characters; more than ten steps. `tests/content-schema.test.ts` proves each one fails.
 
 ## Not in this model, on purpose
 

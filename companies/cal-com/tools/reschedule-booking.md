@@ -1,6 +1,7 @@
 ---
 name: Reschedule a booking
 summary: Moves an accepted or pending booking to a new start time and returns the rescheduled booking.
+notes: "Send `cal-api-version: 2026-02-25` and the new `start` in UTC, after checking the time is open. Cancelled, rejected and live instant bookings can't be rescheduled and return a 400: create a new booking instead."
 capability: book-meetings
 docs: https://cal.com/docs/api-reference/v2/bookings/reschedule-a-booking
 mcp: reschedule_booking

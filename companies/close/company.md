@@ -14,8 +14,9 @@ api:
   url: https://api.close.com/api/v1
   auth: api_key
   env: CLOSE_API_KEY
-  header: "Authorization: Basic"
+  scheme: Basic
   docs: https://developer.close.com/api/overview
+  notes: "`CLOSE_API_KEY` holds the base64 of `<api key>:`, the key with a trailing colon."
 updated: 2026-09-27
 ---
 

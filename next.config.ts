@@ -96,6 +96,12 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: '/contribute/:path*', destination: '/docs', permanent: true },
+      // The capability for analytics reads was renamed when event writes got their own.
+      {
+        source: '/tags/capability/track-product-usage.md',
+        destination: '/tags/capability/analyze-product-usage.md',
+        permanent: true,
+      },
       // A growth hack IS a workflow; the concept went, the URL keeps its promise.
       { source: '/hacks', destination: '/workflows', permanent: true },
       { source: '/hacks/:path*', destination: '/workflows', permanent: true },

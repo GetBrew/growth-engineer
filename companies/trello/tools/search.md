@@ -1,5 +1,5 @@
 ---
-name: Search Trello
+name: Search boards and cards
 summary: Finds the boards, cards, members and organizations that match a query.
 capability: manage-tasks
 docs: https://developer.atlassian.com/cloud/trello/rest/api-group-search/#api-search-get

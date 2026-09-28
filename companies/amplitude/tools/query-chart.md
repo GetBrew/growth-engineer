@@ -1,7 +1,8 @@
 ---
 name: Query a saved chart
 summary: Returns the computed results of a saved event segmentation, sessions, funnel or retention chart for a time range.
-capability: track-product-usage
+notes: Other chart types return `422` with `unsupported_chart_type`. Without a time range it uses the chart's saved range, or the last 30 days. On the CLI and the API the token needs the `analytics:read` scope.
+capability: analyze-product-usage
 docs: https://amplitude.com/docs/apis/developer/analytics/query-chart
 mcp: get_amplitude_charts
 cli: amp charts query

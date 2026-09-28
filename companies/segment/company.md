@@ -10,9 +10,10 @@ api:
   url: https://api.segment.io
   auth: api_key
   env: SEGMENT_API_KEY
-  header: "Authorization: Basic"
+  scheme: Basic
   keyUrl: https://www.twilio.com/docs/segment/connections/find-writekey
   docs: https://www.twilio.com/docs/segment/connections/sources/catalog/libraries/server/http-api
+  notes: "`SEGMENT_API_KEY` holds the base64 of `<write key>:`. EU workspaces send to `https://events.eu1.segmentapis.com` instead."
 updated: 2026-09-27
 ---
 

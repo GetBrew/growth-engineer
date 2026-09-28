@@ -10,6 +10,7 @@ mcp:
   url: https://mcp.atlassian.com/v2/mcp
   auth: oauth
   docs: https://developer.atlassian.com/cloud/rovo-mcp/
+  notes: "This is the Atlassian Rovo MCP server: if Atlassian is already set up, reuse that connection. Deferred Loom tools are found with `discover`."
 updated: 2026-09-27
 ---
 

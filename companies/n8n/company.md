@@ -7,9 +7,10 @@ docs: https://docs.n8n.io
 github: https://github.com/n8n-io
 logo: n8n.png
 mcp:
-  url: https://{your-n8n-domain}/mcp-server/http
+  url: https://{n8n_host}/mcp-server/http
   auth: oauth
   docs: https://docs.n8n.io/connect/connect-to-n8n-mcp-server
+  notes: "`{n8n_host}` is your instance's domain, such as `acme.app.n8n.cloud`. An owner or admin turns on Settings > Instance-level MCP first."
 cli:
   install: npm install -g @n8n/cli
   binary: n8n-cli
@@ -17,17 +18,18 @@ cli:
   env: N8N_API_KEY
   docs: https://docs.n8n.io/connect/n8n-cli
 api:
-  url: https://{your-domain}/api/v1
+  url: https://{n8n_host}/api/v1
   auth: api_key
   env: N8N_API_KEY
   header: X-N8N-API-KEY
   docs: https://docs.n8n.io/connect/n8n-api
+  notes: "`{n8n_host}` is your instance's domain, such as `acme.app.n8n.cloud`. The API is not available during the free trial."
 updated: 2026-09-27
 ---
 
 n8n runs automation workflows, with AI steps, that a team builds visually or
 in code. It runs on n8n Cloud or self-hosted, so every way in
-points at your own instance: `{your-n8n-domain}` and `{your-domain}` are its
+points at your own instance: `{n8n_host}` is its
 domain without `https://`, such as `your-instance.app.n8n.cloud` on n8n Cloud
 or the domain that serves your n8n editor when self-hosted.
 

@@ -22,9 +22,15 @@ export function slugify(title: string): string {
 
 /** Distinct tool keys in first-use order — the `tools:` header line. */
 export function distinctToolKeys(
-  steps: ReadonlyArray<{ toolKey: string }>
+  steps: ReadonlyArray<{ toolKey?: string }>
 ): Array<string> {
-  return [...new Set(steps.map((step) => step.toolKey))]
+  return [
+    ...new Set(
+      steps.flatMap((step) =>
+        step.toolKey === undefined ? [] : [step.toolKey]
+      )
+    ),
+  ]
 }
 
 /* ────────────────────────────── computed tags ────────────────────────────── */

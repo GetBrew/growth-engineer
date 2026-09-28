@@ -19,9 +19,10 @@ api:
   url: https://api.lemlist.com/api
   auth: api_key
   env: LEMLIST_API_KEY
-  header: "Authorization: Basic"
+  scheme: Basic
   keyUrl: https://app.lemlist.com/settings/integrations
   docs: https://developer.lemlist.com/api-reference/getting-started/authentication
+  notes: "`LEMLIST_API_KEY` holds the base64 of `:<api key>`, an empty username and the key; 20 requests every 2 seconds per key."
 updated: 2026-09-27
 ---
 

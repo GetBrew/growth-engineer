@@ -15,6 +15,7 @@ cli:
   binary: apify
   auth: oauth
   docs: https://docs.apify.com/cli/docs
+  notes: Sign in with `apify login`.
 api:
   url: https://api.apify.com/v2
   auth: api_key

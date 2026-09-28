@@ -5,6 +5,6 @@ capability: manage-crm
 docs: https://developer.salesforce.com/docs/platform/api-rest/guide/resources-sobject-basic-info-post.html
 mcp: createSobjectRecord
 cli: sf data create record
-api: POST /services/data/vXX.X/sobjects/sObject/
+api: POST /services/data/vXX.X/sobjects/{sobject}/
 updated: 2026-09-26
 ---

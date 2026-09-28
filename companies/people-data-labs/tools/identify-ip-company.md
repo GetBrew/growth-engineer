@@ -1,6 +1,7 @@
 ---
 name: Identify the company behind an IP address
 summary: Returns the company associated with an IP address, with a confidence level, name, website, size and industry, and on request the IP's location and whether it is a VPN, proxy, mobile or hosting address.
+notes: Charged per match.
 capability: track-intent
 docs: https://docs.peopledatalabs.com/docs/reference-ip-enrichment-api
 api: GET /v5/ip/enrich

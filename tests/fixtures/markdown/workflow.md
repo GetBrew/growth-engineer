@@ -2,14 +2,14 @@
 ref: workflow:intent-to-meeting
 title: Turn high-intent accounts into booked meetings
 author: jdoe
-tools: [tool:apollo/find-work-emails, tool:brew/send-email]
+tools: [tool:apollo/bulk-enrich-people, tool:brew/send-email]
 tags: [motion:outbound, channel:email]
 updated: 2026-09-16
 ---
 
 # Turn high-intent accounts into booked meetings
 
-Set up the tools below, then run the steps in order for the user.
+Set up the tools below, then run the steps in order for the user, carrying each step's results into the next.
 
 ## Inputs
 
@@ -20,14 +20,16 @@ Ask the user for these before you start.
 
 ## Set up
 
-### Find work emails (Apollo, tool:apollo/find-work-emails)
+### Enrich up to 10 people (Apollo, tool:apollo/bulk-enrich-people)
 
 Use the API.
 
 - Base URL: https://api.apollo.example/v1
-- Endpoint: `POST /find-work-emails`
+- Endpoint: `POST /people/bulk_match`
 - Auth: send the header `X-Api-Key: $APOLLO_API_KEY`
 - Get a key: https://app.apollo.example/settings/api
+
+Note: Credits are charged per person, and only when data is found.
 
 ### Send email (Brew, tool:brew/send-email)
 
@@ -39,13 +41,15 @@ Use the MCP server. Add it to your agent's MCP settings.
 
 Call the MCP tool `brew_send_email`.
 
-Make one read-only call to each tool to confirm access.
+Note: An admin turns on MCP access under Settings first.
+
+Before step 1, confirm access to each service with its cheapest read-only call, like a list or a search. Never send or change anything to test access.
 
 ## Steps
 
-1. **Find contacts** with Find work emails (Apollo). For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
-2. **Write emails** with Send email (Brew). Draft a short, specific email to each contact from step 1. Show the drafts to the user.
-3. **Send** with Send email (Brew). After the user approves, send each email from `sender_email`.
+1. **Find contacts** with Enrich up to 10 people (Apollo). For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
+2. **Write emails** yourself. Draft a short, specific email to each contact from step 1. Show the drafts to the user.
+3. **Send** with Send email (Brew). After the user approves, send each one from `sender_email`.
 
 ## Done when
 
@@ -54,6 +58,6 @@ Make one read-only call to each tool to confirm access.
 
 ## Rules
 
-- Only use the tools listed above.
-- Ask the user before anything that sends messages, costs money, or changes data.
+- Use only the services set up above. The read-only calls they need, like listing ids or polling for results, are fine.
+- Ask the user before anything that sends messages, costs money, or changes data, and say how many records it touches. One approval covers a batch the user has seen.
 - Never print API keys.

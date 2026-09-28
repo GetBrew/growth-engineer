@@ -98,7 +98,9 @@ describe('README templates', () => {
         new ProblemList()
       )
       for (const step of parsed?.data.steps ?? []) {
-        expect(tools.has(step.tool), step.tool).toBe(true)
+        if (step.tool !== undefined) {
+          expect(tools.has(step.tool), step.tool).toBe(true)
+        }
       }
     }
   })

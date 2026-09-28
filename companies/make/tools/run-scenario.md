@@ -1,6 +1,7 @@
 ---
 name: Run a scenario
 summary: Runs an active Make scenario with the inputs you pass and returns the run's status, execution ID and, when the scenario defines them, its outputs.
+notes: "A run that outlasts the call (40 seconds on the API with `responsive: true`, 25 over MCP) keeps going: look it up by its `executionId`, or get the result at a `callbackUrl`. Scenarios don't run while their team or organization is paused over its limits."
 capability: automate-workflows
 docs: https://developers.make.com/api-documentation/api-reference/scenarios
 mcp: scenarios_run

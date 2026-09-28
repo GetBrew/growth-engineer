@@ -54,7 +54,7 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
     definition:
       'Several tools in order, with the instructions that reach a result, written by a person.',
     detail:
-      'Up to ten steps, each naming one tool; inputs the agent asks the user for; the checks that mean it is done. A growth hack is a workflow — there is no second kind. The author is a GitHub login.',
+      'Up to ten steps, each naming one tool or none when the agent does it itself; inputs the agent asks the user for; the checks that mean it is done. A growth hack is a workflow — there is no second kind. The author is a GitHub login.',
     path: 'workflows/<name>.md',
   },
   {

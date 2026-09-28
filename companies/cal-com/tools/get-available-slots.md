@@ -1,6 +1,7 @@
 ---
 name: Get available slots
 summary: Returns the open start times of an event type between two dates, grouped by day.
+notes: "Send `cal-api-version: 2024-09-04`. Times come back in UTC unless you set `timeZone`."
 capability: book-meetings
 docs: https://cal.com/docs/api-reference/v2/slots/get-available-time-slots-for-an-event-type
 mcp: get_availability

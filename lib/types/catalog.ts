@@ -16,12 +16,20 @@ export type AccessType = 'mcp' | 'cli' | 'api'
 /**
  * How a way in authenticates. An API key always names the environment
  * variable it lives in, so a file can say where to put it without ever
- * holding it; `header` is for an API only.
+ * holding it; `header` and `scheme` are for an API only.
  */
 export type Auth =
   | { method: 'none' }
   | { method: 'oauth' }
-  | { method: 'api_key'; envVar: string; header?: string; keyUrl?: string }
+  | {
+      method: 'api_key'
+      envVar: string
+      /** The header name; absent = `Authorization`. */
+      header?: string
+      /** The word before the key (`Basic`); absent with no header = `Bearer`. */
+      scheme?: string
+      keyUrl?: string
+    }
 
 type AccessCommon = {
   /** Derived: a way with no `maintainer` is the vendor's own. */
@@ -32,6 +40,13 @@ type AccessCommon = {
   operation: string
   auth: Auth
   docsUrl?: string
+  /** What to know about this way in: where a `{placeholder}` comes from, how a key is encoded. */
+  notes?: string
+  /**
+   * Derived: when this operation is a generic one several tools share
+   * (`stripe_api_read`), the API call this tool runs through it.
+   */
+  endpoint?: string
 }
 
 export type Access =
@@ -84,6 +99,8 @@ export type Tool = {
   summary: string
   /** A `capability:` slug from tags.yml; the key names the function. */
   capability: string
+  /** What an agent must know before it calls: a prerequisite, a poll, a limit, a cost. */
+  notes?: string
   /** The page that documents the call. */
   docs?: string
   access: ReadonlyArray<Access>
@@ -105,7 +122,8 @@ export type WorkflowStep = {
   /** Slug of the title: "find-contacts". */
   key: string
   title: string
-  toolKey: string
+  /** Absent when the agent does the step itself: drafting, deciding, summarizing. */
+  toolKey?: string
   instruction: string
 }
 
@@ -122,8 +140,8 @@ export type Workflow = {
   steps: ReadonlyArray<WorkflowStep>
   doneWhen: ReadonlyArray<string>
   notes?: string
-  /** Editorial rank on the featured list; absent = not featured. */
-  featured?: number
+  /** On the featured list, set by maintainers. */
+  isFeatured: boolean
   /** Distinct tool keys in first-use order across the steps. */
   toolKeys: ReadonlyArray<string>
   toolCount: number

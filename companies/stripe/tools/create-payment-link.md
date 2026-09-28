@@ -1,6 +1,7 @@
 ---
 name: Create a payment link
 summary: Creates a Stripe-hosted checkout link for the prices you pass and returns it with its shareable URL.
+notes: Up to 20 `line_items` per link, each a price ID and a quantity.
 capability: collect-payments
 docs: https://docs.stripe.com/api/payment-link/create
 mcp: stripe_api_write

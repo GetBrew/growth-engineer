@@ -1,7 +1,7 @@
 ---
 ref: company:clay
 name: Clay
-tools: [tool:clay/enrich-contacts]
+tools: [tool:clay/run-routine]
 tags: [category:data-provider]
 updated: 2026-09-16
 ---
@@ -12,7 +12,7 @@ Enrich accounts before you send.
 
 ## Tools
 
-- tool:clay/enrich-contacts — Enrich contacts: Adds firmographic and person data to a contact or account.
+- tool:clay/run-routine — Run a routine: Runs an enrichment function, such as Work Email, on up to 100 records and returns a run id.
 
 ## Links
 

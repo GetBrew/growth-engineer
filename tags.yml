@@ -15,18 +15,21 @@
 # the first file that needs it.
 
 capability:
+  analyze-product-usage:
+    label: Analyze product usage
+    synonyms: [product analytics, usage, funnels, retention, cohorts, sql, queries, track product usage]
   authenticate-users:
     label: Authenticate users
     synonyms: [auth, authentication, login, sign up]
   automate-workflows:
     label: Automate workflows
-    synonyms: [automation, workflows, zaps, scenarios, integrations, run workflow]
+    synonyms: [automation, zaps, scenarios, integrations, run automation]
   book-meetings:
     label: Book meetings
     synonyms: [booking, scheduling, booking links, availability, calendar]
   build-audience:
     label: Build audiences
-    synonyms: [audience, audiences, list building, prospecting, segments]
+    synonyms: [audience, audiences, segments, lists, cohorts, contact lists]
   classify-signals:
     label: Classify signals
     synonyms: [classification, scoring, triage]
@@ -39,9 +42,18 @@ capability:
   design-assets:
     label: Design assets
     synonyms: [design, graphics, creative, mockups]
+  enrich-companies:
+    label: Enrich companies
+    synonyms: [company enrichment, firmographics, company data, headcount, funding]
   enrich-contacts:
     label: Enrich contacts
     synonyms: [enrich, enrichment, data enrichment, contact data]
+  enroll-in-sequence:
+    label: Enroll in sequences
+    synonyms: [sequence, sequences, cadence, outreach sequence, campaign enrollment, sequencer]
+  find-prospects:
+    label: Find prospects
+    synonyms: [prospecting, list building, lead database, people search, company search, leads]
   find-work-emails:
     label: Find work emails
     synonyms: [email finder, find emails, work email, email lookup]
@@ -74,7 +86,7 @@ capability:
     synonyms: [reviews, ratings, social proof, testimonials]
   research-accounts:
     label: Research accounts
-    synonyms: [research, account research, company research]
+    synonyms: [account research, deal research, account brief, account questions]
   review-recordings:
     label: Review recordings
     synonyms: [recordings, transcripts, call recordings, meeting notes, action items]
@@ -84,9 +96,15 @@ capability:
   scrape-web:
     label: Scrape the web
     synonyms: [scraping, crawl, crawler, web data]
+  search-conversations:
+    label: Search conversations
+    synonyms: [conversations, support tickets, inbox, messages, chat history]
+  search-web:
+    label: Search the web
+    synonyms: [web search, research, answers, deep research]
   send-email:
     label: Send email
-    synonyms: [sequencer, email sending, sending, campaigns]
+    synonyms: [email sending, sending, campaigns, broadcasts, transactional email]
   send-sms:
     label: Send SMS
     synonyms: [sms, text message, texting, mms, whatsapp]
@@ -96,9 +114,9 @@ capability:
   track-intent:
     label: Track intent
     synonyms: [intent, intent data, buying signals, signals]
-  track-product-usage:
-    label: Track product usage
-    synonyms: [product analytics, usage, events, behavior]
+  track-events:
+    label: Track events
+    synonyms: [events, event tracking, identify, capture, trigger event]
   track-revenue:
     label: Track revenue
     synonyms: [revenue, mrr, arr, invoices]
@@ -216,3 +234,6 @@ motion:
   plg:
     label: Product-led
     synonyms: [plg, product led, self serve]
+  retention:
+    label: Retention
+    synonyms: [retention, churn, churn prevention, renewal, win back, dunning]

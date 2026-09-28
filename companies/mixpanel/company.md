@@ -10,6 +10,7 @@ mcp:
   url: https://mcp.mixpanel.com/mcp
   auth: oauth
   docs: https://docs.mixpanel.com/docs/mcp
+  notes: An organization admin enables MCP in Settings > Org > Overview first. EU and India projects use `https://mcp-eu.mixpanel.com/mcp` and `https://mcp-in.mixpanel.com/mcp`.
 cli:
   install: pip install mixpanel-headless
   binary: mp
@@ -19,9 +20,10 @@ api:
   url: https://mixpanel.com/api/query
   auth: api_key
   env: MIXPANEL_SA_TOKEN
-  header: "Authorization: Basic"
+  scheme: Basic
   keyUrl: "https://mixpanel.com/settings/org#serviceaccounts"
   docs: https://docs.mixpanel.com/reference/query-api
+  notes: "`MIXPANEL_SA_TOKEN` holds the base64 of `<service account username>:<secret>`, and every request carries `project_id`; EU and India projects use `eu.mixpanel.com` and `in.mixpanel.com`."
 updated: 2026-09-26
 ---
 

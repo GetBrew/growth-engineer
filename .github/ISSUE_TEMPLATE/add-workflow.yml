@@ -21,7 +21,7 @@ body:
     id: steps
     attributes:
       label: Steps
-      description: Up to ten. Each step names ONE tool (`company/function`) and what to do with it.
+      description: Up to ten. Each step names ONE tool (`company/function`) and what to do with it, or no tool when the agent does it itself (writing a draft).
     validations:
       required: true
   - type: textarea

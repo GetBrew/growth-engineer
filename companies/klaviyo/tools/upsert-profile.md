@@ -1,6 +1,7 @@
 ---
 name: Create or update a profile
 summary: Creates a profile or updates the one that matches, with contact details, location and custom properties.
+notes: "A field set to `null` is cleared and a field left out keeps its value. It gives no marketing consent: subscribe the profile for that."
 capability: build-audience
 docs: https://developers.klaviyo.com/en/reference/create_or_update_profile
 mcp: create_or_update_profile
