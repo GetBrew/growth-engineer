@@ -8,6 +8,7 @@ import { SectionHeading } from '@/components/layout/section-heading'
 import { CatalogSearch } from '@/components/search/catalog-search'
 import type { FilterOption } from '@/components/search/filter-types'
 import { ListingToolbar } from '@/components/search/listing-toolbar'
+import { OrderMenu } from '@/components/search/order-menu'
 import { isValidTagKey, TAG_NAMESPACES } from '@/lib/catalog/keys'
 import {
   type WorkflowSort as Sort,
@@ -77,32 +78,45 @@ function href(sort: Sort, q: string, tag?: string): string {
   return query ? `${BASE}?${query}` : BASE
 }
 
-function viewFilters(
-  tags: ReadonlyArray<TagChip>,
-  sort: Sort,
+/** The orders, for the dropdown beside the search box; each keeps the rest of the query. */
+function orderLinks(
   q: string,
   tag: string,
   isCounting: boolean
-): { all: { href: string; active: boolean }; options: Array<FilterOption> } {
-  const angles: Array<Sort> = isCounting ? ['hot', 'popular'] : []
-  const orders: Array<FilterOption> = [...angles, 'new' as const].map(
-    (order) => ({
-      key: order,
-      label: isAngle(order) ? COPY_ANGLES[order].label : 'New',
-      href: href(order, q, tag),
-      active: sort === order,
-    })
-  )
-  const tagOptions: Array<FilterOption> = tags.map((entry) => ({
-    key: entry.key,
-    label: entry.label,
-    count: entry.counts.workflows,
-    href: href(sort, q, entry.key),
-    active: tag === entry.key,
+): Array<{ value: Sort; label: string; href: string }> {
+  const orders: Array<Sort> = isCounting
+    ? ['featured', 'hot', 'popular', 'new']
+    : ['featured', 'new']
+  return orders.map((order) => ({
+    value: order,
+    label: ORDER_LABEL[order],
+    href: href(order, q, tag),
   }))
+}
+
+const ORDER_LABEL: Record<Sort, string> = {
+  featured: 'Featured',
+  hot: COPY_ANGLES.hot.label,
+  popular: COPY_ANGLES.popular.label,
+  new: 'New',
+}
+
+/** The tags, as pills; "All" clears the tag and keeps the order and words. */
+function tagFilters(
+  tags: ReadonlyArray<TagChip>,
+  sort: Sort,
+  q: string,
+  tag: string
+): { all: { href: string; active: boolean }; options: Array<FilterOption> } {
   return {
-    all: { href: BASE, active: sort === 'featured' && !q && !tag },
-    options: [...orders, ...tagOptions],
+    all: { href: href(sort, q), active: !tag },
+    options: tags.map((entry) => ({
+      key: entry.key,
+      label: entry.label,
+      count: entry.counts.workflows,
+      href: href(sort, q, entry.key),
+      active: tag === entry.key,
+    })),
   }
 }
 
@@ -211,13 +225,16 @@ function WorkflowsIndexView({
         <ListingToolbar
           groups={[
             {
-              key: 'view',
+              key: 'tags',
               label: 'Filter workflows',
               moreTitle: 'More filters',
-              top: isCounting ? 5 : 3,
-              ...viewFilters(tags, sort, q, tag, isCounting),
+              top: 3,
+              ...tagFilters(tags, sort, q, tag),
             },
           ]}
+          order={
+            <OrderMenu orders={orderLinks(q, tag, isCounting)} value={sort} />
+          }
           search={
             <CatalogSearch
               action={BASE}

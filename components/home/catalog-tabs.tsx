@@ -2,8 +2,8 @@
 
 import { type ReactNode, useState } from 'react'
 import { EntityIcon, type EntityKind } from '@/components/common/entity-icon'
-import { ViewMenu } from '@/components/home/view-menu'
 import { CatalogSearch } from '@/components/search/catalog-search'
+import { OrderMenu } from '@/components/search/order-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 /** One way to order a tab's list, and what its search carries along. */
@@ -71,12 +71,12 @@ export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
               placeholder={`Search ${subject}`}
             />
             {activeTab.views && activeView ? (
-              <ViewMenu
+              <OrderMenu
                 onChange={(value) =>
                   setViewOf((views) => ({ ...views, [activeTab.value]: value }))
                 }
+                orders={activeTab.views}
                 value={activeView.value}
-                views={activeTab.views}
               />
             ) : null}
           </div>
