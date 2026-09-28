@@ -29,7 +29,7 @@ skill.
 
 ```
 companies/<handle>/company.md        who the company is, its ways in → /companies/apollo
-companies/<handle>/logo.svg          its logo, optional            → /logos/apollo.svg
+companies/<handle>/logo.<ext>        its logo, optional            → /logos/apollo.webp
 companies/<handle>/tools/<name>.md   each function an agent calls  → /tools/apollo/enrich-person
 workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
 tags.yml                             the vocabulary                → capability, motion, channel, category
@@ -144,7 +144,7 @@ lib/
   seo/                        per-page metadata, schema.org builders, the llms preamble
 components/                   site chrome, catalog rows and detail pages, ui primitives
 tests/                        goldens (tests/fixtures/markdown), the content suite, the negatives
-docs/                         vision, file schema, architecture, validation, ci, performance
+docs/                         vision, data model, file format, architecture, setup; maintainers/ for validation, ci, performance
 ```
 
 ## Docs

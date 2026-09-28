@@ -57,6 +57,7 @@ offers that way.
 | every entry's `tags` (capability, category, `has:*`) | its file, its company, its tools | `derive.ts` |
 | `searchText` | its words plus its tags' labels and synonyms | `derive.ts` |
 | a company's `logo` URL | `companies/<handle>/logo.<ext>`, when there is one | `read-tree.ts`, `build-companies.ts` |
+| a shared call's `endpoint` | a generic operation several of a company's tools share (`stripe_api_read`) carries each tool's API call, so files say `with GET /v1/invoices` | `build-tools.ts` |
 | `toolKeys` | the steps that name a tool | `build-workflows.ts` |
 | the links: company ↔ tools ↔ workflows, and each tag's members — written into both rendered files (`tools:` / `workflows:`) | tool folders, step links, tags | `build-relations.ts`, read through `relationsOf` |
 | tag `counts` | the tag's members | `build-relations.ts` |

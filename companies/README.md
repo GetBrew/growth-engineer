@@ -72,7 +72,7 @@ Links, Set up, Rules…), and never a `---` or `===` underline.
 
 Optional: `logo.svg` beside `company.md` (or `logo.png`, `logo.jpg`,
 `logo.webp`), at most 32 KB — an SVG, or a PNG at most 128px square. It is
-served as is at `/logos/<handle>.svg`. Without one, the site draws the
+served as is at `/logos/<handle>.<ext>`. Without one, the site draws the
 name's first letter.
 
 ### Ways in: `mcp`, `cli`, `api`
