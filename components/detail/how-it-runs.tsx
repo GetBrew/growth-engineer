@@ -34,7 +34,8 @@ export function HowItRuns({
       <h2 className={PANEL_HEADING}>How it runs</h2>
       <ol className="rounded-2xl border bg-background p-5">
         {steps.map((step, index) => {
-          const tool = toolByKey.get(step.toolKey)
+          const tool =
+            step.toolKey === undefined ? undefined : toolByKey.get(step.toolKey)
           return (
             // `#step-N` is the anchor each HowToStep in the page's
             // structured data points at.
@@ -68,7 +69,11 @@ export function HowItRuns({
                     </span>
                     <WaysIn access={tool.access} />
                   </Link>
-                ) : null}
+                ) : (
+                  <p className="type-label mt-1.5 text-soft">
+                    Your agent does this step itself.
+                  </p>
+                )}
               </div>
             </li>
           )

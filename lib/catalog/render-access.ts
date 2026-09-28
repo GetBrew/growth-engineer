@@ -87,7 +87,7 @@ function authHeaderLine(access: Access): string | null {
       return `- Auth: send the header \`${header}: ${value}\``
     }
     case 'oauth':
-      return '- Auth: OAuth; sign in when the agent asks'
+      return '- Auth: an OAuth access token, sent as `Authorization: Bearer <token>`'
     default:
       return '- Auth: none'
   }
@@ -219,9 +219,11 @@ export function accessBody(
         ...prefix,
         ...withEnvVar(
           [
-            isOnlyWay
-              ? 'Use the CLI. Install the command, then confirm it runs.'
-              : 'Install the command, then confirm it runs.',
+            `${isOnlyWay ? 'Use the CLI. ' : ''}${
+              access.auth.method === 'oauth'
+                ? 'Install the command and sign in with it, then confirm it runs.'
+                : 'Install the command, then confirm it runs.'
+            }`,
             '',
             '```sh',
             access.installCommand,
@@ -378,7 +380,7 @@ export function workflowSetup(tools: ReadonlyArray<SetupTool>): Array<string> {
     ...[...groups.values()].flatMap(companySetup),
     '',
     groups.size > 1
-      ? 'Before step 1, confirm access to each service with one read-only call, like a list or a search. Never send, create or spend anything to test access.'
-      : 'Before step 1, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.',
+      ? 'Before step 1, confirm access to each service with its cheapest read-only call, like a list or a search. Never send or change anything to test access.'
+      : 'Before step 1, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.',
   ]
 }

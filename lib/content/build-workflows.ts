@@ -88,6 +88,9 @@ function checkSteps(
   problems: ProblemList
 ): void {
   for (const [index, step] of parsed.data.steps.entries()) {
+    if (step.tool === undefined) {
+      continue
+    }
     const problem = stepProblem(step.tool, parsed.data.status, context)
     if (problem) {
       problems.add(
@@ -117,7 +120,7 @@ function toWorkflow(
   const steps = data.steps.map((step) => ({
     key: stepKey(step.title),
     title: step.title,
-    toolKey: step.tool,
+    ...(step.tool === undefined ? {} : { toolKey: step.tool }),
     instruction: step.instruction,
   }))
   const toolKeys = distinctToolKeys(steps)

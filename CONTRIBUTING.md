@@ -46,7 +46,8 @@ pnpm dev                # http://localhost:3000/companies/<handle>
 One file, `workflows/<name>.md` — the folder is flat, no subfolders. A short
 YAML header (a title phrased as the result, your GitHub login as `author`,
 tags), then the workflow in plain markdown: `## Inputs` to ask the user for,
-`## Steps` — up to ten, each naming a published tool — and `## Done when`,
+`## Steps` — up to ten, each naming a published tool or none when the agent
+does it itself — and `## Done when`,
 the checks that mean the job is done. It reads on GitHub exactly as it will
 on the site; the build adds each tool's setup and the rules. Copy the
 template in [`workflows/README.md`](workflows/README.md) or any file beside

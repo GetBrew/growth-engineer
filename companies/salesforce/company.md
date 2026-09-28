@@ -15,6 +15,7 @@ cli:
   binary: sf
   auth: oauth
   docs: https://developer.salesforce.com/docs/platform/salesforce-cli-reference/guide/cli_reference.html
+  notes: Sign in with `sf org login web`; `sf org display` then prints the instance URL and API version.
 api:
   url: https://{my_domain}.my.salesforce.com
   auth: oauth

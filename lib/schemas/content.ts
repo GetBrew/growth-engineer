@@ -344,12 +344,15 @@ export const workflowBodySchema = z.strictObject({
     .array(
       z.strictObject({
         title: text,
-        /** A tool key: `apollo/enrich-person`. */
-        tool: ownedKey,
+        /** A tool key: `apollo/enrich-person`; absent when the agent does the step itself. */
+        tool: ownedKey.optional(),
         instruction: text,
       })
     )
     .min(1, 'add a `## Steps` section with at least one numbered step')
+    .refine((steps) => steps.some((step) => step.tool !== undefined), {
+      message: 'at least one step names a tool: a workflow puts tools to work',
+    })
     .max(
       MAX_WORKFLOW_STEPS,
       `a workflow has at most ${MAX_WORKFLOW_STEPS} steps`

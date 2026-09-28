@@ -95,7 +95,8 @@ so the source reads on GitHub the way it reads on the site
 | `## Notes` (optional) | free markdown; `###` and smaller headings, none named like a section the file writes | `notes` |
 
 A step names its tool by a link to the tool's source file (the link must
-point at that file). Every step's tool must be a published tool. Any other
+point at that file), or has no link when the agent does it itself; at least
+one step names a tool. Every step's tool must be a published tool. Any other
 heading, text
 outside a section, or a header field that belongs in the body is an error
 (with its line number when it is in the body).

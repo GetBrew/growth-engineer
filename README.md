@@ -24,7 +24,8 @@ tags.yml                             the vocabulary                → capabilit
   MCP tool, CLI command or API endpoint. A product with three functions is
   three files, each named after its function and shelved under a capability
   from `tags.yml`.
-- A **workflow** is up to ten steps, each naming one tool, phrased as the
+- A **workflow** is up to ten steps, each naming one tool (or none, when the
+  agent does it itself), phrased as the
   result it reaches, written by a person (`author:` is a GitHub login). A
   growth hack is a workflow; there is no second kind. The build links every
   workflow to its tools and every tool to the workflows that use it.

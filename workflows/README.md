@@ -10,9 +10,10 @@ Keys never change once published; to rename, add the old name under
 `aliases`.
 
 A workflow is **several tools in order with the instructions that reach a
-result**. A growth hack is a workflow — there is no second kind. Every step
-names one published tool (`companies/<handle>/tools/<name>.md`), so every
-workflow is built from defined tools, and every tool page lists the
+result**. A growth hack is a workflow — there is no second kind. A step
+names one published tool (`companies/<handle>/tools/<name>.md`), or none when
+the agent does it itself — drafting an email, picking the best match — so
+every workflow is built from defined tools, and every tool page lists the
 workflows that use it — the build links both directions.
 
 ## The file
@@ -40,7 +41,7 @@ updated: 2026-09-16
 
 1. **Find funded companies** with [people-data-labs/search-companies](../companies/people-data-labs/tools/search-companies.md). List companies matching `target_segment` whose `last_funding_date` falls in the last 30 days. Keep name and domain.
 2. **Find the buyer** with [apollo/search-people](../companies/apollo/tools/search-people.md). For each company, find the head of growth or marketing. Keep their name and title.
-3. **Write emails** with [anthropic/create-message](../companies/anthropic/tools/create-message.md). Draft a three-sentence email per buyer. Show the drafts to the user.
+3. **Write emails**. Draft a three-sentence email per buyer. Show the drafts to the user.
 4. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each buyer to `campaign_id`, with `findEmail` so lemlist finds their work email.
 
 ## Done when
@@ -73,7 +74,7 @@ heading is caught instead of silently dropped.
 | Section | Required | Each entry |
 | --- | --- | --- |
 | `## Inputs` | no | ``- `name`: what it is, e.g. an example`` — the name in snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
-| `## Steps` | yes, 1–10 | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. |
+| `## Steps` | yes, 1–10 | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). What to do.`` — a link to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. A step the agent does itself has no link: ``3. **Write emails**. Draft …`` At least one step names a tool. |
 | `## Done when` | yes | `- A check that means the job is finished.` |
 | `## Notes` | no | Free markdown, to the end of the file — with `###` and smaller headings, none named like a section the file writes (Set up, Steps, Rules…). |
 
@@ -81,7 +82,9 @@ A long entry can wrap onto the next line; keep each entry to one paragraph.
 
 ## Writing good steps
 
-- One tool per step. Say what to do with it, not how the tool works — the
+- One tool per step, or none when the agent can do it alone: writing a draft
+  needs no service, so leave the link out rather than add a text API.
+- Say what to do with the tool, not how it works — the
   tool's file already explains setup, and its `notes` (an id to fetch first,
   a result to poll for) print in your workflow's Set up.
 - End a step with **Keep …** when a later step needs its result: "Keep each

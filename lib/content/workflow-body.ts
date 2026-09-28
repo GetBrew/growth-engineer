@@ -10,7 +10,7 @@
  *
  *   ## Steps                                                     1 to 10
  *   1. **Find companies** with [apollo/search-people](../companies/apollo/tools/search-people.md). List …
- *   2. **Write emails** with [brew/generate-email](../companies/brew/tools/generate-email.md). Draft …
+ *   2. **Write emails**. Draft …                          (no tool: the agent does it)
  *
  *   ## Done when                                                 1 or more
  *   - Every company has a contact.
@@ -19,7 +19,8 @@
  *   Anything else, in any markdown.
  *
  * A step names its tool by a link to the tool's source file, which GitHub
- * follows and `docs:check` resolves. PURE: text in, fields and problems out;
+ * follows and `docs:check` resolves. A step with no link is one the agent
+ * does itself — drafting, deciding, summarizing — with no service to call. PURE: text in, fields and problems out;
  * every problem carries the line it is on, counted in the whole file.
  */
 
@@ -29,7 +30,8 @@ type BodyInput = { name: string; description: string; example?: string }
 
 type BodyStep = {
   title: string
-  tool: string
+  /** Absent when the agent does the step itself. */
+  tool?: string
   instruction: string
 }
 
@@ -64,12 +66,13 @@ const HEADING = /^ {0,3}(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/
 const LIST_ITEM = /^( *)(?:[-*+]|\d{1,3}[.)])[ \t]+(.*)$/
 const INPUT = /^`([^`]+)`\s*:\s*(.+)$/
 const EXAMPLE = ', e.g. '
-const STEP = /^\*\*(.+?)\*\*\s+with\s+\[([^\]\s]+)\]\(([^)\s]+)\)\.\s+(\S.*)$/
+const STEP =
+  /^\*\*(.+?)\*\*(?:\s+with\s+\[([^\]\s]+)\]\(([^)\s]+)\))?\.\s+(\S.*)$/
 
 const SHAPE: Record<Exclude<SectionId, 'notes'>, string> = {
   inputs: 'an input reads ``- `name`: what it is, e.g. an example``',
   steps:
-    'a step reads ``1. **Title** with [handle/slug](../companies/handle/tools/slug.md). What to do.``',
+    'a step reads ``1. **Title** with [handle/slug](../companies/handle/tools/slug.md). What to do.``, or ``1. **Title**. What to do.`` when the agent does it itself',
   doneWhen: 'a check reads `- The result is there.`',
 }
 
@@ -106,8 +109,8 @@ function parseStep(item: Item, problems: Array<BodyProblem>): BodyStep {
     problems.push({ line: item.line, message: SHAPE.steps })
     return { title: '', tool: '', instruction: '' }
   }
-  const [, title = '', tool = '', linkTarget, instruction = ''] = match
-  if (linkTarget !== toolSourceLink(tool)) {
+  const [, title = '', tool, linkTarget, instruction = ''] = match
+  if (tool !== undefined && linkTarget !== toolSourceLink(tool)) {
     problems.push({
       line: item.line,
       message: `the link to ${tool} must point at ${toolSourceLink(tool)}, its source file`,
@@ -115,7 +118,7 @@ function parseStep(item: Item, problems: Array<BodyProblem>): BodyStep {
   }
   return {
     title: title.trim(),
-    tool,
+    ...(tool === undefined ? {} : { tool }),
     instruction: instruction.trim(),
   }
 }

@@ -150,11 +150,17 @@ const intentToMeeting: WorkflowFileInput = {
       instruction:
         'For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.',
     },
+    // No tool: the agent writes the drafts itself.
+    {
+      title: 'Write emails',
+      instruction:
+        'Draft a short, specific email to each contact from step 1. Show the drafts to the user.',
+    },
     {
       title: 'Send',
       toolKey: 'brew/send-email',
       instruction:
-        'Draft a short, specific email to each contact from step 1 and show the drafts to the user. After the user approves, send each one from `sender_email`.',
+        'After the user approves, send each one from `sender_email`.',
     },
   ],
   doneWhen: [
@@ -324,7 +330,7 @@ describe('setup picks the best way in', () => {
         '- Auth: send the header `Authorization: Bearer $CLAY_API_KEY`',
         '- Get a key: https://app.clay.example/settings/api',
         '',
-        'Before step 1, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.',
+        'Before step 1, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.',
         '',
         '',
       ].join('\n')

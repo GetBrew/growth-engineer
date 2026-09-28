@@ -37,7 +37,7 @@ names the tools, and appends the rules.
 | Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
-| Steps | — | Numbered steps, each naming its tool and its company, `with Enrich a person (Apollo).` (a workflow using a single tool names it once up front instead) |
+| Steps | — | Numbered steps, each naming its tool and its company, `with Enrich a person (Apollo).` (a workflow using a single tool names it once up front instead); a step with no tool says `yourself.` |
 | Done when | — | Checks that mean the job is finished |
 | Notes | — | Optional, written by the author |
 | Rules | Always | Always |

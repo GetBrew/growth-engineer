@@ -16,6 +16,7 @@ cli:
   binary: acli
   auth: oauth
   docs: https://developer.atlassian.com/cloud/acli/guides/introduction/
+  notes: Sign in with `acli jira auth login --web`. The CLI covers Jira only.
 api:
   url: https://{site}.atlassian.net
   auth: api_key

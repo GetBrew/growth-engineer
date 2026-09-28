@@ -11,15 +11,15 @@ updated: 2026-09-27
 ## Inputs
 
 - `send_id`: the Brew send to follow up
-- `email_id`: the email that send delivered
-- `original_subject`: its subject line
+- `email_id`: the email design that send delivered
+- `original_subject`: the subject line it went out with
 - `wait_days`: how long to wait after the first send, e.g. 3
 
 ## Steps
 
-1. **Segment** with [brew/create-audience-from-events](../companies/brew/tools/create-audience-from-events.md). Build an audience of the contacts in `send_id` who did not open it, at least `wait_days` after it went out. Wait until it has built, then keep its audience ID and size.
-2. **Rewrite** with [anthropic/create-message](../companies/anthropic/tools/create-message.md). Write two alternatives to `original_subject` that make a different promise. Show them to the user and keep the one they choose.
-3. **Resend** with [brew/send-email](../companies/brew/tools/send-email.md). After the user approves, send `email_id` with the chosen subject line to the audience from step 1.
+1. **Segment** with [brew/create-audience-from-events](../companies/brew/tools/create-audience-from-events.md). If `send_id` went out less than `wait_days` ago, stop and tell the user when to run this again. Otherwise build an audience of its recipients who did not open it, leaving out bounces and unsubscribes, and wait until it has built. Keep its audience ID and size.
+2. **Rewrite the subject**. Write two alternatives to `original_subject` that make a different promise. Show them to the user and keep the one they choose.
+3. **Resend** with [brew/send-email](../companies/brew/tools/send-email.md). After the user approves, send `email_id` with the chosen subject to the audience from step 1.
 
 ## Done when
 

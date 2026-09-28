@@ -38,9 +38,9 @@ Server URL: https://mcp.clay.example/mcp
 - Get a key: https://app.clay.example/settings/api
 - Docs: https://docs.clay.example
 
-Before anything else, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.
+Before anything else, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.
 
 ## Rules
 
-- Ask the user before anything that sends messages, costs money, or changes data.
+- Ask the user before anything that sends messages, costs money, or changes data, and say how many records it touches. One approval covers a batch the user has seen.
 - Never print API keys.

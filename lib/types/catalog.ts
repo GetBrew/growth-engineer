@@ -117,7 +117,8 @@ export type WorkflowStep = {
   /** Slug of the title: "find-contacts". */
   key: string
   title: string
-  toolKey: string
+  /** Absent when the agent does the step itself: drafting, deciding, summarizing. */
+  toolKey?: string
   instruction: string
 }
 

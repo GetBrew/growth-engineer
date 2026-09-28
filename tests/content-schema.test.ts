@@ -158,6 +158,19 @@ describe('content rules', () => {
     expect(problemsOf(files)).toEqual([])
   })
 
+  test('a step may be one the agent does itself, with no tool', () => {
+    const files = edit(
+      'workflow',
+      'Merge duplicates.\n',
+      'Merge duplicates.\n2. **Summarize**. List what was merged for the user.\n'
+    )
+    expect(problemsOf(files)).toEqual([])
+    const catalog = buildCatalog(files, { logos: new Set(['acme.png']) })
+    expect(catalog.workflows.get('keep-crm-clean')?.toolKeys).toEqual([
+      'acme/manage-crm',
+    ])
+  })
+
   test('a tool may say what to know before calling it', () => {
     const files = edit(
       'tool',
@@ -866,6 +879,16 @@ describe('content rules', () => {
       'a logo that is not under public/logos',
       () => edit('company', 'acme.png', 'missing.png'),
       /logo "missing\.png" is not under public\/logos\//,
+    ],
+    [
+      'a workflow whose steps name no tool at all',
+      () =>
+        edit(
+          'workflow',
+          '1. **Dedupe** with [acme/manage-crm](../companies/acme/tools/manage-crm.md). Merge duplicates.',
+          '1. **Dedupe**. Merge duplicates by hand.'
+        ),
+      /keep-crm-clean\.md: steps: at least one step names a tool/,
     ],
     [
       'a featured rank instead of true',

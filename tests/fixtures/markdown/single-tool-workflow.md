@@ -31,7 +31,7 @@ Call the MCP tool `clay_run_routine`.
 
 Note: List routines first to get the routine id, then poll the run id for results.
 
-Before step 1, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.
+Before step 1, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.
 
 ## Steps
 
@@ -46,5 +46,5 @@ Before step 1, confirm access with one read-only call, like a list or a search. 
 ## Rules
 
 - Use only the services set up above. The read-only calls they need, like listing ids or polling for results, are fine.
-- Ask the user before anything that sends messages, costs money, or changes data.
+- Ask the user before anything that sends messages, costs money, or changes data, and say how many records it touches. One approval covers a batch the user has seen.
 - Never print API keys.

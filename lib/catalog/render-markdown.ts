@@ -54,7 +54,8 @@ type WorkflowFileTool = SetupTool
 
 type WorkflowFileStep = {
   title: string
-  toolKey: string
+  /** Absent when the agent does the step itself. */
+  toolKey?: string
   instruction: string
 }
 
@@ -102,7 +103,7 @@ export const MAX_WORKFLOW_STEPS = 10
 
 /** Immutable. Always the last section; nobody can edit these lines. */
 const TOOL_RULES = [
-  'Ask the user before anything that sends messages, costs money, or changes data.',
+  'Ask the user before anything that sends messages, costs money, or changes data, and say how many records it touches. One approval covers a batch the user has seen.',
   'Never print API keys.',
 ]
 const WORKFLOW_RULES = [
@@ -184,7 +185,7 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     }
     lines.push(
       '',
-      'Before anything else, confirm access with one read-only call, like a list or a search. Never send, create or spend anything to test access.'
+      'Before anything else, confirm access with the cheapest read-only call, like a list or a search. Never send or change anything to test access.'
     )
   }
 
@@ -230,6 +231,9 @@ function stepsSection(
     '## Steps',
     '',
     ...steps.map((step, index) => {
+      if (step.toolKey === undefined) {
+        return `${index + 1}. **${step.title}** yourself. ${step.instruction}`
+      }
       const tool = tools.get(step.toolKey)
       const label = tool ? toolLabel(tool) : step.toolKey
       const lead = hasSoleTool
@@ -251,7 +255,11 @@ export function renderWorkflowDocument(
   const toolsByKey = new Map(workflow.tools.map((tool) => [tool.key, tool]))
   // Tools in first-use order across the steps — the header and setup follow it.
   const usedTools = [
-    ...new Set(workflow.steps.map((step) => step.toolKey)),
+    ...new Set(
+      workflow.steps.flatMap((step) =>
+        step.toolKey === undefined ? [] : [step.toolKey]
+      )
+    ),
   ].flatMap((key) => {
     const tool = toolsByKey.get(key)
     return tool ? [tool] : []

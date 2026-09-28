@@ -122,7 +122,7 @@ export function buildDocuments(
         inputs: workflow.inputs,
         steps: workflow.steps.map((step) => ({
           title: step.title,
-          toolKey: step.toolKey,
+          ...(step.toolKey === undefined ? {} : { toolKey: step.toolKey }),
           instruction: step.instruction,
         })),
         doneWhen: workflow.doneWhen,

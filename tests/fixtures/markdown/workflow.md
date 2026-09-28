@@ -43,12 +43,13 @@ Call the MCP tool `brew_send_email`.
 
 Note: An admin turns on MCP access under Settings first.
 
-Before step 1, confirm access to each service with one read-only call, like a list or a search. Never send, create or spend anything to test access.
+Before step 1, confirm access to each service with its cheapest read-only call, like a list or a search. Never send or change anything to test access.
 
 ## Steps
 
 1. **Find contacts** with Enrich up to 10 people (Apollo). For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
-2. **Send** with Send email (Brew). Draft a short, specific email to each contact from step 1 and show the drafts to the user. After the user approves, send each one from `sender_email`.
+2. **Write emails** yourself. Draft a short, specific email to each contact from step 1. Show the drafts to the user.
+3. **Send** with Send email (Brew). After the user approves, send each one from `sender_email`.
 
 ## Done when
 
@@ -58,5 +59,5 @@ Before step 1, confirm access to each service with one read-only call, like a li
 ## Rules
 
 - Use only the services set up above. The read-only calls they need, like listing ids or polling for results, are fine.
-- Ask the user before anything that sends messages, costs money, or changes data.
+- Ask the user before anything that sends messages, costs money, or changes data, and say how many records it touches. One approval covers a batch the user has seen.
 - Never print API keys.

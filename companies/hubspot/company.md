@@ -15,6 +15,7 @@ api:
   auth: api_key
   env: HUBSPOT_API_KEY
   docs: https://developers.hubspot.com/docs/api-reference/latest/overview
+  notes: Use a service key or an app's static access token with the CRM scopes the calls need; paths carry a dated version such as `2026-09`.
 updated: 2026-09-26
 ---
 
