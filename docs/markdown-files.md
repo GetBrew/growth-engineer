@@ -18,11 +18,12 @@ names the tools, and appends the rules.
 | --- | --- |
 | Files are generated, never hand-edited. | The renderer builds each file from the source files at build time. When a company's MCP URL changes in its `company.md`, every tool and workflow file that prints it is rebuilt on the next deploy. |
 | Files work in any agent. | Plain markdown, a short flat YAML header, no agent-specific syntax. MCP servers appear in the common `mcpServers` JSON shape with the URL spelled out too. |
-| Everything needed to run is in the file. | Setup, inputs, steps and finish checks are inline. Links are only for getting keys or reading more. |
+| Everything needed to run is in the file. | Setup, inputs, steps and finish checks are inline, and so is what to know before each call: a way's `notes` under the way, a tool's `notes` under its company's setup. Links are only for getting keys or reading more. |
 | Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool, and set each company's way up once, listing every call on it. |
 | Inputs are named, not templated. | `target_accounts` appears in backticks and the file tells the agent to ask the user for it. No template engine. |
-| The file tells the agent to check access first. | After setup, one read-only call to each tool before any step runs. |
-| Rules always come last, and nobody can edit them. | Only the listed tools; ask before sending, spending or changing anything; never print keys. |
+| The file tells the agent to check access first. | After setup, one read-only call to each service, like a list or a search, before step 1 — never a send, create or spend to test access. |
+| Steps carry their results forward. | The file tells the agent to carry each step's results into the next; a step whose result a later step needs ends with "Keep …". |
+| Rules always come last, and nobody can edit them. | Only the services set up above (and the read-only calls they need, like listing ids or polling); ask before sending, spending or changing anything; never print keys. |
 | The header parses as written. | Every value an author wrote is quoted when it has to be (`yamlScalar`, `lib/catalog/render-header.ts`), so a title with a colon or a login like `true` reads back exactly, and no value can add a field. |
 | Deprecated says so. | `status: deprecated` in the header and one warning line under the title; an agent asks the user before using it. |
 | Prose never poses as structure. | A company's description or a workflow's Notes may use `###` and smaller headings only, never one named like a section the file writes (Set up, Steps, Rules…). |

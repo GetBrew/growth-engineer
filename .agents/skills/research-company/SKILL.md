@@ -41,10 +41,15 @@ organization. Never blogs, directories, marketplaces or third-party servers.
     yet: note it and use the API.
   - Never write a URL that carries a secret (a per-user MCP link with a token in it).
 - **API.** From the API reference: the base `url`, the auth (`none`, `oauth`,
-  `api_key` with the `env` var — the docs' name, else `<BRAND>_API_KEY` — and the
-  `header` when it isn't `Authorization: Bearer`), and the `keyUrl` where a key is
-  created. A host that differs per account keeps the docs' placeholder in braces
-  (`https://{subdomain}.zendesk.com/api/v2`); the description says where it comes from.
+  `api_key` with the `env` var — the docs' name, else `<BRAND>_API_KEY` — plus
+  `header` and `scheme` when it isn't `Authorization: Bearer`), and the `keyUrl`
+  where a key is created. A host that differs per account is a snake_case
+  placeholder in braces (`https://{subdomain}.zendesk.com/api/v2`), and the way's
+  `notes` say where the value comes from; Basic auth's `notes` say which pair the
+  variable encodes.
+- **Way notes.** Anything an agent must know to use a way at all — a setting an
+  admin turns on first, a regional host — goes in that way's `notes` (one line,
+  at most 280 characters).
 - **CLI.** From the CLI docs: the `install` command and the `binary`.
 
 ## 3. Choose up to five functions
@@ -62,15 +67,17 @@ organization. Never blogs, directories, marketplaces or third-party servers.
 - Two tools whose calls are all the same are one tool. A generic MCP tool that
   takes the endpoint as an argument (`stripe_api_read`) may serve several tools
   whose API calls differ; each tool's `api:` names the endpoint it runs.
-- A tool file is its header alone — no body. Put what the call does, and the
-  one detail an agent must not miss, in `summary`.
+- A tool file is its header alone — no body. `summary` says what the call does;
+  `notes` holds what an agent must know before calling it — an id to fetch
+  first, a result to poll for, a per-call limit, a cost, a side effect — in one
+  line of at most 280 characters. Leave `notes` out when there is nothing to know.
 
 ## 4. Write the files
 
 - Copy the templates in `companies/README.md`; `updated` is today.
-- `name` says what the function does ("Enrich a person", "Create a payment link");
-  `summary` is one plain sentence about what the call returns or changes — never
-  "<Company> does this".
+- `name` says what the function does, starting with a verb ("Enrich a person",
+  "Search people", "Create or update a contact"); `summary` is one plain sentence
+  about what the call returns or changes — never "<Company> does this".
 - Leave out anything you couldn't confirm on an official page. A tool whose call
   you couldn't confirm gets `status: draft` — it stays out of the site.
 
@@ -87,7 +94,7 @@ download it, check it's an image (`file`) under 32 KB (`wc -c`), and save it as
 For each company:
 
 - files written, renamed (old key → new key) and deleted
-- a table: fact → the official URL it came from
+- a table: fact → the official URL it came from, notes included
 - drafts, and why
 - tags proposed for `tags.yml` (namespace, slug, label, synonyms)
 - anything gated: a sales-only API, a waitlisted or key-only MCP server

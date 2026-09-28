@@ -2,7 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { parse } from 'yaml'
-import { orderAccess, selectWorkflowAccess } from '@/lib/catalog/render-access'
+import {
+  orderAccess,
+  type SetupTool,
+  selectWorkflowAccess,
+} from '@/lib/catalog/render-access'
 import { yamlScalar } from '@/lib/catalog/render-header'
 import {
   MAX_WORKFLOW_STEPS,
@@ -100,18 +104,29 @@ const brewMcp: Access = {
   notes: 'An admin turns on MCP access under Settings first.',
 }
 
+const apolloBulkEnrich: SetupTool = {
+  key: 'apollo/bulk-enrich-people',
+  name: 'Enrich up to 10 people',
+  companyName: 'Apollo',
+  access: [apolloApi],
+  notes: 'Credits are charged per person, and only when data is found.',
+}
+
+const clayRunRoutine: SetupTool = {
+  key: 'clay/run-routine',
+  name: 'Run a routine',
+  companyName: 'Clay',
+  access: [clayMcp],
+  notes:
+    'List routines first to get the routine id, then poll the run id for results.',
+}
+
 const intentToMeeting: WorkflowFileInput = {
   key: 'intent-to-meeting',
   title: 'Turn high-intent accounts into booked meetings',
   author: 'jdoe',
   tools: [
-    {
-      key: 'apollo/bulk-enrich-people',
-      name: 'Enrich up to 10 people',
-      companyName: 'Apollo',
-      access: [apolloApi],
-      notes: 'Credits are charged per person, and only when data is found.',
-    },
+    apolloBulkEnrich,
     {
       key: 'brew/send-email',
       name: 'Send email',
@@ -155,16 +170,7 @@ const workEmails: WorkflowFileInput = {
   key: 'work-emails-for-a-list',
   title: 'Find work emails for a list of contacts',
   author: 'jdoe',
-  tools: [
-    {
-      key: 'clay/run-routine',
-      name: 'Run a routine',
-      companyName: 'Clay',
-      access: [clayMcp],
-      notes:
-        'List routines first to get the routine id, then poll the run id for results.',
-    },
-  ],
+  tools: [clayRunRoutine],
   tags: ['motion:outbound'],
   inputs: [
     {
@@ -399,7 +405,7 @@ describe('what to know before calling', () => {
     )
     const workflow = renderWorkflowDocument({
       ...workEmails,
-      tools: [{ ...workEmails.tools[0], access: [noted, clayApi] }],
+      tools: [{ ...clayRunRoutine, access: [noted, clayApi] }],
     }).markdown
     expect(workflow).toContain(
       'Call the MCP tool `clay_run_routine`.\n\nNote: An admin turns on MCP access first.'
@@ -411,12 +417,12 @@ describe('what to know before calling', () => {
       ...intentToMeeting,
       tools: [
         {
-          ...intentToMeeting.tools[0],
+          ...apolloBulkEnrich,
           key: 'apollo/search-people',
           name: 'Search people',
           notes: 'Returns no emails; enrich the matches next.',
         },
-        intentToMeeting.tools[0],
+        apolloBulkEnrich,
       ],
       steps: [
         {
