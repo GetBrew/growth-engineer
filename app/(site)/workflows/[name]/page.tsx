@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
-import { accessTypeLabels } from '@/components/common/badges'
+import { CopyFileButton } from '@/components/detail/copy-file-button'
 import {
   DETAIL_DATE,
   DetailByline,
@@ -12,6 +12,7 @@ import { MarkdownPreview } from '@/components/detail/markdown-preview'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
+import { YouWillNeed } from '@/components/detail/you-will-need'
 import { BackLink } from '@/components/layout/back-link'
 import { MaskIcon } from '@/components/layout/mask-icon'
 import { Page } from '@/components/layout/page'
@@ -105,9 +106,6 @@ async function WorkflowDetail({ params }: { params: Params }) {
     avatar: githubAvatarUrl(workflow.author),
     href: githubProfileUrl(workflow.author),
   }
-  const available = accessTypeLabels(
-    tools.flatMap(({ tool }) => tool.access.map((entry) => entry.type))
-  )
 
   return (
     <div className="flex flex-col gap-(--space-block)">
@@ -119,12 +117,16 @@ async function WorkflowDetail({ params }: { params: Params }) {
             <ViewSourceButton entityKey={workflow.key} type="workflow" />
             <OpenInAgentMenu
               filePath={filePath}
+              fileUrl={`${SITE_ORIGIN}${filePath}`}
               markdown={document.markdown}
               title={workflow.title}
             />
+            <CopyFileButton
+              label="Copy workflow"
+              markdown={document.markdown}
+            />
           </>
         }
-        available={available}
         byline={
           <DetailByline avatars={[{ name: author.name, src: author.avatar }]}>
             by{' '}
@@ -166,7 +168,25 @@ async function WorkflowDetail({ params }: { params: Params }) {
           />
         </section>
 
-        <aside className="lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
+        <aside className="flex flex-col gap-(--space-md) max-lg:order-first lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
+          <YouWillNeed
+            inputCount={workflow.inputs.length}
+            tools={workflow.toolKeys.flatMap((toolKey) => {
+              const found = tools.find(({ tool }) => tool.key === toolKey)
+              return found
+                ? [
+                    {
+                      access: found.tool.access,
+                      company: {
+                        key: found.company.key,
+                        name: found.company.name,
+                        logoUrl: found.company.logo?.url,
+                      },
+                    },
+                  ]
+                : []
+            })}
+          />
           <HowItRuns
             steps={workflow.steps}
             tools={tools.map(({ tool, company }) => ({

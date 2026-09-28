@@ -55,7 +55,7 @@ prints. The layout, the set-up wording and the Rules come from the renderer.
 
 | Where | Example |
 | --- | --- |
-| Copy button | On every tool and workflow page |
+| Copy button | On every tool and workflow page, the primary action; "Open in" sends the same file to Claude or ChatGPT, or — when the file would not fit in a link, past about 8,000 encoded characters — a prompt to fetch its `.md` URL |
 | `.md` URL | `/tools/apollo/enrich-person.md`, `/workflows/funding-signal-outbound.md`, `/companies/apollo.md`, and a tag's `/tags/capability/enrich-contacts.md` (everything carrying it, `lib/catalog/render-tag.ts`) |
 | A company, tool or workflow page, asked for markdown | `Accept: text/markdown` |
 | Index | `/llms.txt` lists every file, tags included |

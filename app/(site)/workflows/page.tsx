@@ -25,7 +25,7 @@ export const metadata: Metadata = pageMetadata({
 export default function WorkflowsPage() {
   return (
     <>
-      <HeroBanner title="Workflows that grow revenue" />
+      <HeroBanner isCompact title="Workflows that grow revenue" />
       <Page>
         <Index />
       </Page>

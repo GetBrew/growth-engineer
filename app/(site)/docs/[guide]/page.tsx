@@ -9,6 +9,7 @@ import {
   type ResolvedGuideStep,
 } from '@/components/contribute/guide-steps'
 import { GuideVideo } from '@/components/contribute/guide-video'
+import { CopyFileButton } from '@/components/detail/copy-file-button'
 import { DetailHeader } from '@/components/detail/header'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
@@ -116,13 +117,13 @@ async function GuideDetail({ params }: { params: Params }) {
             <ShareButton text={found.summary} title={found.title} />
             <ViewSourceButton href={guideDocUrl(found)} />
             {/* A guide has no file in the catalog to point at, so the download
-                carries the placeholder body itself. Swap this for the guide's
-                `.md` URL once guides have one. */}
+                carries its markdown itself. */}
             <OpenInAgentMenu
               filePath={`data:text/markdown;charset=utf-8,${encodeURIComponent(markdown)}`}
               markdown={markdown}
               title={found.title}
             />
+            <CopyFileButton label="Copy for your agent" markdown={markdown} />
           </>
         }
         byline={

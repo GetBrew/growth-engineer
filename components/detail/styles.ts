@@ -2,7 +2,7 @@ import { Book02Icon, Globe02Icon } from '@hugeicons/core-free-icons'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 
-export const DETAIL_ACTION = cn(
+const DETAIL_ACTION = cn(
   buttonVariants({ variant: 'ghost', size: 'pill' }),
   'px-3 text-soft hover:text-foreground'
 )

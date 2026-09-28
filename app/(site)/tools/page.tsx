@@ -30,7 +30,7 @@ export const metadata: Metadata = pageMetadata({
 export default function ToolsPage() {
   return (
     <>
-      <HeroBanner title="Every tool your agent can run" />
+      <HeroBanner isCompact title="Every tool your agent can run" />
       <Page>
         <ToolsCatalog />
       </Page>
