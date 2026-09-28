@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
+import { PHASE_PRODUCTION_SERVER } from 'next/constants'
 import { describe, expect, test } from 'vitest'
-import nextConfig from '@/next.config'
+import loadConfig from '@/next.config'
 
 /**
  * The redirects in next.config.ts run before the filesystem, so a pattern
@@ -14,7 +15,8 @@ const { pathToRegexp } = require('next/dist/compiled/path-to-regexp') as {
 }
 
 async function redirectFor(path: string) {
-  const redirects = (await nextConfig.redirects?.()) ?? []
+  const config = await loadConfig(PHASE_PRODUCTION_SERVER)
+  const redirects = (await config.redirects?.()) ?? []
   return redirects.find((redirect) => pathToRegexp(redirect.source).test(path))
 }
 

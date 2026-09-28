@@ -77,10 +77,11 @@ export function copyCounterEnv(): {
 }
 
 /**
- * An optional GitHub token for the header's star count (lib/github-stars.ts).
- * Without one the GitHub API allows 60 requests an hour per address, and a
- * build machine often shares its address; any token raises that to 5,000.
- * It needs no scopes: the repository is public. SERVER ONLY, read when called.
+ * An optional GitHub token for the header's star count, which next.config.ts
+ * asks for once per build (lib/github-stars.ts). Without one the GitHub API
+ * allows 60 requests an hour per address, and a build machine often shares
+ * its address; any token raises that to 5,000. It needs no scopes: the
+ * repository is public. Read when called, at build only.
  */
 export function githubToken(): string | undefined {
   return present(z.string().optional()).parse(process.env.GITHUB_TOKEN)

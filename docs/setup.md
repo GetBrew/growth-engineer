@@ -59,8 +59,10 @@ and the folder READMEs have the field reference and templates.
 - **Environment variables.** None are required. `/llms.txt` and
   `metadataBase` use `NEXT_PUBLIC_SITE_URL` when it is set (a custom domain),
   and the deployment's own Vercel hostname otherwise.
-- **Star count.** The header shows the repository's GitHub stars, read once
-  per build (`lib/github-stars.ts`) and refreshed by the next deploy. Without
+- **Star count.** The header shows the repository's GitHub stars, fetched
+  once per build by `next.config.ts` and inlined into the bundles
+  (`lib/github-stars.ts`), so every render prints the same number until the
+  next deploy refreshes it. Without
   `GITHUB_TOKEN` the build asks the GitHub API unauthenticated, which allows
   60 requests an hour per address, and a build machine may share its address.
   When GitHub does not answer within two seconds, the button shows without a
