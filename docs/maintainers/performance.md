@@ -65,8 +65,10 @@ client component narrows the list from `useSearchParams`, so `/tools?has=mcp`
 is the same static page as `/tools` with a different filter applied in the
 browser. `pnpm build` prints `○`
 or `●` for every page, `◐` only for the on-demand fallbacks of unknown keys,
-and `ƒ` only for `/mcp` (plus the proxy, which runs only for `.md` files,
-`Accept: text/markdown` requests and malformed paths).
+and `ƒ` only for `/mcp`. The proxy runs for `.md` files, `Accept:
+text/markdown` requests, malformed paths and full page loads (for the Notra
+AI-traffic report, sent after the response), but never for a Link prefetch,
+a client navigation or an asset, so moving around the site costs no proxy hop.
 
 ## 3. The bundle budget — the ratchet
 

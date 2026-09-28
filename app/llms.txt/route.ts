@@ -7,7 +7,8 @@ import { llmsPreamble } from '@/lib/seo/llms'
  * `/llms.txt` (llmstxt.org): what the catalog is, the words it uses, and a
  * link to every file with a one-line summary — so an agent can discover the
  * whole catalog from one fetch and pick a file without opening it. Served by
- * the route handler (the proxy's matcher skips `.txt`), prerendered at build.
+ * the route handler, prerendered at build; the proxy only reports the fetch
+ * to Notra.
  */
 function section(
   heading: string,

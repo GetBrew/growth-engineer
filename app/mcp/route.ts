@@ -14,9 +14,10 @@ import {
  * prerendered, but a tool call is a request by nature. The JSON-RPC itself
  * is lib/mcp/server.ts.
  *
- * CORS is open because the data is public and read-only; browser-based
- * clients (the MCP Inspector, web agents) need it. Batches are still
- * accepted for 2025-03-26 clients; an empty one is invalid.
+ * CORS is open because the data is public, and the one tool that sends
+ * anything, `submit_feedback`, posts to a feedback URL anyone can post to;
+ * browser-based clients (the MCP Inspector, web agents) need it. Batches are
+ * still accepted for 2025-03-26 clients; an empty one is invalid.
  */
 
 const CORS = {
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
   if (Array.isArray(message) && message.length === 0) {
     return invalid(ERROR.invalidRequest, 'Invalid Request: an empty batch')
   }
-  // Every message costs a search or a lookup; one request buys a few.
+  // Every message costs a search, a lookup or a post; one request buys a few.
   if (Array.isArray(message) && message.length > MAX_BATCH) {
     return invalid(
       ERROR.invalidRequest,
@@ -73,11 +74,15 @@ export async function POST(request: Request) {
     )
   }
 
-  const context = { catalog: getCatalog(), origin: SITE_ORIGIN }
+  const context = {
+    catalog: getCatalog(),
+    origin: SITE_ORIGIN,
+    agentClient: request.headers.get('user-agent') ?? undefined,
+  }
   const messages = Array.isArray(message) ? message : [message]
-  const responses = messages
-    .map((entry) => handleMessage(entry, context))
-    .filter((response): response is JsonRpcResponse => response !== null)
+  const responses = (
+    await Promise.all(messages.map((entry) => handleMessage(entry, context)))
+  ).filter((response): response is JsonRpcResponse => response !== null)
 
   if (responses.length === 0) {
     // Only notifications or replies: accepted, nothing to say.

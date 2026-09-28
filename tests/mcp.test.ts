@@ -2,11 +2,12 @@ import { createServer, type IncomingMessage, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import { GET, OPTIONS, POST } from '@/app/mcp/route'
 import { getCatalog } from '@/lib/catalog/catalog'
 import { GUIDES } from '@/lib/constants/guides'
 import { SITE_ORIGIN } from '@/lib/env'
+import { FEEDBACK_URL } from '@/lib/mcp/feedback-tool'
 import { PROTOCOL_VERSIONS } from '@/lib/mcp/server'
 
 /**
@@ -76,17 +77,29 @@ async function errorCode(response: Response): Promise<number | undefined> {
 }
 
 describe('/mcp with the MCP SDK client', () => {
-  test('connects, lists the two read-only tools, searches and gets a file', async () => {
+  test('connects, lists the tools, searches and gets a file', async () => {
     const client = new Client({ name: 'test', version: '1.0.0' })
     await client.connect(new StreamableHTTPClientTransport(endpoint))
     try {
       expect(client.getServerVersion()?.name).toBe('growth.engineer')
+      // The instructions tell an agent where a problem or a request goes.
+      expect(client.getInstructions()).toContain('`submit_feedback`')
 
       const { tools } = await client.listTools()
-      expect(tools.map((tool) => tool.name).sort()).toEqual(['get', 'search'])
+      expect(tools.map((tool) => tool.name).sort()).toEqual([
+        'get',
+        'search',
+        'submit_feedback',
+      ])
+      // The catalog is read-only; only feedback leaves the server.
       for (const tool of tools) {
-        expect(tool.annotations?.readOnlyHint).toBe(true)
+        expect(tool.annotations?.readOnlyHint, tool.name).toBe(
+          tool.name !== 'submit_feedback'
+        )
       }
+      const feedback = tools.find((tool) => tool.name === 'submit_feedback')
+      expect(feedback?.annotations?.openWorldHint).toBe(true)
+      expect(feedback?.inputSchema.required).toEqual(['message'])
 
       const found = await client.callTool({
         name: 'search',
@@ -144,6 +157,51 @@ describe('/mcp with the MCP SDK client', () => {
       expect(pinned.isError).toBe(true)
     } finally {
       await client.close()
+    }
+  })
+
+  test('`submit_feedback` reaches the inbox, and its answer fits its schema', async () => {
+    const realFetch = globalThis.fetch
+    const posted: Array<unknown> = []
+    // Only the post to Notra is caught; the client's own requests go through.
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input) !== FEEDBACK_URL) {
+        return realFetch(input, init)
+      }
+      posted.push(JSON.parse(String(init?.body)))
+      return Promise.resolve(
+        Response.json(
+          { feedback: { id: 'fb_1' }, deduplicated: false },
+          { status: 202 }
+        )
+      )
+    })
+    const client = new Client({ name: 'test', version: '1.0.0' })
+    await client.connect(
+      new StreamableHTTPClientTransport(endpoint, {
+        requestInit: { headers: { 'User-Agent': 'test-agent/1.0' } },
+      })
+    )
+    try {
+      // Listing first makes the client check the answer against outputSchema.
+      await client.listTools()
+      const message = 'Found the right workflow in one search.'
+      const answer = await client.callTool({
+        name: 'submit_feedback',
+        arguments: { message, kind: 'praise' },
+      })
+      expect(answer.isError).toBeFalsy()
+      expect(answer.structuredContent).toEqual({
+        id: 'fb_1',
+        deduplicated: false,
+      })
+      // The client's User-Agent names it in the inbox.
+      expect(posted).toEqual([
+        { message, kind: 'praise', agentClient: 'test-agent/1.0' },
+      ])
+    } finally {
+      await client.close()
+      vi.unstubAllGlobals()
     }
   })
 })
@@ -361,8 +419,10 @@ describe('/mcp protocol edges', () => {
         }>
       }
     }
+    for (const tool of result.tools) {
+      expect(tool.inputSchema.additionalProperties, tool.name).toBe(false)
+    }
     const search = result.tools.find((tool) => tool.name === 'search')
-    expect(search?.inputSchema.additionalProperties).toBe(false)
     expect(search?.inputSchema.properties.tags?.items?.enum).toEqual(
       [...getCatalog().tags.keys()].sort()
     )

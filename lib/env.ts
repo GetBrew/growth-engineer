@@ -5,9 +5,9 @@ import { z } from 'zod'
  * variable fails loudly and names itself instead of surfacing three layers
  * away as a 500. The catalog is built from the repository, so what ships to
  * the browser is `NEXT_PUBLIC_*` only. The server secrets are the copy
- * counter's store (`copyCounterEnv()`) and an optional GitHub token
- * (`githubToken()`), each read when called — never at import, so no bundle
- * carries them.
+ * counter's store (`copyCounterEnv()`), an optional GitHub token
+ * (`githubToken()`) and Notra's ingest token (`notraGeoToken()`), each read
+ * when called — never at import, so no bundle carries them.
  */
 
 /**
@@ -84,4 +84,13 @@ export function copyCounterEnv(): {
  */
 export function githubToken(): string | undefined {
   return present(z.string().optional()).parse(process.env.GITHUB_TOKEN)
+}
+
+/**
+ * Notra's ingest token for the AI-traffic report the proxy sends (proxy.ts).
+ * SERVER ONLY, read when called. Unset, as on a fresh clone, a fork or a
+ * preview, nothing is sent.
+ */
+export function notraGeoToken(): string | undefined {
+  return present(z.string().optional()).parse(process.env.NOTRA_GEO_TOKEN)
 }

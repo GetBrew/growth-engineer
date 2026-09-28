@@ -125,9 +125,9 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   drawn at build (`generateStaticParams`, `next/og`). Structured data
   (`lib/seo/structured-data.ts`, rendered by `<JsonLd>`) restates facts
   already on the page — never new ones. `/sitemap.xml` lists every indexable
-  page with its `updated` date. `/robots.txt`
-  allows every crawler and names the AI crawlers. `tests/seo.test.tsx` holds
-  the sitemap, `/llms.txt` and `/llms-full.txt` to the catalog exactly.
+  page with its `updated` date. `/robots.txt` allows every crawler and names
+  the AI crawlers. `tests/seo.test.tsx` holds the sitemap, `/llms.txt` and
+  `/llms-full.txt` to the catalog exactly. `proxy.ts` reports AI visits to Notra.
 
 ### Rendering and caching
 
@@ -141,10 +141,10 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
-  No page reads `searchParams` on the server.
-  The dynamic routes are `/mcp` and the copy counter's POST
-  (`/api/workflows/<name>/copies`); the proxy runs only for `.md` files
-  and `Accept: text/markdown`. A detail page says `export const instant = false`.
+  No page reads `searchParams` on the server. The dynamic routes are `/mcp`
+  and the copy counter's POST (`/api/workflows/<name>/copies`). The proxy runs
+  for `.md` files, `Accept: text/markdown` and page views (the Notra report),
+  never a prefetch or an asset. A detail page says `export const instant = false`.
 - NOTHING LOADS: no skeletons, no spinners, no fetch after load, no
   `<Suspense>` in a page but a copy-count hole. A page renders directly; one with
   params awaits them itself: every known key is in `generateStaticParams`,
