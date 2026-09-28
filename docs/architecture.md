@@ -57,7 +57,8 @@ not a hole either: `next.config.ts` fetches it once per build and inlines it
 (`process.env.GITHUB_STARS`, `lib/github-stars.ts`), so a page's prerendered
 HTML and its request-time render print the same number. Fetched during a
 render, it would drift from the shell as soon as the count moved, and React
-would reject the HTML (error #418). Detail routes
+would reject the HTML (error #418); the footer's year is inlined the same way,
+for the same reason. Detail routes
 declare `generateStaticParams` from `lib/catalog/static-params.ts`, await their params
 themselves and prerender in full, content inline. The
 listings prerender EVERY item and hand them to a client component

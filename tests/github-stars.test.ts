@@ -91,9 +91,10 @@ describe('next.config.ts', () => {
 
     expect((await loadConfig(PHASE_PRODUCTION_BUILD)).env).toEqual({
       GITHUB_STARS: '42',
+      BUILD_YEAR: String(new Date().getUTCFullYear()),
     })
     // A build worker loads the config again and inherits the answer.
-    expect((await loadConfig(PHASE_PRODUCTION_BUILD)).env).toEqual({
+    expect((await loadConfig(PHASE_PRODUCTION_BUILD)).env).toMatchObject({
       GITHUB_STARS: '42',
     })
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -103,14 +104,14 @@ describe('next.config.ts', () => {
 
   test('a dev server asks too; a build GitHub did not answer inlines nothing', async () => {
     stubFetch(async () => new Response(null, { status: 503 }))
-    expect((await loadConfig(PHASE_DEVELOPMENT_SERVER)).env).toEqual({
+    expect((await loadConfig(PHASE_DEVELOPMENT_SERVER)).env).toMatchObject({
       GITHUB_STARS: '',
     })
   })
 
   test('`next start` never asks: the count was inlined at build', async () => {
     const fetch = stubFetch(async () => Response.json({ stargazers_count: 1 }))
-    expect((await loadConfig(PHASE_PRODUCTION_SERVER)).env).toEqual({
+    expect((await loadConfig(PHASE_PRODUCTION_SERVER)).env).toMatchObject({
       GITHUB_STARS: '',
     })
     expect(fetch).not.toHaveBeenCalled()

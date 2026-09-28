@@ -136,8 +136,8 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   PRERENDER with no `'use cache'` and no `connection()`; detail routes list
   params with `generateStaticParams` (`lib/catalog/static-params.ts`). Never
   `export const dynamic`, `revalidate` or `dynamicParams`. The ONE `'use cache'`
-  is the copy counts (+ `connection()`, streamed into `<Suspense>` holes); the
-  header's star count is inlined at build (`next.config.ts`), never fetched.
+  is the copy counts (+ `connection()`, streamed into `<Suspense>` holes). Values
+  that move (star count, year) are inlined at build (`next.config.ts` `env`).
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).

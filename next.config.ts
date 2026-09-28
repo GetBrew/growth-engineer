@@ -159,6 +159,20 @@ async function githubStars(phase: string): Promise<string> {
   return process.env.GITHUB_STARS
 }
 
+/**
+ * Values fixed at build and inlined into the bundles, so every render of a
+ * page prints the same thing: its prerendered HTML and the request-time render
+ * of a page with a copy-count hole alike. Read during a render instead, a value
+ * that moved since the build no longer matches the HTML, and React rejects it
+ * (error #418). `GITHUB_STARS` is the header's star count; `BUILD_YEAR` the
+ * footer's copyright year.
+ */
 export default async function config(phase: string): Promise<NextConfig> {
-  return { ...nextConfig, env: { GITHUB_STARS: await githubStars(phase) } }
+  return {
+    ...nextConfig,
+    env: {
+      GITHUB_STARS: await githubStars(phase),
+      BUILD_YEAR: String(new Date().getUTCFullYear()),
+    },
+  }
 }
