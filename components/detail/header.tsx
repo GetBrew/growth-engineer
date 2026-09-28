@@ -57,11 +57,26 @@ export function DetailByline({
   )
 }
 
-type DetailTag = {
+export type DetailTag = {
   label: string
   href?: string
 
   emphasis?: boolean
+}
+
+/** One tag as a pill: a link to the listing it filters, or plain. */
+export function DetailTagPill({ tag }: { tag: DetailTag }) {
+  const variant = tag.emphasis ? 'emphasis' : 'plain'
+  return tag.href ? (
+    <Link
+      className={badgeVariants({ variant, interactive: true })}
+      href={tag.href}
+    >
+      {tag.label}
+    </Link>
+  ) : (
+    <Badge variant={variant}>{tag.label}</Badge>
+  )
 }
 
 export function DetailHeader({
@@ -73,6 +88,7 @@ export function DetailHeader({
   links = [],
   dates = [],
   available = [],
+  meta,
 }: {
   byline: ReactNode
   title: string
@@ -82,6 +98,8 @@ export function DetailHeader({
   links?: ReadonlyArray<{ label: string; href: string; icon?: IconSvgElement }>
   dates?: ReadonlyArray<string>
   available?: ReadonlyArray<string>
+  /** A quiet line under the description, like "Updated Sep 27, 2026". */
+  meta?: string
 }) {
   const hasSideMeta = dates.length > 0 || available.length > 0
   const hasTags = tags.length > 0 || links.length > 0
@@ -100,6 +118,9 @@ export function DetailHeader({
 
           <div className="max-w-3xl lg:col-start-1 lg:row-start-2">
             {description ? <DetailDescription text={description} /> : null}
+            {meta ? (
+              <p className="type-label mt-3 text-subtle">{meta}</p>
+            ) : null}
           </div>
 
           <div className="mt-6 flex shrink-0 items-center gap-2 max-lg:-ml-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0">
@@ -113,22 +134,9 @@ export function DetailHeader({
         // halves wrapped, leaving a tag and a chip stranded on lines of their own.
         <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            {tags.map((tag) => {
-              const variant = tag.emphasis ? 'emphasis' : 'plain'
-              return tag.href ? (
-                <Link
-                  className={badgeVariants({ variant, interactive: true })}
-                  href={tag.href}
-                  key={tag.label}
-                >
-                  {tag.label}
-                </Link>
-              ) : (
-                <Badge key={tag.label} variant={variant}>
-                  {tag.label}
-                </Badge>
-              )
-            })}
+            {tags.map((tag) => (
+              <DetailTagPill key={tag.label} tag={tag} />
+            ))}
 
             {links.map((link) => (
               <a
