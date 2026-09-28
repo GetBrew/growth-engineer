@@ -17,7 +17,7 @@ const PREVIEW = 10
 
 export function HomeCatalog() {
   const [workflows, tools, companies] = [
-    loadWorkflows('featured', PREVIEW),
+    loadWorkflows('new', PREVIEW),
     loadNewTools(PREVIEW),
     loadCompanies(PREVIEW),
   ]
