@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { HeroBanner } from '@/components/common/hero-banner'
 import { HomeCatalog } from '@/components/home/catalog'
 import { FounderProof } from '@/components/home/founder-proof'
-import { HowToUse } from '@/components/home/how-to-use'
 import { SITE } from '@/lib/catalog/definitions'
 import { pageMetadata } from '@/lib/seo/metadata'
 
@@ -19,10 +18,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      <HeroBanner
-        lede={<HowToUse />}
-        title="Copy a growth workflow into your agent"
-      />
+      <HeroBanner title="Copy a growth workflow into your agent" />
 
       <HomeCatalog />
       <FounderProof />
