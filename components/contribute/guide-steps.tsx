@@ -1,11 +1,6 @@
 import { CodeText } from '@/components/common/code-text'
 import { CopyButton } from '@/components/contribute/copy-button'
-import type { GuideStep } from '@/lib/constants/guide-steps'
-
-/** A step with its sample resolved: a quoted file, or a command. */
-export type ResolvedGuideStep = Omit<GuideStep, 'sample'> & {
-  sample?: { caption: string; code: string }
-}
+import type { ResolvedGuideStep } from '@/lib/constants/guide-steps'
 
 /**
  * What to do, in order, with the example under each move. No cards and no

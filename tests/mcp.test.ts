@@ -199,6 +199,10 @@ describe('/mcp prompts, with the MCP SDK client', () => {
       const [message] = guide.messages
       const text = message?.content.type === 'text' ? message.content.text : ''
       expect(text).toContain('# Add a workflow')
+      expect(text).toContain('## With this MCP server')
+      // The real file it quotes, so the syntax is shown, not described.
+      expect(text).toContain('`workflows/funding-signal-outbound.md`:')
+      expect(text).toContain('## Steps')
       expect(text).toContain('alert sales when a trial signs up')
       await expect(
         client.getPrompt({ name: 'no-such-prompt' })

@@ -149,12 +149,15 @@ function toWorkflow(
     aliases: data.aliases,
     // Both halves of each tool key: `apollo/enrich-person` finds the workflow
     // by "apollo" as well as by "enrich" — its rows show the vendor's logo.
+    // Its step titles and input names too: "trial" finds a `trial_plan`.
     searchText: searchTextOf(
       [
         data.title,
         data.summary,
         data.author,
         ...toolKeys.flatMap((key) => key.split('/')),
+        ...steps.map((step) => step.title),
+        ...data.inputs.map((input) => input.name.replaceAll('_', ' ')),
       ],
       tags,
       context.tags

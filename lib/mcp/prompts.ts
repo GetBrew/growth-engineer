@@ -1,4 +1,5 @@
 import { formatRef } from '@/lib/catalog/keys'
+import { loadGuideSteps } from '@/lib/catalog/loaders'
 import { GUIDES, guideMarkdown } from '@/lib/constants/guides'
 import type { Catalog } from '@/lib/content/build-catalog'
 
@@ -34,6 +35,32 @@ export type PromptResult = {
 /** `contribute-workflow`: a guide's prompt name, beside the workflow keys. */
 export const CONTRIBUTE_PREFIX = 'contribute-'
 
+/**
+ * What a contributor can do through this server before writing a file: find
+ * what exists, find the calls a step can make, check the key is free.
+ */
+const WITH_THIS_SERVER: Record<string, string> = {
+  workflow: [
+    '## With this MCP server',
+    '',
+    '1. `search` for a workflow that already reaches this result; improve it rather than adding a second.',
+    '2. For each step, `search` with `type: "tool"` (a `capability` tag compares vendors) and `get` the tool: its calls and notes say what a step can ask of it. A step you can do yourself, like writing a draft, names no tool.',
+    '3. Pick the key, the file name, and check it is free: `get` on `workflow:<key>` answers that nothing is there.',
+  ].join('\n'),
+  tool: [
+    '## With this MCP server',
+    '',
+    '1. `get` on `company:<handle>` shows the company, its ways in and its tools; add the call to a way it declares.',
+    '2. `get` a `capability:` tag to see how other vendors write the same job, and reuse its tag.',
+  ].join('\n'),
+  company: [
+    '## With this MCP server',
+    '',
+    '1. `search` with `type: "company"` to check the company is not listed yet.',
+    '2. `get` a listed company in the same category, like `company:apollo`, as a model for its file and its tools.',
+  ].join('\n'),
+}
+
 const IDEA: PromptArgument = {
   name: 'idea',
   description:
@@ -50,14 +77,14 @@ function workflowPrompts(catalog: Catalog): Array<Prompt> {
             name: key,
             title: workflow.title,
             description: workflow.summary,
-            // Optional: the file tells the agent to ask for any input the
-            // person did not give, so a bare pick still runs.
+            // Required, as the file says: a client asks for them up front.
+            // One it sends without still runs — the agent asks for the rest.
             arguments: workflow.inputs.map((input) => ({
               name: input.name,
               description: input.example
                 ? `${input.description}, e.g. ${input.example}`
                 : input.description,
-              required: false,
+              required: true,
             })),
           },
         ]
@@ -119,9 +146,14 @@ export function getPrompt(
   if (guide) {
     const idea =
       values.length > 0 ? `\n\nWhat I want to add:\n\n${values.join('\n')}` : ''
+    const text = guideMarkdown(
+      guide,
+      loadGuideSteps(guide.id),
+      WITH_THIS_SERVER[guide.id]
+    )
     return {
       description: prompt.description,
-      messages: [userMessage(`${guideMarkdown(guide)}${idea}`)],
+      messages: [userMessage(`${text}${idea}`)],
     }
   }
   const document = catalog.documents.get(formatRef('workflow', name))
