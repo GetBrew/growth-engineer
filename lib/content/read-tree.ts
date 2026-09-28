@@ -43,7 +43,7 @@ const LOGO = /^logo\.(svg|png|jpg|webp)$/
 export type LogoExtension = 'svg' | 'png' | 'jpg' | 'webp'
 
 /** Where a company's logo sits in the repository. */
-export function logoPath(handle: string, extension: LogoExtension): string {
+function logoPath(handle: string, extension: LogoExtension): string {
   return path.join('companies', handle, `logo.${extension}`)
 }
 
