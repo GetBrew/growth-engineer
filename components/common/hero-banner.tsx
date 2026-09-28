@@ -6,7 +6,7 @@ import { SITE_ORIGIN } from '@/lib/env'
 
 /**
  * The page's opening. The home page gets the full banner — its promise, the
- * welcome, the MCP card and the agents; a listing gets its title alone, so
+ * avatars, the MCP card and the agents; a listing gets its title alone, so
  * the list starts on the first screen.
  */
 export function HeroBanner({
