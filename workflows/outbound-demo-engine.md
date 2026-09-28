@@ -1,6 +1,6 @@
 ---
 title: How Brew books 20 demos per week with outbound
-summary: Run cold email and LinkedIn as one system, build each prospect's email before they ask for it, and steer every warm reply to one of three outcomes.
+summary: Run cold email and LinkedIn as one system, put a finished piece of your product's work in front of each prospect before they ask, and steer every warm reply to one of three outcomes.
 author: philsoerensen
 tags:
   - motion:outbound
@@ -16,18 +16,19 @@ updated: 2026-09-28
 - `email_campaign_id`: the Instantly campaign that sends the cold emails
 - `linkedin_campaign_id`: the HeyReach campaign that sends the connection requests and messages
 - `booking_link`: the calendar link a warm reply gets
+- `free_deliverable`: the finished thing your product makes for one prospect without their input, e.g. their welcome email rebuilt from their site
 
 ## Steps
 
 1. **Build the week's list** with [crustdata/search-people](../companies/crustdata/tools/search-people.md). Find up to `weekly_volume` people matching `ideal_customer`, one per company. Keep each person's name, title, company, company domain and LinkedIn profile URL.
 2. **Get their work emails** with [crustdata/enrich-person-contact](../companies/crustdata/tools/enrich-person-contact.md). Look up business emails by LinkedIn profile URL, in batches. Keep each person's work email; people with no email stay in the list for the LinkedIn channel.
 3. **Verify the emails** with [instantly/verify-email](../companies/instantly/tools/verify-email.md). Check each work email and keep only the verified ones for the email channel. Bounces burn the sending domains that everything else depends on.
-4. **Build their email before they ask** with [brew/generate-email](../companies/brew/tools/generate-email.md). For the best-fit prospects, point Brew at the prospect's own site so it picks up their brand, and generate the first email their company should be sending but is not, such as their welcome email. Keep each email's preview link. This is the step that makes the reply rate: the first message can show finished work instead of describing it.
-5. **Enroll the email channel** with [instantly/add-leads-to-campaign](../companies/instantly/tools/add-leads-to-campaign.md). Add the verified people to `email_campaign_id`. The copy leads with what is wrong or missing in the prospect's current emails and offers the finished version from the previous step, not a pitch about the product.
+4. **Build the deliverable before they ask** with [brew/generate-email](../companies/brew/tools/generate-email.md). Produce `free_deliverable` for the best-fit prospects. When your product is email, this tool is the whole step: point Brew at the prospect's own site so it picks up their brand, and generate the first email their company should be sending but is not, such as their welcome email. Selling something else, skip this tool and make the equivalent with your own product: an audit it ran, a report it wrote, a page it rebuilt, anything finished and specific to this prospect with a link they can open. Keep each deliverable's link. This is the step that makes the reply rate: the first message shows finished work instead of describing it.
+5. **Enroll the email channel** with [instantly/add-leads-to-campaign](../companies/instantly/tools/add-leads-to-campaign.md). Add the verified people to `email_campaign_id`. The copy leads with what is wrong or missing that your product fixes for this prospect and offers the finished deliverable from the previous step, not a pitch about the product.
 6. **Enroll the LinkedIn channel** with [heyreach/add-leads-to-campaign](../companies/heyreach/tools/add-leads-to-campaign.md). Add the rest to `linkedin_campaign_id`, which spreads sends across several LinkedIn sender accounts so no single profile exceeds its daily limits. Keep the two channels' lists apart so nobody is cold-contacted twice in the same week.
 7. **Sweep the LinkedIn inbox** with [heyreach/get-conversations](../companies/heyreach/tools/get-conversations.md). At least daily, pull recent conversations and judge each one by its newest message, not by thread-level metadata. Sort replies into warm, question, not-now and no.
 8. **Reply on LinkedIn** with [heyreach/send-message](../companies/heyreach/tools/send-message.md). Answer the actual question first, in the sender's own voice, short and specific. Every warm reply steers to exactly one of three outcomes: try the product self-serve, book a call at `booking_link`, or take the done-for-you offer. Show the user each reply before it sends.
-9. **Reply on email** with [instantly/reply-to-email](../companies/instantly/tools/reply-to-email.md). Same playbook as LinkedIn, and when a prospect bites on the offer, the reply carries the preview link built in step 4. A not-now gets a date to reconnect, not a push.
+9. **Reply on email** with [instantly/reply-to-email](../companies/instantly/tools/reply-to-email.md). Same playbook as LinkedIn, and when a prospect bites on the offer, the reply carries the deliverable link built in step 4. A not-now gets a date to reconnect, not a push.
 10. **Suppress every no, on both channels**. Keep one suppression list. A no, an unsubscribe or a wrong-person reply on either channel stops the sequence and blocks the person on the other channel too, since the campaigns do not share their no's on their own.
 
 ## Done when
@@ -37,6 +38,8 @@ updated: 2026-09-28
 - The user has a weekly table of contacted, replies, warm replies and demos booked, tracked against the weekly demo target.
 
 ## Notes
+
+The bait generalizes past email. It works because it is finished work for this specific prospect, free, before any commitment; email is just what Brew happens to make. Swap in whatever your own product can produce for one named company in minutes without their input, and keep every other step unchanged. If producing it takes hours per prospect, reserve step 4 for the best-fit slice and let the rest of the list run on the two channels without it.
 
 Three outcomes, never zero and never four: a warm reply that is not steered anywhere is a compliment, not a demo, and a reply that pitches all three options at once reads like a script. Pick the one that fits what the person actually said.
 
