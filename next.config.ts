@@ -1,5 +1,11 @@
 import type { NextConfig } from 'next'
+import {
+  PHASE_DEVELOPMENT_SERVER,
+  PHASE_PRODUCTION_BUILD,
+} from 'next/constants'
 import { SITE } from './lib/catalog/definitions'
+import { githubToken } from './lib/env'
+import { fetchRepoStars } from './lib/github-stars'
 
 const nextConfig: NextConfig = {
   /** AGENTS.md is the canonical, CI-capped agent-policy file — keep the writer off. */
@@ -135,4 +141,38 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+/**
+ * The header's GitHub star count, asked for once per build (and once per dev
+ * server) and inlined as `process.env.GITHUB_STARS`, so every render of a
+ * page prints the same number (lib/github-stars.ts). Build workers load this
+ * file again; they inherit the first answer through the environment instead
+ * of asking GitHub again. `next start` inlines nothing, so it asks for nothing.
+ */
+async function githubStars(phase: string): Promise<string> {
+  if (phase !== PHASE_PRODUCTION_BUILD && phase !== PHASE_DEVELOPMENT_SERVER) {
+    return ''
+  }
+  if (process.env.GITHUB_STARS === undefined) {
+    const stars = await fetchRepoStars(SITE.repository, githubToken())
+    process.env.GITHUB_STARS = stars === null ? '' : String(stars)
+  }
+  return process.env.GITHUB_STARS
+}
+
+/**
+ * Values fixed at build and inlined into the bundles, so every render of a
+ * page prints the same thing: its prerendered HTML and the request-time render
+ * of a page with a copy-count hole alike. Read during a render instead, a value
+ * that moved since the build no longer matches the HTML, and React rejects it
+ * (error #418). `GITHUB_STARS` is the header's star count; `BUILD_YEAR` the
+ * footer's copyright year.
+ */
+export default async function config(phase: string): Promise<NextConfig> {
+  return {
+    ...nextConfig,
+    env: {
+      GITHUB_STARS: await githubStars(phase),
+      BUILD_YEAR: String(new Date().getUTCFullYear()),
+    },
+  }
+}

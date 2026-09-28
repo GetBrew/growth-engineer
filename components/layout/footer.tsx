@@ -66,7 +66,10 @@ const SPARKS = [
   },
 ] as const
 
-const YEAR = new Date().getFullYear()
+// Fixed at build by next.config.ts. `new Date()` here would run again when a
+// page with a copy-count hole renders on request, and after New Year it would
+// disagree with the prerendered HTML.
+const YEAR = process.env.BUILD_YEAR
 const LINK =
   'type-label rounded-sm text-soft transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground'
 

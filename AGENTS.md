@@ -135,9 +135,9 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   synchronous reads, so every page, the `.md` handler and `/llms.txt`
   PRERENDER with no `'use cache'` and no `connection()`; detail routes list
   params with `generateStaticParams` (`lib/catalog/static-params.ts`). Never
-  `export const dynamic`, `revalidate` or `dynamicParams`. Two `'use cache'`s:
-  the copy counts (+ `connection()`, cached a minute, streamed into `<Suspense>`
-  holes) and the header's star count (read once per build, `revalidate: Infinity`).
+  `export const dynamic`, `revalidate` or `dynamicParams`. The ONE `'use cache'`
+  is the copy counts (+ `connection()`, streamed into `<Suspense>` holes). Values
+  that move (star count, year) are inlined at build (`next.config.ts` `env`).
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
