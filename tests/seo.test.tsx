@@ -1,13 +1,18 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
+import { GET as getFile } from '@/app/api/markdown/[...path]/route'
 import { GET as getLlms } from '@/app/llms.txt/route'
 import { GET as getLlmsFull } from '@/app/llms-full.txt/route'
 import robots from '@/app/robots'
 import sitemap from '@/app/sitemap'
 import { JsonLd } from '@/components/seo/json-ld'
 import { getCatalog } from '@/lib/catalog/catalog'
-import { DEFINITIONS, SITE } from '@/lib/catalog/definitions'
-import { loadSitemapEntries } from '@/lib/catalog/discovery'
+import { DEFINITIONS, MCP_PATH, SITE } from '@/lib/catalog/definitions'
+import {
+  loadCorpus,
+  loadLlmsTags,
+  loadSitemapEntries,
+} from '@/lib/catalog/discovery'
 import {
   filePathToRef,
   filePathToTagKey,
@@ -15,13 +20,19 @@ import {
   isValidKeyPart,
   isValidOwnedKey,
   isValidTagKey,
+  parseRef,
+  refToFilePath,
+  refToPath,
+  tagFilePath,
 } from '@/lib/catalog/keys'
+import { loadGuideSteps } from '@/lib/catalog/loaders'
 import { GUIDES, guidePath } from '@/lib/constants/guides'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
 import {
   collectionJsonLd,
   companyJsonLd,
+  guideJsonLd,
   toolJsonLd,
   websiteJsonLd,
   workflowJsonLd,
@@ -65,24 +76,58 @@ describe('definitions', () => {
 })
 
 describe('robots.txt', () => {
+  const rulesOf = (result: ReturnType<typeof robots>) =>
+    Array.isArray(result.rules) ? result.rules : [result.rules]
+
   test('allows every crawler, names the AI crawlers, points at the sitemap', () => {
     const result = robots()
-    const rules = Array.isArray(result.rules) ? result.rules : [result.rules]
-    expect(rules[0]).toEqual({ userAgent: '*', allow: '/' })
+    const rules = rulesOf(result)
+    expect(rules[0]?.userAgent).toBe('*')
     const named = rules.flatMap((rule) =>
       Array.isArray(rule.userAgent) ? rule.userAgent : [rule.userAgent]
     )
+    // Each answer engine's crawler, search indexer and user fetcher.
     for (const bot of [
       'GPTBot',
+      'OAI-SearchBot',
+      'ChatGPT-User',
       'ClaudeBot',
+      'Claude-SearchBot',
+      'Claude-User',
       'PerplexityBot',
+      'Perplexity-User',
       'Google-Extended',
+      'Applebot',
+      'MistralAI-User',
     ]) {
       expect(named).toContain(bot)
     }
-    expect(rules.some((rule) => rule.disallow)).toBe(false)
     expect(result.sitemap).toBe(`${SITE_ORIGIN}/sitemap.xml`)
     expect(result.host).toBe(SITE_ORIGIN)
+  })
+
+  test('every group keeps crawlers out of /api/ and off no page or file', async () => {
+    const rules = rulesOf(robots())
+    // A crawler obeys only the most specific group that names it, so a rule
+    // written in `*` alone never reaches the named crawlers.
+    for (const rule of rules) {
+      expect(rule).toMatchObject({ allow: '/', disallow: '/api/' })
+    }
+    const blocked = rules.flatMap((rule) => [rule.disallow ?? []].flat())
+    const open = [
+      ...(await sitemap()).map((entry) => entry.url.slice(SITE_ORIGIN.length)),
+      ...loadCorpus().map((entry) => entry.file),
+      ...loadLlmsTags().map((entry) => entry.file),
+      '/llms.txt',
+      '/llms-full.txt',
+      MCP_PATH,
+    ]
+    for (const path of open) {
+      expect(
+        blocked.some((prefix) => path.startsWith(prefix)),
+        path
+      ).toBe(false)
+    }
   })
 })
 
@@ -247,6 +292,67 @@ describe('page metadata', () => {
         .alternates
     ).toEqual({ canonical: '/tools' })
   })
+
+  test('every page restates the site name and locale: its Open Graph replaces the layout’s', () => {
+    for (const metadata of [
+      pageMetadata({ title: 'Tools', description: 'd', path: '/tools' }),
+      pageMetadata({
+        title: 'Enrich contacts by Clay',
+        description: 'd',
+        path: '/tools/clay/enrich-contacts',
+        file: '/tools/clay/enrich-contacts.md',
+      }),
+    ]) {
+      expect(metadata.openGraph).toMatchObject({
+        siteName: SITE.name,
+        locale: 'en_US',
+      })
+    }
+  })
+})
+
+describe('the .md files', () => {
+  const catalog = getCatalog()
+  const fetchFile = (path: string) =>
+    getFile(new Request(`${SITE_ORIGIN}${path}`), {
+      params: Promise.resolve({ path: path.slice(1).split('/') }),
+    })
+
+  test('a company, tool or workflow file names its page as the canonical URL', async () => {
+    const refs = [...catalog.documents.keys()].map((key) => {
+      const ref = parseRef(key)
+      if (!ref) {
+        throw new Error(`not a ref: ${key}`)
+      }
+      return ref
+    })
+    expect(refs.length).toBeGreaterThan(0)
+    const files = await Promise.all(
+      refs.map(async (ref) => ({
+        page: refToPath(ref),
+        response: await fetchFile(refToFilePath(ref)),
+      }))
+    )
+    for (const { page, response } of files) {
+      expect(response.status, page).toBe(200)
+      expect(response.headers.get('Content-Type')).toBe(
+        'text/markdown; charset=utf-8'
+      )
+      expect(response.headers.get('Link'), page).toBe(
+        `<${SITE_ORIGIN}${page}>; rel="canonical"`
+      )
+    }
+  })
+
+  test('a tag file has no page, so it names no canonical URL', async () => {
+    const [key] = catalog.tagDocuments.keys()
+    if (!key) {
+      throw new Error('no tag files in the tree')
+    }
+    const response = await fetchFile(tagFilePath(key))
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Link')).toBeNull()
+  })
 })
 
 describe('structured data', () => {
@@ -260,6 +366,12 @@ describe('structured data', () => {
       'Organization',
     ])
     expect(graph[0]?.url).toBe(origin)
+    // The publisher's own profiles, the ones the footer links to.
+    expect(graph[1]?.sameAs).toEqual(
+      expect.arrayContaining(
+        SITE.publisher.profiles.map((profile) => profile.url)
+      )
+    )
   })
 
   test('a tool is a SoftwareApplication with its file as an alternate encoding', () => {
@@ -346,6 +458,37 @@ describe('structured data', () => {
       [{ name: 'A', path: '/tools/a/b' }]
     ) as { mainEntity: { numberOfItems: number } }
     expect(collection.mainEntity.numberOfItems).toBe(1)
+  })
+
+  test('a contribute guide is a HowTo whose steps link to the steps on its page', () => {
+    for (const guide of GUIDES) {
+      const steps = loadGuideSteps(guide.id)
+      expect(steps.length, guide.id).toBeGreaterThan(0)
+      const page = `${origin}${guidePath(guide)}`
+      const graph = (guideJsonLd(origin, guide, steps) as Graph)['@graph']
+      expect(graph.map((node) => node['@type'])).toEqual([
+        'HowTo',
+        'WebPage',
+        'BreadcrumbList',
+      ])
+      const howTo = graph[0] as {
+        name: string
+        step: Array<{ position: number; name: string; url: string }>
+      }
+      expect(howTo.name).toBe(guide.title)
+      expect(howTo.step.map((step) => step.name)).toEqual(
+        steps.map((step) => step.title)
+      )
+      // The page draws each step with its key as the id (GuideSteps).
+      expect(howTo.step.map((step) => step.url)).toEqual(
+        steps.map((step) => `${page}#${step.key}`)
+      )
+      const crumbs = graph[2]?.itemListElement as Array<{ item: string }>
+      expect(crumbs.map((crumb) => crumb.item)).toEqual([
+        `${origin}/docs`,
+        page,
+      ])
+    }
   })
 
   test('JSON-LD can never close its own script tag', () => {

@@ -14,12 +14,19 @@ const SITE_CARD = {
 }
 
 /**
+ * The Open Graph facts every page shares. For the same reason as the card,
+ * the root layout's copy reaches only a page with no `openGraph` of its own,
+ * so every page restates them here.
+ */
+export const SITE_OPEN_GRAPH = { siteName: SITE.name, locale: 'en_US' }
+
+/**
  * The metadata every page carries, built one way: a canonical URL, the
- * Open Graph facts (title, description, url — the image comes from the
- * route's `opengraph-image.tsx`, or the site's card for a page without one),
- * and for a page that IS a file, the `text/markdown` alternate that tells an
- * agent where the file is. Relative paths: the root layout's `metadataBase`
- * makes them absolute.
+ * Open Graph facts (the site's name and locale; title, description, url — the
+ * image comes from the route's `opengraph-image.tsx`, or the site's card for a
+ * page without one), and for a page that IS a file, the `text/markdown`
+ * alternate that tells an agent where the file is. Relative paths: the root
+ * layout's `metadataBase` makes them absolute.
  *
  * PURE: no environment, no catalog. Twitter cards inherit from Open Graph.
  */
@@ -43,6 +50,7 @@ export function pageMetadata(input: {
       ...(input.file ? { types: { 'text/markdown': input.file } } : {}),
     },
     openGraph: {
+      ...SITE_OPEN_GRAPH,
       type: input.type ?? 'website',
       url: input.path,
       title: input.title,

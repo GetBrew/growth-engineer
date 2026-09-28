@@ -66,6 +66,11 @@ handler reads the rendered document from the in-memory catalog — the same
 one the page reads — and every file and every alias is prerendered at
 build. A renamed key answers with a real 308.
 
+A company, tool or workflow file is the content of its page, so its response
+carries a `Link: <page URL>; rel="canonical"` header: search engines index the
+page instead of a second copy, and agents still get the file. A tag's file
+has no page and names no canonical URL.
+
 ## The render path
 
 ```

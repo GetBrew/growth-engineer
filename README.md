@@ -83,6 +83,7 @@ Every file is public. There is no key and no sign-in.
 | `/tags/<namespace>/<slug>.md` | Everything with a tag, such as `/tags/capability/enrich-contacts.md` |
 | `/llms.txt` | The catalog's definitions and an index of every file |
 | `/llms-full.txt` | Every company, tool and workflow file in one document |
+| `/sitemap.xml` | Every page, with the date it last changed |
 
 A company, tool or workflow page also returns its file to a request with
 `Accept: text/markdown`.

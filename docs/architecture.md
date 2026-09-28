@@ -102,14 +102,15 @@ stated once:
 
 | Audience | Reads | Source |
 | --- | --- | --- |
-| Search engines | canonical URL, Open Graph, the social card, schema.org JSON-LD (`Organization`, `SoftwareApplication`, `HowTo`, `CollectionPage`, `BreadcrumbList`), `/sitemap.xml` with per-page `lastmod`, `/robots.txt` | `lib/seo/metadata.ts`, `lib/seo/structured-data.ts`, `app/sitemap.ts`, `app/robots.ts` |
+| Search engines | canonical URL, Open Graph, the social card, schema.org JSON-LD (`Organization`, `SoftwareApplication`, `HowTo`, `CollectionPage`, `BreadcrumbList`), `/sitemap.xml` with per-page `lastmod`, `/robots.txt` (open everywhere but `/api/`), and a `Link: rel="canonical"` header on each company, tool and workflow file pointing at its page, so the page is indexed and not the file | `lib/seo/metadata.ts`, `lib/seo/structured-data.ts`, `app/sitemap.ts`, `app/robots.ts`, `app/api/markdown` |
 | Answer engines and AI crawlers | the same, plus `/llms.txt` (llmstxt.org: definitions, then every file with a summary) and `/llms-full.txt` (every company, tool and workflow file in one document); every AI crawler is named in `/robots.txt` | `lib/seo/llms.ts`, `lib/catalog/discovery.ts` |
 | Agents | `.md` URLs, `Accept: text/markdown`, the `<link rel="alternate" type="text/markdown">` on every file page, `/llms.txt`, the read-only MCP server at `/mcp` (`search`, `get`, a prompt per workflow) | `proxy.ts`, `app/api/markdown`, `app/mcp`, `lib/mcp/server.ts` |
 
 The definitions (company, tool, workflow, tag, how to read a file) live in
 `lib/catalog/definitions.ts` and nowhere else; the llms preamble and the
-structured data import them. `tests/seo.test.tsx` holds the sitemap and both llms files to the
-catalog exactly: every page, every file, nothing invented.
+structured data import them. `tests/seo.test.tsx` holds the sitemap, both
+llms files and each file's canonical header to the catalog exactly: every
+page, every file, nothing invented.
 
 ## Search (`lib/catalog/search-words.ts`, `lib/catalog/search.ts`)
 

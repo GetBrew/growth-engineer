@@ -1,6 +1,8 @@
 import { SITE } from '@/lib/catalog/definitions'
 import { refToFilePath, refToPath } from '@/lib/catalog/keys'
 import { toolDocsUrl } from '@/lib/catalog/tool-docs'
+import type { ResolvedGuideStep } from '@/lib/constants/guide-steps'
+import { type Guide, guidePath } from '@/lib/constants/guides'
 import type {
   Company,
   CompanyListItem,
@@ -13,9 +15,9 @@ import type {
 /**
  * Structured data (schema.org JSON-LD) for the pages that describe one
  * thing: what search engines and answer engines read to know that a page is
- * a company, a callable tool, or a step-by-step workflow — with the facts
- * already on the page, never new ones. PURE: builders only; `JsonLd` in
- * components/seo renders them.
+ * a company, a callable tool, a step-by-step workflow or a contribute guide —
+ * with the facts already on the page, never new ones. PURE: builders only;
+ * `JsonLd` in components/seo renders them.
  */
 
 type JsonLd = Record<string, unknown>
@@ -53,7 +55,10 @@ export function websiteJsonLd(origin: string): JsonLd {
         name: SITE.publisher.name,
         url: SITE.publisher.url,
         logo: absolute(origin, '/logos/brew.svg'),
-        sameAs: [SITE.repository],
+        sameAs: [
+          ...SITE.publisher.profiles.map((profile) => profile.url),
+          SITE.repository,
+        ],
       },
     ],
   }
@@ -246,6 +251,45 @@ export function workflowJsonLd(
       breadcrumb(origin, [
         { name: 'Workflows', path: '/workflows' },
         { name: workflow.title, path },
+      ]),
+    ],
+  }
+}
+
+/** A contribute guide is a HowTo too: the steps its page lists, in order. */
+export function guideJsonLd(
+  origin: string,
+  guide: Guide,
+  steps: ReadonlyArray<ResolvedGuideStep>
+): JsonLd {
+  const url = absolute(origin, guidePath(guide))
+  return {
+    '@context': CONTEXT,
+    '@graph': [
+      {
+        '@type': 'HowTo',
+        '@id': `${url}#howto`,
+        name: guide.title,
+        description: guide.summary,
+        step: steps.map((step, index) => ({
+          '@type': 'HowToStep',
+          position: index + 1,
+          name: step.title,
+          text: step.detail,
+          url: `${url}#${step.key}`,
+        })),
+      },
+      {
+        '@type': 'WebPage',
+        '@id': url,
+        url,
+        name: guide.title,
+        isPartOf: { '@id': `${origin}/#website` },
+        about: { '@id': `${url}#howto` },
+      },
+      breadcrumb(origin, [
+        { name: 'Docs', path: '/docs' },
+        { name: guide.title, path: guidePath(guide) },
       ]),
     ],
   }

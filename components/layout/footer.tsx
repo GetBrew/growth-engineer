@@ -28,8 +28,9 @@ const COLUMNS = [
     heading: 'Brew',
     links: [
       ['brew.new', SITE.publisher.url],
-      ['X', 'https://x.com/brewdotnew'],
-      ['LinkedIn', 'https://www.linkedin.com/company/brewdotnew'],
+      ...SITE.publisher.profiles.map(
+        (profile) => [profile.label, profile.url] as const
+      ),
     ],
   },
 ] as const

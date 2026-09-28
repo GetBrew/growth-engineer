@@ -14,6 +14,7 @@ import { PANEL_HEADING } from '@/components/detail/styles'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
+import { JsonLd } from '@/components/seo/json-ld'
 import { loadGuideSteps } from '@/lib/catalog/loaders'
 import {
   findGuide,
@@ -25,7 +26,9 @@ import {
   nextGuide,
   previousGuide,
 } from '@/lib/constants/guides'
+import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
+import { guideJsonLd } from '@/lib/seo/structured-data'
 import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ guide: string }>
@@ -87,6 +90,7 @@ async function GuideDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-(--space-block)">
+      <JsonLd data={guideJsonLd(SITE_ORIGIN, found, steps)} />
       <DetailHeader
         actions={
           <>

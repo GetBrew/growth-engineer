@@ -3,13 +3,22 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import { CatalogList, type CatalogListItem } from '@/components/catalog/list'
 import { Page } from '@/components/layout/page'
+import { JsonLd } from '@/components/seo/json-ld'
 import { GUIDES, guidePath } from '@/lib/constants/guides'
+import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
+import { collectionJsonLd } from '@/lib/seo/structured-data'
+
+const PAGE = {
+  path: '/docs',
+  name: 'Docs',
+  description: 'How to add your company, tools and workflows to the catalog.',
+}
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Docs',
-  description: 'How to add your company, tools and workflows to the catalog.',
-  path: '/docs',
+  title: PAGE.name,
+  description: PAGE.description,
+  path: PAGE.path,
 })
 
 /**
@@ -32,6 +41,13 @@ const ITEMS: ReadonlyArray<CatalogListItem> = GUIDES.map((guide) => ({
 export default function DocsPage() {
   return (
     <Page className="flex flex-col gap-(--space-block)">
+      <JsonLd
+        data={collectionJsonLd(
+          SITE_ORIGIN,
+          PAGE,
+          ITEMS.map((item) => ({ name: item.title, path: item.href }))
+        )}
+      />
       <div className="flex items-center gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-full border bg-background text-soft">
           <HugeiconsIcon
