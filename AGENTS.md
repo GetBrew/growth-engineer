@@ -35,8 +35,10 @@ changing the site itself.
 
 Next.js 16 (App Router, Cache Components, Turbopack) · a build-time content
 compiler (`lib/content/`) · Tailwind v4 · shadcn on Base UI · Biome · Vitest
-· pnpm. **There is no backend, no database and no auth provider.** Every
-route is public; the only environment is one optional `NEXT_PUBLIC_SITE_URL`.
+· pnpm. **The catalog has no backend, no database and no auth provider**;
+the one runtime store is an optional Upstash Redis counting workflow copies
+(`lib/usage/copies.ts`). Every route is public; the environment is an
+optional `NEXT_PUBLIC_SITE_URL` and the counter's optional `KV_REST_API_*`.
 
 ## Validation — proportional, not ceremonial
 
@@ -133,12 +135,15 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   synchronous reads, so every page, the `.md` handler and `/llms.txt`
   PRERENDER with no `'use cache'` and no `connection()`; detail routes list
   params with `generateStaticParams` (`lib/catalog/static-params.ts`). Never
-  `export const dynamic`, `revalidate` or `dynamicParams`.
+  `export const dynamic`, `revalidate` or `dynamicParams`. The ONE
+  `'use cache'` is a workflow's copy count: prerendered with its page and
+  refreshed in the background, so it never loads.
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
   No page reads `searchParams` on the server.
-  The one dynamic route is `/mcp` (POST); the proxy runs only for `.md` files
+  The dynamic routes are `/mcp` and the copy counter's POST
+  (`/api/workflows/<name>/copies`); the proxy runs only for `.md` files
   and `Accept: text/markdown`. A detail page says `export const instant = false`.
 - NOTHING LOADS: no skeletons, no spinners, no fetch after load, no
   `<Suspense>` in a page. A page renders its data directly and a page with

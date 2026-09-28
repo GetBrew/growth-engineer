@@ -72,13 +72,15 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 
 | Route | At build | Why |
 | --- | --- | --- |
-| `/companies/[handle]`, `/tools/[handle]/[name]`, `/workflows/[name]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
+| `/companies/[handle]`, `/tools/[handle]/[name]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
+| `/workflows/[name]` | static (`○`), refreshed in the background every 5 minutes when the copy counter is on | the same, plus the copy count: one `'use cache'` read of every count (`lib/usage/copies.ts`), served stale while it refreshes. With no store there is no read, and the page never revalidates |
 | `/api/markdown/[...path]` — every file, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 | `/docs`, `/docs/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, read-only, the same catalog |
+| `/api/workflows/[name]/copies` | on request (`ƒ`) | a POST (a `sendBeacon`) per Copy on a workflow page: one `HINCRBY` |
 
 An unknown key on a detail route renders on demand, asks the alias map, and
 answers with a real 308 or a 404. `dynamicParams`, `dynamic` and

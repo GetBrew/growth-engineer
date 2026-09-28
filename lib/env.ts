@@ -3,11 +3,10 @@ import { z } from 'zod'
 /**
  * Environment access, validated once, at the edge of the process. A missing
  * variable fails loudly and names itself instead of surfacing three layers
- * away as a 500. Everything here ships to the browser (`NEXT_PUBLIC_*` only):
- * the catalog is built from the repository, so there is no backend and no
- * server secret. When one arrives, its key is added here first — a variable
- * whose configuration is optional is a feature that is silently off in
- * production.
+ * away as a 500. The catalog is built from the repository, so what ships to
+ * the browser is `NEXT_PUBLIC_*` only. The one server secret is the copy
+ * counter's store, read by `copyCounterEnv()` when called — never at import,
+ * so no bundle carries it.
  */
 
 /**
@@ -47,3 +46,24 @@ export const clientEnv = clientSchema.parse({
 
 /** The origin without a trailing slash: what absolute URLs are built from. */
 export const SITE_ORIGIN = clientEnv.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
+
+const counterSchema = z.object({
+  url: present(z.url().optional()),
+  token: present(z.string().optional()),
+})
+
+/**
+ * The copy counter's store: Upstash Redis over REST, under the names the
+ * Vercel Marketplace integration sets (`KV_REST_API_*`) or Upstash's own
+ * (`UPSTASH_REDIS_REST_*`). SERVER ONLY. Optional on purpose — a fresh clone,
+ * a fork and the test suite have no store — so `null` turns the counter off
+ * and the page hides the count rather than show a number it does not have.
+ */
+export function copyCounterEnv(): { url: string; token: string } | null {
+  const { url, token } = counterSchema.parse({
+    url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+    token:
+      process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+  })
+  return url && token ? { url, token } : null
+}

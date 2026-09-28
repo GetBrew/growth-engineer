@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
+import {
+  CopyCountProvider,
+  CopyCountStat,
+} from '@/components/detail/copy-count'
 import { CopyFileButton } from '@/components/detail/copy-file-button'
 import {
   DETAIL_DATE,
@@ -24,6 +28,7 @@ import { SITE_ORIGIN } from '@/lib/env'
 import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { workflowJsonLd } from '@/lib/seo/structured-data'
+import { loadCopyCount } from '@/lib/usage/copies'
 
 type Params = Promise<{ name: string }>
 
@@ -95,6 +100,7 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
   const { workflow, updatedAt, tools, tags } = result
   const filePath = refToFilePath({ type: 'workflow', key: workflow.key })
+  const copies = await loadCopyCount(workflow.key)
 
   const author = {
     name: workflow.author,
@@ -106,22 +112,6 @@ async function WorkflowDetail({ params }: { params: Params }) {
     <div className="flex flex-col gap-(--space-block)">
       <JsonLd data={workflowJsonLd(SITE_ORIGIN, workflow, tools, updatedAt)} />
       <DetailHeader
-        actions={
-          <>
-            <ShareButton text={workflow.summary} title={workflow.title} />
-            <ViewSourceButton entityKey={workflow.key} type="workflow" />
-            <OpenInAgentMenu
-              filePath={filePath}
-              fileUrl={`${SITE_ORIGIN}${filePath}`}
-              markdown={document.markdown}
-              title={workflow.title}
-            />
-            <CopyFileButton
-              label="Copy workflow"
-              markdown={document.markdown}
-            />
-          </>
-        }
         byline={
           <DetailByline avatars={[{ name: author.name, src: author.avatar }]}>
             by{' '}
@@ -154,29 +144,53 @@ async function WorkflowDetail({ params }: { params: Params }) {
           />
         </section>
 
-        <aside className="flex flex-col gap-(--space-md) max-lg:order-first lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
-          <TagBox
-            tags={[
-              ...(workflow.status === 'deprecated'
-                ? [{ label: 'Deprecated', emphasis: true }]
-                : []),
-              ...tags.map((tag) => ({
-                label: tag.label,
-                href: `/workflows?${tag.key.replace(':', '=')}`,
-              })),
-            ]}
-          />
-          <HowItRuns
-            steps={workflow.steps}
-            tools={tools.map(({ tool, company }) => ({
-              key: tool.key,
-              name: tool.name,
-              companyName: company.name,
-              logoUrl: company.logo?.url,
-              access: [...new Set(tool.access.map((entry) => entry.type))],
-            }))}
-          />
-        </aside>
+        {/* The actions head the side column, so the title and summary above
+            take the page's full width; from lg the column stays in view. */}
+        <CopyCountProvider count={copies} workflowKey={workflow.key}>
+          <aside className="flex flex-col gap-(--space-xl) max-lg:order-first lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
+            {/* One row under lg, Copy taking the rest of it; from lg, Copy
+                spans the column and the others sit on the line below. */}
+            <div className="flex flex-wrap items-center gap-2">
+              <CopyFileButton
+                className="order-last flex-1 lg:order-first lg:basis-full"
+                label="Copy workflow"
+                markdown={document.markdown}
+              />
+              <div className="-ml-3 flex items-center">
+                <ShareButton text={workflow.summary} title={workflow.title} />
+                <ViewSourceButton entityKey={workflow.key} type="workflow" />
+                <OpenInAgentMenu
+                  filePath={filePath}
+                  fileUrl={`${SITE_ORIGIN}${filePath}`}
+                  markdown={document.markdown}
+                  title={workflow.title}
+                />
+              </div>
+            </div>
+            <CopyCountStat />
+            <TagBox
+              tags={[
+                ...(workflow.status === 'deprecated'
+                  ? [{ label: 'Deprecated', emphasis: true }]
+                  : []),
+                ...tags.map((tag) => ({
+                  label: tag.label,
+                  href: `/workflows?${tag.key.replace(':', '=')}`,
+                })),
+              ]}
+            />
+            <HowItRuns
+              steps={workflow.steps}
+              tools={tools.map(({ tool, company }) => ({
+                key: tool.key,
+                name: tool.name,
+                companyName: company.name,
+                logoUrl: company.logo?.url,
+                access: [...new Set(tool.access.map((entry) => entry.type))],
+              }))}
+            />
+          </aside>
+        </CopyCountProvider>
       </div>
     </div>
   )

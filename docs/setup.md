@@ -2,7 +2,8 @@
 
 About two minutes. There is no backend, no database and no auth provider:
 the catalog is built from the markdown files in this repository, every page
-and file is public, and nobody signs in.
+and file is public, and nobody signs in. The one store is optional — the
+Redis that counts workflow copies — and without it the count is hidden.
 
 ## 1. Clone and install
 
@@ -10,9 +11,10 @@ and file is public, and nobody signs in.
 pnpm install
 ```
 
-`.env.example` lists the only variable, optional and public:
+`.env.example` lists every variable, all optional:
 `NEXT_PUBLIC_SITE_URL`, the absolute origin `/llms.txt`, the MCP card and the
-metadata print. Copy it to `.env.local` only if you need to change it.
+metadata print, and the copy counter's `KV_REST_API_URL` /
+`KV_REST_API_TOKEN`. Copy it to `.env.local` only if you need one.
 
 ## 2. Run it
 
@@ -49,7 +51,14 @@ READMEs have the field reference and templates.
   the publish — there is nothing to seed, migrate or revalidate.
 - **Environment variables**: none required. `/llms.txt` and `metadataBase`
   use `NEXT_PUBLIC_SITE_URL` when set (a custom domain), otherwise the
-  deployment's own Vercel hostname. Nothing secret.
+  deployment's own Vercel hostname.
+- **The copy counter** (a workflow's "Uses"): add Upstash for Redis from the
+  Vercel Marketplace to the project; it sets `KV_REST_API_URL` and
+  `KV_REST_API_TOKEN`, the one secret (`UPSTASH_REDIS_REST_*` works too).
+  The count is prerendered with each workflow page and refreshed in the
+  background every five minutes (`lib/usage/copies.ts`); each Copy is one
+  `HINCRBY` on the hash `workflow:copies`. Without the store the count is
+  hidden and nothing else changes.
 - **Preview deployments** need nothing extra: each builds its branch's tree.
 - **Function bundles**: every page prerenders; only an unknown key on a
   detail route and the `/mcp` endpoint read the tree at request time, so
