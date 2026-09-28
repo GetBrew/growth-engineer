@@ -118,9 +118,9 @@
         // is the gate that keeps them out, and it is why every program mirrors
         // the path map (Biome reads the nearest tsconfig.json only).
         "noImportCycles": "error",
-        // Next's handler and loader signatures are async by interface; the
-        // catalog loaders resolve in memory on purpose (lib/catalog/loaders.ts).
-        "useAwait": "off",
+        // An async function that awaits nothing is a sync function in
+        // disguise: the catalog loaders are plain reads of memory.
+        "useAwait": "error",
         // `== null` is the deliberate null|undefined check.
         "noEqualsToNull": "off"
       },

@@ -22,7 +22,7 @@ forty. Calling it per file in a loop is the same work, forty times.
 
 ## The heavy lock
 
-`check`, every `tsc*`, `build`, `test:run`, `content:check` and `knip` run under
+`check`, every `tsc*`, `build`, `test:run` and `knip` run under
 `scripts/heavy-lock.mjs`: ONE at a time, per repository, across every git
 worktree of it.
 

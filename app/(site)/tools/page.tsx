@@ -38,11 +38,8 @@ export default function ToolsPage() {
   )
 }
 
-async function ToolsCatalog() {
-  const [tools, tags] = await Promise.all([
-    loadToolSearchItems(),
-    loadTagChips(),
-  ])
+function ToolsCatalog() {
+  const [tools, tags] = [loadToolSearchItems(), loadTagChips()]
   return (
     <>
       <JsonLd data={collectionJsonLd(SITE_ORIGIN, PAGE, listingItems(tools))} />

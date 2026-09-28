@@ -29,10 +29,13 @@ type ToolFile = ContentFile & { kind: 'tool' }
 
 const WAYS: ReadonlyArray<AccessType> = ['mcp', 'cli', 'api']
 
-/** Header fields that no longer exist, and what to write instead. */
-const RETIRED_FIELDS = {
+/**
+ * Fields a rendered tool file has that a source file never writes — copying
+ * one's shape is an easy mistake — and what to write instead.
+ */
+const RENDERED_ONLY = {
   access:
-    'calls are top-level now: `mcp: <tool name>`, `cli: <command>`, `api: METHOD /path`',
+    'is computed: write each call at the top level, `mcp: <tool name>`, `cli: <command>`, `api: METHOD /path`',
 }
 
 type Way = NonNullable<CompanyWays[AccessType]>
@@ -261,7 +264,7 @@ export function buildTools(
       problems.add(file.path, pathProblem)
       continue
     }
-    const parsed = parseFile(file, toolSchema, problems, RETIRED_FIELDS)
+    const parsed = parseFile(file, toolSchema, problems, RENDERED_ONLY)
     const company = context.companies.get(file.handle)
     if (!(parsed && company)) {
       continue

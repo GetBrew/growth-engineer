@@ -27,10 +27,10 @@ import { type Excerpt, sourceExcerpt } from './source-excerpt'
  * ./discovery.ts); the bodies read the catalog built once per process from
  * the markdown tree (./catalog.ts).
  *
- * They stay `async` so call sites never change, and they resolve in a
- * microtask, which is what keeps every catalog route prerenderable under
- * Cache Components: no request-time data, no `connection()`, no cache tags.
- * There is nothing to revalidate — a deploy is the publish.
+ * They are plain synchronous reads of memory — no request-time data, no
+ * `connection()`, no cache tags — which is what keeps every catalog route
+ * prerenderable under Cache Components. There is nothing to revalidate: a
+ * deploy is the publish.
  */
 
 const MAX_LIST = 200
@@ -38,11 +38,11 @@ const MAX_LIST = 200
 /* ───────────────────────────────── per key ───────────────────────────────── */
 
 /** Published or deprecated: reachable by key. Drafts never enter the catalog. */
-export async function loadCompany(key: string): Promise<Company | null> {
+export function loadCompany(key: string): Company | null {
   return getCatalog().companies.get(key) ?? null
 }
 
-export async function loadTool(key: string) {
+export function loadTool(key: string) {
   const catalog = getCatalog()
   const tool = catalog.tools.get(key)
   const company = tool ? catalog.companies.get(tool.companyKey) : undefined
@@ -60,7 +60,7 @@ export async function loadTool(key: string) {
 }
 
 /** One workflow with its tools, and the date of its rendered file. */
-export async function loadWorkflow(key: string) {
+export function loadWorkflow(key: string) {
   const catalog = getCatalog()
   const workflow = catalog.workflows.get(key)
   if (!workflow) {
@@ -86,19 +86,17 @@ export async function loadWorkflow(key: string) {
 }
 
 /** The rendered file for a ref. */
-export async function loadDocument(type: EntityType, key: string) {
+export function loadDocument(type: EntityType, key: string) {
   return getCatalog().documents.get(formatRef(type, key)) ?? null
 }
 
 /** A tag's rendered file: `capability:enrich-contacts`. */
-export async function loadTagDocument(key: string) {
+export function loadTagDocument(key: string) {
   return getCatalog().tagDocuments.get(key) ?? null
 }
 
 /** A company's published tools, by key. */
-export async function loadToolsByCompany(
-  companyKey: string
-): Promise<Array<Tool>> {
+export function loadToolsByCompany(companyKey: string): Array<Tool> {
   const catalog = getCatalog()
   return relationsOf(catalog, formatRef('company', companyKey)).tools.flatMap(
     (key) => {
@@ -117,21 +115,21 @@ function workflowRows(keys: ReadonlyArray<string>): Array<WorkflowListItem> {
 }
 
 /** Published workflows using a tool, featured first. */
-export async function loadWorkflowsByTool(toolKey: string) {
+export function loadWorkflowsByTool(toolKey: string) {
   return workflowRows(
     relationsOf(getCatalog(), formatRef('tool', toolKey)).workflows
   )
 }
 
 /** Published workflows using any of a company's tools, featured first. */
-export async function loadWorkflowsByCompany(companyKey: string) {
+export function loadWorkflowsByCompany(companyKey: string) {
   return workflowRows(
     relationsOf(getCatalog(), formatRef('company', companyKey)).workflows
   )
 }
 
 /** An old key → its current one, or null. */
-export async function resolveAlias(entityType: EntityType, key: string) {
+export function resolveAlias(entityType: EntityType, key: string) {
   const current = getCatalog().aliases.get(`${entityType}:${key}`)
   return current ? { key: current } : null
 }
@@ -139,7 +137,7 @@ export async function resolveAlias(entityType: EntityType, key: string) {
 /* ─────────────────────────────────── lists ───────────────────────────────── */
 
 /** Published companies in name order, as rows without their category. */
-export async function loadCompanies(limit = MAX_LIST) {
+export function loadCompanies(limit = MAX_LIST) {
   const catalog = getCatalog()
   return catalog.order.companies
     .slice(0, Math.min(limit, MAX_LIST))
@@ -150,7 +148,7 @@ export async function loadCompanies(limit = MAX_LIST) {
 }
 
 /** Featured (featured first, then newest) or New. */
-export async function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
+export function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
   const catalog = getCatalog()
   const order =
     sort === 'new'
@@ -163,7 +161,7 @@ export async function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
 /* Every item of a kind, prerendered into the page; the browser filters them. */
 
 /** Every published tool, newest first, with what search needs. */
-export async function loadToolSearchItems() {
+export function loadToolSearchItems() {
   const catalog = getCatalog()
   return catalog.order.toolsNew.flatMap((key) => {
     const tool = catalog.tools.get(key)
@@ -172,7 +170,7 @@ export async function loadToolSearchItems() {
 }
 
 /** Every published workflow in featured order, with what search needs. */
-export async function loadWorkflowSearchItems() {
+export function loadWorkflowSearchItems() {
   const catalog = getCatalog()
   return catalog.order.workflowsFeatured.flatMap((key, index) => {
     const workflow = catalog.workflows.get(key)
@@ -181,7 +179,7 @@ export async function loadWorkflowSearchItems() {
 }
 
 /** Every published company in name order, with what search needs. */
-export async function loadCompanySearchItems() {
+export function loadCompanySearchItems() {
   const catalog = getCatalog()
   return catalog.order.companies.flatMap((key) => {
     const company = catalog.companies.get(key)
@@ -190,12 +188,12 @@ export async function loadCompanySearchItems() {
 }
 
 /** Every tag as a filter chip, with its counts. */
-export async function loadTagChips() {
+export function loadTagChips() {
   return [...getCatalog().tags.values()].map(tagChip)
 }
 
 /** The newest published tools, as list rows. */
-export async function loadNewTools(limit = 12) {
+export function loadNewTools(limit = 12) {
   const catalog = getCatalog()
   return catalog.order.toolsNew.slice(0, limit).flatMap((key) => {
     const tool = catalog.tools.get(key)
@@ -208,7 +206,7 @@ export async function loadNewTools(limit = 12) {
  * prerendered into every page with the site chrome — the palette never
  * fetches, and every keystroke is answered in the browser.
  */
-export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
+export function loadPaletteItems(): Array<PaletteItem> {
   return paletteItems(getCatalog())
 }
 
@@ -218,11 +216,11 @@ export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
  * file or the section is missing, so a guide can never show a sample that
  * drifted from the catalog — the build fails instead.
  */
-export async function loadSourceExcerpt(
+export function loadSourceExcerpt(
   path: string,
   excerpt?: Excerpt,
   omit?: ReadonlyArray<string>
-): Promise<string> {
+): string {
   const source = getSourceFile(path)
   if (source === undefined) {
     throw new Error(`${path} is not a file in the content tree`)

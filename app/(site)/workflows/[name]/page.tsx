@@ -49,7 +49,7 @@ export async function generateMetadata({
   params: Params
 }): Promise<Metadata> {
   const key = await resolveKey(params)
-  const result = key ? await loadWorkflow(key) : null
+  const result = key ? loadWorkflow(key) : null
   if (!result) {
     return {}
   }
@@ -66,7 +66,7 @@ export async function generateMetadata({
   })
 }
 
-export default async function WorkflowPage({ params }: { params: Params }) {
+export default function WorkflowPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/workflows" label="All workflows" />
@@ -80,12 +80,9 @@ async function WorkflowDetail({ params }: { params: Params }) {
   if (!key) {
     notFound()
   }
-  const [result, document] = await Promise.all([
-    loadWorkflow(key),
-    loadDocument('workflow', key),
-  ])
+  const [result, document] = [loadWorkflow(key), loadDocument('workflow', key)]
   if (!result) {
-    const alias = await resolveAlias('workflow', key)
+    const alias = resolveAlias('workflow', key)
     if (alias) {
       permanentRedirect(refToPath({ type: 'workflow', key: alias.key }))
     }

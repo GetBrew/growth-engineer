@@ -56,7 +56,7 @@ export async function generateMetadata({
   params: Params
 }): Promise<Metadata> {
   const { handle } = await params
-  const company = isValidHandle(handle) ? await loadCompany(handle) : null
+  const company = isValidHandle(handle) ? loadCompany(handle) : null
   if (!company) {
     return {}
   }
@@ -72,7 +72,7 @@ export async function generateMetadata({
   })
 }
 
-export default async function CompanyPage({ params }: { params: Params }) {
+export default function CompanyPage({ params }: { params: Params }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
       <BackLink href="/companies" label="All companies" />
@@ -86,14 +86,14 @@ async function CompanyDetail({ params }: { params: Params }) {
   if (!isValidHandle(handle)) {
     notFound()
   }
-  const [company, tools, workflows, document] = await Promise.all([
+  const [company, tools, workflows, document] = [
     loadCompany(handle),
     loadToolsByCompany(handle),
     loadWorkflowsByCompany(handle),
     loadDocument('company', handle),
-  ])
+  ]
   if (!company) {
-    const alias = await resolveAlias('company', handle)
+    const alias = resolveAlias('company', handle)
     if (alias) {
       permanentRedirect(`/companies/${alias.key}`)
     }

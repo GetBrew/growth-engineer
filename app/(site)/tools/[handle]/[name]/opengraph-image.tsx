@@ -21,7 +21,7 @@ export default async function Image({
 }) {
   const { handle, name } = await params
   const key = `${handle}/${name}`
-  const result = isValidOwnedKey(key) ? await loadTool(key) : null
+  const result = isValidOwnedKey(key) ? loadTool(key) : null
   if (!result) {
     return new Response(null, { status: 404 })
   }

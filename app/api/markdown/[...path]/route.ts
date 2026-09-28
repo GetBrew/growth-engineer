@@ -22,7 +22,7 @@ export async function GET(
   const pathname = `/${path.join('/')}`
   const tagKey = filePathToTagKey(pathname)
   if (tagKey) {
-    const tagDocument = await loadTagDocument(tagKey)
+    const tagDocument = loadTagDocument(tagKey)
     return tagDocument
       ? markdownResponse(tagDocument.markdown)
       : new Response('Not found', { status: 404 })
@@ -32,9 +32,9 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
-  const document = await loadDocument(ref.type, ref.key)
+  const document = loadDocument(ref.type, ref.key)
   if (!document) {
-    const alias = await resolveAlias(ref.type, ref.key)
+    const alias = resolveAlias(ref.type, ref.key)
     if (alias) {
       return new Response(null, {
         status: 308,

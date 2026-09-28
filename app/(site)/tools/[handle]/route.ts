@@ -22,12 +22,9 @@ export async function GET(
   if (!isValidHandle(handle)) {
     return new Response('Not found', { status: 404 })
   }
-  const [company, tools] = await Promise.all([
-    loadCompany(handle),
-    loadToolsByCompany(handle),
-  ])
+  const [company, tools] = [loadCompany(handle), loadToolsByCompany(handle)]
   if (!company) {
-    const alias = await resolveAlias('company', handle)
+    const alias = resolveAlias('company', handle)
     return alias
       ? redirect(`/tools/${alias.key}`)
       : new Response('Not found', { status: 404 })

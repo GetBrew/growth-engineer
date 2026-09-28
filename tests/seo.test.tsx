@@ -125,7 +125,7 @@ describe('sitemap.xml', () => {
   })
 
   test('every entity page carries its own last-modified date', async () => {
-    const entries = await loadSitemapEntries()
+    const entries = loadSitemapEntries()
     const entity = entries.filter((entry) =>
       /^\/(tools|companies|workflows)\/./.test(entry.path)
     )

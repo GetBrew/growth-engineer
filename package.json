@@ -22,7 +22,7 @@
     "tsc": "node scripts/heavy-lock.mjs typecheck -- node scripts/typecheck.mjs",
     "test": "vitest",
     "test:run": "node scripts/heavy-lock.mjs tests -- vitest run",
-    "content:check": "node scripts/heavy-lock.mjs content -- vitest run tests/content.test.ts tests/content-schema.test.ts",
+    "content:check": "vitest run tests/content.test.ts tests/content-schema.test.ts",
     "knip": "node scripts/heavy-lock.mjs knip -- knip",
     "docs:check": "node scripts/check-docs.mjs",
     "deps:dedupe:check": "pnpm dedupe --check",

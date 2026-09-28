@@ -17,8 +17,8 @@ const EXAMPLE_WORKFLOW = 'high-intent-visitors'
  * same file — each tool it uses and the way in the file sets up first. Every
  * line is read from the catalog at build; nothing here is a mock-up.
  */
-export async function AccessTerminal() {
-  const result = await loadExample()
+export function AccessTerminal() {
+  const result = loadExample()
   if (!result) {
     return null
   }
@@ -87,11 +87,11 @@ export async function AccessTerminal() {
   )
 }
 
-async function loadExample() {
-  const example = await loadWorkflow(EXAMPLE_WORKFLOW)
+function loadExample() {
+  const example = loadWorkflow(EXAMPLE_WORKFLOW)
   if (example) {
     return example
   }
-  const [featured] = await loadWorkflows('featured', 1)
+  const [featured] = loadWorkflows('featured', 1)
   return featured ? loadWorkflow(featured.workflow.key) : null
 }

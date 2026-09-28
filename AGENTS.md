@@ -50,9 +50,9 @@ route is public; the only environment is one optional `NEXT_PUBLIC_SITE_URL`.
   goldens in `tests/render-markdown.test.ts` must still pass byte for byte.
 - **Docs only**: `pnpm docs:check`.
 
-Heavy commands (`check`, `tsc`, `build`, `test:run`, `content:check`,
-`knip`) queue through `scripts/heavy-lock.mjs`, one at a time per repository;
-a lock timeout is a queue timeout, not a failure. Never call `vitest`, `tsc`,
+Heavy commands (`check`, `tsc`, `build`, `test:run`, `knip`) queue through
+`scripts/heavy-lock.mjs`, one at a time per repository; a lock timeout is a
+queue timeout, not a failure. `content:check` is light and runs at once. Never call `vitest`, `tsc`,
 `next build` or `knip` directly; dev servers are `pnpm dev`. What CI blocks
 on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
 
@@ -101,7 +101,7 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   fields rejected), reserved handles, every step's tool resolves and is
   published, tags exist, aliases never shadow a live key, a published tool
   has ≥ 1 call on a declared way in and `docs:`, a tool file has no body,
-  logos stay under 32 KB. Line caps are checked by `pnpm content:check`. A new rule ships
+  logos stay under 32 KB, files within their line caps. A new rule ships
   with a negative test in `tests/content-schema.test.ts` — a guard is not done until it has FAILED.
 - Computed values (tags, `searchText`) come from `lib/content/derive.ts`;
   the links and tag counts from `lib/content/build-relations.ts`, read through

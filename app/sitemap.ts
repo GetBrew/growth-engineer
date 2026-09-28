@@ -7,8 +7,8 @@ import { SITE_ORIGIN } from '@/lib/env'
  * the sitemap carries a real `lastModified` per page instead of the build
  * time — a crawler recrawls what changed, not everything.
  */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  return (await loadSitemapEntries()).map((entry) => ({
+export default function sitemap(): MetadataRoute.Sitemap {
+  return loadSitemapEntries().map((entry) => ({
     url: `${SITE_ORIGIN}${entry.path}`,
     ...(entry.updatedAt ? { lastModified: new Date(entry.updatedAt) } : {}),
     changeFrequency: entry.changeFrequency,

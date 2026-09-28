@@ -23,11 +23,11 @@ const ROWS = [
   { duration: '140s', reverse: false },
 ]
 
-export async function ContributionMarquee() {
-  const [workflows, companies] = await Promise.all([
+export function ContributionMarquee() {
+  const [workflows, companies] = [
     loadWorkflows('featured', 30),
     loadCompanies(24),
-  ])
+  ]
 
   const kinds: Array<Array<Pill>> = [
     workflows.map(({ workflow, tools }) => ({
