@@ -152,8 +152,8 @@ describe('/llms.txt', () => {
     expect(lines[0]).toBe(`# ${SITE.name}`)
     expect(lines[2]).toBe(`> ${SITE.tagline}`)
     for (const heading of [
-      '## Tools',
       '## Workflows',
+      '## Tools',
       '## Companies',
       '## Tags',
       '## Optional',
@@ -161,7 +161,9 @@ describe('/llms.txt', () => {
       expect(lines).toContain(heading)
     }
     // Nothing before the first H2 is a heading: the definitions are prose.
-    const firstSection = lines.indexOf('## Tools')
+    const firstSection = lines.indexOf('## Workflows')
+    // Workflows first: they are what an agent comes for.
+    expect(firstSection).toBeLessThan(lines.indexOf('## Tools'))
     expect(
       lines.slice(1, firstSection).some((line) => line.startsWith('#'))
     ).toBe(false)
@@ -170,7 +172,10 @@ describe('/llms.txt', () => {
         `**${entry.term}** (\`${entry.example}\`): ${entry.definition}`
       )
     }
-    const fileLines = lines.filter((line) => FILE_LINE.test(line))
+    // Catalog files are on the site; the repository's own docs are not files it lists.
+    const fileLines = lines.filter(
+      (line) => FILE_LINE.test(line) && !line.includes(SITE.repository)
+    )
     expect(fileLines.length).toBe(
       catalog.documents.size + catalog.tagDocuments.size
     )
@@ -191,6 +196,7 @@ describe('/llms.txt', () => {
     }
     expect(text).toContain(`(${SITE_ORIGIN}/llms-full.txt)`)
     expect(text).toContain(`(${SITE_ORIGIN}/sitemap.xml)`)
+    expect(text).toContain(`${SITE.repository}/blob/main/CONTRIBUTING.md`)
     expect(text).not.toContain('localhost:3000/undefined')
   })
 })
@@ -206,12 +212,12 @@ describe('/llms-full.txt', () => {
     for (const document of catalog.documents.values()) {
       expect(text).toContain(document.markdown.trimEnd())
     }
-    // Tools first, then workflows, then companies — the order /llms.txt uses.
+    // Workflows first, then tools, then companies — the order /llms.txt uses.
     const firstWorkflow = text.indexOf(`<!-- file: ${SITE_ORIGIN}/workflows/`)
     const firstCompany = text.indexOf(`<!-- file: ${SITE_ORIGIN}/companies/`)
     const firstTool = text.indexOf(`<!-- file: ${SITE_ORIGIN}/tools/`)
-    expect(firstTool).toBeLessThan(firstWorkflow)
-    expect(firstWorkflow).toBeLessThan(firstCompany)
+    expect(firstWorkflow).toBeLessThan(firstTool)
+    expect(firstTool).toBeLessThan(firstCompany)
   })
 })
 

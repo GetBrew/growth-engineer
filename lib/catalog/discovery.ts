@@ -200,12 +200,12 @@ export async function loadCorpus(): Promise<
   const catalog = getCatalog()
   const byKey = (a: string, b: string) => a.localeCompare(b)
   const refs = [
-    ...[...catalog.tools.keys()]
-      .sort(byKey)
-      .map((key) => formatRef('tool', key)),
     ...[...catalog.workflows.keys()]
       .sort(byKey)
       .map((key) => formatRef('workflow', key)),
+    ...[...catalog.tools.keys()]
+      .sort(byKey)
+      .map((key) => formatRef('tool', key)),
     ...[...catalog.companies.keys()]
       .sort(byKey)
       .map((key) => formatRef('company', key)),

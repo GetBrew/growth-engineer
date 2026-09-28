@@ -16,13 +16,20 @@ generated markdown file any agent can run; copying it is the product action.**
 Reads are public; agents fetch files with no sign-in.
 
 **THE CATALOG IS THE REPOSITORY.** Every entry is a markdown file under
-`companies/` and `workflows/`, plus the vocabulary in `tags.yml`; the site is built from them, and
-the community contributes by pull request. To add or change catalog data,
-read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the folder READMEs
-([`companies/`](companies/README.md), [`workflows/`](workflows/README.md),
-[`tags.yml`](tags.yml)); never edit a rendered file or the app to change
-a fact. Vision: [`docs/vision.md`](docs/vision.md). File schema:
-[`docs/data-model.md`](docs/data-model.md).
+`companies/` and `workflows/`, plus the vocabulary in `tags.yml`; the site is
+built from them, and the community contributes by pull request.
+
+## Changing the catalog
+
+Adding or fixing a company, tool, workflow or tag touches only `companies/`,
+`workflows/` and `tags.yml`, then `pnpm content:check`. Start at
+[`CONTRIBUTING.md`](CONTRIBUTING.md); every field is in the folder READMEs
+([`companies/`](companies/README.md), [`workflows/`](workflows/README.md)),
+and two skills do it end to end:
+[`add-workflow`](.agents/skills/add-workflow/SKILL.md) and
+[`research-company`](.agents/skills/research-company/SKILL.md). Never edit a
+rendered file or the app to change a fact. The rest of this file is for
+changing the site itself.
 
 ## Stack
 
@@ -43,21 +50,11 @@ route is public; the only environment is one optional `NEXT_PUBLIC_SITE_URL`.
   goldens in `tests/render-markdown.test.ts` must still pass byte for byte.
 - **Docs only**: `pnpm docs:check`.
 
-### Serialized commands
-
-`pnpm check`, `pnpm tsc`, `build`, `test:run`, `content:check`, `knip` run
-under `scripts/heavy-lock.mjs` — one at a time per repository across all
-worktrees. A lock timeout is a QUEUE timeout, not a check failure. Never call
-the underlying binary (`vitest`, `tsc`, `next build`, `knip`) directly. Dev
-servers: `pnpm dev`, never `npx next dev`. `pnpm tsc <program>` runs one of
-`app`, `tests`, `scripts`.
-
-### What CI blocks on
-
-Lint (Biome — formatting and import cycles too), three typecheck programs in
-parallel, `pnpm build` plus the client bundle ratchet, the unit suite (which
-includes the content suite), and hygiene (`docs:check`, `content:check`,
-`knip`, duplicate deps). [`docs/ci.md`](docs/ci.md).
+Heavy commands (`check`, `tsc`, `build`, `test:run`, `content:check`,
+`knip`) queue through `scripts/heavy-lock.mjs`, one at a time per repository;
+a lock timeout is a queue timeout, not a failure. Never call `vitest`, `tsc`,
+`next build` or `knip` directly; dev servers are `pnpm dev`. What CI blocks
+on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
 
 ## Critical invariants
 
@@ -76,8 +73,8 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   company's ways once), inputs in backticks, ≤ 10 steps, Rules last and
   immutable, tool ≈ 80 lines, workflow ≈ 200. Change the format and the
   golden fixtures in `tests/fixtures/markdown/` in the same commit.
-- A file's `updated` date is the newest ENTITY date of every file that fed
-  it (tool ← company, workflows; workflow ← tools, their companies).
+- A rendered file's `updated` is the newest `updated` among the source files
+  that fed it (tool ← company, workflows; workflow ← tools, their companies).
 
 ### Keys and refs
 
@@ -104,10 +101,10 @@ includes the content suite), and hygiene (`docs:check`, `content:check`,
   fields rejected), reserved handles, every step's tool resolves and is
   published, tags exist, aliases never shadow a live key, a published tool
   has ≥ 1 call on a declared way in and `docs:`, a tool file has no body,
-  logos exist. Line caps are checked by `pnpm content:check`. A new rule ships
+  logos stay under 32 KB. Line caps are checked by `pnpm content:check`. A new rule ships
   with a negative test in `tests/content-schema.test.ts` — a guard is not done until it has FAILED.
-- PROJECTIONS (tags, `searchText`) are computed in `lib/content/derive.ts`;
-  the EDGES and tag counts in `lib/content/build-relations.ts`, read through
+- Computed values (tags, `searchText`) come from `lib/content/derive.ts`;
+  the links and tag counts from `lib/content/build-relations.ts`, read through
   `relationsOf` — one writer each, never authored in a file. The workflow ↔ tool relationship is
   written into BOTH rendered files (`tools:` / `workflows:`) and both pages.
 - The pure half of `lib/catalog/*` (keys, renderer, search grammar) imports
@@ -187,13 +184,11 @@ same batch; `pnpm docs:check` fails on a broken link or this file over cap.
 
 | Topic | Doc |
 | --- | --- |
-| Adding a company, tool, workflow or tag | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`companies/README.md`](companies/README.md), [`workflows/README.md`](workflows/README.md), [`tags.yml`](tags.yml) |
 | Product vision, phases, what is not in v1 | [`docs/vision.md`](docs/vision.md) |
-| The file schema: every field, every rule, the projections | [`docs/data-model.md`](docs/data-model.md) |
+| What the build derives and every rule it enforces | [`docs/data-model.md`](docs/data-model.md) |
 | The rendered markdown file contract and where files are served | [`docs/markdown-files.md`](docs/markdown-files.md) |
 | Request path, the build-time catalog, search, layout | [`docs/architecture.md`](docs/architecture.md) |
 | First run and deploying | [`docs/setup.md`](docs/setup.md) |
-| Validation, the heavy lock, dev servers, worktrees | [`docs/validation.md`](docs/validation.md) |
-| CI jobs and why each exists | [`docs/ci.md`](docs/ci.md) |
-| Cache Components, bundle budget, Turbopack | [`docs/performance.md`](docs/performance.md) |
-| Adding a second app | [`docs/microfrontends.md`](docs/microfrontends.md) |
+| Validation, the heavy lock, dev servers, worktrees | [`docs/maintainers/validation.md`](docs/maintainers/validation.md) |
+| CI jobs and why each exists | [`docs/maintainers/ci.md`](docs/maintainers/ci.md) |
+| Cache Components, bundle budget, Turbopack | [`docs/maintainers/performance.md`](docs/maintainers/performance.md) |

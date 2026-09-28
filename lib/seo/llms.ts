@@ -17,6 +17,12 @@ export function llmsPreamble(origin: string, title: string): Array<string> {
     `Site: ${origin}`,
     `Source: ${SITE.repository} — add a company, tool or workflow by pull request.`,
     '',
+    'How to use it:',
+    '',
+    '- Pick a workflow below whose title is the result you want, fetch its file, and follow it: it names the inputs and keys to ask the user for, sets up each tool, and lists the steps and the rules.',
+    '- A tool file is one call, set up; use it to run a single step or to build your own workflow.',
+    `- To contribute, read ${SITE.repository}/blob/main/CONTRIBUTING.md.`,
+    '',
     'Definitions:',
     '',
     ...DEFINITIONS.map(

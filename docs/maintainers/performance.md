@@ -2,7 +2,7 @@
 
 > What prerenders and why — the catalog built once per process from sync
 > reads, `generateStaticParams` on every detail route, listings that narrow
-> in the browser — lives in [`architecture.md`](architecture.md). This page
+> in the browser — lives in [`architecture.md`](../architecture.md). This page
 > is the general mechanics.
 
 Three mechanisms, each guarding a different way an app gets slow.

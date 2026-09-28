@@ -10,10 +10,26 @@ repository, and the site is built from them.
 
 Brought to you by [Brew](https://brew.new). MIT licensed.
 
+## Run a workflow
+
+1. **Pick one** on the site's `/workflows` page, or in [`workflows/`](workflows/).
+2. **Copy its file**: the Copy button on its page, or its URL with `.md`
+   (`/workflows/funding-signal-outbound.md`).
+3. **Paste it into any agent** — Claude, ChatGPT, Cursor, your own. The file
+   tells it what to ask you for (inputs, API keys or sign-ins), how to set up
+   each tool, and the steps; it asks before it sends, spends or changes
+   anything.
+
+Or connect your agent to the read-only MCP server at `/mcp` and ask it to
+find a play. Have a play that works? [Add it](CONTRIBUTING.md) — or ask your
+agent to, with the [`add-workflow`](.agents/skills/add-workflow/SKILL.md)
+skill.
+
 ## The catalog is the repo
 
 ```
 companies/<handle>/company.md        who the company is, its ways in → /companies/apollo
+companies/<handle>/logo.svg          its logo, optional            → /logos/apollo.svg
 companies/<handle>/tools/<name>.md   each function an agent calls  → /tools/apollo/enrich-person
 workflows/<name>.md                  steps that reach a result     → /workflows/funding-signal-outbound
 tags.yml                             the vocabulary                → capability, motion, channel, category
@@ -25,10 +41,10 @@ tags.yml                             the vocabulary                → capabilit
   three files, each named after its function and shelved under a capability
   from `tags.yml`.
 - A **workflow** is up to ten steps, each naming one tool (or none, when the
-  agent does it itself), phrased as the
-  result it reaches, written by a person (`author:` is a GitHub login). A
-  growth hack is a workflow; there is no second kind. The build links every
-  workflow to its tools and every tool to the workflows that use it.
+  agent does it itself), phrased as the result it reaches, written by a
+  person (`author:` is a GitHub login). A growth hack is a workflow; there is
+  no second kind. The build links every workflow to its tools and every tool
+  to the workflows that use it.
 
 Adding your company is a `company.md`, one file per function, and a pull request:
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Each folder's README has the full
@@ -40,8 +56,8 @@ field reference: [`companies/`](companies/README.md),
 
 At build time the compiler under `lib/content/` reads every file, validates
 it (strict schemas, resolved references, at most ten steps, unique keys),
-derives what used to be database columns (`has:*` tags, counts, search
-text) and renders each company, tool and workflow through the
+computes what no file states (`has:*` tags, counts, search text) and
+renders each company, tool and workflow through the
 one renderer in `lib/catalog/render-markdown.ts` — the file agents fetch,
 golden-tested byte for byte. Nothing renders at request time; nobody
 hand-edits a rendered file. A deploy is the publish.

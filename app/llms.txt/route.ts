@@ -29,15 +29,16 @@ export async function GET() {
   const tags = await loadLlmsTags()
   const lines = [
     ...llmsPreamble(SITE_ORIGIN, SITE.name),
-    ...section('Tools', index.tool),
     ...section('Workflows', index.workflow),
+    ...section('Tools', index.tool),
     ...section('Companies', index.company),
     ...section('Tags', tags),
     '## Optional',
     '',
     `- [Every company, tool and workflow file in one document](${SITE_ORIGIN}/llms-full.txt): the whole catalog, for one read.`,
     `- [Sitemap](${SITE_ORIGIN}/sitemap.xml): every page.`,
-    `- [Repository](${SITE.repository}): the files themselves, and how to contribute.`,
+    `- [Repository](${SITE.repository}): the files themselves.`,
+    `- [Contributing](${SITE.repository}/blob/main/CONTRIBUTING.md): add a workflow, a company or a fix by pull request; the fields are in workflows/README.md and companies/README.md.`,
     '',
   ]
   return new Response(lines.join('\n'), {

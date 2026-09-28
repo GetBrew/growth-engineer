@@ -1,6 +1,6 @@
 import type { EntityKind } from '@/components/common/entity-icon'
 import { GUIDE_STEPS } from '@/lib/constants/guide-steps'
-import { repoFileUrl } from '@/lib/github'
+import { GITHUB_URL, repoFileUrl } from '@/lib/github'
 
 /**
  * The contribute guides in `/docs`, one per kind of entry someone can add.
@@ -31,6 +31,9 @@ export type Guide = {
   /** The file on GitHub this guide is about; what "View on GitHub" opens. */
   docPath: string
 
+  /** The agent skill that does it end to end, in `.agents/skills/`. */
+  skill: string
+
   /**
    * The Loom share id of the walkthrough, once it is recorded. Absent means
    * the page has no video slot and makes no mention of one.
@@ -48,9 +51,10 @@ export const GUIDES: ReadonlyArray<Guide> = [
       'Turn the steps you already run into one file any agent can follow.',
     length: 'four-minute',
     intro:
-      'A workflow is one to ten steps that reach a result. Each step uses one published tool and says what to do with it.',
-    note: 'Every step must name a published tool, or the check rejects the file.',
+      'A workflow is one to ten steps that reach a result. A step uses one published tool and says what to do with it, or none when the agent does it itself.',
+    note: 'A step that calls a service must name a published tool, or the check rejects the file.',
     docPath: 'workflows/README.md',
+    skill: 'add-workflow',
   },
   {
     id: 'tool',
@@ -64,6 +68,7 @@ export const GUIDES: ReadonlyArray<Guide> = [
       'A tool is one function an agent calls — one MCP tool, one CLI command, one API endpoint. A product with three functions is three files.',
     note: 'Its `capability` must be listed in `tags.yml`. If none fits, add it there in the same pull request.',
     docPath: 'companies/README.md#toolsnamemd',
+    skill: 'research-company',
   },
   {
     id: 'company',
@@ -76,6 +81,7 @@ export const GUIDES: ReadonlyArray<Guide> = [
       'A company is one folder, named by its handle. It holds who you are, each way into your product, and one file per function an agent can call.',
     note: 'The handle is permanent: it is your URL and the first half of every tool key. A rename only adds a redirect.',
     docPath: 'companies/README.md',
+    skill: 'research-company',
   },
 ]
 
@@ -109,10 +115,20 @@ export function nextGuide(id: string): Guide | undefined {
 /**
  * The guide as one markdown file: what the agent menu copies and downloads,
  * the way it copies a tool or workflow file on the catalog's detail pages.
+ * It hands an agent everything it needs to start: the repository, the
+ * reference to read, the skill that does it end to end, and the steps.
  */
 export function guideMarkdown(guide: Guide): string {
   const steps = (GUIDE_STEPS[guide.id] ?? [])
     .map((step, index) => `${index + 1}. ${step.title}\n\n${step.detail}`)
     .join('\n\n')
-  return `# ${guide.title}\n\n${guide.intro}\n\n## How to create\n\n${steps}\n`
+  const start = [
+    `Work in a clone of ${GITHUB_URL}.`,
+    `Read ${guideDocUrl(guide)} first: it has every field and a template to copy.`,
+    `The \`${guide.skill}\` skill does this end to end: ${repoFileUrl(`.agents/skills/${guide.skill}/SKILL.md`)}.`,
+    'Run `pnpm content:check` before opening the pull request: it names every problem with its file.',
+  ]
+    .map((line) => `- ${line}`)
+    .join('\n')
+  return `# ${guide.title}\n\n${guide.intro}\n\n## Before you start\n\n${start}\n\n## How to create\n\n${steps}\n`
 }

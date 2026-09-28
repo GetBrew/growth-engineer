@@ -24,15 +24,15 @@ workflow's body holds its steps, and a tool file is its header alone. The
 community edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
 **The compiler** (`lib/content/`) — `read-tree.ts` walks `companies/` and
-`workflows/`, reads `tags.yml`, lists `public/logos/`, and is the only
+`workflows/`, reads `tags.yml`, finds each company's `logo.<ext>`, and is the only
 module that touches the filesystem.
 `build-catalog.ts` runs one builder per kind (`build-tags`,
 `build-companies`, `build-tools`, `build-workflows`): each parses its files
 against a strict schema (`lib/schemas/content.ts`, zod, unknown fields
 rejected), resolves every reference (a tool's calls on its company's ways
 in, a workflow's tools and tags, aliases) and collects every problem into
-one `ContentErrors` with file paths. `build-relations.ts` writes the edges. `derive.ts` computes the
-projections that used to be database columns; `build-documents.ts` renders
+one `ContentErrors` with file paths. `build-relations.ts` writes the links. `derive.ts` computes the
+tags and search text; `build-documents.ts` renders
 the files. The result is a `Catalog`: maps by key, the rendered documents by
 ref, the alias map, the edges, the listing orders.
 
@@ -132,4 +132,3 @@ A query with no words in it (`???`) matches nothing.
 | A projection | `lib/content/derive.ts`, the one writer |
 | A read | a loader in `lib/catalog/loaders.ts`, and a case in `tests/content.test.ts` |
 | A rule about the content | the `lib/content/build-*.ts` file that owns it, with a case in `tests/content-schema.test.ts` that FAILS first |
-| A second app | its own project — [`docs/microfrontends.md`](microfrontends.md) |
