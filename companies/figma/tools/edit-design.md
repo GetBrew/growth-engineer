@@ -8,5 +8,3 @@ aliases:
   - figma/design-assets
 updated: 2026-09-26
 ---
-
-`use_figma` is available on the remote MCP server only, not the desktop server.

@@ -8,7 +8,3 @@ cli: amp charts query
 api: POST /v1/projects/{project_id}/charts/{chart_id}/query
 updated: 2026-09-26
 ---
-
-Without a time range the query uses the chart's saved range, or the last 30
-days. Other chart types return `422` with `unsupported_chart_type`. On the CLI
-and the API the token needs the `analytics:read` scope.

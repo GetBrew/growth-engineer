@@ -10,8 +10,3 @@ aliases:
   - apollo/build-audience
 updated: 2026-09-26
 ---
-
-Search costs no credits and finds net-new people, not contacts already saved
-in Apollo. It returns up to 100 people per page and 50,000 in total, so narrow
-it with filters such as `person_titles`, `person_seniorities` and
-`q_organization_domains_list`. Enrich the matches to get their work emails.

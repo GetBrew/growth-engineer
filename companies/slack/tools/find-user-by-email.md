@@ -8,5 +8,3 @@ cli: slack api users.lookupByEmail
 api: GET /users.lookupByEmail
 updated: 2026-09-26
 ---
-
-Needs the `users:read.email` scope; a deactivated user returns `users_not_found`. Over MCP, `slack_search_users` finds people by name, email or role.

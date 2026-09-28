@@ -11,9 +11,10 @@ companies/<handle>/
   tools/<name>.md       one FUNCTION per file: the call on each way in, and where it is documented
 ```
 
-Every file is a YAML header between `---` lines, then an optional markdown
-body. Unknown fields are rejected, so a typo fails `pnpm content:check` with
-the file's path instead of vanishing.
+Every file is a YAML header between `---` lines; `company.md` may add a
+markdown body, its description, and a tool file ends at its header. Unknown
+fields are rejected, so a typo fails `pnpm content:check` with the file's
+path instead of vanishing.
 
 ## company.md
 
@@ -109,8 +110,6 @@ mcp: enrich_person               # the MCP tool name, as the server lists it
 api: POST /v1/people/enrich      # METHOD /path, as the API reference prints it
 updated: 2026-09-16
 ---
-
-Optional longer description, shown on the tool page and in the file.
 ```
 
 - Each call — `mcp:`, `cli:`, `api:` — must be a way `company.md` declares,
@@ -121,8 +120,8 @@ Optional longer description, shown on the tool page and in the file.
 - A published tool needs at least one call and `docs:`, the page that names
   it. Until it has both, set `status: draft` — a draft has no page and no
   file. A company whose tools are all drafts has no page either.
-- The body follows the company description's heading rules. A tool or
-  company file renders to at most 80 lines.
+- A tool file is its header and nothing else: `summary` says what the call
+  does. A tool or company file renders to at most 80 lines.
 - `aliases` lists old keys to redirect; `status` is `published`,
   `deprecated` or `draft`.
 

@@ -2,8 +2,8 @@
 
 import { Copy01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useState } from 'react'
 import { buttonVariants } from '@/components/ui/button'
+import { useCopy } from '@/lib/hooks/use-copy'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -12,18 +12,7 @@ import { cn } from '@/lib/utils/cn'
  * (`components/detail/markdown-file.tsx`), at the size a caption bar allows.
  */
 export function CopyButton({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState(false)
-
-  async function copy() {
-    const didCopy = await navigator.clipboard
-      .writeText(text)
-      .then(() => true)
-      .catch(() => false)
-    if (didCopy) {
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
-    }
-  }
+  const { copied, copy } = useCopy()
 
   return (
     <button
@@ -32,7 +21,7 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
         buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
         'shrink-0 text-faint hover:text-foreground'
       )}
-      onClick={copy}
+      onClick={() => copy(text)}
       type="button"
     >
       <HugeiconsIcon

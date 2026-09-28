@@ -8,10 +8,3 @@ cli: lemlist api POST /database/people
 api: POST /database/people
 updated: 2026-09-27
 ---
-
-Send `filters`, each a `filterId` with `in` and `out` value lists
-(`GET /database/filters` lists the filter ids), and optionally a free-text
-`search`.
-Pages hold up to 100 people (`size`), and searches are limited to a number of
-queries every 24 hours, reported in the response's `limitation`. Enrich the
-people you keep to get their emails.

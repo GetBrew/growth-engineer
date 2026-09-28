@@ -78,6 +78,24 @@ const nextConfig: NextConfig = {
       // in MCP `get`.
       { source: '/map', destination: '/', permanent: true },
       { source: '/map/:path*', destination: '/', permanent: true },
+      // The guides moved from /contribute to /docs, under readable names.
+      { source: '/contribute', destination: '/docs', permanent: true },
+      {
+        source: '/contribute/workflow',
+        destination: '/docs/add-a-workflow',
+        permanent: true,
+      },
+      {
+        source: '/contribute/tool',
+        destination: '/docs/add-a-tool',
+        permanent: true,
+      },
+      {
+        source: '/contribute/company',
+        destination: '/docs/add-your-company',
+        permanent: true,
+      },
+      { source: '/contribute/:path*', destination: '/docs', permanent: true },
       // A growth hack IS a workflow; the concept went, the URL keeps its promise.
       { source: '/hacks', destination: '/workflows', permanent: true },
       { source: '/hacks/:path*', destination: '/workflows', permanent: true },

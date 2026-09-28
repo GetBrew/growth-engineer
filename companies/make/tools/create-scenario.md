@@ -8,8 +8,3 @@ cli: make-cli scenarios create
 api: POST /scenarios
 updated: 2026-09-27
 ---
-
-`teamId`, `scheduling` and `blueprint` are required; the blueprint lists the
-modules, their parameters and the connections they use. A new scenario is
-inactive: activate it with `scenarios_activate`, `make-cli scenarios activate`
-or `POST /scenarios/{scenarioId}/start` before running it.

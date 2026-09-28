@@ -55,8 +55,9 @@ required. The calls are top-level: `mcp:` (the tool name), `cli:` (starting
 with the company's binary) and `api:` (`METHOD /path`), each on a way the
 company declares; a published tool needs at least one, and `docs:`. `docs` is the page
 that names the call. `status` is `published` (default), `deprecated`, or
-`draft` (no page, no file, not listed). `aliases` lists old keys. The body
-is the description.
+`draft` (no page, no file, not listed). `aliases` lists old keys. There is
+no body: `summary` says what the call does, and anything after the header
+is an error.
 
 ## Workflows — `workflows/<name>.md` (flat)
 
@@ -120,7 +121,6 @@ offers that way.
 | tag `counts` | the tag's members | `build-relations.ts` |
 | listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
 | the rendered files and their line count | everything above | `build-documents.ts` |
-| each file's `sources`: its own file, then every tool file and company file (where the ways in live) whose facts it prints | the files above | `build-documents.ts` |
 
 ## Rules the build enforces
 
@@ -129,8 +129,9 @@ Every problem is reported at once, with its file path
 var names; reserved or malformed handles and names; a capability or category
 missing from `tags.yml`; a call on a way the company does not declare, or in
 the wrong shape; an MCP way with both or neither of `url` and `command`; an
-API key with no `env`; a published tool with no call; a step whose tool does
-not fit the workflow's status; an unknown or derived tag; an unknown
+API key with no `env`; a remote MCP way with an API key; a published tool
+with no call; a tool file with a body; a step whose tool does not fit the
+workflow's status; an unknown or derived tag; an unknown
 category; a missing logo; an alias that shadows an existing key (drafts
 included) or is claimed twice; two workflows with the same `featured` rank;
 more than ten steps. `tests/content-schema.test.ts` proves each one fails.

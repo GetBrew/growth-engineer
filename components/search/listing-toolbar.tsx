@@ -28,7 +28,7 @@ export function ListingToolbar({
         {groups.map((group) => (
           <nav
             aria-label={group.label}
-            className="flex flex-wrap items-center gap-x-3 gap-y-2"
+            className="flex flex-wrap items-center gap-x-3 gap-y-2 max-sm:flex-col max-sm:flex-nowrap max-sm:items-stretch"
             key={group.key}
           >
             {group.title ? (

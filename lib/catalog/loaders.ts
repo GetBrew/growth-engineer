@@ -220,11 +220,12 @@ export async function loadPaletteItems(): Promise<Array<PaletteItem>> {
  */
 export async function loadSourceExcerpt(
   path: string,
-  excerpt?: Excerpt
+  excerpt?: Excerpt,
+  omit?: ReadonlyArray<string>
 ): Promise<string> {
   const source = getSourceFile(path)
   if (source === undefined) {
     throw new Error(`${path} is not a file in the content tree`)
   }
-  return sourceExcerpt(path, source, excerpt)
+  return sourceExcerpt(path, source, excerpt, omit)
 }

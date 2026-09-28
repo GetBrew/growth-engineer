@@ -6,6 +6,3 @@ docs: https://www.twilio.com/docs/sendgrid/api-reference/single-sends/schedule-s
 api: PUT /v3/marketing/singlesends/{id}/schedule
 updated: 2026-09-27
 ---
-
-Confirm the Single Send, its recipients and its content with the user
-before sending.

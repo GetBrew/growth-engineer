@@ -8,10 +8,3 @@ cli: webflow sites publish
 api: POST /sites/{site_id}/publish
 updated: 2026-09-27
 ---
-
-On the MCP server, use the `publish_site` action of `data_sites_tool` with
-`site_id`. The API needs `customDomains` (custom domain IDs) or
-`publishToWebflowSubdomain: true`; the CLI publishes to the Webflow
-subdomain unless you pass `--domains`, publishes one page with `--page`, and
-previews with `--dry-run`. Publishing puts every pending change live, so
-confirm with the user first.

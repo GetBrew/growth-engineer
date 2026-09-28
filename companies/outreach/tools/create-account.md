@@ -7,9 +7,3 @@ mcp: account_create
 api: POST /accounts
 updated: 2026-09-27
 ---
-
-Over the API, send `data.type` set to `account` with `name` and fields such
-as `domain` under `data.attributes`. An account's `prospects` can't be
-written directly: create or update each prospect with an `account`
-relationship pointing at the new account. On the MCP server, check for an
-existing account with `account_search` first.

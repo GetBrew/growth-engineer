@@ -82,7 +82,6 @@ export type Tool = {
   companyKey: string
   name: string
   summary: string
-  description?: string
   /** A `capability:` slug from tags.yml; the key names the function. */
   capability: string
   /** The page that documents the call. */
@@ -174,12 +173,6 @@ export type CatalogDocument = {
   markdown: string
   lineCount: number
   updatedAt: number
-  /**
-   * The source files the markdown was rendered from, from the repo root: the
-   * entry's own file first, then every tool and company file whose facts it
-   * prints. The layout and the Rules come from the renderer, not a file.
-   */
-  sources: ReadonlyArray<string>
 }
 
 /** A tag's rendered file, `/tags/<namespace>/<slug>.md`: everything carrying it. */

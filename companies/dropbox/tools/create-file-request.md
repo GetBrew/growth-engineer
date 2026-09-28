@@ -6,5 +6,3 @@ docs: https://docs.dropboxapi.com/dropbox-api/api-reference/user-endpoints/file-
 api: POST /2/file_requests/create
 updated: 2026-09-26
 ---
-
-Give it a `title` and a `destination` folder. Deadlines can only be set by Professional and Business accounts. Requires the `file_requests.write` scope.

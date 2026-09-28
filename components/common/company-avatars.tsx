@@ -16,8 +16,8 @@ export type CompanyAvatar = {
 }
 
 const SIZE = {
-  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11', image: 'p-2' },
-  sm: { stack: '[&>*+*]:-ml-1.5', avatar: 'size-7', image: 'p-1.5' },
+  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11', image: 'p-1.5' },
+  sm: { stack: '[&>*+*]:-ml-1.5', avatar: 'size-7', image: 'p-1' },
 } as const
 
 const LIFT =
@@ -48,10 +48,14 @@ function Logo({
 
 function MoreChip({ label, size }: { label: string; size: keyof typeof SIZE }) {
   return (
+    // A small count pinned to the last logo's corner, like a notification
+    // badge: it says there are more without taking a slot in the row.
     <span
       className={cn(
-        'type-label relative grid place-items-center rounded-full bg-foreground px-2 text-background ring-2 ring-background',
-        size === 'md' ? 'h-11 min-w-11' : 'h-7 min-w-7'
+        'pointer-events-none absolute right-0 bottom-0 z-20 grid translate-x-1/3 translate-y-1/4 place-items-center rounded-full border bg-background font-medium text-soft tabular-nums ring-2 ring-background',
+        size === 'md'
+          ? 'h-5 min-w-5 px-1 text-[11px]/none'
+          : 'h-4 min-w-4 px-0.5 text-[9px]/none'
       )}
     >
       {label}

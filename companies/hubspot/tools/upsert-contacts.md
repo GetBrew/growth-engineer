@@ -9,5 +9,3 @@ aliases:
   - hubspot/manage-crm
 updated: 2026-09-26
 ---
-
-The API takes a batch and matches each contact on `idProperty`: `email` or a custom unique property. On the MCP server, `manage_crm_objects` shows the proposed changes and waits for the user to confirm before it writes.

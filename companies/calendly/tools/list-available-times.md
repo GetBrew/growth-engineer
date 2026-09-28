@@ -7,8 +7,3 @@ mcp: event_types-list_event_type_available_times
 api: GET /event_type_available_times
 updated: 2026-09-27
 ---
-
-Pass the `event_type` URI, `start_time` and `end_time`. The range can't
-start in the past or span more than 31 days, and the results aren't
-paginated. Offer the prospect a few of the returned times, then book the
-chosen one with `meetings-create_invitee` or `POST /invitees`.

@@ -7,7 +7,3 @@ mcp: perplexity_research
 api: POST /v1/agent
 updated: 2026-09-27
 ---
-
-`perplexity_research` is backed by the Agent API's `high` preset: on the API,
-send `preset: "high"` with the question as `input`. A long run can go in the
-background with `background: true` and be polled by its response ID.

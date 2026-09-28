@@ -6,6 +6,3 @@ docs: https://amplitude.com/docs/amplitude-ai/amplitude-mcp
 mcp: use_amplitude_cohorts
 updated: 2026-09-26
 ---
-
-A sync previews the export and asks for confirmation before it sends anything
-to the destination.

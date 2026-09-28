@@ -6,8 +6,3 @@ docs: https://help.gong.io/apidocs/retrieve-transcripts-of-calls-by-date-or-call
 api: POST /v2/calls/transcript
 updated: 2026-09-27
 ---
-
-Send a `filter` with `fromDateTime` and `toDateTime` in ISO-8601, and
-`callIds` to keep only those calls; when more records remain, repeat the
-request with the returned `cursor`. OAuth apps need the
-`api:calls:read:transcript` scope. The MCP server does not return transcripts.

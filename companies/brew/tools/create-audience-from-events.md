@@ -10,6 +10,3 @@ aliases:
   - brew/build-audience
 updated: 2026-09-26
 ---
-
-The audience builds asynchronously: poll it with `include=build` until it is
-ready before sending to it.

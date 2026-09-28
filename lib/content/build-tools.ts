@@ -15,13 +15,13 @@ import type {
 import { dateToMs, searchTextOf, toolTags } from './derive'
 import type { ProblemList } from './errors'
 import { parseFile } from './parse-file'
-import { proseProblems } from './prose'
 import type { ContentFile } from './read-tree'
 
 /**
  * Tools: one function each, `companies/<handle>/tools/<name>.md`. The file
  * names the call on each of its company's ways in (`mcp:`, `cli:`, `api:`);
- * a way plus a call is one `Access`. Every miss is a problem with a file
+ * a way plus a call is one `Access`. It is a header and nothing else: the
+ * `summary` says what the call does. Every miss is a problem with a file
  * path, never a crash.
  */
 
@@ -151,12 +151,11 @@ function resolveAccess(
 
 function toTool(
   file: ToolFile,
-  parsed: { data: ToolFrontmatter; body: string },
+  data: ToolFrontmatter,
   company: Company,
   tagMap: ReadonlyMap<string, Tag>,
   access: ReadonlyArray<Access>
 ): Tool {
-  const { data, body } = parsed
   const tags = toolTags(
     { capability: data.capability, access },
     company.category
@@ -166,7 +165,6 @@ function toTool(
     companyKey: file.handle,
     name: data.name,
     summary: data.summary,
-    ...(body ? { description: body } : {}),
     capability: data.capability,
     ...(data.docs ? { docs: data.docs } : {}),
     access,
@@ -234,12 +232,12 @@ export function buildTools(
     if (!(parsed && company)) {
       continue
     }
-    for (const problem of proseProblems(
-      parsed.body,
-      parsed.bodyLine,
-      'the description'
-    )) {
-      problems.add(file.path, problem.message, problem.line)
+    if (parsed.body) {
+      problems.add(
+        file.path,
+        'a tool file ends at its header: say what the call does in `summary`',
+        parsed.bodyLine
+      )
     }
     if (!context.tags.has(`capability:${parsed.data.capability}`)) {
       problems.add(
@@ -256,7 +254,7 @@ export function buildTools(
     if (parsed.data.status === 'draft') {
       drafts.add(`${file.handle}/${file.slug}`)
     } else {
-      const tool = toTool(file, parsed, company, context.tags, access)
+      const tool = toTool(file, parsed.data, company, context.tags, access)
       tools.set(tool.key, tool)
     }
   }

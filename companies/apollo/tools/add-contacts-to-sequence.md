@@ -10,9 +10,3 @@ aliases:
   - apollo/send-email
 updated: 2026-09-26
 ---
-
-Only contacts can be enrolled, so create the person as a contact first. Pass
-the sequence id as both `sequence_id` and `emailer_campaign_id`, the
-`contact_ids[]`, and `send_email_from_email_account_id` (list mailboxes with
-`apollo_email_accounts_index` or `apollo email-accounts list`). Enrolling can
-start real outbound email: confirm the sequence, mailbox and contacts first.

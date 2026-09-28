@@ -9,7 +9,3 @@ aliases:
   - asana/manage-tasks
 updated: 2026-09-26
 ---
-
-Every task belongs to a workspace: set `workspace`, or set `projects` or
-`parent` instead. The MCP tool creates up to 50 tasks per call, without a
-confirmation step.

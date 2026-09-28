@@ -6,5 +6,3 @@ docs: https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-car
 api: PUT /cards/{id}
 updated: 2026-09-26
 ---
-
-Set `idList` to move the card to another list, `due` to change its due date, and `closed` to archive it. Parameters can go in the query string or a JSON body.

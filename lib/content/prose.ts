@@ -1,5 +1,5 @@
 /**
- * Free prose an author writes into a rendered file — a company or tool
+ * Free prose an author writes into a rendered file — a company's
  * description, a workflow's Notes — sits between sections the build writes
  * itself: Set up, Steps, Rules. An agent reads the headings to find its way,
  * so prose may not add one of those sections or a heading at their level:

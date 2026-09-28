@@ -7,9 +7,3 @@ mcp: prospect_create
 api: POST /prospects
 updated: 2026-09-27
 ---
-
-Required and custom fields differ between orgs: on the MCP server,
-`input_fields_fetch` lists them before you create. Over the API, send
-`data.type` set to `prospect` with fields such as `firstName`, `lastName`,
-`emails` and `title` under `data.attributes`, and link the prospect to an
-account through its `account` relationship.

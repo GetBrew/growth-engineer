@@ -7,8 +7,3 @@ mcp: search_people
 api: GET /v2/people
 updated: 2026-09-27
 ---
-
-Over the API, filters are query parameters such as `email_addresses`,
-`title`, `account_id` and `cadence_id`, and `can_email=true` keeps only people
-who can be emailed. The MCP tool returns each person's id, name, email and job
-title; `person_by_id` (or `GET /v2/people/:id`) returns the full record.

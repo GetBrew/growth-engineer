@@ -3,14 +3,13 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import { CatalogList, type CatalogListItem } from '@/components/catalog/list'
 import { Page } from '@/components/layout/page'
-import { GUIDES } from '@/lib/constants/guides'
+import { GUIDES, guidePath } from '@/lib/constants/guides'
 import { pageMetadata } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Learn',
-  description:
-    'How growth.engineer works, and how to add your company, tools and workflows.',
-  path: '/contribute',
+  title: 'Docs',
+  description: 'How to add your company, tools and workflows to the catalog.',
+  path: '/docs',
 })
 
 /**
@@ -21,7 +20,7 @@ export const metadata: Metadata = pageMetadata({
  */
 const ITEMS: ReadonlyArray<CatalogListItem> = GUIDES.map((guide) => ({
   id: guide.id,
-  href: `/contribute/${guide.id}`,
+  href: guidePath(guide),
   title: guide.title,
   logo: { name: guide.title },
   description: guide.summary,
@@ -29,7 +28,8 @@ const ITEMS: ReadonlyArray<CatalogListItem> = GUIDES.map((guide) => ({
   entity: guide.entity,
 }))
 
-export default function ContributePage() {
+/** The guides, by section, in reading order. */
+export default function DocsPage() {
   return (
     <Page className="flex flex-col gap-(--space-block)">
       <div className="flex items-center gap-3">
@@ -41,10 +41,13 @@ export default function ContributePage() {
             strokeWidth={1.8}
           />
         </span>
-        <h1 className="type-page-title">Learn</h1>
+        <h1 className="type-page-title">Docs</h1>
       </div>
 
-      <CatalogList items={ITEMS} />
+      <section className="flex flex-col gap-(--space-sm)">
+        <h2 className="type-category">Contribute</h2>
+        <CatalogList items={ITEMS} />
+      </section>
     </Page>
   )
 }

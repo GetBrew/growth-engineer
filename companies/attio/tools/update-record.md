@@ -7,6 +7,3 @@ mcp: update-record
 api: PATCH /v2/objects/{object}/records/{record_id}
 updated: 2026-09-26
 ---
-
-To overwrite or remove multiselect values instead, send `PUT` to the same
-path.

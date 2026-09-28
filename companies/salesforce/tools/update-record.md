@@ -8,5 +8,3 @@ cli: sf data update record
 api: PATCH /services/data/vXX.X/sobjects/sObject/id/
 updated: 2026-09-26
 ---
-
-Use it to move an opportunity's stage or fill in fields from research. It fails if the record does not exist, the user cannot edit it, or a validation rule rejects a value.

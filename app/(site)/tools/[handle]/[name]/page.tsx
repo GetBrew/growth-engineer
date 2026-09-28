@@ -5,8 +5,6 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
 import { accessLabels } from '@/components/common/badges'
 import { NoResults } from '@/components/common/no-results'
-import { BuiltFrom } from '@/components/detail/built-from'
-import { DescriptionSection } from '@/components/detail/description-panel'
 import {
   DETAIL_DATE,
   DetailByline,
@@ -171,14 +169,12 @@ async function ToolDetail({ params }: { params: Params }) {
       />
 
       <div className="flex min-w-0 flex-col gap-(--space-block)">
-        <DescriptionSection text={tool.description} />
         <section className="flex flex-col gap-(--space-md)">
           <MarkdownFile
             fileName={filePath.split('/').pop() ?? 'tool.md'}
             markdown={document.markdown}
             preview={<MarkdownPreview markdown={document.markdown} />}
           />
-          <BuiltFrom sources={document.sources} />
         </section>
         <ToolAccessPanel tool={tool} />
       </div>

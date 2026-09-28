@@ -9,7 +9,3 @@ aliases:
   - attio/manage-crm
 updated: 2026-09-26
 ---
-
-Name the attribute to match on in the `matching_attribute` query parameter;
-it must be a unique attribute. Deals have no unique attribute by default, so
-add one before upserting deals.

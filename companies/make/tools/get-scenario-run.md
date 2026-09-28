@@ -8,7 +8,3 @@ cli: make-cli executions get
 api: GET /scenarios/{scenarioId}/executions/{executionId}
 updated: 2026-09-27
 ---
-
-Pass the `executionId` a run returned, with the scenario's ID. Poll until the
-status is no longer `RUNNING`: a run whose call timed out keeps going in Make
-for up to 40 minutes.

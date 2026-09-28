@@ -3,15 +3,18 @@ import { GUIDE_STEPS } from '@/lib/constants/guide-steps'
 import { repoFileUrl } from '@/lib/github'
 
 /**
- * The guides on `/contribute`, one per kind of entry someone can add.
+ * The contribute guides in `/docs`, one per kind of entry someone can add.
  *
  * PURE MODULE: data only. The list page draws these as rows and the detail
- * route generates one page per `id`, so the two cannot disagree about which
- * guides exist. Order is the order they are watched in, which is what the
- * "Next video" link at the foot of each page follows.
+ * route generates one page per `slug`, so the two cannot disagree about which
+ * guides exist. Order is the order they are read in, which is what the
+ * previous and next links at the foot of each page follow.
  */
 export type Guide = {
   id: string
+
+  /** The URL segment: `/docs/<slug>`. */
+  slug: string
   entity: EntityKind
   title: string
   summary: string
@@ -22,7 +25,7 @@ export type Guide = {
   /** The line under the video, before the chapters. */
   intro: string
 
-  /** The one thing that trips people up, called out under the intro. */
+  /** The one thing that trips people up, called out under the intro. `Backticks` mark code. */
   note: string
 
   /** The file on GitHub this guide is about; what "View on GitHub" opens. */
@@ -38,37 +41,40 @@ export type Guide = {
 export const GUIDES: ReadonlyArray<Guide> = [
   {
     id: 'workflow',
+    slug: 'add-a-workflow',
     entity: 'workflow',
     title: 'Add a workflow',
     summary:
       'Turn the steps you already run into one file any agent can follow.',
     length: 'four-minute',
     intro:
-      'A workflow is up to ten steps, each naming one published tool, written as the result it reaches. These are the moves from an empty file to a merged pull request.',
-    note: 'Every step must name a tool that already exists and is published, or the build rejects the file.',
+      'A workflow is one to ten steps that reach a result. Each step uses one published tool and says what to do with it.',
+    note: 'Every step must name a published tool, or the check rejects the file.',
     docPath: 'workflows/README.md',
   },
   {
     id: 'tool',
+    slug: 'add-a-tool',
     entity: 'tool',
     title: 'Add a tool',
     summary:
       'Describe one function your product exposes, and how an agent reaches it.',
     length: 'three-minute',
     intro:
-      'A tool is ONE function an agent calls — one MCP tool, one CLI command, one API endpoint. A product with three functions is three files, each named after its function.',
-    note: 'Its capability must be listed in tags.yml. If none fits, add it there in the same pull request.',
+      'A tool is one function an agent calls — one MCP tool, one CLI command, one API endpoint. A product with three functions is three files.',
+    note: 'Its `capability` must be listed in `tags.yml`. If none fits, add it there in the same pull request.',
     docPath: 'companies/README.md#toolsnamemd',
   },
   {
     id: 'company',
+    slug: 'add-your-company',
     entity: 'company',
     title: 'Add your company',
     summary: 'List your company, the ways into it, and the tools it makes.',
     length: 'five-minute',
     intro:
-      'A company is a folder named by its handle, holding who you are, every way into your product, and one file per function an agent can call.',
-    note: 'The handle is permanent: it becomes your URL and the first half of every tool key. A rename only ever redirects.',
+      'A company is one folder, named by its handle. It holds who you are, each way into your product, and one file per function an agent can call.',
+    note: 'The handle is permanent: it is your URL and the first half of every tool key. A rename only adds a redirect.',
     docPath: 'companies/README.md',
   },
 ]
@@ -78,8 +84,20 @@ export function guideDocUrl(guide: Guide): string {
   return repoFileUrl(guide.docPath)
 }
 
-export function findGuide(id: string): Guide | undefined {
-  return GUIDES.find((guide) => guide.id === id)
+/** A guide by its URL segment. */
+export function findGuide(slug: string): Guide | undefined {
+  return GUIDES.find((guide) => guide.slug === slug)
+}
+
+/** Where a guide lives on the site. */
+export function guidePath(guide: Guide): string {
+  return `/docs/${guide.slug}`
+}
+
+/** The guide before this one, or undefined at the start of the series. */
+export function previousGuide(id: string): Guide | undefined {
+  const index = GUIDES.findIndex((guide) => guide.id === id)
+  return index > 0 ? GUIDES[index - 1] : undefined
 }
 
 /** The guide watched after this one, or undefined at the end of the series. */

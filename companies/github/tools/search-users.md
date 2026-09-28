@@ -7,5 +7,3 @@ mcp: search_users
 api: GET /search/users
 updated: 2026-09-26
 ---
-
-The GitHub CLI has no user search; use the MCP server or the API.

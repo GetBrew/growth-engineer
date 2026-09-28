@@ -8,5 +8,3 @@ cli: mp query saved-report
 api: GET /insights
 updated: 2026-09-26
 ---
-
-Over the API, pass the report's `bookmark_id` and `project_id`. The Query API allows 60 queries per hour and 5 concurrent queries.

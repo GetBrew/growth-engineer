@@ -19,8 +19,9 @@ agent / browser ─▶ proxy.ts ──────────▶ app/(site)/…
 
 **The source tree** — `companies/<handle>/{company.md, tools/*.md}`,
 `workflows/<name>.md` (flat; the author is a GitHub login in the header), `tags.yml`.
-Keys are paths; headers are strict YAML; bodies are prose. The community
-edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
+Keys are paths; headers are strict YAML; a company's body is prose, a
+workflow's body holds its steps, and a tool file is its header alone. The
+community edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
 **The compiler** (`lib/content/`) — `read-tree.ts` walks `companies/` and
 `workflows/`, reads `tags.yml`, lists `public/logos/`, and is the only
@@ -76,7 +77,7 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml`, `/` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
-| `/contribute`, `/contribute/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
+| `/docs`, `/docs/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call; stateless, read-only, the same catalog |
 
 An unknown key on a detail route renders on demand, asks the alias map, and

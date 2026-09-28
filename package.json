@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "packageManager": "pnpm@11.25.0",
-  "description": "growth.engineer — the open-source, agent-friendly catalog of go-to-market tools and workflows. Every tool and workflow is one markdown file any agent can run.",
+  "description": "growth.engineer — the open-source catalog of go-to-market tools and workflows. Every tool and workflow is one markdown file any agent can run.",
   "engines": {
     "node": ">=22",
     "pnpm": ">=11"

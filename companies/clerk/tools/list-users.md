@@ -9,5 +9,3 @@ aliases:
   - clerk/authenticate-users
 updated: 2026-09-26
 ---
-
-To walk many pages, paginate with `starting_after` rather than `offset`.

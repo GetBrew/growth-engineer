@@ -9,7 +9,3 @@ aliases:
   - clay/build-audience
 updated: 2026-09-26
 ---
-
-Read the query reference first (`GET /search/query-mode/reference`), then
-page through results with `POST /search/query-mode/{search_id}/run` while
-`has_more` is true. Results per search and per 30 days are capped by plan.

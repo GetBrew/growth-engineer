@@ -7,5 +7,3 @@ mcp: query
 api: POST /api/agent/v1/query
 updated: 2026-09-27
 ---
-
-The API returns at most 200 rows per request, with a `continuation_token` to pass back for the next page.

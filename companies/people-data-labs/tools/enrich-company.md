@@ -6,7 +6,3 @@ docs: https://docs.peopledatalabs.com/docs/reference-company-enrichment-api
 api: GET /v5/company/enrich
 updated: 2026-09-27
 ---
-
-Charged per match; a request with no match returns 404. Headcount trends,
-inferred revenue, subsidiaries and job-posting insights are premium fields
-that your plan must include.

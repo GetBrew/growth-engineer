@@ -10,5 +10,3 @@ aliases:
   - openai/classify-signals
 updated: 2026-09-26
 ---
-
-Draft copy with a plain prompt. To classify records, pass a JSON schema in `text.format` (structured outputs) and read the label from the returned JSON.

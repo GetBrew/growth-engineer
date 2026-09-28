@@ -7,8 +7,3 @@ mcp: create_update
 api: POST /v2
 updated: 2026-09-27
 ---
-
-The `body` takes HTML such as `<b>` and `<br>`, not Markdown. Mention users,
-teams or boards with `mentionsList`, never with `@` in the body, and pass
-`parentId` to reply in a thread. On the API, send the `create_update` mutation
-with `item_id` and `body`.

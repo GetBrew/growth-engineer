@@ -39,7 +39,6 @@ export type ToolFileInput = {
   /** Computed tag keys: capability, category, ways in. */
   tags: ReadonlyArray<string>
   summary: string
-  description?: string
   /** The page that documents the call. */
   docs?: string
   access: ReadonlyArray<Access>
@@ -159,9 +158,6 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
     '',
     tool.summary,
   ]
-  if (tool.description) {
-    lines.push('', tool.description)
-  }
 
   if (ordered.length > 0) {
     lines.push('', '## Set up', '', 'Use the first option your agent supports.')

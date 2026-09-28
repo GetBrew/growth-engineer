@@ -7,8 +7,3 @@ mcp: createConfluenceContent
 api: POST /wiki/api/v2/pages
 updated: 2026-09-27
 ---
-
-`spaceId` is required, and a published page needs a `title`; pages publish
-unless `status` is `draft`. Send the content as `body` with a
-`representation`, such as `storage`. `createConfluenceContent` also creates
-blog posts, live docs, whiteboards, databases and folders.

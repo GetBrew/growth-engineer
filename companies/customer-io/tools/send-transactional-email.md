@@ -7,9 +7,3 @@ cli: cio send email
 api: POST /v1/send/email
 updated: 2026-09-27
 ---
-
-Pass `to`, the person's `identifiers` (one of `id`, `email` or `cio_id`) and a
-`transactional_message_id`, the template's ID or trigger name, so metrics roll
-up per message; `message_data` fills the template's Liquid. The CLI sends with
-a service-account token and needs `--environment-id`, the workspace ID;
-production code should send with an App API key.

@@ -6,5 +6,3 @@ docs: https://developers.zoom.us/docs/api/meetings/#tag/webinars/POST/users/{use
 api: POST /users/{userId}/webinars
 updated: 2026-09-26
 ---
-
-For user-level apps, pass `me` instead of a user ID. Needs a Pro or higher plan with the Webinar add-on, and allows 100 requests per host per day.

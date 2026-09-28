@@ -8,5 +8,3 @@ aliases:
   - dropbox/store-files
 updated: 2026-09-26
 ---
-
-The call returns an `async_job_id`; check it with `POST /2/files/save_url/check_job_status`. Requires the `files.content.write` scope.

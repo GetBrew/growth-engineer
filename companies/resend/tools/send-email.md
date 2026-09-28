@@ -8,8 +8,3 @@ cli: resend emails send
 api: POST /emails
 updated: 2026-09-27
 ---
-
-Pass `from`, `to`, `subject` and `html` or `text`, or a published `template`
-with its variables. Send an `Idempotency-Key` header (`--idempotency-key` on
-the CLI) so a retry never sends the email twice; keys expire after 24 hours.
-`scheduled_at` takes an ISO 8601 time or plain words such as `in 1 min`.

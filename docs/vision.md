@@ -1,6 +1,6 @@
 # Vision
 
-growth.engineer is the open-source, agent-friendly catalog of go-to-market tools and
+growth.engineer is the open-source catalog of go-to-market tools and
 workflows: where a growth engineer — or their agent — finds what exists, what
 it can do, how to reach it, and what other people have built with it.
 

@@ -6,5 +6,3 @@ docs: https://docs.github.com/en/rest/activity/starring#list-stargazers
 api: GET /repos/{owner}/{repo}/stargazers
 updated: 2026-09-26
 ---
-
-Send `Accept: application/vnd.github.star+json` to include the `starred_at` timestamp for each star.

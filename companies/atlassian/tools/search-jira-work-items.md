@@ -8,8 +8,3 @@ cli: acli jira workitem search
 api: GET /rest/api/3/search/jql
 updated: 2026-09-27
 ---
-
-Pass the query as `jql`, such as `project = TEAM`, and page with
-`nextPageToken`. For a query too long for a URL, use
-`POST /rest/api/3/search/jql`; the older `/rest/api/3/search` is deprecated and
-being removed. The CLI takes `--jql` and can print `--json` or `--csv`.

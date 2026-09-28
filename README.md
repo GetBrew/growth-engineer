@@ -1,6 +1,6 @@
 # growth.engineer
 
-The open-source, agent-friendly catalog of go-to-market tools and workflows.
+The open-source catalog of go-to-market tools and workflows, ready for any agent.
 
 **Companies** make **tools**; **workflows** put tools to work. Every tool and
 workflow is **one markdown file any agent can run** — the setup, the inputs,
@@ -100,7 +100,7 @@ the one optional public variable, the site origin.
 | `/tools`, `/tools/[handle]/[name]` | Search (words + `has:mcp`-style chips); THE tool file + its ways in |
 | `/tools/[handle]` | A shortcut: 308 to the single tool, or to the company |
 | `/workflows`, `/workflows/[name]` | Featured / New, by tag; THE workflow file, how it runs, the tools it is built from |
-| `/contribute`, `/contribute/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository |
+| `/docs`, `/docs/[guide]` | How to add a workflow, a tool or a company, with samples quoted from the repository (`/contribute/*` redirects here) |
 | `…/*.md`, `Accept: text/markdown`, `/llms.txt`, `/llms-full.txt` | The raw files, for agents; the index with definitions; the whole corpus |
 | `/mcp` | The read-only MCP server — `search` (words, tags, company, author, the tool a workflow uses) and `get` (a file, or a tag's members) — the one dynamic route |
 | `/robots.txt`, `/sitemap.xml`, `…/opengraph-image` | Every crawler allowed (AI crawlers named); every page with its `updated` date; one social card per page, drawn at build |
@@ -110,7 +110,7 @@ the one optional public variable, the site origin.
 ```
 companies/ workflows/ tags.yml  THE DATA — see CONTRIBUTING.md
 app/
-  (site)/                     every page: /, companies, tools, workflows, contribute
+  (site)/                     every page: /, companies, tools, workflows, docs
   api/markdown/[...path]      the .md files (proxy.ts rewrites .md URLs and Accept: text/markdown here)
   mcp/                        the read-only MCP server (lib/mcp/: server.ts is the JSON-RPC, tools.ts the two tools)
   llms.txt, llms-full.txt     the file index with definitions; the whole corpus

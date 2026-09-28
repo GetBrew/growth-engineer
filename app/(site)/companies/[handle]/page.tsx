@@ -6,16 +6,21 @@ import {
   toolListItem,
   workflowListItem,
 } from '@/components/catalog/list'
+import { CodeText } from '@/components/common/code-text'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { NoResults } from '@/components/common/no-results'
 import { ShareButton } from '@/components/detail/share-button'
-import { LINK_ICON, META_CHIP, PANEL_HEADING } from '@/components/detail/styles'
+import {
+  HEADER_ACTION_COLLAPSING,
+  LINK_ICON,
+  PANEL_HEADING,
+} from '@/components/detail/styles'
 import { DetailTabs } from '@/components/detail/tabs'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { buttonVariants } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { isValidHandle, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadCompany,
@@ -31,6 +36,8 @@ import { companyJsonLd } from '@/lib/seo/structured-data'
 import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ handle: string }>
+
+const BLANK_LINE = /\n\s*\n/
 
 /**
  * Every page here is prerendered from `generateStaticParams`, and reading
@@ -103,24 +110,33 @@ async function CompanyDetail({ params }: { params: Params }) {
         )}
       />
       <header>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+        {/* One row on every screen: the name on the left, the actions as
+            icons on the right (labels join them from sm). */}
+        <div className="flex items-center justify-between gap-3 sm:gap-8">
           <div className="flex min-w-0 items-center gap-3">
             <EntityLogo
               logoUrl={company.logo?.url}
               name={company.name}
               size={44}
             />
-            <h1 className="type-page-title">{company.name}</h1>
+            {/* A step smaller on the narrowest phones; a longer name wraps
+                rather than losing its end. */}
+            <h1 className="type-page-title min-w-0 max-[22.5rem]:text-[26px]">
+              {company.name}
+            </h1>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2.5">
+          {/* Phones: 32px icons so the name keeps its room beside them, and
+              -mr-2 lines the last glyph up with the page edge (a borderless
+              icon's padding would indent it). */}
+          <div className="flex shrink-0 items-center gap-2.5 max-sm:-mr-2 max-sm:gap-0 max-sm:[&_a]:size-8 max-sm:[&_button]:size-8">
             <ShareButton
               text={company.tagline ?? company.description}
               title={company.name}
             />
             <ViewSourceButton entityKey={company.key} type="company" />
             <a
-              className={buttonVariants({ size: 'pill', variant: 'outline' })}
+              className={HEADER_ACTION_COLLAPSING}
               href={company.links.website}
               rel="noreferrer"
               target="_blank"
@@ -131,21 +147,14 @@ async function CompanyDetail({ params }: { params: Params }) {
                 size={16}
                 strokeWidth={1.8}
               />
-              Website
+              <span className="max-sm:sr-only">Website</span>
             </a>
           </div>
         </div>
 
         {company.status === 'deprecated' ? (
           <div className="mt-6 flex flex-wrap items-center gap-1.5">
-            <span
-              className={cn(
-                META_CHIP,
-                'border-foreground/20 bg-hover text-soft'
-              )}
-            >
-              Deprecated
-            </span>
+            <Badge variant="emphasis">Deprecated</Badge>
           </div>
         ) : null}
       </header>
@@ -161,11 +170,21 @@ async function CompanyDetail({ params }: { params: Params }) {
                 <div className="flex flex-col gap-8">
                   <section className="flex flex-col gap-3">
                     <h2 className={cn(PANEL_HEADING, 'min-h-0')}>Overview</h2>
-                    <p className="type-body max-w-2xl">
-                      {company.description ??
+                    {/* The body is markdown: one <p> per paragraph, and
+                        `backticks` set as code. */}
+                    <div className="flex max-w-2xl flex-col gap-4">
+                      {(
+                        company.description ??
                         company.tagline ??
-                        `${company.name} has no description yet.`}
-                    </p>
+                        `${company.name} has no description yet.`
+                      )
+                        .split(BLANK_LINE)
+                        .map((paragraph) => (
+                          <p className="type-body" key={paragraph}>
+                            <CodeText text={paragraph.trim()} />
+                          </p>
+                        ))}
+                    </div>
                   </section>
                 </div>
               ),

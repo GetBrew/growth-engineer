@@ -1,12 +1,13 @@
 'use client'
 
-import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { type ToolCardData, ToolRow } from '@/components/catalog/cards'
-import { EntityLogo } from '@/components/common/entity-logo'
+import {
+  type CategoryEntry,
+  CategorySection,
+  withExpandedView,
+} from '@/components/catalog/category-section'
 import { NoResults } from '@/components/common/no-results'
 import { SectionHeading } from '@/components/layout/section-heading'
 import { CatalogSearch } from '@/components/search/catalog-search'
@@ -22,70 +23,14 @@ import { searchToolItems, type ToolSearchItem } from '@/lib/catalog/search'
 import { useIsClient } from '@/lib/hooks/use-is-client'
 import type { TagChip } from '@/lib/types/catalog'
 
-function withExpandedView(href: string): string {
-  return `${href}${href.includes('?') ? '&' : '?'}view=all`
-}
-
-function ToolSection({
-  title,
-  cards,
-  moreHref,
-  isExpanded = false,
-}: {
-  title: string
-  cards: ReadonlyArray<ToolCardData>
-  moreHref: string
-  isExpanded?: boolean
-}) {
-  const visible = isExpanded ? cards : cards.slice(0, 6)
-  const hidden = isExpanded ? [] : cards.slice(6)
-  const names = hidden.slice(0, 2).map((card) => card.tool.name)
-  let moreLabel = `See ${names.join(' and ')}`
-  if (names.length === 1) {
-    moreLabel = `See ${names[0]}`
-  } else if (hidden.length > 2) {
-    moreLabel = `See ${names.join(', ')}, and more`
-  }
-
-  return (
-    <section className="flex flex-col gap-(--space-md)">
-      <div className="flex items-baseline gap-3">
-        <h2 className="type-category">{title}</h2>
-        <span className="type-meta">{cards.length}</span>
-      </div>
-      <div className="grid grid-cols-1 gap-x-10 gap-y-1 sm:grid-cols-2">
-        {visible.map((card) => (
-          <ToolRow key={card.tool.key} {...card} />
-        ))}
-      </div>
-      {hidden.length > 0 ? (
-        <Link
-          className="focus-ring group/more flex items-center gap-4 rounded-xl py-3 text-subtle transition-colors hover:text-foreground"
-          href={moreHref}
-        >
-          <span className="flex shrink-0 [&>*+*]:-ml-2">
-            {hidden.slice(0, 3).map((card) => (
-              <EntityLogo
-                className="rounded-lg ring-2 ring-background"
-                key={card.tool.key}
-                logoUrl={card.company.logoUrl}
-                name={card.company.name}
-                size={28}
-              />
-            ))}
-          </span>
-          <span className="type-control min-w-0 flex-1 truncate">
-            {moreLabel}
-          </span>
-          <HugeiconsIcon
-            aria-hidden="true"
-            className="size-4 shrink-0 transition-transform group-hover/more:translate-x-1"
-            icon={ArrowRight02Icon}
-          />
-        </Link>
-      ) : null}
-    </section>
-  )
+/** A tool's row, named in "See …" by the tool and shown by its company's logo. */
+function toolEntries(cards: ReadonlyArray<ToolCardData>): Array<CategoryEntry> {
+  return cards.map((card) => ({
+    key: card.tool.key,
+    name: card.tool.name,
+    logo: { name: card.company.name, logoUrl: card.company.logoUrl },
+    row: <ToolRow {...card} />,
+  }))
 }
 
 type CategoryGroup = {
@@ -165,9 +110,23 @@ function ToolsExplorerView({
     chips: state.chips,
   })
   const categoryGroups = groupByCategory(results)
+  // Counted like /companies' pills, so FilterPills shows the busiest few and
+  // puts the rest under More: an option with no count is always shown, which
+  // laid every category out as a wall of pills.
+  const toolsPerCategory = new Map(
+    groupByCategory(tools).map((group) => [
+      group.category.slug,
+      group.cards.length,
+    ])
+  )
   const categoryOptions = tags
-    .filter((tag) => tag.namespace === 'category' && tag.counts.companies > 0)
-    .map((tag) => ({ key: tag.key, label: tag.label }))
+    .filter((tag) => tag.namespace === 'category')
+    .map((tag) => ({
+      key: tag.key,
+      label: tag.label,
+      count: toolsPerCategory.get(tag.slug) ?? 0,
+    }))
+    .filter((option) => option.count > 0)
   const isExpanded = params.view === 'all'
   const selectedCategories = tags.filter(
     (tag) => tag.namespace === 'category' && state.chips.includes(tag.key)
@@ -192,8 +151,8 @@ function ToolsExplorerView({
     content = (
       <div className="flex flex-col gap-(--space-3xl)">
         {categoryGroups.map(({ category, cards }) => (
-          <ToolSection
-            cards={cards}
+          <CategorySection
+            entries={toolEntries(cards)}
             key={category.slug}
             moreHref={withExpandedView(
               searchHref('/tools', {
@@ -208,8 +167,8 @@ function ToolsExplorerView({
     )
   } else {
     content = (
-      <ToolSection
-        cards={results}
+      <CategorySection
+        entries={toolEntries(results)}
         isExpanded={isExpanded}
         moreHref={withExpandedView(currentHref)}
         title={resultsTitle}

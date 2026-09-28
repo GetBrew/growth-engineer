@@ -6,8 +6,3 @@ docs: https://docs.customer.io/integrations/api/app/tag/customers/getPeopleFilte
 api: POST /v1/customers
 updated: 2026-09-27
 ---
-
-Combine conditions with `and`, `or` and `not`; an attribute condition matches
-a value (`eq`) or the attribute's presence (`exists`). Read the `identifiers`
-array in the response. For larger sets, export the people instead
-(`POST /v1/exports/customers`).

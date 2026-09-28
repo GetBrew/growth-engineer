@@ -8,5 +8,3 @@ cli: ntn api v1/pages/$PAGE_ID -X PATCH
 api: PATCH /v1/pages/{page_id}
 updated: 2026-09-26
 ---
-
-`notion-update-page` can also edit the page's content.

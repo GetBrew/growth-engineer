@@ -10,5 +10,3 @@ aliases:
   - github/manage-code
 updated: 2026-09-26
 ---
-
-On the MCP server, `issue_write` both creates and updates issues: pass `method: create` with `owner`, `repo` and `title`.

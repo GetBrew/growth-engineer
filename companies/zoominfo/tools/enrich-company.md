@@ -8,7 +8,3 @@ cli: gtm companies enrich
 api: POST /data/v1/companies/enrich
 updated: 2026-09-27
 ---
-
-List the fields you want back in `outputFields`. Each company returned costs
-one credit unless it was already enriched in the last 12 months, and no match
-costs nothing.

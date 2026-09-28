@@ -7,8 +7,3 @@ mcp: list_issues
 api: POST /graphql
 updated: 2026-09-27
 ---
-
-On the API, query `issues` with a `filter` built from comparators such as
-`eq`, `in` and `lte`, for example `assignee: { email: { eq: "..." } }`.
-Results come 50 at a time by default: pass `pageInfo.endCursor` as `after` to
-get the next page. `list_issues` pages its results as well.

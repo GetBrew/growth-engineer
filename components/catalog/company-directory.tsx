@@ -2,7 +2,10 @@
 
 import { useSearchParams } from 'next/navigation'
 import { CompanyRow } from '@/components/catalog/cards'
-import { CategorySection } from '@/components/catalog/category-section'
+import {
+  CategorySection,
+  withExpandedView,
+} from '@/components/catalog/category-section'
 import { NoResults } from '@/components/common/no-results'
 import { SectionHeading } from '@/components/layout/section-heading'
 import { CatalogSearch } from '@/components/search/catalog-search'
@@ -62,10 +65,23 @@ function CompanyDirectoryView({
     q,
     ...(category ? { category } : {}),
   })
-  const sections = new Map<string, Array<CompanySearchItem>>()
+  const isExpanded = searchParams.get('view') === 'all'
+  // Grouped by slug, so each section's "See …" opens its own category. A
+  // company with no category lands in Other, which has nothing to open and
+  // so always shows in full.
+  const sections = new Map<
+    string,
+    { label: string; slug?: string; rows: Array<CompanySearchItem> }
+  >()
   for (const row of rows) {
-    const label = row.category?.label ?? 'Other'
-    sections.set(label, [...(sections.get(label) ?? []), row])
+    const id = row.category?.slug ?? ''
+    const section = sections.get(id) ?? {
+      label: row.category?.label ?? 'Other',
+      slug: row.category?.slug,
+      rows: [],
+    }
+    section.rows.push(row)
+    sections.set(id, section)
   }
 
   return (
@@ -115,18 +131,25 @@ function CompanyDirectoryView({
           />
         ) : (
           <div className="flex flex-col gap-(--space-3xl)">
-            {[...sections.entries()]
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([label, entries]) => (
+            {[...sections.values()]
+              .sort((a, b) => a.label.localeCompare(b.label))
+              .map((section) => (
                 <CategorySection
-                  count={entries.length}
-                  key={label}
-                  title={label}
-                >
-                  {entries.map(({ company }) => (
-                    <CompanyRow company={company} key={company.key} />
-                  ))}
-                </CategorySection>
+                  entries={section.rows.map(({ company }) => ({
+                    key: company.key,
+                    name: company.name,
+                    logo: company,
+                    row: <CompanyRow company={company} />,
+                  }))}
+                  isExpanded={isExpanded}
+                  key={section.label}
+                  moreHref={
+                    section.slug
+                      ? withExpandedView(companiesHref(q, section.slug))
+                      : undefined
+                  }
+                  title={section.label}
+                />
               ))}
           </div>
         )}

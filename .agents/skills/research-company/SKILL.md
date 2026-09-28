@@ -61,7 +61,9 @@ organization. Never blogs, directories, marketplaces or third-party servers.
   MCP.
 - Two tools whose calls are all the same are one tool. A generic MCP tool that
   takes the endpoint as an argument (`stripe_api_read`) may serve several tools
-  whose API calls differ; the body says which arguments to pass.
+  whose API calls differ; each tool's `api:` names the endpoint it runs.
+- A tool file is its header alone — no body. Put what the call does, and the
+  one detail an agent must not miss, in `summary`.
 
 ## 4. Write the files
 

@@ -7,10 +7,3 @@ mcp: browse_product_buyer_intent
 api: GET /api/v2/products/{subject_product_id}/buyer_intent
 updated: 2026-09-27
 ---
-
-Pass your product's identifier as `subject_product_id`. Rows are sorted by
-`-company_intent_score` unless you set `sort`. Leave `day` out of
-`dimensions` for one row per company, or add it for a daily series. Results
-include activity on competitors in your categories: when `left_product_id`
-differs from `subject_product_id`, the company was looking at the competitor
-named in `left_product_name`. Needs the `buyer_intent.read` scope.

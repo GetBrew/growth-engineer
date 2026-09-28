@@ -62,7 +62,11 @@ function problemsOf(file: string, source: string): Array<string> {
     }
     return []
   }
-  const result = SCHEMAS[kind].safeParse(splitFrontmatter(file, source).data)
+  const { data, body } = splitFrontmatter(file, source)
+  if (kind === 'tool' && body) {
+    return ['tool: a tool file ends at its header']
+  }
+  const result = SCHEMAS[kind].safeParse(data)
   return result.success ? [] : [`${kind}: ${formatIssues(result.error)}`]
 }
 

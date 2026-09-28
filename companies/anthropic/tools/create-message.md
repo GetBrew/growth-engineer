@@ -10,8 +10,3 @@ aliases:
   - anthropic/classify-signals
 updated: 2026-09-26
 ---
-
-Send `anthropic-version: 2023-06-01` and `content-type: application/json`
-with the key. The body needs `model`, `max_tokens` and `messages`; a `system`
-prompt is optional. On the CLI, `claude -p "<prompt>"` prints the response
-without starting an interactive session.

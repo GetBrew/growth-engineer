@@ -7,6 +7,3 @@ mcp: update_tasks
 api: PUT /tasks/{task_gid}
 updated: 2026-09-26
 ---
-
-Only the fields in the request's `data` block change. The MCP tool updates up
-to 50 tasks per call.

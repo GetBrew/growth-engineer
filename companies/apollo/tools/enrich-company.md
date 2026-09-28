@@ -8,7 +8,3 @@ cli: apollo companies enrich
 api: GET /organizations/enrich
 updated: 2026-09-26
 ---
-
-Costs 1 credit per company. To enrich up to 10 companies in one call, use
-bulk organization enrichment (`apollo_organizations_bulk_enrich` on the MCP
-server, `apollo companies bulk-enrich` on the CLI).

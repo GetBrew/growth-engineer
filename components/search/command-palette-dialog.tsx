@@ -14,6 +14,7 @@ import {
   useState,
 } from 'react'
 import { EntityIcon } from '@/components/common/entity-icon'
+import { Kbd } from '@/components/ui/kbd'
 import {
   Sheet,
   SheetBackdrop,
@@ -190,6 +191,7 @@ export function CommandPaletteDialog({
       id={optionId(option)}
       isActive={option === active}
       key={option.id}
+      onPoint={() => setActiveIndex(options.indexOf(option))}
       onSelect={close}
       option={option}
     />
@@ -278,7 +280,7 @@ export function CommandPaletteDialog({
           </div>
 
           <div
-            className="max-h-[min(24rem,52vh)] overflow-y-auto p-2"
+            className="scrollbar-none max-h-[min(24rem,52vh)] overflow-y-auto p-2"
             id={listId}
             role="listbox"
           >
@@ -295,15 +297,22 @@ export function CommandPaletteDialog({
 /**
  * A real link, so it prefetches and opens in a new tab like any other; the
  * input keeps focus and points at the highlighted row.
+ *
+ * ONE row is highlighted at a time: pointing at a row selects it, the way
+ * the arrow keys do, instead of a hover tint beside the keyboard's. It is
+ * mousemove, not mouseenter, so rows scrolling under a resting pointer while
+ * the arrow keys move do not steal the selection.
  */
 function Row({
   id,
   isActive,
+  onPoint,
   onSelect,
   option,
 }: {
   id: string
   isActive: boolean
+  onPoint: () => void
   onSelect: () => void
   option: Option
 }) {
@@ -319,12 +328,13 @@ function Row({
     <Link
       aria-selected={isActive}
       className={cn(
-        'focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors duration-200',
-        isActive ? 'bg-muted' : 'hover:bg-muted'
+        'focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left',
+        isActive && 'bg-muted'
       )}
       href={option.href}
       id={id}
       onClick={onSelect}
+      onMouseMove={isActive ? undefined : onPoint}
       ref={ref}
       role="option"
       tabIndex={-1}
@@ -370,7 +380,5 @@ function Hints() {
 }
 
 function Key({ children }: { children: ReactNode }) {
-  return (
-    <kbd className="type-label rounded-sm border px-1.5 py-0.5">{children}</kbd>
-  )
+  return <Kbd>{children}</Kbd>
 }

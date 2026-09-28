@@ -7,8 +7,3 @@ mcp: execute_zapier_read_action
 cli: zapier-sdk run-action
 updated: 2026-09-27
 ---
-
-On the CLI, pass the app, the action's type (`search` for lookups) and its
-key, with `--connection` and `--inputs` as JSON; find an app's search actions
-with `zapier-sdk list-actions <app> --action-type search`. Each successful MCP
-tool call uses two tasks from the Zapier plan.

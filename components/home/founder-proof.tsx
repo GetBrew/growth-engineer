@@ -18,7 +18,9 @@ export function FounderProof() {
             <GithubLink className="shrink-0" />
           </div>
 
-          <div className="mt-8">
+          {/* Centred against the terminal beside it, so the two columns end
+              together instead of the pills stopping short. */}
+          <div className="mt-8 flex flex-1 flex-col justify-center">
             <ContributionMarquee />
           </div>
         </div>
