@@ -99,7 +99,9 @@ is in a workflow's body (`pnpm content:check`):
 
 ## Not in this model, on purpose
 
-Views, copies and ranking counters; teams, reviews and claims; submissions
-and moderation queues; versions and their history. A pull request is the
-submission pipeline, and git history is the version history. Each could
-return without changing a key or a file.
+Teams, reviews and claims; submissions and moderation queues; versions and
+their history. A pull request is the submission pipeline, and git history is
+the version history. Each could return without changing a key or a file.
+Workflow copy counts (Uses, Hot, Popular) live outside the model too: an
+optional store the pages read at request time (`lib/usage/copies.ts`), never
+a field in a file.

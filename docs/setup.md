@@ -1,20 +1,27 @@
 # First run
 
-About two minutes. There is no backend, no database and no auth provider:
-the catalog is built from the markdown files in this repository, every page
-and file is public, and nobody signs in. The one store is optional — the
-Redis that counts workflow copies — and without it the count is hidden.
+About two minutes. The catalog is built from the markdown files in this
+repository: there is no database and no sign-in, and every page and file is
+public. The one store is optional, a Redis that counts workflow copies, and
+without it the counts are hidden.
 
 ## 1. Clone and install
+
+You need Node 22+ and pnpm 11 (`corepack enable` installs the pinned pnpm).
 
 ```bash
 pnpm install
 ```
 
-`.env.example` lists every variable, all optional:
-`NEXT_PUBLIC_SITE_URL`, the absolute origin `/llms.txt`, the MCP card and the
-metadata print, and the copy counter's `KV_REST_API_*`. Copy it to
-`.env.local` only if you need one; development counts under its own keys.
+Every environment variable is optional, so there is nothing to configure.
+[`.env.example`](../.env.example) lists them; copy it to `.env.local` only if
+you need one.
+
+| Variable | What it does |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | The absolute origin printed in `/llms.txt`, the MCP card and page metadata. |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN` | The copy counter's store. Development counts under its own keys. |
+| `GITHUB_TOKEN` | Raises the GitHub API limit for the header's star count. It needs no scopes. |
 
 ## 2. Run it
 
@@ -23,9 +30,9 @@ pnpm dev                 # http://localhost:3000
 ```
 
 The catalog is read from `companies/`, `workflows/` and `tags.yml` when the
-first page renders. In development it is re-read whenever a content file
-changes, so an edit shows on the next refresh (content files are not modules,
-so there is no hot reload).
+first page renders. In development it is read again whenever a content file
+changes, so an edit shows on the next refresh. Content files are not modules,
+so there is no hot reload.
 
 ## 3. Check the catalog
 
@@ -33,42 +40,49 @@ so there is no hot reload).
 pnpm content:check       # parses, validates, resolves and renders every file
 ```
 
-Every problem is listed at once with its file path. The same suite runs as
-part of `pnpm test:run` and in CI on every pull request.
+It lists every problem at once, each with its file path. The same suite runs
+in `pnpm test:run` and in CI on every pull request.
 
-Then `pnpm validate` once, to see every gate green before changing anything.
+Run `pnpm validate` once to see every gate pass before you change anything.
 
 ## 4. Change a fact
 
-Edit the file under `companies/` or `workflows/`, or `tags.yml` — never a rendered
-file, never the app. [`CONTRIBUTING.md`](../CONTRIBUTING.md) and the folder
-READMEs have the field reference and templates.
+Edit the file under `companies/` or `workflows/`, or `tags.yml`. A fact never
+changes in a rendered file or in the app. [`CONTRIBUTING.md`](../CONTRIBUTING.md)
+and the folder READMEs have the field reference and templates.
 
 ## Deploying to Vercel
 
-- **Build command** is `pnpm build:raw` (via `vercel.json`); `next build`
-  renders every catalog page and every `.md` file at build time. A deploy IS
-  the publish — there is nothing to seed, migrate or revalidate.
-- **Environment variables**: none required. `/llms.txt` and `metadataBase`
-  use `NEXT_PUBLIC_SITE_URL` when set (a custom domain), otherwise the
-  deployment's own Vercel hostname.
-- **The copy counter** (a workflow's "Uses", and the Hot and Popular
-  angles): add Upstash for Redis from the Vercel Marketplace to the project.
-  It sets `KV_REST_API_URL`, `KV_REST_API_TOKEN` (the one secret; only the
-  count route writes with it) and `KV_REST_API_READ_ONLY_TOKEN` (what pages
-  read with). `KV_URL` and `REDIS_URL` are unused. A copy counts once per
-  visitor per workflow per 24 hours — a keyed hash of the address (an IPv6
-  client by its /64), claimed with `SET NX`, never the address itself — so a
-  spammed button counts one. A counted copy adds one to the hash
-  `workflow:copies` and to that UTC day's `workflow:copies:<date>` (kept 60
-  days); Hot is the last 7 days. Pages read every count in one
-  round trip at most once a minute and stream them into `<Suspense>` holes;
-  the rest of each page is prerendered (`lib/usage/copies.ts`). A preview
-  counts under `preview:…` and development under `development:…`, so testing
-  never moves production's numbers. Without a store every count is hidden
-  and the pages are fully static.
+- **Build.** The build command is `pnpm build:raw` (set in `vercel.json`).
+  `next build` renders every catalog page and every `.md` file, so a deploy
+  publishes the catalog. There is nothing to seed, migrate or revalidate.
+- **Environment variables.** None are required. `/llms.txt` and
+  `metadataBase` use `NEXT_PUBLIC_SITE_URL` when it is set (a custom domain),
+  and the deployment's own Vercel hostname otherwise.
+- **Star count.** The header shows the repository's GitHub stars, read once
+  per build (`lib/github-stars.ts`) and refreshed by the next deploy. Without
+  `GITHUB_TOKEN` the build asks the GitHub API unauthenticated, which allows
+  60 requests an hour per address, and a build machine may share its address.
+  When GitHub does not answer within two seconds, the button shows without a
+  count and the build carries on.
+- **Copy counter.** A workflow's "Uses" and the Hot and Popular lists need
+  Upstash for Redis, added to the project from the Vercel Marketplace. It sets
+  `KV_REST_API_URL`, `KV_REST_API_TOKEN` (the write secret, used only by the
+  count route) and `KV_REST_API_READ_ONLY_TOKEN` (what pages read with).
+  `KV_URL` and `REDIS_URL` are unused.
+  - A copy counts once per visitor per workflow per 24 hours. The visitor is
+    a keyed hash of the address (an IPv6 client by its /64), claimed with
+    `SET NX`; the address itself is never stored.
+  - A counted copy adds one to the hash `workflow:copies` and to that UTC
+    day's `workflow:copies:<date>`, kept 60 days. Hot is the last 7 days.
+  - Pages read every count in one round trip, at most once a minute, and
+    stream them into `<Suspense>` holes; the rest of each page is
+    prerendered (`lib/usage/copies.ts`).
+  - A preview counts under `preview:…` and development under
+    `development:…`, so testing never moves production's numbers.
+  - Without a store every count is hidden and the pages are fully static.
 - **Preview deployments** need nothing extra: each builds its branch's tree.
-- **Function bundles**: every page prerenders; only an unknown key on a
+- **Function bundles.** Every page prerenders. Only an unknown key on a
   detail route and the `/mcp` endpoint read the tree at request time, so
   `next.config.ts` traces `companies/`, `workflows/` and `tags.yml` into every
   serverless bundle (`outputFileTracingIncludes`).

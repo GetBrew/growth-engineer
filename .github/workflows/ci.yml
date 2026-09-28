@@ -5,42 +5,34 @@ on:
     branches: [main]
   pull_request:
 
-# Rapid pushes to the same PR branch supersede each other — cancel the stale
-# run instead of paying for both. Push events key the group by SHA so every
-# commit on main gets its own run: a concurrency group holds at most ONE
-# pending run even with cancel-in-progress:false, so a shared main group would
-# silently skip intermediate commits.
+# A new push to a pull request cancels its stale run. Pushes to main are keyed
+# by SHA so every commit gets its own run: a concurrency group holds at most one
+# pending run, so a shared main group would skip commits.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# Least privilege by default. Nothing here writes to the repository — it reads
-# code and reports status. Without this block the token inherits the
-# organization default, which is often read-WRITE, handing every third-party
-# action and every dependency install script a push-capable token.
+# Least privilege: nothing here writes to the repository. Without this block
+# the token inherits the organization default, often read-write, and every
+# third-party action and install script would get a token that can push.
 permissions:
   contents: read
 
 env:
   NODE_OPTIONS: --max-old-space-size=6144
-  # The heavy-command lock serializes local runs across worktrees. A CI runner
-  # is already one job on one machine, so it only adds latency here.
+  # The heavy-command lock serializes local runs across worktrees; a CI runner
+  # runs one job per machine, so the lock would only add latency.
   HEAVY_LOCK_DISABLE: '1'
   NEXT_TELEMETRY_DISABLED: '1'
 
-# ---------------------------------------------------------------------------
-# RUNNER SIZING. `runs-on` reads a repository VARIABLE with a default, rather
-# than a literal, for one reason: it is the rollback plan. If you move to a
-# faster runner fleet and that fleet has an incident, "open a PR changing
-# runs-on back" requires the CI you no longer have. Setting the repo variable
-# CI_RUNNER_LARGE / CI_RUNNER_SMALL (Settings → Secrets and variables →
-# Actions) moves every job in seconds, with no commit and no green build.
-# ---------------------------------------------------------------------------
+# `runs-on` reads the repository variables CI_RUNNER_SMALL and CI_RUNNER_LARGE
+# (Settings → Secrets and variables → Actions), defaulting to ubuntu-latest.
+# Moving to another runner fleet, or back after an incident, is then a settings
+# change rather than a pull request that needs working CI to merge.
 
 jobs:
   lint:
-    # Biome: whole-repo lint AND the formatting gate, in about a minute. No
-    # cache needed — it is cold-start fast by design.
+    # Biome: lint and formatting for the whole repository, in about a minute.
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 10
     steps:
@@ -52,10 +44,8 @@ jobs:
         run: pnpm lint
 
   typecheck:
-    # `pnpm tsc` chains TWO TypeScript programs. Here each one is a matrix
-    # leg, so wall time is the SLOWEST program instead of the sum, and a
-    # failure names its program in the job title instead of making you read a
-    # log to find out which one went red.
+    # `pnpm tsc` checks two TypeScript programs. Each is a matrix leg here, so
+    # the job takes as long as the slower one and a failure names its program.
     name: typecheck (${{ matrix.program }})
     strategy:
       fail-fast: false
@@ -68,19 +58,17 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # One script owns the program list (scripts/typecheck.mjs); the matrix
-      # passes a name straight through, so adding a program is a one-line
-      # change in one file rather than a new package script plus a new leg.
+      # scripts/typecheck.mjs owns the program list; the matrix passes a name
+      # through, so adding a program is a one-line change there.
       - name: Type check
         run: pnpm tsc ${{ matrix.program }}
 
   build:
-    # A production build in CI is not redundant with the platform's build: this
-    # one runs on the PULL REQUEST. Without it, a broken build and every client
-    # bundle regression reach main first and are discovered after merge.
+    # Builds the pull request, so a broken build or a client bundle regression
+    # is caught before merge rather than by the deploy.
     runs-on: ${{ vars.CI_RUNNER_LARGE || 'ubuntu-latest' }}
-    # No env block: the catalog is built from the markdown tree in the repo,
-    # and lib/env.ts reads nothing secret. A variable here means it grew one.
+    # No env block: the catalog is built from the markdown tree, and every
+    # variable in lib/env.ts is optional.
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
@@ -92,11 +80,9 @@ jobs:
         id: next
         run: echo "version=$(node -p "require('next/package.json').version")" >> "$GITHUB_OUTPUT"
 
-      # Turbopack's persistent build cache. Keyed on the Next version and the
-      # lockfile (a compiler or dependency change invalidates it) with the
-      # commit SHA last, so every run saves a fresh entry and the next run
-      # restores the closest one through restore-keys — an older cache is a
-      # valid warm start, never a wrong one.
+      # Turbopack's persistent cache, keyed on the Next version and the
+      # lockfile, with the commit SHA last: every run saves a fresh entry and
+      # the next restores the closest one. An older cache is a valid warm start.
       - name: Restore .next/cache
         uses: actions/cache@v6
         with:
@@ -109,7 +95,7 @@ jobs:
       - name: Build (Turbopack)
         run: pnpm build
 
-      # Reads THIS build's manifests, so it has to live in this job.
+      # Reads this build's manifests, so it runs in this job.
       - name: Client bundle budget
         run: pnpm perf:bundle
 
@@ -122,18 +108,15 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # No env block: the suite is hermetic (it reads the markdown tree in the
-      # checkout). If a test needs a credential to pass, that is a test that
-      # will be skipped in CI forever — fix the test, do not add a secret here.
+      # No env block: the suite is hermetic. A test that needs a credential
+      # should be fixed, not given a secret here.
       - name: Run unit tests (includes the content validation suite)
         run: pnpm test:run
 
   test:
-    # THE required check: it needs every other job, so branch protection names
-    # one check and still covers lint, both typecheck legs, the build and
-    # its bundle budget, the unit suite and hygiene. `if: always()` so a failed
-    # job shows as a RED `test` instead of a skipped required check that a
-    # branch protection rule would happily merge past.
+    # The one check to require in branch protection: it needs every other job.
+    # `if: always()` makes a failed job turn this red instead of skipping it,
+    # since branch protection treats a skipped required check as passing.
     if: always()
     needs: [lint, typecheck, build, test-unit, hygiene]
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
@@ -156,12 +139,8 @@ jobs:
           '
 
   hygiene:
-    # EVERY GATE RUNS, EVEN AFTER ONE FAILS. These checks are mutually
-    # independent, but steps run sequentially and a bare failure aborts the
-    # rest — so the job would report exactly one problem per run: fix one gate,
-    # push, wait, discover the docs are broken too, push, wait. With
-    # `continue-on-error` on each step plus the aggregator at the end, one run
-    # gives you the complete list.
+    # Every gate runs even after one fails (`continue-on-error`), and the last
+    # step fails the job if any did, so one run reports every problem.
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:

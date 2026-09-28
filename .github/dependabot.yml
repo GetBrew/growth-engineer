@@ -1,14 +1,9 @@
-# Keep GitHub Actions current.
+# Keeps GitHub Actions current: one grouped pull request a month.
 #
-# WHY ONLY ACTIONS. The npm tree is managed through pnpm and the lockfile, with
-# its own review flow; adding it here opens dozens of PRs a week that each cost
-# CI minutes and get rubber-stamped. Actions are the real gap: every `uses:`
-# pins a floating major tag, so nothing ever tells you a v5 exists, that an
-# action was deprecated, or that one shipped a security fix. That is the class
-# of drift no human notices until a runner image change breaks a workflow.
-#
-# MONTHLY AND GROUPED, deliberately. A weekly per-action PR storm is how these
-# configs end up muted. One batched PR a month is small enough to actually read.
+# Only Actions. npm dependencies are managed through pnpm and the lockfile;
+# listing them here would open dozens of pull requests a week. Every `uses:`
+# pins a floating major tag, so without this nothing says when a new major,
+# a deprecation or a security fix ships.
 version: 2
 
 updates:

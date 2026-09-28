@@ -1,27 +1,18 @@
-# pnpm + Node + `pnpm install`, in one step.
+# pnpm, Node and `pnpm install` in one step, shared by every CI job so a Node
+# or cache change is a one-place edit.
 #
-# WHY THIS EXISTS: every CI job opens with the identical setup. Duplicated
-# setup is not just noise — it is why a Node or cache change becomes a
-# six-place edit, and why those six places drift.
-#
-# WHY IT DOES NOT ALSO CHECK OUT: a local action referenced as
-# `./.github/actions/setup` is READ FROM THE WORKSPACE, so the repository must
-# already be on disk before the runner can parse this file. Folding
-# `actions/checkout` in here could never work. Every caller checks out first —
-# which is also what lets one job ask for full history without that option
-# leaking into jobs that want a shallow clone.
-#
-# The runner is not chosen here either: `runs-on` cannot be set by a composite
-# action, and the jobs genuinely differ.
+# It does not check out the repository: a local action is read from the
+# workspace, so every caller runs `actions/checkout` first. That also lets
+# each job choose its own clone depth. `runs-on` stays in each job, since a
+# composite action cannot set it.
 name: Setup
 description: Install pnpm, Node, and the workspace dependencies.
 
 runs:
   using: composite
   steps:
-    # No `version:` — pnpm/action-setup reads `packageManager` from
-    # package.json, so the CI pnpm and your local pnpm cannot drift apart.
-    # Pinning here would create a second source of truth.
+    # No `version:`: the action reads `packageManager` from package.json, so
+    # CI and local pnpm stay the same version.
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
 

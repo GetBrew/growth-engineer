@@ -1,6 +1,6 @@
 import { BrandLockup } from '@/components/layout/brand'
 import { BrowseMenu, SectionLinks } from '@/components/layout/browse-nav'
-import { GithubLink } from '@/components/layout/github-link'
+import { GithubStarButton } from '@/components/layout/github-star-button'
 import { NavSearchButton } from '@/components/layout/nav-search-button'
 import { CommandPalette } from '@/components/search/command-palette'
 
@@ -15,7 +15,7 @@ export function Navbar() {
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <BrowseMenu />
           <NavSearchButton />
-          <GithubLink compact />
+          <GithubStarButton />
         </div>
       </div>
 

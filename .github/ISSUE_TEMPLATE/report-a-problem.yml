@@ -1,0 +1,23 @@
+name: Report a problem
+description: Something on the site, in a file or in the MCP server is broken or wrong.
+labels: [bug]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The page, file or MCP call.
+      placeholder: /workflows/funding-signal-outbound.md
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: For a wrong fact, a link to the vendor's docs that show the right one.

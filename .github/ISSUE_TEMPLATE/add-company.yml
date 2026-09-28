@@ -8,14 +8,14 @@ body:
     attributes:
       label: Company
       description: Name and domain.
-      placeholder: Clay — clay.com
+      placeholder: Clay (clay.com)
     validations:
       required: true
   - type: textarea
     id: access
     attributes:
       label: Ways in
-      description: Official MCP server URL or install command, CLI install and binary, API base URL — with links to the docs.
+      description: The official MCP server URL or install command, the CLI's install command and binary, the API base URL. Link the docs for each.
     validations:
       required: true
   - type: textarea
