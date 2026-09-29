@@ -36,6 +36,6 @@ updated: 2026-09-29
 
 ## Notes
 
-A promoter who wrote "the Salesforce sync saved us a day a week" has already told you the story; the interview adds the detail and their approval to publish it. Show them the final text before it goes live, and if you thank them with anything of value, say so in the story.
+A promoter who wrote "the Salesforce sync saved us a day a week" has already named a result; the interview adds the detail and their approval to publish it. Show them the final text before it goes live, and if you thank them with anything of value, say so in the story.
 
 It invites promoters to a case study rather than a public review, because many review sites, Google among them, forbid asking only happy customers for reviews. To grow reviews, ask every respondent. Run it after each survey wave.

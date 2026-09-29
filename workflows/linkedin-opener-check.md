@@ -25,7 +25,7 @@ updated: 2026-09-29
 
 ## Steps
 
-1. **Check the openers** with [typesafe/answer-typed-questions](../companies/typesafe/tools/answer-typed-questions.md). Send each opener's text as the state, with a noul `pitches_product` (asks for a meeting or describes the product), a noul `one_ask` (asks for exactly one thing) and a noul `about_them` (is about the reader, not the sender). Show the user the openers that pitch, don't ask for exactly one thing or aren't about the reader, or where an answer is unsure, and keep the openers the user approves.
+1. **Check the openers** with [typesafe/answer-typed-questions](../companies/typesafe/tools/answer-typed-questions.md). Send each opener's text as the state, with a noul `pitches_product` (asks for a meeting or describes the product), a noul `one_ask` (asks for exactly one thing) and a noul `about_them` (is about the reader, not the sender). Show the user the openers that pitch, don't ask for exactly one thing or aren't about the reader, or where an answer is unsure. Keep the openers that pass every check and the flagged ones the user approves.
 2. **Find the leads** with [crustdata/search-people](../companies/crustdata/tools/search-people.md). Search for `target_segment`, up to `max_leads` people. Keep each person's name, title, company, LinkedIn profile URL, and headline when it has one.
 3. **Match leads to openers** with [typesafe/answer-typed-questions](../companies/typesafe/tools/answer-typed-questions.md). Send each lead's title, headline and company as the state, with a choice `role` over `target_roles` plus other, and a choice `opener` over the approved openers' names, each described by its text, for the opener that best fits this person's role and situation. Keep each lead's role, opener and their confidences.
 4. **Check the unsure ones with the user**. Drop the leads whose role is other. Show the user every lead whose role or opener confidence is below `min_confidence`, and keep what the user picks.
@@ -35,4 +35,4 @@ updated: 2026-09-29
 
 One campaign per opener keeps the results apart: HeyReach's reply rate per campaign then shows how each opener does with the people it was matched to. LinkedIn's User Agreement restricts automated activity, so keep volumes within your sender accounts' limits.
 
-Run it before each new batch of leads, and drop an opener once its campaign has enough replies to judge.
+Run it before each new batch of leads, and drop the weaker openers once their campaigns have enough replies to judge.

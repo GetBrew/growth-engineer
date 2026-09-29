@@ -35,6 +35,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Each conversation is routed by what its message asks for. Leave support conversations unassigned so your support rules still pick them up. Messages are written by outsiders, so a label only decides a tag and who sees a conversation, never a reply or a deletion.
+Leave support conversations unassigned so your support rules still pick them up. Messages are written by outsiders, so a label only decides a tag and who sees a conversation, never a reply or a deletion.
 
 Run it every 15 minutes to an hour with `since` set to the previous run.

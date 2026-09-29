@@ -9,7 +9,7 @@ updated: 2026-09-29
 ## Outcome
 
 - A grid of every ad draft against every persona, with the probability that the persona stops, understands the offer and believes the claim.
-- The drafts ranked for each persona, with the ones no persona would stop for marked to cut.
+- The drafts ranked for each persona, with the ones no persona would stop for marked to cut and the ones that stop people without making the offer clear marked to rewrite.
 - A Notion page with the grid and the ranking.
 
 ## Inputs
@@ -23,7 +23,7 @@ updated: 2026-09-29
 ## Steps
 
 1. **Ask the panel** with [typesafe/answer-typed-questions](../companies/typesafe/tools/answer-typed-questions.md). For each pair of a draft and a persona, send the persona's description, `channel` and the draft as the state, with a noul `stops` (this person would stop scrolling for it), a noul `understands_offer` (after one read they could say what is offered), a noul `believes_claim` (they would believe the main claim) and a noul `feels_like_them` (it speaks to their situation). Keep the four probabilities for every pair.
-2. **Rank the drafts**. For each persona, rank the drafts by `stops`, breaking ties by `understands_offer`. Mark the drafts whose `stops` is no for every persona, and the ones whose `stops` is yes while `understands_offer` is no.
+2. **Rank the drafts**. Show the user the pairs whose `stops` or `understands_offer` is unsure, and keep what the user decides. For each persona, rank the drafts by `stops`, breaking ties by `understands_offer`. Mark the drafts whose `stops` is no for every persona to cut, and the ones whose `stops` is yes while `understands_offer` is no to rewrite.
 3. **Save the report** with [notion/create-page](../companies/notion/tools/create-page.md). After the user approves, create a page under `report_parent`, found with a read-only Notion search, with the grid, the ranking for each persona and the drafts to cut.
 
 ## Notes

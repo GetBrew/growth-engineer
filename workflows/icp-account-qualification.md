@@ -33,4 +33,4 @@ updated: 2026-09-29
 
 Qualifying before enriching saves credits: an email lookup costs one whether or not the company fits, while Jev is billed only for the tokens it reads. A data provider's industry code can miss what a company actually sells, which is why the fit is read from what the company says about itself.
 
-Read the fit by its most likely level, and rank companies within a level by the probability of the top two levels together; TypeSafe's docs warn against reading the expected score between two levels as a magnitude. Enrich the buyers you keep by their Apollo IDs.
+Read the fit by its most likely level, not its expected score, and rank companies within a level by the summed probability of good and ideal. Apollo's search spends no credits and returns no emails, so enrich only the buyers you keep.

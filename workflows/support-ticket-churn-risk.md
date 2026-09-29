@@ -29,12 +29,12 @@ updated: 2026-09-29
 3. **Check the unsure ones with the user**. Show the user every ticket whose `churn_risk` confidence is below `min_confidence`, and keep the level the user picks. Keep the tickets whose most likely `churn_risk` level is `risk_level` or higher, and look up each one's requester email, a read-only call.
 4. **Find the owner** with [hubspot/search-crm-records](../companies/hubspot/tools/search-crm-records.md). Search companies by each at-risk requester's email domain, skipping free email domains. Keep the company's record ID, name and `hubspot_owner_id`, and look up each owner's name and email, a read-only call. Note the tickets with no match.
 5. **Mark the ticket** with [zendesk/update-ticket](../companies/zendesk/tools/update-ticket.md). After the user approves, add `risk_tag` alongside each at-risk ticket's existing tags, raise its priority to high, or urgent when its urgency is today, and add an internal note, not a public reply, with the churn-risk level, the issue and the competitor and refund probabilities.
-6. **Draft the check-in**. Write a short note from each company's owner, by name, that names the problem in the ticket, says what happens next and offers a call. Show the drafts to the user.
+6. **Draft the check-in**. Write a short note from each company's owner, by name, that names the problem in the ticket, says what happens next and offers a call, leaving a [fill in] for any fix date or commitment you don't have. Show the drafts to the user.
 7. **Find the owners in Slack** with [slack/find-user-by-email](../companies/slack/tools/find-user-by-email.md). Look up each owner's email. Keep their Slack user ID.
 8. **Alert the owner** with [slack/post-message](../companies/slack/tools/post-message.md). Post each at-risk ticket to `cs_channel`, mentioning its owner, with the company, the churn-risk level, the issue, the competitor and refund probabilities, the ticket ID and the drafted check-in.
 
 ## Notes
 
-Judge risk by the most likely level, not by the expected score between levels, which TypeSafe's docs say is not a magnitude. Start with `risk_level` at weighing a downgrade or another tool, and move it once you have a week of results. Support keeps answering the ticket as usual; the account owner hears about it the same day.
+Judge risk by the most likely level, not the expected score. Start with `risk_level` at weighing a downgrade or another tool, and move it once you have a week of results. Support keeps answering the ticket as usual; the account owner hears about it the same day.
 
 Run it every few hours with `since` set to the time the previous run started.

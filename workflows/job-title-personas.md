@@ -23,7 +23,7 @@ updated: 2026-09-29
 
 ## Steps
 
-1. **Find unsorted contacts** with [hubspot/search-crm-records](../companies/hubspot/tools/search-crm-records.md). Search contacts that have a `jobtitle` and no `persona_property`, up to `max_contacts`. Keep each contact's ID, email, job title and company.
+1. **Find unsorted contacts** with [hubspot/search-crm-records](../companies/hubspot/tools/search-crm-records.md). Search contacts that have a `jobtitle` and an `email` and no `persona_property`, up to `max_contacts`. Keep each contact's ID, email, job title and company.
 2. **Map each title** with [typesafe/answer-typed-questions](../companies/typesafe/tools/answer-typed-questions.md). Send each job title and company as the state, with a choice `persona` over `personas`, each label described by its line, and a score `seniority` on five levels (individual contributor, manager, director, vice president or head of, C-level or founder). Keep each contact's persona, seniority and their confidences.
 3. **Check the unsure ones with the user**. Show the user every contact whose persona or seniority confidence is below `min_confidence`, with Jev's two most likely answers, and keep the one the user picks.
 4. **Save them** with [hubspot/upsert-contacts](../companies/hubspot/tools/upsert-contacts.md). After the user approves, update each contact by email with its persona in `persona_property` and its most likely seniority level in `seniority_property`.
