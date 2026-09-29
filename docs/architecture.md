@@ -25,8 +25,9 @@ workflow's body holds its steps, and a tool file is its header alone. The
 community edits this and nothing else ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
 **The compiler** (`lib/content/`) — `read-tree.ts` walks `companies/` and
-`workflows/`, reads `tags.yml`, finds each company's `logo.<ext>`, and is the only
-module that touches the filesystem.
+`workflows/`, reads `tags.yml`, checks any logo file waiting for upload
+(`logos.ts`), and is the only module that touches the filesystem. Logos are
+served from cdn.growth.engineer ([`maintainers/logos.md`](maintainers/logos.md)).
 `build-catalog.ts` runs one builder per kind (`build-tags`,
 `build-companies`, `build-tools`, `build-workflows`): each parses its files
 against a strict schema (`lib/schemas/content.ts`, zod, unknown fields

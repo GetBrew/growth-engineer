@@ -84,12 +84,21 @@ organization. Never blogs, directories, marketplaces or third-party servers.
 
 ## 5. Logo
 
-Keep an existing logo. For a new company: read the homepage's `<link rel="icon">`
-tags — prefer an SVG, then the apple-touch-icon, then a PNG of at least 64 px (a
-vendor CDN the homepage links is fine; `/apple-touch-icon.png` is often a 404) —
-download it, check it's an image (`file`) under 32 KB (`wc -c`), and save it as
-`companies/<handle>/logo.<ext>` (svg, png, jpg or webp). If nothing fits, leave
-it out — the logo is optional — and say so.
+Every company needs one. Keep an existing `logo:` unless it no longer matches
+the icon the company's own site shows; then add the current one as a file.
+
+Read the homepage's `<link rel="icon">` and `apple-touch-icon` tags and pick
+the current icon, not a wordmark: the apple-touch-icon, the largest square
+PNG, or an SVG with fixed colours. Skip SVGs that use `prefers-color-scheme`:
+they turn white for dark-mode viewers. If the homepage only has a tiny
+favicon, the login or docs pages often link a 180px or 512px icon. Save it as
+`companies/<handle>/logo.<ext>` (svg, png, jpg or webp): square, at least
+64px, under 32 KB. Shrink a big one to 256px (WebP keeps gradients small).
+`pnpm content:check` checks every rule.
+
+A maintainer's `pnpm logos:upload` moves the file to cdn.growth.engineer and
+writes `logo:` (docs/maintainers/logos.md). If you hold the CDN token, run it
+before opening the pull request. If nothing fits, say so in the report.
 
 ## 6. Report
 

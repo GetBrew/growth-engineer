@@ -113,12 +113,28 @@ jobs:
       - name: Run unit tests (includes the content validation suite)
         run: pnpm test:run
 
+  logos:
+    # Every company's logo is on cdn.growth.engineer and whole: each `logo:`
+    # URL answers with the bytes it names, and no logo file is left waiting in
+    # a company folder. A contributor's new logo fails here until a maintainer
+    # runs `pnpm logos:upload` on the branch (docs/maintainers/logos.md). It
+    # reads the public CDN, so it needs no secret.
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Every logo on the CDN
+        run: pnpm logos:check
+
   test:
     # The one check to require in branch protection: it needs every other job.
     # `if: always()` makes a failed job turn this red instead of skipping it,
     # since branch protection treats a skipped required check as passing.
     if: always()
-    needs: [lint, typecheck, build, test-unit, hygiene]
+    needs: [lint, typecheck, build, test-unit, hygiene, logos]
     runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:

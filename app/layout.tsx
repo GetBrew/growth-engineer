@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
+import { preconnect } from 'react-dom'
 import { Footer } from '@/components/layout/footer'
 import { Navbar } from '@/components/layout/navbar'
 import { VercelAnalytics } from '@/components/layout/vercel-analytics'
 import { JsonLd } from '@/components/seo/json-ld'
 import { LazyToaster } from '@/components/ui/lazy-toaster'
 import { SITE } from '@/lib/catalog/definitions'
+import { LOGO_ORIGIN } from '@/lib/content/logos'
 import { clientEnv, SITE_ORIGIN } from '@/lib/env'
 import { SITE_OPEN_GRAPH } from '@/lib/seo/metadata'
 import { websiteJsonLd } from '@/lib/seo/structured-data'
@@ -49,6 +51,9 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  // Most pages draw company logos, all from the CDN: open that connection
+  // while the HTML is still arriving.
+  preconnect(LOGO_ORIGIN)
   return (
     <html
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}

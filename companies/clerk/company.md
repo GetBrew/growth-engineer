@@ -5,6 +5,7 @@ category: auth
 tagline: User management for developers, with prebuilt sign-up and sign-in, organizations, SSO and billing.
 docs: https://clerk.com/docs
 github: https://github.com/clerk
+logo: https://cdn.growth.engineer/icons/companies/clerk-7666c423.png
 cli:
   install: npm install -g clerk
   binary: clerk

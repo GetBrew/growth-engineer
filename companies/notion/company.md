@@ -5,6 +5,7 @@ category: docs
 tagline: Docs, wikis and databases in one AI workspace.
 docs: https://developers.notion.com
 github: https://github.com/makenotion
+logo: https://cdn.growth.engineer/icons/companies/notion-e9c2b901.png
 mcp:
   url: https://mcp.notion.com/mcp
   auth: oauth

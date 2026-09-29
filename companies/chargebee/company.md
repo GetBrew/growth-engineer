@@ -5,6 +5,7 @@ category: payments
 tagline: Subscription billing and revenue management, from hosted checkout to invoices and revenue data.
 docs: https://www.chargebee.com/docs
 github: https://github.com/chargebee
+logo: https://cdn.growth.engineer/icons/companies/chargebee-3378c6a0.png
 mcp:
   url: https://{site}.mcp.chargebee.com/data_lookup_agent
   auth: oauth

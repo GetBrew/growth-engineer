@@ -4,6 +4,7 @@ domain: outreach.io
 category: sales-engagement
 tagline: AI platform for revenue teams to work prospects and accounts, run sequences and forecast deals.
 docs: https://developers.outreach.io
+logo: https://cdn.growth.engineer/icons/companies/outreach-1c7fa3cd.png
 mcp:
   url: https://api.outreach.io/mcp
   auth: oauth

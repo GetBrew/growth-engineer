@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { buildCatalog } from '@/lib/content/build-catalog'
 import { ContentErrors } from '@/lib/content/errors'
+import type { LogoExtension } from '@/lib/content/logos'
 import type { ContentFile } from '@/lib/content/read-tree'
 
 /**
@@ -112,9 +113,27 @@ function edit(role: Role, from: string, to: string): Array<ContentFile> {
 
 const VALID = tree()
 
-function problemsOf(files: ReadonlyArray<ContentFile>): Array<string> {
+/**
+ * Every company in the files has a logo waiting for upload, so the logo rule
+ * stays out of tests about other rules; its own tests pass their own.
+ */
+function withLogos(files: ReadonlyArray<ContentFile>): {
+  pendingLogos: Map<string, LogoExtension>
+} {
+  const handles = files.flatMap((entry) =>
+    entry.kind === 'company' ? [entry.handle] : []
+  )
+  return {
+    pendingLogos: new Map(handles.map((handle) => [handle, 'png' as const])),
+  }
+}
+
+function problemsOf(
+  files: ReadonlyArray<ContentFile>,
+  options = withLogos(files)
+): Array<string> {
   try {
-    buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    buildCatalog(files, options)
   } catch (error) {
     if (error instanceof ContentErrors) {
       return error.problems.map(
@@ -128,16 +147,26 @@ function problemsOf(files: ReadonlyArray<ContentFile>): Array<string> {
 }
 
 describe('content rules', () => {
-  test('a company with no logo is fine: the site draws its initial', () => {
-    const catalog = buildCatalog(VALID)
-    expect(catalog.companies.get('acme')?.logo).toBeUndefined()
-    const withLogo = buildCatalog(VALID, { logos: new Map([['acme', 'svg']]) })
-    expect(withLogo.companies.get('acme')?.logo?.url).toBe('/logos/acme.svg')
+  test('every company has a logo: its CDN URL, or a file waiting for upload', () => {
+    expect(problemsOf(VALID, { pendingLogos: new Map() })).toEqual([
+      'companies/acme/company.md: no logo: add the image beside company.md as logo.svg (or .png, .jpg, .webp), and a maintainer puts it on the CDN',
+    ])
+    // Until a maintainer uploads the file, the site draws the initial.
+    const waiting = buildCatalog(VALID, withLogos(VALID))
+    expect(waiting.companies.get('acme')?.logo).toBeUndefined()
+    const url = 'https://cdn.growth.engineer/icons/companies/acme-0123abcd.svg'
+    const uploaded = edit(
+      'company',
+      'category: crm\n',
+      `category: crm\nlogo: ${url}\n`
+    )
+    expect(problemsOf(uploaded, { pendingLogos: new Map() })).toEqual([])
+    expect(buildCatalog(uploaded).companies.get('acme')?.logo?.url).toBe(url)
   })
 
   test('the minimal valid set builds', () => {
     expect(problemsOf(VALID)).toEqual([])
-    const catalog = buildCatalog(VALID, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(VALID, withLogos(VALID))
     expect(catalog.documents.size).toBe(3)
   })
 
@@ -171,7 +200,7 @@ describe('content rules', () => {
       'Merge duplicates.\n2. **Summarize**. List what was merged for the user.\n'
     )
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(files, withLogos(files))
     expect(catalog.workflows.get('keep-crm-clean')?.toolKeys).toEqual([
       'acme/manage-crm',
     ])
@@ -203,7 +232,7 @@ describe('content rules', () => {
         '---\nname: Old thing\nsummary: Retired.\ncapability: manage-crm\napi: POST /old\ndocs: https://docs.acme.example/old\nstatus: deprecated\nupdated: 2026-09-25\n---\n'
       ),
     ])
-    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(files, withLogos(files))
     expect(
       new Date(catalog.documents.get('company:acme')?.updatedAt ?? 0)
         .toISOString()
@@ -216,7 +245,7 @@ describe('content rules', () => {
       file('companies/acme/tools/create-record.md', FIXTURE.tool.source),
     ])
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(files, withLogos(files))
     expect(catalog.tools.get('acme/create-record')?.capability).toBe(
       'manage-crm'
     )
@@ -240,7 +269,7 @@ describe('content rules', () => {
       workflow: WORKFLOW.replace('updated:', 'status: draft\nupdated:'),
     })
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(files, withLogos(files))
     expect(catalog.workflows.size).toBe(0)
     expect(catalog.documents.size).toBe(0)
     // A company with nothing but drafts has no page and no file yet.
@@ -265,7 +294,7 @@ describe('content rules', () => {
         'updated: 2026-09-20'
       ),
     })
-    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(files, withLogos(files))
     const day = (ref: string) =>
       new Date(catalog.documents.get(ref)?.updatedAt ?? 0)
         .toISOString()
@@ -293,7 +322,7 @@ describe('content rules', () => {
         )
       ),
     ])
-    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(files, withLogos(files))
     expect(
       new Date(catalog.documents.get('tool:acme/manage-crm')?.updatedAt ?? 0)
         .toISOString()
@@ -313,13 +342,13 @@ describe('content rules', () => {
       ),
     ])
     expect(problemsOf(files)).toEqual([])
-    const catalog = buildCatalog(files, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(files, withLogos(files))
     expect(catalog.companies.has('beta')).toBe(false)
     expect(catalog.aliases.has('company:old-beta')).toBe(false)
   })
 
   test('tags are computed onto every entity; nobody writes them twice', () => {
-    const catalog = buildCatalog(VALID, { logos: new Map([['acme', 'png']]) })
+    const catalog = buildCatalog(VALID, withLogos(VALID))
     expect(catalog.tools.get('acme/manage-crm')?.tags).toEqual([
       'capability:manage-crm',
       'category:crm',
@@ -878,10 +907,30 @@ describe('content rules', () => {
       /company\.md:12: the description: "Tools" is a section the file writes itself/,
     ],
     [
-      'a logo field: the logo is a file beside company.md',
+      'a logo that is a file name, not its CDN URL',
       () =>
         edit('company', 'category: crm\n', 'category: crm\nlogo: acme.png\n'),
-      /company\.md: Unrecognized key: "logo"/,
+      /company\.md: logo: must be a cdn\.growth\.engineer logo URL/,
+    ],
+    [
+      'a logo on another host',
+      () =>
+        edit(
+          'company',
+          'category: crm\n',
+          'category: crm\nlogo: https://acme.example/icons/companies/acme-0123abcd.png\n'
+        ),
+      /company\.md: logo: must be a cdn\.growth\.engineer logo URL/,
+    ],
+    [
+      "another company's logo",
+      () =>
+        edit(
+          'company',
+          'category: crm\n',
+          'category: crm\nlogo: https://cdn.growth.engineer/icons/companies/beta-0123abcd.png\n'
+        ),
+      /company\.md: logo: the URL is the logo of "beta", not "acme"/,
     ],
     [
       'a tool linked inside a step instead of after its title',

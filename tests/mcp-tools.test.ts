@@ -292,7 +292,7 @@ describe('get, on a fixture catalog', () => {
       path: 'companies/acme/company.md',
       handle: 'acme',
       source:
-        '---\nname: Acme\ndomain: acme.example\ncategory: crm\napi:\n  url: https://api.acme.example\n  auth: none\nupdated: 2026-09-16\n---\n',
+        '---\nname: Acme\ndomain: acme.example\ncategory: crm\nlogo: https://cdn.growth.engineer/icons/companies/acme-0123abcd.png\napi:\n  url: https://api.acme.example\n  auth: none\nupdated: 2026-09-16\n---\n',
     },
     {
       kind: 'tool',

@@ -5,6 +5,7 @@ category: project-management
 tagline: Jira and Confluence, for tracking work and keeping team knowledge on one connected platform.
 docs: https://developer.atlassian.com
 github: https://github.com/atlassian
+logo: https://cdn.growth.engineer/icons/companies/atlassian-54a4140b.png
 mcp:
   url: https://mcp.atlassian.com/v2/mcp
   auth: oauth

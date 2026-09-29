@@ -8,7 +8,7 @@ characters; not a reserved word (`tools`, `workflows`, `mcp`, …).
 ```
 companies/<handle>/
   company.md            who they are, and how an agent reaches them: the MCP server, the CLI, the API
-  logo.svg              optional: the logo (or logo.png, logo.jpg, logo.webp)
+  logo.svg              the logo (or .png, .jpg, .webp), until a maintainer moves it to the CDN
   tools/<name>.md       one function per file: the call on each way in, and where it is documented
 ```
 
@@ -63,6 +63,7 @@ Links, Set up, Rules…), and never a `---` or `===` underline.
 | `domain` | yes | Bare domain, no scheme. The website is always `https://<domain>`. |
 | `category` | yes | Must be a `category:` entry in `tags.yml`. |
 | `updated` | yes | `YYYY-MM-DD`: the day these facts were last checked. |
+| `logo` | no | The logo's cdn.growth.engineer URL, which `pnpm logos:upload` writes. Add the image file instead (below). |
 | `tagline`, `docs`, `github` | no | Shown when present. |
 | `mcp`, `cli`, `api` | no | The ways in, at most one of each (see below). |
 | `aliases` | no | Old handles that should redirect here after a rename. |
@@ -70,10 +71,21 @@ Links, Set up, Rules…), and never a `---` or `===` underline.
 
 ### The logo
 
-Optional: `logo.svg` beside `company.md` (or `logo.png`, `logo.jpg`,
-`logo.webp`), at most 32 KB: an SVG, or a PNG no larger than 128px square. It is
-served as is at `/logos/<handle>.<ext>`. Without one, the site draws the
-name's first letter.
+Every company has one. Add it beside `company.md` as `logo.svg`, `logo.png`,
+`logo.jpg` or `logo.webp`:
+
+- the company's current icon as its own site shows it (favicon or
+  apple-touch-icon), not a wordmark;
+- square and at most 32 KB: an SVG, or a PNG of 128 to 256px;
+- fixed colours: an SVG that follows the viewer's theme
+  (`prefers-color-scheme`) vanishes on the site's white tiles.
+
+`pnpm content:check` checks it. You can't upload to the CDN and don't need
+to: before merging, a maintainer runs `pnpm logos:upload`, which moves the
+file to cdn.growth.engineer and writes its URL into `company.md` as `logo:`.
+Until then the `logos` check on your pull request stays red, and there is
+nothing for you to fix ([`docs/maintainers/logos.md`](../docs/maintainers/logos.md)).
+To replace a logo, add the new file the same way.
 
 ### Ways in: `mcp`, `cli`, `api`
 

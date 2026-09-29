@@ -5,6 +5,7 @@ category: automation
 tagline: Run actions in 9,000+ apps through the connections saved in a Zapier account.
 docs: https://docs.zapier.com
 github: https://github.com/zapier
+logo: https://cdn.growth.engineer/icons/companies/zapier-c8df1af9.png
 mcp:
   url: https://mcp.zapier.com/api/v1/connect
   auth: oauth

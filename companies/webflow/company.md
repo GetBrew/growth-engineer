@@ -5,6 +5,7 @@ category: cms
 tagline: Design, build and host websites, with a CMS, forms and SEO settings built in.
 docs: https://developers.webflow.com
 github: https://github.com/webflow
+logo: https://cdn.growth.engineer/icons/companies/webflow-05f98252.png
 mcp:
   url: https://mcp.webflow.com/mcp
   auth: oauth

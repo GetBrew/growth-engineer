@@ -8,11 +8,9 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterAll, describe, expect, test } from 'vitest'
-import {
-  contentFingerprint,
-  MAX_LOGO_BYTES,
-  readContentTree,
-} from '@/lib/content/read-tree'
+import { MAX_LOGO_BYTES } from '@/lib/content/logos'
+import { contentFingerprint, readContentTree } from '@/lib/content/read-tree'
+import { png } from './helpers/png'
 
 /**
  * The tree walk itself, on a throwaway directory: what it places, what it
@@ -22,10 +20,19 @@ import {
 
 const root = mkdtempSync(path.join(tmpdir(), 'growth-engineer-tree-'))
 
-function write(relative: string, source = '---\nx: 1\n---\n') {
+function write(
+  relative: string,
+  source: string | Uint8Array = '---\nx: 1\n---\n'
+) {
   const file = path.join(root, relative)
   mkdirSync(path.dirname(file), { recursive: true })
   writeFileSync(file, source)
+}
+
+function problemsIn(): Array<string> {
+  return readContentTree(root).problems.map(
+    (problem) => `${problem.file}: ${problem.message}`
+  )
 }
 
 afterAll(() => {
@@ -40,7 +47,7 @@ describe('the content tree walk', () => {
     write('workflows/README.md')
     write('workflows/keep-crm-clean.md')
     write('tags.yml', 'capability:\n  manage-crm:\n    label: Manage a CRM\n')
-    write('companies/acme/logo.png', 'png')
+    write('companies/acme/logo.png', png(128))
 
     const tree = readContentTree(root)
     expect(tree.problems).toEqual([])
@@ -52,7 +59,7 @@ describe('the content tree walk', () => {
       'tool:companies/acme/tools/manage-crm.md',
       'workflow:workflows/keep-crm-clean.md',
     ])
-    expect(tree.logos.get('acme')).toBe('png')
+    expect(tree.pendingLogos.get('acme')).toBe('png')
     expect(tree.fingerprint).toMatch(/^[0-9a-f]{40}$/)
     // A rename or a new logo changes it; nothing else has to be read to know.
     const before = contentFingerprint(root)
@@ -66,7 +73,7 @@ describe('the content tree walk', () => {
     write('companies/acme/logo.svg', '<svg/>')
     expect(contentFingerprint(root)).not.toBe(renamed)
     rmSync(path.join(root, 'companies/acme/logo.svg'))
-    write('companies/acme/logo.png', 'png')
+    write('companies/acme/logo.png', png(128))
     renameSync(
       path.join(root, 'workflows/keep-the-crm-clean.md'),
       path.join(root, 'workflows/keep-crm-clean.md')
@@ -74,29 +81,44 @@ describe('the content tree walk', () => {
   })
 
   test('rejects a logo too heavy to serve as is', () => {
-    write('companies/heavy/logo.png', 'x'.repeat(MAX_LOGO_BYTES + 1))
-    const tree = readContentTree(root)
-    const problems = tree.problems.map(
-      (problem) => `${problem.file}: ${problem.message}`
+    write(
+      'companies/heavy/logo.png',
+      Buffer.concat([png(128), Buffer.alloc(MAX_LOGO_BYTES)])
     )
-    expect(problems).toEqual(
+    expect(problemsIn()).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^companies\/heavy\/logo\.png: 33 KB; a logo/),
       ])
     )
-    expect(tree.logos.has('heavy')).toBe(false)
     rmSync(path.join(root, 'companies/heavy'), { recursive: true })
   })
 
-  test('rejects a logo under any other name', () => {
-    write('companies/acme/icon.png', 'png')
-    const problems = readContentTree(root).problems.map(
-      (problem) => `${problem.file}: ${problem.message}`
+  test('checks a waiting logo by the rules the upload applies', () => {
+    write('companies/wide/logo.png', png(200, 100))
+    expect(problemsIn()).toEqual(
+      expect.arrayContaining([
+        'companies/wide/logo.png: it is 200×100; a logo is drawn in a square, so make it square',
+      ])
     )
-    expect(problems).toEqual(
+    rmSync(path.join(root, 'companies/wide'), { recursive: true })
+  })
+
+  test('rejects a second logo file', () => {
+    write('companies/acme/logo.svg', '<svg viewBox="0 0 10 10"></svg>')
+    expect(problemsIn()).toEqual(
+      expect.arrayContaining([
+        'companies/acme/logo.svg: a company has one logo: keep this or logo.png',
+      ])
+    )
+    rmSync(path.join(root, 'companies/acme/logo.svg'))
+  })
+
+  test('rejects a logo under any other name', () => {
+    write('companies/acme/icon.png', png(128))
+    expect(problemsIn()).toEqual(
       expect.arrayContaining([
         expect.stringMatching(
-          /^companies\/acme\/icon\.png: a company folder holds company\.md, tools\/ and an optional logo/
+          /^companies\/acme\/icon\.png: a company folder holds company\.md, tools\/ and, until a maintainer uploads it, logo\.svg/
         ),
       ])
     )

@@ -36,7 +36,7 @@ function build(): Built {
   }
   const tree = readContentTree()
   const catalog = buildCatalog(tree.files, {
-    logos: tree.logos,
+    pendingLogos: tree.pendingLogos,
     problems: tree.problems,
   })
   cached = {

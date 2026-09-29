@@ -157,7 +157,7 @@ crawlers and AI-referred visits with Notra. See
 
 ```
 growth-engineer/
-├─ companies/<handle>/    company.md, an optional logo, tools/<name>.md
+├─ companies/<handle>/    company.md and tools/<name>.md (logos live on the CDN)
 ├─ workflows/<name>.md    one file per workflow
 ├─ tags.yml               the tag vocabulary
 ├─ app/                   Next.js routes: pages, .md files, /mcp, llms.txt, sitemap

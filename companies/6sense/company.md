@@ -4,6 +4,7 @@ domain: 6sense.com
 category: intent
 tagline: The ABM platform powered by revenue intelligence, with buying signals, predictive buying stages and B2B people and company data.
 docs: https://support.6sense.com
+logo: https://cdn.growth.engineer/icons/companies/6sense-eb45fd32.svg
 mcp:
   url: https://api.6sense.com/mcp
   auth: oauth

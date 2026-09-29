@@ -7,7 +7,9 @@ import { z } from 'zod'
  * the browser is `NEXT_PUBLIC_*` only. The server secrets are the copy
  * counter's store (`copyCounterEnv()`), an optional GitHub token
  * (`githubToken()`) and Notra's ingest token (`notraGeoToken()`), each read
- * when called — never at import, so no bundle carries them.
+ * when called — never at import, so no bundle carries them. One more is for
+ * maintainers' machines only: the CDN token `pnpm logos:upload` uses
+ * (`logoUploadToken()`).
  */
 
 /**
@@ -94,4 +96,17 @@ export function githubToken(): string | undefined {
  */
 export function notraGeoToken(): string | undefined {
   return present(z.string().optional()).parse(process.env.NOTRA_GEO_TOKEN)
+}
+
+/**
+ * The Vercel Blob token for the `growtheng-cdn` store behind
+ * cdn.growth.engineer, which `pnpm logos:upload` (scripts/logos.mjs) puts
+ * logos with. MAINTAINERS ONLY: the site never uploads, so no deployment sets
+ * it. Never the generic `BLOB_READ_WRITE_TOKEN`: another project's token under
+ * that name would upload happily to the wrong store.
+ */
+export function logoUploadToken(): string | undefined {
+  return present(z.string().optional()).parse(
+    process.env.GROWTH_ENGINEER_BLOB_READ_WRITE_TOKEN
+  )
 }

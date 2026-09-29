@@ -21,7 +21,8 @@ import { buildTools } from './build-tools'
 import { buildWorkflows } from './build-workflows'
 import { companyTags, searchTextOf } from './derive'
 import { type ContentProblem, ProblemList } from './errors'
-import type { ContentFile, LogoExtension } from './read-tree'
+import type { LogoExtension } from './logos'
+import type { ContentFile } from './read-tree'
 
 /**
  * Source files → the catalog. PURE: takes the files, returns the graph, and
@@ -58,8 +59,8 @@ export type Catalog = {
 }
 
 export type BuildOptions = {
-  /** Each company's logo, by handle (`companies/<handle>/logo.<ext>`). */
-  logos?: ReadonlyMap<string, LogoExtension>
+  /** Logo files waiting to be uploaded, by handle (`companies/<handle>/logo.<ext>`). */
+  pendingLogos?: ReadonlyMap<string, LogoExtension>
   /** Problems the tree walk found before parsing started. */
   problems?: ReadonlyArray<ContentProblem>
 }
@@ -217,7 +218,7 @@ export function buildCatalog(
   const { companies, ways } = buildCompanies(
     files,
     tags,
-    options.logos ?? new Map(),
+    options.pendingLogos ?? new Map(),
     problems
   )
   const { tools, drafts } = buildTools(

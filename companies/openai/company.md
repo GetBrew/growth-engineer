@@ -5,6 +5,7 @@ category: ai-model
 tagline: GPT models for text, structured output, images and speech through one API.
 docs: https://developers.openai.com/api/docs
 github: https://github.com/openai
+logo: https://cdn.growth.engineer/icons/companies/openai-7be72f1f.svg
 cli:
   install: brew install openai/tools/openai
   binary: openai

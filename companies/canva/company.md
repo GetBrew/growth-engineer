@@ -5,6 +5,7 @@ category: design
 tagline: Online visual suite for designing presentations, social posts, videos and other marketing assets.
 docs: https://www.canva.dev/docs/apps/
 github: https://github.com/canva-sdks
+logo: https://cdn.growth.engineer/icons/companies/canva-0546ee75.jpg
 mcp:
   url: https://mcp.canva.com/mcp
   auth: oauth

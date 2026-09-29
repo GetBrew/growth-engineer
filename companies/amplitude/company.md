@@ -5,6 +5,7 @@ category: product-analytics
 tagline: Behavioral analytics across the funnel.
 docs: https://amplitude.com/docs
 github: https://github.com/amplitude
+logo: https://cdn.growth.engineer/icons/companies/amplitude-b494268a.jpg
 mcp:
   url: https://mcp.amplitude.com/mcp
   auth: oauth

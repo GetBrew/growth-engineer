@@ -4,6 +4,7 @@ domain: crustdata.com
 category: data-provider
 tagline: Real-time company and people data for AI agents, from search to enrichment and contact details.
 docs: https://docs.crustdata.com
+logo: https://cdn.growth.engineer/icons/companies/crustdata-58f1e244.png
 mcp:
   url: https://install.crustdata.com/mcp
   auth: oauth
