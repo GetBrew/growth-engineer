@@ -25,6 +25,7 @@ body:
       options:
         - Outbound
         - Inbound
+        - Content
         - Product-led
         - Retention
         - Not sure

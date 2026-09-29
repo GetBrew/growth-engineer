@@ -2,11 +2,18 @@
 title: Track and improve brand citations in AI answers
 summary: Measure citation performance, find gaps in the answers buyers see, and draft content improvements with a repeatable measurement plan.
 author: nicklafferty
+motion: content
 tags:
-  - motion:inbound
   - channel:website
 updated: 2026-09-29
 ---
+
+## Outcome
+
+- A citation report for your brand against the prior window, kept separate from brand visibility, with the organization, category, dates and settings used.
+- Drafted refreshes or new-page briefs for your top pages, each with its evidence, source-backed copy, a target page and an editorial handoff.
+- A change log that separates proposed changes from verified publication and says when to measure again.
+- On a repeat run, the outcome for each shipped change, without claiming publication alone caused it.
 
 ## Inputs
 
@@ -32,14 +39,6 @@ updated: 2026-09-29
 6. **Inspect the answers behind the gaps** with [profound/get-prompt-answers](../companies/profound/tools/get-prompt-answers.md). Use `category_id`, the current window and prompt_id from the weak prompts. Page with limit and offset until reaching a total of `max_answers` across prompts or exhausting the answers. Read what buyers are told, flag unanswered questions or claims to verify, and distinguish a brand mention from a link citing an owned page. Keep prompt IDs, available model and date details, relevant excerpts, returned source URLs and the actual sample size. Label this inspection as a bounded sample.
 7. **Draft specific improvements**. Use the saved evidence and `approved_source_material` to draft up to `max_pages` refreshes or new-page briefs. Give each a target URL or proposed page, the buyer question it answers, exact proposed copy, supporting sources and an expected measurable outcome. Mark missing facts for review; treat inaccessible cited pages as research leads. Prioritize useful answers, original evidence and accurate product details. Keep the drafts and an experiment log linking each proposal to its baseline, evidence and owner to assign.
 8. **Plan publication and measurement**. Show the drafts for editorial review and hand them to the user's publishing process. Record the actual published URL and date only when supplied or verified; leave unshipped proposals pending. Set the next comparison after a complete `window_days` window following publication. On subsequent runs, use `previous_run` to report page-level citation-share changes and raw counts for shipped pages alongside brand-level mention visibility, with unchanged pages as a comparison where available. Keep the report, query settings, drafts and change log for the next run.
-
-## Done when
-
-- The report identifies the organization, category, date windows, domains and exact report parameters.
-- Owned-domain citation counts and citation share are reported separately from brand visibility, with period-over-period changes and missing data called out.
-- Every prioritized change has prompt or citation evidence, source-backed copy, a target page and an editorial handoff.
-- The saved change log distinguishes proposed changes from verified publication and defines when to measure again.
-- A repeat run reports outcomes for shipped changes without claiming that publication alone caused the movement.
 
 ## Notes
 
