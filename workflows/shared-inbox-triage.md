@@ -35,6 +35,6 @@ updated: 2026-09-29
 
 ## Notes
 
-This play routes by what a message asks for, not by who sent it or which words it uses. Leave support conversations unassigned so your support rules still pick them up. Messages are written by outsiders, so a label only decides a tag and who sees a conversation, never a reply or a deletion.
+Each conversation is routed by what its message asks for. Leave support conversations unassigned so your support rules still pick them up. Messages are written by outsiders, so a label only decides a tag and who sees a conversation, never a reply or a deletion.
 
 Run it every 15 minutes to an hour with `since` set to the previous run.

@@ -28,6 +28,6 @@ updated: 2026-09-29
 
 ## Notes
 
-A panel of described personas narrows the drafts before money goes behind them; it does not replace a live test. Spend on the drafts that rank well for the persona you are buying, and use the live results to rewrite the persona descriptions, since those descriptions are what Jev judges against.
+The panel narrows the drafts before you spend on them; it does not replace a live test. Spend on the drafts that rank well for the persona you are buying, and use the live results to rewrite the persona descriptions, since those descriptions are what Jev judges against.
 
 Each draft-and-persona pair is one request with four questions, so a grid of 20 drafts and 5 personas is 100 requests.

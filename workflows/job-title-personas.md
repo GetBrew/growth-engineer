@@ -31,6 +31,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Titles like "Growth Ninja", "GM, Americas" or "Head of People & Revenue Ops" defeat keyword rules; the one-line description of each persona is what Jev decides against, so write them in your own words. A title that sits between two seniority levels shows it in the probabilities, which is why step 3 checks seniority too.
+Keyword rules break on titles like "Growth Ninja", "GM, Americas" or "Head of People & Revenue Ops"; the one-line description of each persona is what Jev decides against, so write them in your own words. A title that sits between two seniority levels shows it in the probabilities, which is why step 3 checks seniority too.
 
 Run it weekly, or after every list import, so new contacts land in the right sequence.

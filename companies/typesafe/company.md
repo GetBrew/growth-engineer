@@ -21,15 +21,12 @@ decisions inside software instead of generating text. Its first, Jev
 JSON, and a set of named questions of three types: a choice picks one of the
 labels you define, a score rates the state against an ordered rubric, and a
 noul gives the probability that the answer is yes. It answers every question
-in one pass, each with probabilities and a confidence, so software can act on
-the sure answers and send the unsure ones to a person.
+in one pass, with the probabilities behind each answer and a confidence for
+each choice and score, so software can act on the sure answers and send the
+unsure ones to a person.
 
-The API is one call, `POST /v1/systemone`, with the key as a Bearer token. It
-is not a chat API: the body is the state, the model and the questions, and
-there is no prompt or temperature. Requests are billed by input tokens, and
-output tokens are free for now. The official SDKs are `typesafe-sdk` for
-Python and `@typesafe-ai/sdk` for JavaScript.
-
-TypeSafe opened sign-ups to everyone on September 20, 2026, and paused new
-ones two days later because of demand; existing accounts kept working.
-OpenRouter and the Vercel AI Gateway also serve Jev.
+Every decision is one call, `POST /v1/systemone`, with the key as a Bearer
+token. It is not a chat API: the body is the state, the model and the
+questions, and there is no prompt or temperature. Requests are billed by
+input tokens, and output tokens are free for now. The official SDKs are
+`typesafe-sdk` for Python and `@typesafe-ai/sdk` for JavaScript.

@@ -10,7 +10,7 @@ updated: 2026-09-29
 
 ## Outcome
 
-- A check of each draft opener, with the ones that pitch too early, ask for more than one thing or talk about the sender flagged.
+- Each draft opener checked, with any that pitches, asks for more than one thing or talks about the sender flagged.
 - A table of every lead with whether they hold a target role, the opener picked for them and Jev's confidence.
 - Each approved lead added to the HeyReach campaign that sends their opener.
 

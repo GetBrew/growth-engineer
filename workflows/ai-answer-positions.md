@@ -35,6 +35,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Visibility scores say how often you appear; this play says how: an answer that lists you last with a caveat and one that recommends you first both count as a mention. For an answer that contradicts your facts, check the pages the engine cites before writing new content.
+Visibility scores count mentions, and an answer that lists you last with a caveat counts the same as one that recommends you first. The position labels tell them apart. For an answer that contradicts your facts, check the pages the engine cites before writing new content.
 
 Run it weekly with `lookback_days` set to 7.

@@ -32,6 +32,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Support still answers every ticket; this play makes sure a question like "can we add SSO before the security review" also reaches the person who owns the renewal.
+Support still answers every ticket; a question like "can we add SSO before the security review" also reaches the person who owns the renewal.
 
 Run it daily with `since` set to the time the previous run started.

@@ -45,4 +45,4 @@ updated: 2026-09-29
 
 Read each score by its most likely level: TypeSafe's docs warn against reading the expected value between two levels as a magnitude. To rank leads within a level, sort by the probability of the top two levels together. List the self_serve leads for whoever runs your onboarding emails rather than a rep.
 
-Run it every hour with `since` set to the cutoff the previous run reported; speed to lead is the point of the play.
+Run it every hour with `since` set to the cutoff the previous run reported, so each lead is routed within the hour.

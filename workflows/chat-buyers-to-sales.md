@@ -33,6 +33,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Support keeps answering the conversation as usual; this play makes sure a buyer inside a support queue reaches a seller the same day. Chat text is written by visitors, so the labels only decide who sees a conversation: nothing here writes to the visitor or changes a customer's plan.
+Support keeps answering as usual; this sends the buyers among those conversations to sales the same day. Chat text is written by visitors, so the labels only decide who sees a conversation: nothing here writes to the visitor or changes a customer's plan.
 
 Run it every hour with `since` set to the previous run.

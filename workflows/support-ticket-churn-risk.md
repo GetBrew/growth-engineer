@@ -35,6 +35,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Judge risk by the most likely level, not by the expected score between levels, which TypeSafe's docs say is not a magnitude. Start with `risk_level` at weighing a downgrade or another tool, and move it once you have a week of results. Support keeps answering the ticket as usual; this play makes sure the account owner hears about it the same day.
+Judge risk by the most likely level, not by the expected score between levels, which TypeSafe's docs say is not a magnitude. Start with `risk_level` at weighing a downgrade or another tool, and move it once you have a week of results. Support keeps answering the ticket as usual; the account owner hears about it the same day.
 
 Run it every few hours with `since` set to the time the previous run started.

@@ -34,6 +34,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Matching the offer to the reason is the play: a discount answers price, a setup call answers low usage or complexity, and a customer who switched to a competitor is usually better left alone. Stripe's own feedback values are broad; the free-text comment is where the detail is, which is why Jev reads both. Customers whose subscriptions ended over a failed payment or a dispute need a billing fix, not an offer, so step 1 leaves them out.
+Each offer answers one reason: a discount for price, a setup call for low usage or complexity. A customer who switched to a competitor is usually better left alone. Stripe's own feedback values are broad; the free-text comment is where the detail is, which is why Jev reads both. Customers whose subscriptions ended over a failed payment or a dispute need a billing fix, not an offer, so step 1 leaves them out.
 
 Run it weekly with `lookback_days` set to 7.

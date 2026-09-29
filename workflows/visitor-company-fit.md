@@ -38,4 +38,4 @@ updated: 2026-09-29
 
 Visitor IP addresses are personal data in many places, so run this only if your privacy notice covers sharing them with an enrichment vendor. PostHog keeps the `$ip` property only when the project does not discard client IP data; check the project settings first. The stage comes from which pages were viewed, which is why the pages go into the state alongside the company.
 
-This play finds companies, not people: reach the right person through the account owner, never by guessing who visited. Run it daily with `lookback_days` set to 1.
+It finds companies, not people: reach the right person through the account owner, never by guessing who visited. Run it daily with `lookback_days` set to 1.

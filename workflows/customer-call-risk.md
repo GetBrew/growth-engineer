@@ -30,6 +30,6 @@ updated: 2026-09-29
 
 ## Notes
 
-Gong's trackers flag topics across calls; this play adds a churn-risk level with a confidence, so "we're looking at a few options" and "we're renewing, just checking prices" land in different places. A call with no agreed next step and a competitor in it is the one to look at first.
+Gong's trackers flag topics across calls; this adds a churn-risk level with a confidence, which separates "we're looking at a few options" from "we're renewing, just checking prices". Look first at calls with a competitor in them and no agreed next step.
 
 Run it weekly with `since` set to the time the previous run started.

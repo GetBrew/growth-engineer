@@ -34,6 +34,6 @@ updated: 2026-09-29
 
 ## Notes
 
-People already connected to you are a warm list, and a large network hides them under years of recruiters, classmates and conference contacts. Sorting by role first keeps the paid company lookups to the connections that could be buyers.
+People already connected to you are a warm list, but in a large network they are mixed in with recruiters, classmates and conference contacts. Sorting by role first keeps the paid company lookups to the connections that could be buyers.
 
 The export holds names, positions and companies, and an email only when the connection allows it; keep the file private and delete it after the run. LinkedIn's User Agreement restricts automated activity, so keep the messages personal and the volume low.
