@@ -61,7 +61,10 @@ export function useRecordCopy(): (() => void) | undefined {
   return useContext(CopyCountContext)?.record
 }
 
-const VALUE = 'font-medium text-[32px] tabular-nums leading-none tracking-tight'
+// "USES 1 · +1 this week · #1 on Hot": one quiet row on every screen.
+const SECTION = 'flex flex-wrap items-baseline gap-x-2 gap-y-1'
+
+const VALUE = 'type-label font-medium text-foreground tabular-nums'
 
 /**
  * "Uses": how many times the file was copied into an agent, with this week's
@@ -80,16 +83,23 @@ export function UsesStat({
   const uses = total + added
   const thisWeek = week + added
   return (
-    <section className="flex flex-col gap-2">
+    <section className={SECTION}>
       <h2 className={SIDE_HEADING}>Uses</h2>
-      <p className={VALUE}>
-        <span aria-hidden="true">{formatCount(uses)}</span>
-        <span className="sr-only">
-          Copied {formatExact(uses)} {uses === 1 ? 'time' : 'times'}
-        </span>
+      {/* "Uses" already says what it counts; a rounded 1.2K keeps the exact
+          count in its title. */}
+      <p
+        className={VALUE}
+        title={
+          formatCount(uses) === formatExact(uses)
+            ? undefined
+            : `${formatExact(uses)} uses`
+        }
+      >
+        {formatCount(uses)}
       </p>
       {thisWeek > 0 ? (
-        <p className="type-label text-subtle">
+        // The "·" is CSS, so it never ends up in copied text.
+        <p className="type-label text-subtle before:mr-2 before:text-faint before:content-['·']">
           +{formatExact(thisWeek)} this week
           {hotPlace ? (
             <>
@@ -115,7 +125,7 @@ export function UsesStat({
  */
 export function UsesStatFallback() {
   return (
-    <section aria-hidden="true" className="flex flex-col gap-2">
+    <section aria-hidden="true" className={SECTION}>
       <h2 className={SIDE_HEADING}>Uses</h2>
       <p className={VALUE}>&nbsp;</p>
     </section>

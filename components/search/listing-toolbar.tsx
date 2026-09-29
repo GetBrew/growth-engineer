@@ -22,7 +22,7 @@ export function ListingToolbar({
 }: {
   groups: ReadonlyArray<FilterGroup>
   search: ReactNode
-  /** How the list is ordered (`OrderMenu`), beside the search box. */
+  /** How the list is ordered (`OrderMenu`), just left of the search box. */
   order?: ReactNode
 }) {
   return (
@@ -47,8 +47,8 @@ export function ListingToolbar({
         ))}
       </div>
       <div className="flex items-center gap-2 lg:shrink-0">
-        <div className="min-w-0 flex-1 lg:w-80 lg:flex-none">{search}</div>
         {order}
+        <div className="min-w-0 flex-1 lg:w-80 lg:flex-none">{search}</div>
       </div>
     </div>
   )

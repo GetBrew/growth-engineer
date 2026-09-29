@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      <HeroBanner title="See how real growth teams get things done" />
+      <HeroBanner lines={['Copy proven growth', 'systems for your agent']} />
 
       <HomeCatalog />
       <FounderProof />

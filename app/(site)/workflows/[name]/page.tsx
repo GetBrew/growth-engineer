@@ -148,18 +148,25 @@ async function WorkflowDetail({ params }: { params: Params }) {
         </section>
 
         {/* The actions head the side column, so the title and summary above
-            take the page's full width; from lg the column stays in view. */}
+            take the page's full width; from lg the column stays in view.
+            Under lg the column dissolves into the page's single column
+            (`contents`): the actions lead, then the file, then the rest
+            of the column after it. */}
         <CopyCountProvider isCounting={isCounting} workflowKey={workflow.key}>
-          <aside className="flex flex-col gap-(--space-xl) max-lg:order-first lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
+          <aside className="max-lg:contents lg:sticky lg:top-[calc(var(--header-height)+2rem)] lg:flex lg:flex-col lg:gap-(--space-xl)">
             {/* One row under lg, Copy taking the rest of it; from lg, Copy
                 spans the column and the others sit on the line below. */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 max-lg:order-first">
               <CopyFileButton
                 className="order-last flex-1 lg:order-first lg:basis-full"
                 label="Copy workflow"
+                noun="Workflow"
                 markdown={document.markdown}
               />
-              <div className="-ml-3 flex items-center">
+              {/* Under lg the icons lead the row (their padding bleeds left
+                  to line up with the edge); from lg they sit centred under
+                  the full-width Copy button. */}
+              <div className="-ml-3 flex items-center lg:ml-0 lg:basis-full lg:justify-center">
                 <ShareButton text={workflow.summary} title={workflow.title} />
                 <ViewSourceButton entityKey={workflow.key} type="workflow" />
                 <OpenInAgentMenu

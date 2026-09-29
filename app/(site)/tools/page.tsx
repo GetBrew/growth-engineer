@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { ToolsExplorer } from '@/components/catalog/tools-explorer'
-import { HeroBanner } from '@/components/common/hero-banner'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
 import { loadTagChips, loadToolSearchItems } from '@/lib/catalog/loaders'
@@ -29,12 +28,9 @@ export const metadata: Metadata = pageMetadata({
  */
 export default function ToolsPage() {
   return (
-    <>
-      <HeroBanner isCompact title="Every tool your agent can run" />
-      <Page>
-        <ToolsCatalog />
-      </Page>
-    </>
+    <Page>
+      <ToolsCatalog />
+    </Page>
   )
 }
 

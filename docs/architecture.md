@@ -95,7 +95,7 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
 | `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
-| `/docs`, `/docs/[guide]` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
+| `/add-a-workflow`, `/add-a-tool`, `/add-your-company` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, the same catalog; read-only except `submit_feedback`, which posts to Notra |
 | `/api/workflows/[name]/copies` | on request (`ƒ`) | one POST per page view that copies; a visitor counts once per workflow per 24 hours (`SET NX` on a hash of the address), then the total and today's bucket |
 

@@ -1,9 +1,7 @@
-import type { IconSvgElement } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { CatalogList, workflowListItem } from '@/components/catalog/list'
-import { accessLabels } from '@/components/common/badges'
 import { NoResults } from '@/components/common/no-results'
 import { CopyFileButton } from '@/components/detail/copy-file-button'
 import {
@@ -15,7 +13,7 @@ import { MarkdownFile } from '@/components/detail/markdown-file'
 import { MarkdownPreview } from '@/components/detail/markdown-preview'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
-import { LINK_ICON, PANEL_HEADING } from '@/components/detail/styles'
+import { PANEL_HEADING } from '@/components/detail/styles'
 import { ToolAccessPanel } from '@/components/detail/tool-access-panel'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
@@ -29,7 +27,6 @@ import {
   resolveAlias,
 } from '@/lib/catalog/loaders'
 import { toolParams } from '@/lib/catalog/static-params'
-import { toolDocsUrl } from '@/lib/catalog/tool-docs'
 import { SITE_ORIGIN } from '@/lib/env'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { toolJsonLd } from '@/lib/seo/structured-data'
@@ -105,23 +102,13 @@ async function ToolDetail({ params }: { params: Params }) {
   if (!document) {
     notFound()
   }
-  const { tool, company, capabilities } = result
+  const { tool, company } = result
   // The file's date: the tool's, its company's and its workflows', newest.
   const updatedAt = document.updatedAt
   const filePath = refToFilePath({
     type: 'tool',
     key: tool.key,
   })
-
-  const docsUrl = toolDocsUrl(tool)
-
-  const links = [
-    { label: 'Website', href: company.links.website, icon: LINK_ICON.website },
-    { label: 'Docs', href: docsUrl, icon: LINK_ICON.docs },
-  ].filter(
-    (link): link is { label: string; href: string; icon: IconSvgElement } =>
-      typeof link.href === 'string'
-  )
 
   return (
     <div className="flex flex-col gap-(--space-block)">
@@ -137,10 +124,13 @@ async function ToolDetail({ params }: { params: Params }) {
               markdown={document.markdown}
               title={tool.name}
             />
-            <CopyFileButton label="Copy tool" markdown={document.markdown} />
+            <CopyFileButton
+              label="Copy tool"
+              markdown={document.markdown}
+              noun="Tool"
+            />
           </>
         }
-        available={accessLabels(tool.access)}
         byline={
           <DetailByline
             avatars={[
@@ -156,18 +146,13 @@ async function ToolDetail({ params }: { params: Params }) {
             </Link>
           </DetailByline>
         }
-        links={links}
-        dates={[`Updated ${DETAIL_DATE.format(updatedAt)}`]}
+        meta={`Updated ${DETAIL_DATE.format(updatedAt)}`}
         description={tool.summary}
-        tags={[
-          ...(tool.status === 'deprecated'
+        tags={
+          tool.status === 'deprecated'
             ? [{ label: 'Deprecated', emphasis: true }]
-            : []),
-          ...capabilities.map((capability) => ({
-            label: capability.label,
-            href: `/tools?capability=${capability.slug}`,
-          })),
-        ]}
+            : []
+        }
         title={tool.name}
       />
 

@@ -24,10 +24,10 @@ type Order = {
 }
 
 /**
- * Which way a list is ordered — Featured, Hot, Popular, New — as a dropdown
- * beside its search box: links on a listing, whose URL is the state; buttons
- * on the home page's tabs (`onChange`). The same Popover as the navbar's
- * Browse menu, so it adds nothing to the bundle.
+ * Which way a list is ordered — Featured, Hot, Popular, New — as a quiet
+ * dropdown (no outline) just left of its search box: links on a listing,
+ * whose URL is the state; buttons on the home page's tabs (`onChange`). The
+ * same Popover as the navbar's Browse menu, so it adds nothing to the bundle.
  */
 export function OrderMenu({
   orders,
@@ -46,7 +46,7 @@ export function OrderMenu({
     <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger
         className={cn(
-          buttonVariants({ variant: 'outline', size: 'pill' }),
+          buttonVariants({ variant: 'ghost', size: 'pill' }),
           'shrink-0 gap-1 pr-3 text-soft hover:text-foreground'
         )}
         render={<button type="button" />}
@@ -65,7 +65,7 @@ export function OrderMenu({
         />
       </PopoverTrigger>
       <PopoverContent
-        align="end"
+        align="start"
         className="floating-panel w-44 gap-0 p-2 ring-0"
         sideOffset={8}
       >

@@ -3,7 +3,8 @@ import type { ResolvedGuideStep } from '@/lib/constants/guide-steps'
 import { GITHUB_URL, repoFileUrl } from '@/lib/github'
 
 /**
- * The contribute guides in `/docs`, one per kind of entry someone can add.
+ * The contribute guides, one per kind of entry someone can add, each at its
+ * own top-level URL (`/add-a-workflow`).
  *
  * PURE MODULE: data only. The list page draws these as rows and the detail
  * route generates one page per `slug`, so the two cannot disagree about which
@@ -13,7 +14,7 @@ import { GITHUB_URL, repoFileUrl } from '@/lib/github'
 export type Guide = {
   id: string
 
-  /** The URL segment: `/docs/<slug>`. */
+  /** The page's own top-level URL: `/<slug>` (`app/(site)/(docs)/<slug>`). */
   slug: string
   entity: EntityKind
   title: string
@@ -48,11 +49,11 @@ export const GUIDES: ReadonlyArray<Guide> = [
     entity: 'workflow',
     title: 'Add a workflow',
     summary:
-      'Turn the steps you already run into one file any agent can follow.',
+      'Turn a play your team already runs into one file any agent can follow.',
     length: 'four-minute',
     intro:
-      'A workflow is one to ten steps that reach a result. A step uses one published tool and says what to do with it, or none when the agent does it itself.',
-    note: 'A step that calls a service must name a published tool, or the check rejects the file.',
+      'A workflow is up to ten steps that reach one result. Each step either uses a published tool or is something the agent does itself, like writing a draft.',
+    note: 'If a step calls a service, it must link a published tool. Otherwise the check rejects the file.',
     docPath: 'workflows/README.md',
     skill: 'add-workflow',
   },
@@ -62,11 +63,11 @@ export const GUIDES: ReadonlyArray<Guide> = [
     entity: 'tool',
     title: 'Add a tool',
     summary:
-      'Describe one function your product exposes, and how an agent reaches it.',
+      'Describe one thing your product can do, and how an agent calls it.',
     length: 'three-minute',
     intro:
-      'A tool is one function an agent calls — one MCP tool, one CLI command, one API endpoint. A product with three functions is three files.',
-    note: 'Its `capability` must be listed in `tags.yml`. If none fits, add it there in the same pull request.',
+      'A tool is one action an agent can call: one MCP tool, one CLI command or one API endpoint. A product with three actions needs three tool files.',
+    note: 'Its `capability` must be in `tags.yml`. If none fits, add one there in the same pull request.',
     docPath: 'companies/README.md#toolsnamemd',
     skill: 'research-company',
   },
@@ -75,11 +76,12 @@ export const GUIDES: ReadonlyArray<Guide> = [
     slug: 'add-your-company',
     entity: 'company',
     title: 'Add your company',
-    summary: 'List your company, the ways into it, and the tools it makes.',
+    summary:
+      'List your company, how agents connect to it, and the tools it offers.',
     length: 'five-minute',
     intro:
-      'A company is one folder, named by its handle. It holds who you are, each way into your product, and one file per function an agent can call.',
-    note: 'The handle is permanent: it is your URL and the first half of every tool key. A rename only adds a redirect.',
+      'A company is one folder named after its handle. It holds who you are, how an agent connects to your product, and one file for each action an agent can call.',
+    note: 'Your handle is permanent. It is your URL and the first part of every tool key. Renaming it only adds a redirect.',
     docPath: 'companies/README.md',
     skill: 'research-company',
   },
@@ -97,7 +99,7 @@ export function findGuide(slug: string): Guide | undefined {
 
 /** Where a guide lives on the site. */
 export function guidePath(guide: Guide): string {
-  return `/docs/${guide.slug}`
+  return `/${guide.slug}`
 }
 
 /** The guide before this one, or undefined at the start of the series. */

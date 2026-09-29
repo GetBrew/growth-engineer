@@ -177,8 +177,7 @@ function WorkflowsIndexFromUrl(props: IndexProps) {
 const HEADING: Record<Sort, { title: string; description: string }> = {
   featured: {
     title: 'Discover workflows',
-    description:
-      'Steps across tools that reach a result. Copy the file; run it with any agent.',
+    description: 'Step-by-step growth plays your agent can run.',
   },
   new: {
     title: 'New workflows',
@@ -217,6 +216,7 @@ function WorkflowsIndexView({
   return (
     <div className="flex flex-col gap-(--space-lg)">
       <SectionHeading
+        as="h1"
         description={HEADING[sort].description}
         title={q ? `Results for “${q}”` : HEADING[sort].title}
       />
@@ -229,7 +229,8 @@ function WorkflowsIndexView({
               label: 'Filter workflows',
               moreTitle: 'More filters',
               top: 3,
-              ...tagFilters(tags, sort, q, tag),
+              // An empty search is dropped from the tabs, or every tab opens nothing.
+              ...tagFilters(tags, sort, rows.length > 0 ? q : '', tag),
             },
           ]}
           order={

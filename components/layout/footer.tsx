@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import { SITE } from '@/lib/catalog/definitions'
+import { GUIDES, guidePath } from '@/lib/constants/guides'
 import { SECTIONS } from '@/lib/constants/sections'
 import { BrandLockup } from './brand'
 import { BrewLink } from './brew-link'
@@ -18,11 +19,7 @@ const COLUMNS = [
   },
   {
     heading: 'Contribute',
-    links: [
-      ['Add a workflow', '/docs/add-a-workflow'],
-      ['Add a tool', '/docs/add-a-tool'],
-      ['Add your company', '/docs/add-your-company'],
-    ],
+    links: GUIDES.map((guide) => [guide.title, guidePath(guide)] as const),
   },
   {
     heading: 'Brew',

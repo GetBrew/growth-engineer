@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { WorkflowsIndex } from '@/components/catalog/workflows-index'
-import { HeroBanner } from '@/components/common/hero-banner'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
 import { loadTagChips, loadWorkflowSearchItems } from '@/lib/catalog/loaders'
@@ -29,12 +28,9 @@ export const metadata: Metadata = pageMetadata({
  */
 export default function WorkflowsPage() {
   return (
-    <>
-      <HeroBanner isCompact title="Workflows that grow revenue" />
-      <Page>
-        <Index />
-      </Page>
-    </>
+    <Page>
+      <Index />
+    </Page>
   )
 }
 

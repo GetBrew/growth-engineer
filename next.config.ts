@@ -83,24 +83,44 @@ const nextConfig: NextConfig = {
       // in MCP `get`.
       { source: '/map', destination: '/', permanent: true },
       { source: '/map/:path*', destination: '/', permanent: true },
-      // The guides moved from /contribute to /docs, under readable names.
-      { source: '/contribute', destination: '/docs', permanent: true },
+      // The guides moved from /contribute to /docs, and then to their own
+      // top-level URLs (/add-a-workflow…); /docs has no index any more.
       {
         source: '/contribute/workflow',
-        destination: '/docs/add-a-workflow',
+        destination: '/add-a-workflow',
         permanent: true,
       },
       {
         source: '/contribute/tool',
-        destination: '/docs/add-a-tool',
+        destination: '/add-a-tool',
         permanent: true,
       },
       {
         source: '/contribute/company',
-        destination: '/docs/add-your-company',
+        destination: '/add-your-company',
         permanent: true,
       },
-      { source: '/contribute/:path*', destination: '/docs', permanent: true },
+      {
+        source: '/contribute',
+        destination: '/add-a-workflow',
+        permanent: true,
+      },
+      {
+        source: '/contribute/:path*',
+        destination: '/add-a-workflow',
+        permanent: true,
+      },
+      {
+        source: '/docs/:slug(add-a-workflow|add-a-tool|add-your-company)',
+        destination: '/:slug',
+        permanent: true,
+      },
+      { source: '/docs', destination: '/add-a-workflow', permanent: true },
+      {
+        source: '/docs/:path*',
+        destination: '/add-a-workflow',
+        permanent: true,
+      },
       // The capability for analytics reads was renamed when event writes got their own.
       {
         source: '/tags/capability/track-product-usage.md',

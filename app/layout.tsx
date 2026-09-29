@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/footer'
 import { Navbar } from '@/components/layout/navbar'
 import { VercelAnalytics } from '@/components/layout/vercel-analytics'
 import { JsonLd } from '@/components/seo/json-ld'
+import { LazyToaster } from '@/components/ui/lazy-toaster'
 import { SITE } from '@/lib/catalog/definitions'
 import { clientEnv, SITE_ORIGIN } from '@/lib/env'
 import { SITE_OPEN_GRAPH } from '@/lib/seo/metadata'
@@ -65,6 +66,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Footer />
         </div>
         <VercelAnalytics />
+        {/* One toaster for the site: a copy says "Workflow copied" here. */}
+        <LazyToaster />
       </body>
     </html>
   )

@@ -12,13 +12,11 @@ import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
 import { PANEL_HEADING } from '@/components/detail/styles'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
-import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
 import { loadGuideSteps } from '@/lib/catalog/loaders'
 import {
   findGuide,
-  GUIDES,
   type Guide,
   guideDocUrl,
   guideMarkdown,
@@ -31,26 +29,9 @@ import { pageMetadata } from '@/lib/seo/metadata'
 import { guideJsonLd } from '@/lib/seo/structured-data'
 import { cn } from '@/lib/utils/cn'
 
-type Params = Promise<{ guide: string }>
-
-/**
- * Every page here is prerendered from `generateStaticParams`, and reading
- * `params` outside `<Suspense>` is deliberate: nothing loads. So navigating
- * here may block rather than show a fallback; `instant = false` says so.
- */
-export const instant = false
-
-export function generateStaticParams() {
-  return GUIDES.map((guide) => ({ guide: guide.slug }))
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Params
-}): Promise<Metadata> {
-  const { guide } = await params
-  const found = findGuide(guide)
+/** A guide's metadata, for its page's `metadata` export. */
+export function guideMetadata(slug: string): Metadata {
+  const found = findGuide(slug)
   return found
     ? pageMetadata({
         title: found.title,
@@ -61,23 +42,23 @@ export async function generateMetadata({
 }
 
 /**
+ * One guide, at its own top-level URL (`/add-a-workflow`): each lives in
+ * `app/(site)/(docs)/<slug>/page.tsx`, a static page that renders this.
  * Built on the same shell as every other detail page: the page container at
- * its usual width, a back link, `DetailHeader`, then the two-column grid with
- * a sticky aside. Every guide is listed by `generateStaticParams`, so the
- * whole page prerenders complete — nothing on it loads.
+ * its usual width, `DetailHeader`, then the two-column grid with a sticky
+ * aside. There is no guides index, so no back link; the previous and next
+ * guides lead on.
  */
-export default function GuidePage({ params }: { params: Params }) {
+export function GuidePage({ slug }: { slug: string }) {
   return (
     <Page className="flex flex-col gap-(--space-record)">
-      <BackLink href="/docs" label="Docs" />
-      <GuideDetail params={params} />
+      <GuideDetail slug={slug} />
     </Page>
   )
 }
 
-async function GuideDetail({ params }: { params: Params }) {
-  const { guide } = await params
-  const found = findGuide(guide)
+function GuideDetail({ slug }: { slug: string }) {
+  const found = findGuide(slug)
 
   if (!found) {
     notFound()
@@ -103,7 +84,11 @@ async function GuideDetail({ params }: { params: Params }) {
               markdown={markdown}
               title={found.title}
             />
-            <CopyFileButton label="Copy for your agent" markdown={markdown} />
+            <CopyFileButton
+              label="Copy for your agent"
+              markdown={markdown}
+              noun="Guide"
+            />
           </>
         }
         byline={

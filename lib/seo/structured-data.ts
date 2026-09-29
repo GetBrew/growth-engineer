@@ -54,7 +54,7 @@ export function websiteJsonLd(origin: string): JsonLd {
         '@id': `${origin}/#publisher`,
         name: SITE.publisher.name,
         url: SITE.publisher.url,
-        logo: absolute(origin, '/logos/brew.svg'),
+        logo: absolute(origin, '/brand/brew-wordmark.svg'),
         sameAs: [
           ...SITE.publisher.profiles.map((profile) => profile.url),
           SITE.repository,
@@ -288,7 +288,8 @@ export function guideJsonLd(
         about: { '@id': `${url}#howto` },
       },
       breadcrumb(origin, [
-        { name: 'Docs', path: '/docs' },
+        // The guides have no index page: each sits under the home page.
+        { name: 'Home', path: '/' },
         { name: guide.title, path: guidePath(guide) },
       ]),
     ],

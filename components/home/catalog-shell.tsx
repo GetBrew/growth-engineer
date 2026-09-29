@@ -1,14 +1,10 @@
 import type { ReactNode } from 'react'
-import { SectionHeading } from '@/components/layout/section-heading'
 
+/**
+ * The home page's catalog: no heading of its own — the hero above already
+ * says what the site is, so the Workflows / Tools / Companies tabs open it,
+ * as close under the agents strip as the strip is under the hero.
+ */
 export function CatalogShell({ children }: { children: ReactNode }) {
-  return (
-    <section className="page-container pt-8 sm:pt-14">
-      <SectionHeading
-        description="Workflows, the tools they run on, and the companies behind them."
-        title="Explore the catalog"
-      />
-      <div className="mt-(--space-lg)">{children}</div>
-    </section>
-  )
+  return <section className="page-container pt-2">{children}</section>
 }

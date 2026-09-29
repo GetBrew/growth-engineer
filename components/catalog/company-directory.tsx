@@ -65,8 +65,10 @@ function CompanyDirectoryView({
     q,
     ...(category ? { category } : {}),
   })
+  // An empty search is dropped from the tabs, or every tab opens nothing.
+  const tabQ = rows.length > 0 ? q : ''
   const isExpanded = searchParams.get('view') === 'all'
-  // Grouped by slug, so each section's "See …" opens its own category. A
+  // Grouped by slug, so each section's "more" row opens its own category. A
   // company with no category lands in Other, which has nothing to open and
   // so always shows in full.
   const sections = new Map<
@@ -87,7 +89,8 @@ function CompanyDirectoryView({
   return (
     <div className="flex flex-col gap-(--space-lg)">
       <SectionHeading
-        description="Every company whose tools an agent can reach, and what each one does."
+        as="h1"
+        description="The companies that make the tools, grouped by what they do."
         title="Discover companies"
       />
 
@@ -97,13 +100,13 @@ function CompanyDirectoryView({
             {
               key: 'category',
               label: 'Filter companies by category',
-              all: { href: companiesHref(q, ''), active: !category },
+              all: { href: companiesHref(tabQ, ''), active: !category },
               moreTitle: 'More categories',
               options: categories.map((tag) => ({
                 key: tag.key,
                 label: tag.label,
                 count: tag.counts.companies,
-                href: companiesHref(q, tag.slug),
+                href: companiesHref(tabQ, tag.slug),
                 active: category === tag.slug,
               })),
             },
@@ -135,6 +138,7 @@ function CompanyDirectoryView({
               .sort((a, b) => a.label.localeCompare(b.label))
               .map((section) => (
                 <CategorySection
+                  noun="companies"
                   entries={section.rows.map(({ company }) => ({
                     key: company.key,
                     name: company.name,
