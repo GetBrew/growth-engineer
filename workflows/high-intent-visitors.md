@@ -12,7 +12,7 @@ updated: 2026-09-29
 
 ## Outcome
 
-- One post in `alerts_channel` for each company with at least `min_views` views, with the count, the company facts and its HubSpot owner.
+- One Slack post for each company that viewed your pricing page often enough, with the count, the company facts and its HubSpot owner.
 - The list of those companies, with the ones that have no HubSpot record or owner.
 
 ## Inputs

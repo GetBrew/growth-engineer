@@ -11,7 +11,7 @@ updated: 2026-09-29
 
 ## Outcome
 
-- A post in `cs_channel` for each detractor, with the score, the comment, the company and the owner.
+- A Slack post for each detractor, with the score, the comment, the company and the owner.
 - A drafted reply for each detractor, for its owner to send.
 - A HubSpot note on each matched contact, and the emails that matched no contact.
 

@@ -12,7 +12,7 @@ updated: 2026-09-29
 ## Outcome
 
 - An email with a link to pay for every customer with a past-due subscription, or a note on why not, such as Stripe already emailing them.
-- A post in `cs_channel` for each customer who owes `escalate_amount` or more.
+- A Slack post for each customer who owes more than your escalation amount.
 - The total amount due, by currency.
 
 ## Inputs

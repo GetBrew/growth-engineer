@@ -10,8 +10,8 @@ updated: 2026-09-29
 
 ## Outcome
 
-- A HubSpot contact with a brief for every sales meeting booked since `since`.
-- A brief per meeting in `sales_channel`: who, their role, the company, their answers and the start time.
+- A HubSpot contact with a brief for every sales meeting booked since the last run.
+- A Slack brief per meeting: who, their role, the company, their answers and the start time.
 - The list of meetings, with anyone Apollo could not match.
 
 ## Inputs

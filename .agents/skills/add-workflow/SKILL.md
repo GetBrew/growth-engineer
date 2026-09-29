@@ -27,7 +27,8 @@ for the job and name the choice in `## Notes`.
   words a reader can't check (meaningful, useful, thoughtful).
 - `motion` is the one motion it serves, from `tags.yml`.
 - `## Outcome` opens the body: one to four things the user has when the run
-  ends (a table, drafts, records, sent emails), each one checkable. It is
+  ends (a table, drafts, records, sent emails), each one checkable and in
+  plain words, never an input's `name`. It is
   what people read to decide and what the agent treats as done. Never a
   promise of replies, meetings or revenue.
 - The file name is the key and the URL, forever: short, kebab-case, the play

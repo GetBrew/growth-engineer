@@ -11,8 +11,8 @@ updated: 2026-09-29
 
 ## Outcome
 
-- Every registrant in exactly one list, recorded in `list_property` on their HubSpot contact.
-- Three approved emails sent: the recording to no-shows, `next_step` to attendees and `booking_url` to engaged viewers.
+- Every registrant in exactly one list, recorded on their HubSpot contact.
+- Three approved emails sent: the recording to no-shows, your next step to attendees and a booking link to engaged viewers.
 
 ## Inputs
 

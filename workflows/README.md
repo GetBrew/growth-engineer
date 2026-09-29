@@ -76,7 +76,7 @@ heading is caught instead of silently dropped.
 
 | Section | Required | Each entry |
 | --- | --- | --- |
-| `## Outcome` | yes, 1–4 | `- What the user has when the run ends.` The agent treats these as the checks that mean it is done. |
+| `## Outcome` | yes, 1–4 | `- What the user has when the run ends.` In plain words, with no `code`: people read it to decide, and the agent treats it as the checks that mean it is done. |
 | `## Inputs` | no | ``- `name`: what it is, e.g. an example``. The name is snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
 | `## Steps` | yes, 1–10 | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). What to do.`` The link goes to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. A step the agent does itself has no link: ``3. **Write emails**. Draft …`` At least one step names a tool. |
 | `## Notes` | no | Free markdown to the end of the file, with `###` and smaller headings, none named like a section the file writes (Set up, Steps, Rules…). |
@@ -96,7 +96,8 @@ same words to know what it is aiming for.
   reader can't check, like meaningful or useful.
 - **Motion**: the one it serves, even when it touches others.
 - **Outcome**: things the user has at the end, such as a table, drafts,
-  records or sent emails. Never a promise of replies, meetings or revenue.
+  records or sent emails, in plain words rather than input names. Never a
+  promise of replies, meetings or revenue.
 - **Inputs**: ask for what the user knows. A campaign's name beats its id
   when the agent can look the id up. When something must be set up once,
   like a campaign template or a CRM property, say so in its description.

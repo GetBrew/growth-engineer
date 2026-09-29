@@ -11,8 +11,8 @@ updated: 2026-09-29
 
 ## Outcome
 
-- A follow-up email, sent or declined by you, for every opted-in contact who downloaded the asset in `follow_up_window`, each pointing to the section that fits them.
-- One row per sent email in `nurture_log`, with the contact, the section and the date.
+- A follow-up email, sent or declined by you, for every opted-in contact who recently downloaded the asset, each pointing to the section that fits them.
+- One row per sent email in your Notion log, with the contact, the section and the date.
 
 ## Inputs
 

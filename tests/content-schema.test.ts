@@ -842,6 +842,16 @@ describe('content rules', () => {
       /keep-crm-clean\.md: outcome: an outcome has at most 4 items/,
     ],
     [
+      'an outcome written with code',
+      () =>
+        edit(
+          'workflow',
+          '- No duplicates remain.',
+          '- No duplicates remain in `crm`.'
+        ),
+      /keep-crm-clean\.md:12: outcome 1: say it in plain words/,
+    ],
+    [
       'the old Done when section',
       () => edit('workflow', '## Outcome', '## Done when'),
       /keep-crm-clean\.md:10: "## Done when" is not a section: a workflow body has `## Outcome`/,

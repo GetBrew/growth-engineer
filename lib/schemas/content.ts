@@ -343,7 +343,14 @@ export const WORKFLOW_BODY_SECTIONS = {
 export const workflowBodySchema = z.strictObject({
   /** What the user has when the run ends: the checks that mean it is done. */
   outcome: z
-    .array(text)
+    .array(
+      // People read the outcome on the page to decide, so it names things
+      // in words, not the inputs or fields the steps use.
+      text.refine((value) => !value.includes('`'), {
+        message:
+          'say it in plain words, without `code`: people read the outcome to decide',
+      })
+    )
     .min(1, 'add a `## Outcome` section: what the user has when the run ends')
     .max(
       WORKFLOW_OUTCOME_MAX,

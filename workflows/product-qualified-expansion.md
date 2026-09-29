@@ -10,8 +10,8 @@ updated: 2026-09-29
 
 ## Outcome
 
-- Every account at or above `usage_threshold` marked with `ready_attribute` in Attio, with a note on the metric and the week.
-- A post in `sales_channel` for each of those accounts.
+- Every account over your usage threshold marked expansion-ready in Attio, with a note on the metric and the week.
+- A Slack post for sales about each of those accounts.
 - The domains that have no Attio record.
 
 ## Inputs

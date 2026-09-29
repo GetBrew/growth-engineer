@@ -140,7 +140,7 @@ competitor-intent.md`,
     key: 'outcome',
     title: 'Say what the user gets',
     detail:
-      'Start the body with `## Outcome`: one to four things the user has when the run ends, like a table, drafts, records or sent messages. The agent treats them as the checks that mean it is done. Name only what the steps produce, never a promise like replies or meetings. Leave out safety rules like asking before sending: every file adds them at the end.',
+      'Start the body with `## Outcome`: one to four things the user has when the run ends, like a table, drafts, records or sent messages. Write them in plain words, not input names: people read them to decide, and the agent treats them as the checks that mean it is done. Name only what the steps produce, never a promise like replies or meetings. Leave out safety rules like asking before sending: every file adds them at the end.',
     sample: { file: WORKFLOW, excerpt: '## Outcome' },
   },
   {

@@ -10,7 +10,7 @@ updated: 2026-09-29
 
 ## Outcome
 
-- An approved email queued in `campaign` for each contact still at a lost account, naming what changed.
+- An approved email queued in your lemlist campaign for each contact still at a lost account, naming what changed.
 - A Salesforce task on each opportunity with a queued contact.
 - A table of every contact on a lost deal in the window, queued or marked left, unknown or skipped, and the opportunities with no contacts.
 

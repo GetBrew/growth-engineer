@@ -10,7 +10,7 @@ updated: 2026-09-29
 
 ## Outcome
 
-- One approved trial-offer email, sent to every opted-in user who fired `activation_event` at least `min_events` times and to no paying customer.
+- One approved trial-offer email, sent to every opted-in user who reached your activation event and to no paying customer.
 - The number of users emailed.
 
 ## Inputs

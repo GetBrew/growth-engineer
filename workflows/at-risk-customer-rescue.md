@@ -11,8 +11,8 @@ updated: 2026-09-29
 
 ## Outcome
 
-- A Slack post in `cs_channel` for each at-risk account renewing within `renewal_window`, with both usage counts and the renewal date.
-- A drafted check-in email for each of those accounts, signed by `signer`.
+- A Slack post in your customer success channel for each at-risk account that renews soon, with both usage counts and the renewal date.
+- A drafted check-in email for each of those accounts, signed by the person you choose.
 - The accounts ordered by renewal date, with the billing emails that matched no Stripe customer.
 
 ## Inputs
