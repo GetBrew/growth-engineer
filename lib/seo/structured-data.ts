@@ -190,12 +190,16 @@ export function toolJsonLd(
   }
 }
 
-/** A workflow is a HowTo: ordered steps, each with the tool it uses. */
+/**
+ * A workflow is a HowTo: ordered steps, each with the tool it uses. Its
+ * keywords are what the page shows: the motion's label and the companies.
+ */
 export function workflowJsonLd(
   origin: string,
   workflow: Workflow,
   tools: ReadonlyArray<{ tool: Tool; company: Company }>,
-  updatedAt: number
+  updatedAt: number,
+  motion: string
 ): JsonLd {
   const ref = {
     type: 'workflow' as const,
@@ -233,7 +237,10 @@ export function workflowJsonLd(
           text: step.instruction,
           url: `${absolute(origin, path)}#step-${index + 1}`,
         })),
-        keywords: workflow.tags.join(', '),
+        keywords: [
+          motion,
+          ...new Set(tools.map(({ company }) => company.name)),
+        ].join(', '),
         dateModified: new Date(updatedAt).toISOString(),
       },
       {

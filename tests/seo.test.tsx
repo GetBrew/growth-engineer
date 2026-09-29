@@ -237,6 +237,13 @@ describe('/llms.txt', () => {
       const ref = filePathToRef(path)
       expect(ref, line).not.toBeNull()
       expect(catalog.documents.has(`${ref?.type}:${ref?.key}`), line).toBe(true)
+      // A workflow's line opens with its motion, the label it is listed under.
+      const workflow =
+        ref?.type === 'workflow' ? catalog.workflows.get(ref.key) : undefined
+      if (workflow) {
+        const label = catalog.tags.get(`motion:${workflow.motion}`)?.label
+        expect(summary?.trim().startsWith(`${label}. `), line).toBe(true)
+      }
     }
     expect(text).toContain(`(${SITE_ORIGIN}/llms-full.txt)`)
     expect(text).toContain(`(${SITE_ORIGIN}/sitemap.xml)`)
@@ -416,7 +423,13 @@ describe('structured data', () => {
       return tool && company ? [{ tool, company }] : []
     })
     const graph = (
-      workflowJsonLd(origin, workflow, tools, workflow.updatedAt) as Graph
+      workflowJsonLd(
+        origin,
+        workflow,
+        tools,
+        workflow.updatedAt,
+        'Outbound'
+      ) as Graph
     )['@graph']
     const howTo = graph[0] as {
       '@type': string

@@ -1,15 +1,17 @@
+import { AiMagicIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
-import { accessTypeLabels } from '@/components/common/badges'
+import { CodeText } from '@/components/common/code-text'
 import { EntityLogo } from '@/components/common/entity-logo'
-import { SIDE_HEADING } from '@/components/detail/styles'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { ACCESS_LABEL, ACCESS_ORDER } from '@/lib/constants/catalog'
-import type { AccessType, WorkflowStep as Step } from '@/lib/types/catalog'
+  BRIEF_ITEM,
+  BRIEF_LIST,
+  BRIEF_MARKER,
+  BRIEF_PRIMARY,
+  BRIEF_SECONDARY,
+  PANEL_HEADING,
+} from '@/components/detail/styles'
+import type { WorkflowStep as Step } from '@/lib/types/catalog'
 import { cn } from '@/lib/utils/cn'
 
 type StepTool = {
@@ -17,9 +19,17 @@ type StepTool = {
   name: string
   companyName: string
   logoUrl?: string
-  access: ReadonlyArray<AccessType>
 }
 
+/** Who does a step: a 16px mark and a name, on the title's 24px line. */
+const WHO = 'type-helper inline-flex h-6 items-center gap-1.5 text-soft'
+
+/**
+ * How a workflow runs, as a plain numbered list: each step's title, who does
+ * it (a company's tool, linked to its page, or the agent itself), and what
+ * happens, in the file's own words. How to connect each tool is the file's
+ * Set up and the tool's page, so it is not repeated here.
+ */
 export function HowItRuns({
   steps,
   tools,
@@ -31,8 +41,8 @@ export function HowItRuns({
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className={SIDE_HEADING}>How it runs</h2>
-      <ol className="rounded-2xl border bg-background p-5">
+      <h2 className={PANEL_HEADING}>How it works</h2>
+      <ol className={BRIEF_LIST}>
         {steps.map((step, index) => {
           const tool =
             step.toolKey === undefined ? undefined : toolByKey.get(step.toolKey)
@@ -40,102 +50,60 @@ export function HowItRuns({
             // `#step-N` is the anchor each HowToStep in the page's
             // structured data points at.
             <li
-              className="relative grid scroll-mt-[calc(var(--header-height)+2rem)] grid-cols-[28px_minmax(0,1fr)] gap-3 pb-5 before:absolute before:top-7 before:bottom-0 before:left-3.25 before:w-px before:bg-border last:pb-0 last:before:hidden"
+              className={cn(
+                BRIEF_ITEM,
+                'scroll-mt-[calc(var(--header-height)+2rem)]'
+              )}
               id={`step-${index + 1}`}
               key={step.key}
             >
-              <span className="type-meta relative z-10 grid size-7 place-items-center rounded-full border bg-background text-soft tabular-nums">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <div className="min-w-0 pt-0.5">
-                <h3 className="type-subsection">{step.title}</h3>
-                {tool ? (
-                  // One quiet line per step: who makes the tool and what it
-                  // is, then its first way in on the right edge with a small
-                  // count for the rest, so the name keeps the room.
-                  <Link
-                    className="focus-ring group -mx-1.5 mt-1.5 flex min-w-0 items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-hover"
-                    href={`/tools/${tool.key}`}
-                  >
-                    <EntityLogo
-                      className="shrink-0"
-                      logoUrl={tool.logoUrl}
-                      name={tool.companyName}
-                      size={18}
-                    />
-                    <span className="type-label min-w-0 truncate text-soft transition-colors group-hover:text-foreground">
-                      {tool.name}
-                      <span className="text-faint"> · {tool.companyName}</span>
+              <span className={BRIEF_MARKER}>{index + 1}</span>
+              <div className="flex min-w-0 flex-col gap-1">
+                <div className="flex flex-wrap items-center gap-x-2">
+                  <h3 className={cn(BRIEF_PRIMARY, 'font-medium')}>
+                    {step.title}
+                  </h3>
+                  <span aria-hidden="true" className="text-faint">
+                    ·
+                  </span>
+                  {tool ? (
+                    <Link
+                      className={cn(
+                        WHO,
+                        'focus-ring rounded-sm transition-colors hover:text-foreground'
+                      )}
+                      href={`/tools/${tool.key}`}
+                      title={tool.name}
+                    >
+                      <EntityLogo
+                        className="shrink-0"
+                        logoUrl={tool.logoUrl}
+                        name={tool.companyName}
+                        size={16}
+                      />
+                      {tool.companyName}
+                    </Link>
+                  ) : (
+                    <span className={WHO}>
+                      <HugeiconsIcon
+                        aria-hidden="true"
+                        className="shrink-0"
+                        icon={AiMagicIcon}
+                        size={16}
+                        strokeWidth={1.8}
+                      />
+                      Your agent
                     </span>
-                    <WaysIn access={tool.access} />
-                  </Link>
-                ) : (
-                  <p className="type-label mt-1.5 text-soft">
-                    Your agent does this step itself.
-                  </p>
-                )}
+                  )}
+                </div>
+                <p className={BRIEF_SECONDARY}>
+                  <CodeText isQuiet text={step.instruction} />
+                </p>
               </div>
             </li>
           )
         })}
       </ol>
     </section>
-  )
-}
-
-/**
- * "MCP", or "MCP +2": the first way in, then a count badge for the rest.
- * Hovering it opens the full list — every way in, the ones this tool has
- * ticked and bright, the ones it lacks faded — so nothing hides behind "+2".
- */
-function WaysIn({ access }: { access: ReadonlyArray<AccessType> }) {
-  const [first, ...rest] = accessTypeLabels(access)
-  if (!first) {
-    return null
-  }
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger
-          render={<span className="ml-auto flex shrink-0 items-center gap-1" />}
-        >
-          <span className="type-meta font-mono text-faint">{first}</span>
-          {/* The badge's slot is kept even when empty, so "MCP" sits in
-              the same column on every step. */}
-          <span
-            aria-hidden={rest.length === 0 ? true : undefined}
-            className={cn(
-              'grid h-4 min-w-4 place-items-center rounded-full border bg-background px-1 font-medium text-[9px]/none text-soft tabular-nums',
-              rest.length === 0 && 'invisible'
-            )}
-          >
-            +{rest.length}
-          </span>
-          {rest.length > 0 ? (
-            <span className="sr-only">, {rest.join(', ')}</span>
-          ) : null}
-        </TooltipTrigger>
-        <TooltipContent className="flex-col items-start gap-1.5 py-2">
-          <span className="text-background/60">Available over</span>
-          <span className="flex items-center gap-2.5 font-mono">
-            {ACCESS_ORDER.map((type) => {
-              const has = access.includes(type)
-              return (
-                <span
-                  className={cn(
-                    'flex items-center gap-1',
-                    !has && 'text-background/35 line-through'
-                  )}
-                  key={type}
-                >
-                  {has ? <span aria-hidden="true">✓</span> : null}
-                  {ACCESS_LABEL[type]}
-                </span>
-              )
-            })}
-          </span>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   )
 }
