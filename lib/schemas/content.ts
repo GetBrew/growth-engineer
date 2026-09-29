@@ -301,9 +301,9 @@ export const toolSchema = z.strictObject({
 /* ─────────────────────────────────── workflow ───────────────────────────── */
 
 /** Short enough to scan in a list: a title fits one line, a summary two. */
-export const WORKFLOW_TITLE_MAX = 60
-export const WORKFLOW_SUMMARY_MAX = 140
-export const WORKFLOW_OUTCOME_MAX = 4
+const WORKFLOW_TITLE_MAX = 60
+const WORKFLOW_SUMMARY_MAX = 140
+const WORKFLOW_OUTCOME_MAX = 4
 
 /**
  * A workflow file is a header and a body. The HEADER holds the facts about
