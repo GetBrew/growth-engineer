@@ -1,12 +1,18 @@
 ---
 title: Brief the rep the moment a meeting is booked
-summary: When a prospect books a meeting, look them up, log them in the CRM and hand the rep a one-screen brief before the call.
+summary: Looks up each new Calendly booking with Apollo, logs the person in HubSpot with a brief, and posts the brief to Slack for the rep.
 author: thedogwiththedataonit
+motion: inbound
 tags:
-  - motion:inbound
   - channel:chat
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- A HubSpot contact with a brief for every sales meeting booked since `since`.
+- A brief per meeting in `sales_channel`: who, their role, the company, their answers and the start time.
+- The list of meetings, with anyone Apollo could not match.
 
 ## Inputs
 
@@ -23,8 +29,3 @@ updated: 2026-09-27
 5. **Log the contact** with [hubspot/upsert-contacts](../companies/hubspot/tools/upsert-contacts.md). Create or update each invitee, matched on email, with their name, title and company. Keep each contact's HubSpot ID.
 6. **Attach the brief** with [hubspot/create-note](../companies/hubspot/tools/create-note.md). Add a note to each contact ID with the meeting time, their answers and the company facts.
 7. **Brief the rep** with [slack/post-message](../companies/slack/tools/post-message.md). Post one brief per meeting to `sales_channel`: who, their role, the company in one line, their answers and the start time.
-
-## Done when
-
-- Every meeting booked since `since` has a contact, a note and a Slack brief.
-- The user has the list of meetings, with anyone Apollo could not match.

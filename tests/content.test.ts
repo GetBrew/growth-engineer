@@ -149,6 +149,38 @@ describe('the content tree', () => {
     }
   })
 
+  test('every workflow names one motion and leads its file with the goal', () => {
+    for (const workflow of catalog.workflows.values()) {
+      const motions = workflow.tags.filter((tag) => tag.startsWith('motion:'))
+      expect(motions, workflow.key).toEqual([`motion:${workflow.motion}`])
+      expect(catalog.tags.has(motions[0] ?? ''), workflow.key).toBe(true)
+      // What it does, then what the user gets, before anything to set up.
+      const markdown =
+        catalog.documents.get(`workflow:${workflow.key}`)?.markdown ?? ''
+      expect(markdown, workflow.key).toContain(
+        `# ${workflow.title}\n\n${workflow.summary}\n\n`
+      )
+      const outcome = markdown.indexOf('\n## Outcome\n')
+      expect(outcome, workflow.key).toBeGreaterThan(0)
+      expect(outcome, workflow.key).toBeLessThan(
+        markdown.indexOf('\n## Steps\n')
+      )
+    }
+    // The label a listing filters by answers exactly its workflows.
+    const outbound = searchWorkflowItems(
+      [...catalog.workflows.values()].map((workflow, index) =>
+        workflowSearchItem(catalog, workflow, index)
+      ),
+      { q: '', sort: 'featured', tag: 'motion:outbound' }
+    )
+    expect(outbound.map((item) => item.workflow.key).sort()).toEqual(
+      [...catalog.workflows.values()]
+        .filter((workflow) => workflow.motion === 'outbound')
+        .map((workflow) => workflow.key)
+        .sort()
+    )
+  })
+
   test('every workflow is built from tools, and the links run both ways', () => {
     for (const workflow of catalog.workflows.values()) {
       expect(workflow.toolKeys.length, workflow.key).toBeGreaterThan(0)

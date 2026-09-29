@@ -1,13 +1,18 @@
 ---
-title: Turn fresh funding news into qualified outbound
-summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
+title: Email buyers at newly funded companies
+summary: Finds companies that just raised with People Data Labs, gets each buyer's email from Apollo, and queues an approved email in lemlist.
 author: thedogwiththedataonit
+motion: outbound
 tags:
-  - motion:outbound
   - channel:email
 featured: true
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- A table of every funded company with its buyer and their work email, or a note on why there is none.
+- An approved three-sentence email for each buyer, queued in your lemlist campaign.
 
 ## Inputs
 
@@ -16,8 +21,8 @@ updated: 2026-09-27
 - `max_companies`: the most companies to pull, since each costs a credit, e.g. 50
 - `buyer_titles`: the roles to reach, most senior first, e.g. VP Marketing, Head of Growth
 - `offer`: what you sell, in one line, e.g. outbound email that books meetings
-- `campaign_id`: the lemlist campaign that sends the emails from your mailbox, e.g. cam_123
-- `email_variable`: the custom variable that campaign's email prints as its body, e.g. drafted_email
+- `campaign`: the lemlist campaign that sends the emails from your mailbox, by name, e.g. Funding outreach
+- `email_variable`: the custom variable the campaign's email prints as its whole body, set up once in lemlist, e.g. drafted_email
 
 ## Steps
 
@@ -25,9 +30,4 @@ updated: 2026-09-27
 2. **Find the buyer** with [apollo/search-people](../companies/apollo/tools/search-people.md). For each company's domain, find people with `buyer_titles` and keep the most senior, with their Apollo id; note the companies with no match.
 3. **Get their emails** with [apollo/bulk-enrich-people](../companies/apollo/tools/bulk-enrich-people.md). Enrich each buyer, up to 10 per call. Keep their name, title and work email.
 4. **Write emails**. Draft a three-sentence plain-text email per contact: congratulate the round, connect it to `offer`, ask one question. Show the drafts to the user.
-5. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each contact to `campaign_id` with their approved email in `email_variable`.
-
-## Done when
-
-- Every funded company has a contact, or a note explaining why not.
-- Every approved contact is in the campaign, and the user has a summary table.
+5. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each contact to `campaign` with their approved email in `email_variable`.

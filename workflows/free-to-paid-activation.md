@@ -1,12 +1,17 @@
 ---
-title: Guide active free users toward their first paid moment
-summary: Combine behavioural milestones with timely education so promising users find the value before momentum fades.
+title: Email a trial offer to active free users
+summary: Finds opted-in free users in PostHog who reached your activation event, skips paying Stripe customers, and emails a trial offer with Brew.
 author: thedogwiththedataonit
+motion: plg
 tags:
-  - motion:plg
   - channel:email
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- One approved trial-offer email, sent to every opted-in user who fired `activation_event` at least `min_events` times and to no paying customer.
+- The number of users emailed.
 
 ## Inputs
 
@@ -24,8 +29,3 @@ updated: 2026-09-27
 3. **Skip paying customers** with [stripe/list-subscriptions](../companies/stripe/tools/list-subscriptions.md). Remove anyone whose customer has a subscription on a paid price that is not canceled. Keep the emails that remain.
 4. **Write the email** with [brew/generate-email](../companies/brew/tools/generate-email.md). Generate one email that offers `trial_plan` around what these users already did, linking to `trial_url`. Show it to the user. Keep its `emailVersionId` and subject.
 5. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). After the user approves, send it to the remaining emails, 50 inline recipients per send, each send with its own idempotency key.
-
-## Done when
-
-- No paying customer received the email.
-- The user has the count of users emailed.

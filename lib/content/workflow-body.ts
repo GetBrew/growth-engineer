@@ -1,9 +1,12 @@
 /**
- * A workflow's BODY is the readable half of its source file: the inputs, the
- * steps and the checks, written in the markdown the rendered file uses — so
+ * A workflow's BODY is the readable half of its source file: the outcome, the
+ * inputs and the steps, written in the markdown the rendered file uses — so
  * `workflows/<name>.md` reads on GitHub the way it reads on the site. The
- * header keeps the facts (title, author, tags); the build adds the setup and
- * the rules from the tools the steps name.
+ * header keeps the facts (title, author, motion, tags); the build adds the
+ * setup and the rules from the tools the steps name.
+ *
+ *   ## Outcome                                                   1 to 4
+ *   - A contact for every company, or a note on why there is none.
  *
  *   ## Inputs                                                    optional
  *   - `target_segment`: the kind of company to watch, e.g. Series A SaaS
@@ -11,9 +14,6 @@
  *   ## Steps                                                     1 to 10
  *   1. **Find companies** with [apollo/search-people](../companies/apollo/tools/search-people.md). List …
  *   2. **Write emails**. Draft …                          (no tool: the agent does it)
- *
- *   ## Done when                                                 1 or more
- *   - Every company has a contact.
  *
  *   ## Notes                                                     optional
  *   Anything else, in any markdown.
@@ -36,31 +36,31 @@ type BodyStep = {
 }
 
 export type WorkflowBody = {
+  outcome: Array<string>
   inputs: Array<BodyInput>
   steps: Array<BodyStep>
-  doneWhen: Array<string>
   notes?: string
   /** The file line each entry starts on, so schema problems can point at it. */
   lines: {
+    outcome: Array<number>
     inputs: Array<number>
     steps: Array<number>
-    doneWhen: Array<number>
   }
 }
 
 export type BodyProblem = { line: number; message: string }
 
-type SectionId = 'inputs' | 'steps' | 'doneWhen' | 'notes'
+type SectionId = 'outcome' | 'inputs' | 'steps' | 'notes'
 
 /** In the only order they may appear. */
 const SECTIONS: ReadonlyArray<{ id: SectionId; heading: string }> = [
+  { id: 'outcome', heading: 'Outcome' },
   { id: 'inputs', heading: 'Inputs' },
   { id: 'steps', heading: 'Steps' },
-  { id: 'doneWhen', heading: 'Done when' },
   { id: 'notes', heading: 'Notes' },
 ]
 
-const SECTION_LIST = '`## Inputs`, `## Steps`, `## Done when` and `## Notes`'
+const SECTION_LIST = '`## Outcome`, `## Inputs`, `## Steps` and `## Notes`'
 
 const HEADING = /^ {0,3}(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/
 const LIST_ITEM = /^( *)(?:[-*+]|\d{1,3}[.)])[ \t]+(.*)$/
@@ -74,10 +74,10 @@ const TOOL_LINK = /\]\(\.\.\/companies\/[^)\s]*\/tools\/[^)\s]*\)/
 const LINK_TARGET = /^\.\.\/companies\/([^/]+)\/tools\/([^/]+)\.md$/
 
 const SHAPE: Record<Exclude<SectionId, 'notes'>, string> = {
+  outcome: 'an outcome reads `- What the user has when the run ends.`',
   inputs: 'an input reads ``- `name`: what it is, e.g. an example``',
   steps:
     'a step reads ``1. **Title** with [handle/slug](../companies/handle/tools/slug.md). What to do.``, or ``1. **Title**. What to do.`` when the agent does it itself',
-  doneWhen: 'a check reads `- The result is there.`',
 }
 
 /** Where a step's link must point, relative to `workflows/`. */
@@ -235,9 +235,9 @@ export function parseWorkflowBody(
 ): { body: WorkflowBody; problems: Array<BodyProblem> } {
   const problems: Array<BodyProblem> = []
   const readers = {
+    outcome: new ListReader(SHAPE.outcome, problems),
     inputs: new ListReader(SHAPE.inputs, problems),
     steps: new ListReader(SHAPE.steps, problems),
-    doneWhen: new ListReader(SHAPE.doneWhen, problems),
   }
   const state: SectionState = { seen: new Set(), lastOrder: -1, current: null }
   const notes: Array<string> = []
@@ -280,14 +280,14 @@ export function parseWorkflowBody(
   const note = notes.join('\n').trim()
   return {
     body: {
+      outcome: readers.outcome.items.map((item) => item.text),
       inputs: readers.inputs.items.map((item) => parseInput(item, problems)),
       steps: readers.steps.items.map((item) => parseStep(item, problems)),
-      doneWhen: readers.doneWhen.items.map((item) => item.text),
       ...(note ? { notes: note } : {}),
       lines: {
+        outcome: readers.outcome.items.map((item) => item.line),
         inputs: readers.inputs.items.map((item) => item.line),
         steps: readers.steps.items.map((item) => item.line),
-        doneWhen: readers.doneWhen.items.map((item) => item.line),
       },
     },
     problems: problems.sort((a, b) => a.line - b.line),

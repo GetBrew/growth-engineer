@@ -84,7 +84,7 @@ const githubLogin = text.refine(isValidGithubLogin, {
     'must be a GitHub login: letters, digits and single hyphens, up to 39 characters',
 })
 const tagKey = text.refine(isValidTagKey, {
-  message: 'must be `<namespace>:<slug>`, like `motion:outbound`',
+  message: 'must be `<namespace>:<slug>`, like `channel:email`',
 })
 const status = z.enum(['published', 'deprecated'])
 
@@ -300,18 +300,29 @@ export const toolSchema = z.strictObject({
 
 /* ─────────────────────────────────── workflow ───────────────────────────── */
 
+/** Short enough to scan in a list: a title fits one line, a summary two. */
+export const WORKFLOW_TITLE_MAX = 60
+export const WORKFLOW_SUMMARY_MAX = 140
+export const WORKFLOW_OUTCOME_MAX = 4
+
 /**
  * A workflow file is a header and a body. The HEADER holds the facts about
- * the workflow; the inputs, steps and checks are markdown in the BODY
+ * the workflow; the outcome, inputs and steps are markdown in the BODY
  * (lib/content/workflow-body.ts reads them), so the source file reads on
  * GitHub the way the rendered file reads on the site.
  */
 export const workflowHeaderSchema = z.strictObject({
-  title: line,
-  summary: sentence,
+  title: line.refine((value) => value.length <= WORKFLOW_TITLE_MAX, {
+    message: `must be at most ${WORKFLOW_TITLE_MAX} characters: the result, verb first`,
+  }),
+  summary: sentence.refine((value) => value.length <= WORKFLOW_SUMMARY_MAX, {
+    message: `must be at most ${WORKFLOW_SUMMARY_MAX} characters: one sentence on what it does`,
+  }),
   /** The GitHub login of the person who wrote it. */
   author: githubLogin,
-  /** Motion and channel tags; capabilities come from the tools. */
+  /** The one `motion:` slug from tags.yml it serves, like a company's `category`. */
+  motion: keyPart,
+  /** Channel tags; the motion is its own field, and capabilities come from the tools. */
   tags: z.array(tagKey).default([]),
   /** On the featured list, set by maintainers; featured workflows sort newest first. */
   featured: z.boolean().default(false),
@@ -323,13 +334,21 @@ export const workflowHeaderSchema = z.strictObject({
 
 /** Header fields that live in the body now, and the section each moved to. */
 export const WORKFLOW_BODY_SECTIONS = {
+  outcome: '## Outcome',
   inputs: '## Inputs',
   steps: '## Steps',
-  doneWhen: '## Done when',
 } as const
 
 /** The body's sections once read into fields: the same rules, per entry. */
 export const workflowBodySchema = z.strictObject({
+  /** What the user has when the run ends: the checks that mean it is done. */
+  outcome: z
+    .array(text)
+    .min(1, 'add a `## Outcome` section: what the user has when the run ends')
+    .max(
+      WORKFLOW_OUTCOME_MAX,
+      `an outcome has at most ${WORKFLOW_OUTCOME_MAX} items`
+    ),
   inputs: z.array(
     z.strictObject({
       name: z
@@ -359,9 +378,6 @@ export const workflowBodySchema = z.strictObject({
       MAX_WORKFLOW_STEPS,
       `a workflow has at most ${MAX_WORKFLOW_STEPS} steps`
     ),
-  doneWhen: z
-    .array(text)
-    .min(1, 'add a `## Done when` section with at least one check'),
 })
 
 /* ─────────────────────────────────── tags.yml ───────────────────────────── */

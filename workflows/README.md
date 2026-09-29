@@ -25,31 +25,31 @@ tool you name and the rules; you write the rest.
 
 ```markdown
 ---
-title: Turn fresh funding news into qualified outbound
-summary: Find recently funded teams, enrich the right buyers, and send a relevant message while the signal is still fresh.
+title: Email buyers at newly funded companies
+summary: Finds companies that just raised, picks the right buyer at each, and queues an approved email in lemlist.
 author: jdoe
+motion: outbound
 tags:
-  - motion:outbound
   - channel:email
 updated: 2026-09-16
 ---
 
+## Outcome
+
+- A table of every funded company with its buyer, or a note on why there is none.
+- An approved email for each buyer, queued in your lemlist campaign.
+
 ## Inputs
 
 - `target_segment`: the kind of company to watch, e.g. Series A B2B SaaS in the US
-- `campaign_id`: the lemlist campaign that sends the emails, e.g. cam_123
+- `campaign`: the lemlist campaign that sends the emails, by name, e.g. Funding outreach
 
 ## Steps
 
 1. **Find funded companies** with [people-data-labs/search-companies](../companies/people-data-labs/tools/search-companies.md). List companies matching `target_segment` whose `last_funding_date` falls in the last 30 days. Keep name and domain.
 2. **Find the buyer** with [apollo/search-people](../companies/apollo/tools/search-people.md). For each company, find the head of growth or marketing. Keep their name and title.
 3. **Write emails**. Draft a three-sentence email per buyer. Show the drafts to the user.
-4. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each buyer to `campaign_id`, with `findEmail` so lemlist finds their work email.
-
-## Done when
-
-- Every funded company has a contact, or a note explaining why not.
-- Every approved contact is in the campaign, and the user has a summary table.
+4. **Send** with [lemlist/add-lead-to-campaign](../companies/lemlist/tools/add-lead-to-campaign.md). After the user approves, add each buyer to `campaign`, with `findEmail` so lemlist finds their work email.
 
 ## Notes
 
@@ -60,10 +60,11 @@ Optional. Anything else the agent should know, in any markdown.
 
 | Field | Required | Notes |
 | --- | --- | --- |
-| `title` | yes | Phrased as the result. |
-| `summary` | yes | One sentence. |
+| `title` | yes | The result, verb first, in 60 characters or fewer. |
+| `summary` | yes | One sentence of 140 characters or fewer on what it does. |
 | `author` | yes | Your GitHub login (letters, digits, single hyphens). Shown as `@login`, linked to github.com. |
-| `tags` | no | The `motion:` and `channel:` entries from `tags.yml` it serves. Its capabilities come from its tools, and `has:*` from their ways in; both are computed, never listed. |
+| `motion` | yes | The one `motion:` entry from `tags.yml` it serves, like `outbound`. The site labels and filters workflows by it. |
+| `tags` | no | The `channel:` entries from `tags.yml` it reaches people on. Its capabilities come from its tools, and `has:*` from their ways in; both are computed, never listed. |
 | `updated` | yes | `YYYY-MM-DD`. |
 | `featured` | no | `true` puts it on the featured list at the top of `/workflows`. Set by maintainers; leave it out. |
 | `aliases`, `status` | no | Old names to redirect; `published` (default), `deprecated`, or `draft` (checked, never published, and free to use draft tools). A published workflow uses published tools only. |
@@ -75,12 +76,30 @@ heading is caught instead of silently dropped.
 
 | Section | Required | Each entry |
 | --- | --- | --- |
+| `## Outcome` | yes, 1–4 | `- What the user has when the run ends.` The agent treats these as the checks that mean it is done. |
 | `## Inputs` | no | ``- `name`: what it is, e.g. an example``. The name is snake_case; `, e.g.` and the example are optional. The file tells the agent to ask the user for each one. |
 | `## Steps` | yes, 1–10 | ``1. **Title** with [apollo/enrich-person](../companies/apollo/tools/enrich-person.md). What to do.`` The link goes to a published tool's file, `../companies/<handle>/tools/<name>.md`, named by its key (`<handle>/<name>`). GitHub follows it; the file shows each tool's best one or two ways in. A step the agent does itself has no link: ``3. **Write emails**. Draft …`` At least one step names a tool. |
-| `## Done when` | yes | `- A check that means the job is finished.` |
 | `## Notes` | no | Free markdown to the end of the file, with `###` and smaller headings, none named like a section the file writes (Set up, Steps, Rules…). |
 
 A long entry can wrap onto the next line; keep each entry to one paragraph.
+
+## Writing it clearly
+
+People scan the title, summary and outcome to decide; the agent reads the
+same words to know what it is aiming for.
+
+- **Title**: the result, verb first, with the trigger when there is one:
+  "Email buyers at newly funded companies", "Brief the rep the moment a
+  meeting is booked". No tool names.
+- **Summary**: what it does, in order, and where the result lands: "Finds
+  X, does Y, and Z in lemlist." Present tense and US spelling; no words a
+  reader can't check, like meaningful or useful.
+- **Motion**: the one it serves, even when it touches others.
+- **Outcome**: things the user has at the end, such as a table, drafts,
+  records or sent emails. Never a promise of replies, meetings or revenue.
+- **Inputs**: ask for what the user knows. A campaign's name beats its id
+  when the agent can look the id up. When something must be set up once,
+  like a campaign template or a CRM property, say so in its description.
 
 ## Writing good steps
 

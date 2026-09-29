@@ -9,7 +9,14 @@ updated: 2026-09-16
 
 # Find work emails for a list of contacts
 
-Set up Run a routine (Clay), then run the steps in order for the user, carrying each step's results into the next.
+Runs Clay's Work Email routine on your contacts and collects a work email for each.
+
+Set up Run a routine (Clay), then run the steps in order for the user, carrying each step's results into the next. The run is done when the user has the outcome below.
+
+## Outcome
+
+- A work email for every contact, or a note on why none was found.
+- A table of the results.
 
 ## Inputs
 
@@ -37,11 +44,6 @@ Before step 1, confirm access with the cheapest read-only call, like a list or a
 
 1. **Start runs**. Run the Work Email routine on `contacts`, up to 100 per run. Keep each run id.
 2. **Collect results**. Read the results of every run id once it finishes. Keep each contact's work email, or a note that none was found.
-
-## Done when
-
-- Every contact has a work email, or a note explaining why not.
-- The user has a table of the results.
 
 ## Rules
 

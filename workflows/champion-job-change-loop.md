@@ -1,13 +1,19 @@
 ---
 title: Reconnect when a product champion changes jobs
-summary: Track past champions, identify their new company, and reopen the relationship with the context you already earned.
+summary: Finds past champions who started at a new company, opens a deal there in Attio with a note on your history, and drafts outreach.
 author: thedogwiththedataonit
+motion: outbound
 tags:
-  - motion:outbound
   - channel:linkedin
   - channel:email
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- An open Attio deal on each champion's new company, and a note on each new deal about the work you did together.
+- A drafted LinkedIn message and email for each champion who moved.
+- The list of moves, and of the champions Apollo could not match.
 
 ## Inputs
 
@@ -25,8 +31,3 @@ updated: 2026-09-27
 5. **Open a deal** with [attio/create-record](../companies/attio/tools/create-record.md). For each company from step 4, create a deal named after the company and champion, at `deal_stage`, owned by `deal_owner`, with the company and the champion associated. Keep each deal's record ID.
 6. **Note the history** with [attio/create-note](../companies/attio/tools/create-note.md). Add a note to each new deal saying what you worked on together, from `champion_list`.
 7. **Write the outreach**. For each champion, draft a short LinkedIn message and a short email that congratulate them and name the work you did together. Show the drafts to the user.
-
-## Done when
-
-- Every champion who moved has an open deal on their new company, with a note on the new ones.
-- Each has drafted messages, and the user has the list of moves and of champions Apollo could not match.

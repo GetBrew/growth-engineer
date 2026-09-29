@@ -1,13 +1,19 @@
 ---
-title: Spot and recover at-risk customer accounts
-summary: Detect meaningful usage drops, assemble the account story, and trigger a human check-in before renewal risk grows.
+title: Flag customers whose usage dropped before they renew
+summary: Finds accounts whose usage fell in Mixpanel and renew soon in Stripe, alerts customer success in Slack, and drafts a check-in email.
 author: thedogwiththedataonit
+motion: retention
 tags:
-  - motion:retention
   - channel:chat
   - channel:email
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- A Slack post in `cs_channel` for each at-risk account renewing within `renewal_window`, with both usage counts and the renewal date.
+- A drafted check-in email for each of those accounts, signed by `signer`.
+- The accounts ordered by renewal date, with the billing emails that matched no Stripe customer.
 
 ## Inputs
 
@@ -26,8 +32,3 @@ updated: 2026-09-27
 3. **Check renewals** with [stripe/list-subscriptions](../companies/stripe/tools/list-subscriptions.md). For each customer, list active subscriptions that are not set to cancel at period end. Keep the yearly ones whose subscription item's `current_period_end` falls within `renewal_window`, with that date.
 4. **Escalate** with [slack/post-message](../companies/slack/tools/post-message.md). Post one message per at-risk account to `cs_channel` with the customer's name, both usage counts and the renewal date.
 5. **Write the check-ins**. Draft a short plain-text email per account, signed by `signer`, that names the drop without blame and offers a call. Show the drafts to the user.
-
-## Done when
-
-- Every at-risk account renewing within `renewal_window` has a Slack post and a drafted email.
-- The user has the list ordered by renewal date, with the emails that matched no Stripe customer.

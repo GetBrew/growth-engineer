@@ -7,7 +7,7 @@ body:
     id: title
     attributes:
       label: Title, phrased as the result
-      placeholder: Turn fresh funding news into qualified outbound
+      placeholder: Email buyers at newly funded companies
     validations:
       required: true
   - type: input
@@ -15,6 +15,26 @@ body:
     attributes:
       label: Your GitHub login
       description: Workflows are by people; the page credits `@you`.
+    validations:
+      required: true
+  - type: dropdown
+    id: motion
+    attributes:
+      label: Motion
+      description: The one go-to-market motion it serves.
+      options:
+        - Outbound
+        - Inbound
+        - Product-led
+        - Retention
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What the user has when the run ends, such as a table, drafts, records or sent emails. No promised results.
     validations:
       required: true
   - type: textarea
@@ -29,10 +49,3 @@ body:
     attributes:
       label: Inputs the agent should ask the user for
       placeholder: "`target_segment`: the kind of company to watch"
-  - type: textarea
-    id: done
-    attributes:
-      label: Done when
-      description: The checks that mean the job is finished.
-    validations:
-      required: true

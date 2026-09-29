@@ -134,11 +134,14 @@ export type Workflow = {
   author: string
   title: string
   summary: string
+  /** The one `motion:` slug from tags.yml it serves: `outbound`. */
+  motion: string
   /** Computed: its motion and channel tags, its tools' capabilities, and the `has:*` every tool shares. */
   tags: ReadonlyArray<string>
+  /** What the user has when the run ends; the run is done when they have it all. */
+  outcome: ReadonlyArray<string>
   inputs: ReadonlyArray<WorkflowInput>
   steps: ReadonlyArray<WorkflowStep>
-  doneWhen: ReadonlyArray<string>
   notes?: string
   /** On the featured list, set by maintainers. */
   isFeatured: boolean

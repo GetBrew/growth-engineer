@@ -132,15 +132,22 @@ competitor-intent.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'Write the `title` as the result it reaches, not the tools it uses. Keep `summary` to one sentence. Set `author` to your GitHub login, so the page shows your avatar and links to your profile. Under `tags`, add the motion and channel it serves from `tags.yml`, like `motion:outbound` and `channel:email`. Its capabilities come from its tools automatically.',
+      'Write the `title` as the result it reaches, verb first, in 60 characters or fewer, not the tools it uses. Keep `summary` to one sentence of 140 characters or fewer that says what it does, like “Finds X, does Y, and Z in <tool>.” Set `author` to your GitHub login, so the page shows your avatar and links to your profile. Set `motion` to the one motion it serves from `tags.yml`, like `outbound`, and under `tags` add the channels it reaches people on, like `channel:email`. Its capabilities come from its tools automatically.',
     // `featured` is set by maintainers: never copied.
     sample: { file: WORKFLOW, excerpt: 'header', omit: ['featured'] },
+  },
+  {
+    key: 'outcome',
+    title: 'Say what the user gets',
+    detail:
+      'Start the body with `## Outcome`: one to four things the user has when the run ends, like a table, drafts, records or sent messages. The agent treats them as the checks that mean it is done. Name only what the steps produce, never a promise like replies or meetings. Leave out safety rules like asking before sending: every file adds them at the end.',
+    sample: { file: WORKFLOW, excerpt: '## Outcome' },
   },
   {
     key: 'inputs',
     title: 'List what the agent must ask for',
     detail:
-      'Under `## Inputs`, write one line per input: its name in `snake_case` and backticks, a colon, then what it is. Add “, e.g.” and an example when it helps. Steps refer to an input by the same name in backticks, never as `{{templates}}`.',
+      'Under `## Inputs`, write one line per input: its name in `snake_case` and backticks, a colon, then what it is. Add “, e.g.” and an example. Ask for what the user knows, like a campaign’s name, when the agent can look up the id. If something must be set up once first, like a campaign template or a CRM property, say so. Steps refer to an input by the same name in backticks, never as `{{templates}}`.',
     sample: { file: WORKFLOW, excerpt: '## Inputs' },
   },
   {
@@ -149,13 +156,6 @@ competitor-intent.md`,
     detail:
       'Under `## Steps`, write a numbered list of one to ten steps. Each step starts with a bold title, then “with” and the tool it uses, linked to `../companies/<handle>/tools/<name>.md`, then a full stop and what to do. A step the agent does itself, like writing a draft, has no link. If a later step needs a result, end the step with “Keep …”. Say what to do, not how the tool works. The tool’s own file covers setup.',
     sample: { file: WORKFLOW, excerpt: '## Steps' },
-  },
-  {
-    key: 'done',
-    title: 'Say when it is done',
-    detail:
-      'Under `## Done when`, list at least one check that shows the job is finished. Leave out safety rules like asking before sending. Every file adds them at the end automatically.',
-    sample: { file: WORKFLOW, excerpt: '## Done when' },
   },
   {
     key: 'check',

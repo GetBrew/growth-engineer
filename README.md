@@ -43,7 +43,7 @@ growth.engineer writes both down as markdown files an agent can follow:
 | --- | --- | --- |
 | **Company** | `apollo` | Who the company is and how an agent reaches it: MCP server, CLI or API, and the credential each one needs. |
 | **Tool** | `apollo/enrich-person` | One function an agent can call: the exact MCP tool, CLI command or API endpoint, and the docs page that names it. |
-| **Workflow** | `funding-signal-outbound` | Up to ten steps across tools that reach a result: the inputs to ask for, how to set up each tool, the steps, and the checks that mean it is done. |
+| **Workflow** | `funding-signal-outbound` | Up to ten steps across tools that reach a result: the one motion it serves, the outcome the user gets, the inputs to ask for, how to set up each tool, and the steps. |
 
 Paste a workflow file into Claude, ChatGPT, Cursor or any other agent and it
 can run the play. The file tells the agent to ask before it sends a message,

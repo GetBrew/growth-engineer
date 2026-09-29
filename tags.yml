@@ -6,11 +6,10 @@
 #   category    what kind of company it is (`category:` in company.md).
 #   channel     where a workflow reaches people — customers, or your own team
 #               (a Slack alert is `channel:chat`) — in its `tags:`.
-#   motion      which go-to-market motion a workflow serves, in `tags:` too:
-#               inbound (they came to you), outbound (you go to them),
-#               midbound (signals from people already engaging: visitors,
-#               users), plg (the product sells itself), retention (keep and
-#               grow customers). Tag every one that fits; usually one.
+#   motion      the one go-to-market motion a workflow serves (`motion:` in
+#               its header): inbound (they came to you), outbound (you reach
+#               out first), plg (the product sells itself), retention (keep
+#               and grow customers).
 #
 # One more namespace is computed, never written here: has:mcp|cli|api, the
 # ways in. `label` is what the site shows; `synonyms` feed search, so
@@ -238,16 +237,13 @@ channel:
 motion:
   inbound:
     label: Inbound
-    synonyms: [inbound, warm inbound, leads]
-  midbound:
-    label: Midbound
-    synonyms: [midbound, website visitors, product signals, expansion]
+    synonyms: [inbound, warm inbound, leads, midbound, website visitors]
   outbound:
     label: Outbound
     synonyms: [outbound, cold, cold outbound, cold email]
   plg:
     label: Product-led
-    synonyms: [plg, product led, self serve]
+    synonyms: [plg, product led, self serve, midbound, product signals, expansion]
   retention:
     label: Retention
     synonyms: [retention, churn, churn prevention, renewal, win back, dunning]

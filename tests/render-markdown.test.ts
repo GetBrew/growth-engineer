@@ -124,6 +124,8 @@ const clayRunRoutine: SetupTool = {
 const intentToMeeting: WorkflowFileInput = {
   key: 'intent-to-meeting',
   title: 'Turn high-intent accounts into booked meetings',
+  summary:
+    'Finds the head of sales at each target account with Apollo, drafts an email to each, and sends the approved ones with Brew.',
   author: 'jdoe',
   tools: [
     apolloBulkEnrich,
@@ -163,9 +165,9 @@ const intentToMeeting: WorkflowFileInput = {
         'After the user approves, send each one from `sender_email`.',
     },
   ],
-  doneWhen: [
-    'Every account has a contact, or a note explaining why not.',
-    'Approved emails are sent, and the user has a summary table.',
+  outcome: [
+    'A contact for every account, or a note on why there is none.',
+    'Each approved email sent, and a summary table of who got one.',
   ],
   updatedAt: UPDATED_AT,
 }
@@ -175,6 +177,8 @@ const intentToMeeting: WorkflowFileInput = {
 const workEmails: WorkflowFileInput = {
   key: 'work-emails-for-a-list',
   title: 'Find work emails for a list of contacts',
+  summary:
+    "Runs Clay's Work Email routine on your contacts and collects a work email for each.",
   author: 'jdoe',
   tools: [clayRunRoutine],
   tags: ['motion:outbound'],
@@ -198,9 +202,9 @@ const workEmails: WorkflowFileInput = {
         "Read the results of every run id once it finishes. Keep each contact's work email, or a note that none was found.",
     },
   ],
-  doneWhen: [
-    'Every contact has a work email, or a note explaining why not.',
-    'The user has a table of the results.',
+  outcome: [
+    'A work email for every contact, or a note on why none was found.',
+    'A table of the results.',
   ],
   updatedAt: UPDATED_AT,
 }
@@ -490,6 +494,18 @@ describe('file limits', () => {
     )
   })
 
+  test('a workflow states its goal first: the summary, then the outcome', () => {
+    const markdown = renderWorkflowDocument(intentToMeeting).markdown
+    expect(markdown).toContain(
+      `# ${intentToMeeting.title}\n\n${intentToMeeting.summary}\n\n`
+    )
+    const headings = markdown
+      .split('\n')
+      .filter((line) => line.startsWith('## '))
+      .map((line) => line.slice(3))
+    expect(headings).toEqual(['Outcome', 'Inputs', 'Set up', 'Steps', 'Rules'])
+  })
+
   test('rules are always the last section', () => {
     for (const markdown of [
       renderToolDocument(clay).markdown,
@@ -625,7 +641,7 @@ describe('the header an agent parses', () => {
     }).markdown
     expect(header(workflow).status).toBe('deprecated')
     expect(workflow).toContain(
-      '> This workflow is deprecated. Ask the user before running it.'
+      `> This workflow is deprecated. Ask the user before running it.\n\n${intentToMeeting.summary}`
     )
     expect(header(renderToolDocument(clay).markdown).status).toBeUndefined()
   })

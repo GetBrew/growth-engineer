@@ -1,13 +1,19 @@
 ---
 title: Reach new executives in their first 90 days
-summary: Track leadership changes and open a thoughtful conversation while new priorities and budgets are being set.
+summary: Finds leaders who recently started at your target accounts, drafts a short no-pitch note for each, and logs them in HubSpot.
 author: thedogwiththedataonit
+motion: outbound
 tags:
-  - motion:outbound
   - channel:email
 featured: true
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- A three-line note for each new leader, drafted for you to send from your own inbox.
+- A HubSpot contact with its note for each leader whose draft you approve.
+- The leaders with their start dates, and how many people were enriched or left out.
 
 ## Inputs
 
@@ -23,8 +29,3 @@ updated: 2026-09-27
 3. **Write a note**. For each person, draft three lines, for the user to send from their own inbox, about what a leader in that role usually fixes first. No pitch. Show the drafts to the user.
 4. **Log the contact** with [hubspot/upsert-contacts](../companies/hubspot/tools/upsert-contacts.md). Create or update each person whose draft the user approved, matched on email. Keep each contact's HubSpot ID.
 5. **Attach the note** with [hubspot/create-note](../companies/hubspot/tools/create-note.md). Attach each approved draft as a note on its contact ID.
-
-## Done when
-
-- Every approved leader has a contact record with their note.
-- The user has the list with start dates, and how many people were enriched or left out.
