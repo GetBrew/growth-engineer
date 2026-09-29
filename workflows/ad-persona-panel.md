@@ -17,13 +17,14 @@ updated: 2026-09-29
 - `ad_drafts`: the ads to test, each with a short name, its headline and its body, e.g. speed: "Launch campaigns in minutes"; proof: "How Globex cut churn 18%"
 - `personas`: your buyer personas, each a few lines on who they are, what they care about and what they are tired of hearing, e.g. ops_lead: runs sales operations at a 200-person company, measured on forecast accuracy, ignores "AI-powered" claims
 - `channel`: where the ads will run, e.g. LinkedIn feed
-- `report_parent`: the Notion page the report goes under, e.g. Ad tests
+- `min_confidence`: how sure Jev must be before its answer is used without you, e.g. 0.8; a yes-or-no answer counts as yes at or above it and as no at or below 1 minus it
+- `report_parent`: the Notion page the report goes under, by name, e.g. Ad tests
 
 ## Steps
 
 1. **Ask the panel** with [typesafe/answer-typed-questions](../companies/typesafe/tools/answer-typed-questions.md). For each pair of a draft and a persona, send the persona's description, `channel` and the draft as the state, with a noul `stops` (this person would stop scrolling for it), a noul `understands_offer` (after one read they could say what is offered), a noul `believes_claim` (they would believe the main claim) and a noul `feels_like_them` (it speaks to their situation). Keep the four probabilities for every pair.
-2. **Rank the drafts**. For each persona, rank the drafts by `stops`, breaking ties by `understands_offer`. Mark the drafts that no persona is likely to stop for, and the ones that stop people who then don't understand the offer.
-3. **Save the report** with [notion/create-page](../companies/notion/tools/create-page.md). After the user approves, create a page under `report_parent` with the grid, the ranking for each persona and the drafts to cut.
+2. **Rank the drafts**. For each persona, rank the drafts by `stops`, breaking ties by `understands_offer`. Mark the drafts whose `stops` is no for every persona, and the ones whose `stops` is yes while `understands_offer` is no.
+3. **Save the report** with [notion/create-page](../companies/notion/tools/create-page.md). After the user approves, create a page under `report_parent`, found with a read-only Notion search, with the grid, the ranking for each persona and the drafts to cut.
 
 ## Notes
 
