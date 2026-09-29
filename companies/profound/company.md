@@ -4,6 +4,7 @@ domain: tryprofound.com
 category: geo
 tagline: Measure AI search visibility and turn citation insights into marketing work.
 docs: https://docs.tryprofound.com
+logo: https://cdn.growth.engineer/icons/companies/profound-edef2985.png
 mcp:
   url: https://mcp.tryprofound.com/mcp
   auth: oauth
