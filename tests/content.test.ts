@@ -181,6 +181,26 @@ describe('the content tree', () => {
     )
   })
 
+  test('"Works with" keeps exactly the workflows using that company', () => {
+    const items = [...catalog.workflows.values()].map((workflow, index) =>
+      workflowSearchItem(catalog, workflow, index)
+    )
+    const usesHubspot = searchWorkflowItems(items, {
+      q: '',
+      sort: 'featured',
+      company: 'hubspot',
+    })
+    expect(usesHubspot.length).toBeGreaterThan(0)
+    expect(usesHubspot.map((item) => item.workflow.key).sort()).toEqual(
+      [...catalog.workflows.values()]
+        .filter((workflow) =>
+          workflow.toolKeys.some((key) => key.startsWith('hubspot/'))
+        )
+        .map((workflow) => workflow.key)
+        .sort()
+    )
+  })
+
   test('every workflow is built from tools, and the links run both ways', () => {
     for (const workflow of catalog.workflows.values()) {
       expect(workflow.toolKeys.length, workflow.key).toBeGreaterThan(0)

@@ -23,20 +23,23 @@ import { cn } from '@/lib/utils/cn'
 import type { FilterOption } from './filter-types'
 import { pillClass } from './pill-link'
 
-function labelFor(chosen: ReadonlyArray<FilterOption>): string {
+function labelFor(chosen: ReadonlyArray<FilterOption>, label: string): string {
   const [first] = chosen
   if (chosen.length === 1 && first) {
     return first.label
   }
-  return chosen.length > 1 ? `More · ${chosen.length}` : 'More'
+  return chosen.length > 1 ? `${label} · ${chosen.length}` : label
 }
 
 export function MoreFilters({
   options,
   title,
+  label = 'More',
 }: {
   options: ReadonlyArray<FilterOption>
   title: string
+  /** What the trigger reads while nothing in it is chosen. */
+  label?: string
 }) {
   const searchId = useId()
   const [open, setOpen] = useState(false)
@@ -46,7 +49,7 @@ export function MoreFilters({
   const visible = options.filter((option) =>
     option.label.toLowerCase().includes(needle)
   )
-  const triggerLabel = labelFor(chosen)
+  const triggerLabel = labelFor(chosen, label)
 
   return (
     <Popover

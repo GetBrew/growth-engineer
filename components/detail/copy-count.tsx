@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import {
   createContext,
   type ReactNode,
@@ -8,7 +7,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { SIDE_HEADING } from '@/components/detail/styles'
 import { formatCount, formatExact } from '@/lib/usage/stats'
 
 type CopyCount = { added: number; record: () => void }
@@ -61,73 +59,46 @@ export function useRecordCopy(): (() => void) | undefined {
   return useContext(CopyCountContext)?.record
 }
 
-// "USES 1 · +1 this week · #1 on Hot": one quiet row on every screen.
-const SECTION = 'flex flex-wrap items-baseline gap-x-2 gap-y-1'
+/** One quiet line under the actions. */
+const LINE = 'type-helper text-soft'
 
-const VALUE = 'type-label font-medium text-foreground tabular-nums'
+/** "Not copied yet", "Copied once", "Copied 1.2K times". */
+function copiedText(copies: number): string {
+  if (copies === 0) {
+    return 'Not copied yet'
+  }
+  return copies === 1 ? 'Copied once' : `Copied ${formatCount(copies)} times`
+}
 
 /**
- * "Uses": how many times the file was copied into an agent, with this week's
- * copies — its velocity — and its place on Hot when it has one.
+ * How many times the file was copied into an agent, counting this page's own
+ * copy once the server has. A rounded 1.2K keeps the exact count in its title.
  */
-export function UsesStat({
-  total,
-  week,
-  hotPlace,
-}: {
-  total: number
-  week: number
-  hotPlace: number | null
-}) {
+export function UsesStat({ total }: { total: number }) {
   const added = useContext(CopyCountContext)?.added ?? 0
-  const uses = total + added
-  const thisWeek = week + added
+  const copies = total + added
   return (
-    <section className={SECTION}>
-      <h2 className={SIDE_HEADING}>Uses</h2>
-      {/* "Uses" already says what it counts; a rounded 1.2K keeps the exact
-          count in its title. */}
-      <p
-        className={VALUE}
-        title={
-          formatCount(uses) === formatExact(uses)
-            ? undefined
-            : `${formatExact(uses)} uses`
-        }
-      >
-        {formatCount(uses)}
-      </p>
-      {thisWeek > 0 ? (
-        // The "·" is CSS, so it never ends up in copied text.
-        <p className="type-label text-subtle before:mr-2 before:text-faint before:content-['·']">
-          +{formatExact(thisWeek)} this week
-          {hotPlace ? (
-            <>
-              {' · '}
-              <Link
-                className="focus-ring rounded-sm text-soft underline-offset-4 hover:text-foreground hover:underline"
-                href="/workflows?sort=hot"
-              >
-                #{hotPlace} on Hot
-              </Link>
-            </>
-          ) : null}
-        </p>
-      ) : null}
-    </section>
+    <p
+      className={LINE}
+      title={
+        formatCount(copies) === formatExact(copies)
+          ? undefined
+          : `Copied ${formatExact(copies)} times`
+      }
+    >
+      {copiedText(copies)}
+    </p>
   )
 }
 
 /**
- * The stat's place while its number streams in: the label and an empty line
- * of the number's height — no pulse, no spinner, and nothing moves when it
- * lands.
+ * The line's place while the count streams in: empty, at the line's height,
+ * so nothing moves when it lands. No pulse, no spinner.
  */
 export function UsesStatFallback() {
   return (
-    <section aria-hidden="true" className={SECTION}>
-      <h2 className={SIDE_HEADING}>Uses</h2>
-      <p className={VALUE}>&nbsp;</p>
-    </section>
+    <p aria-hidden="true" className={LINE}>
+      &nbsp;
+    </p>
   )
 }

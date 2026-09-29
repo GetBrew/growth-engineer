@@ -59,7 +59,7 @@ export type DetailTag = {
 }
 
 /** One tag as a pill: a link to the listing it filters, or plain. */
-export function DetailTagPill({ tag }: { tag: DetailTag }) {
+function DetailTagPill({ tag }: { tag: DetailTag }) {
   const variant = tag.emphasis ? 'emphasis' : 'plain'
   return tag.href ? (
     <Link
@@ -80,6 +80,7 @@ export function DetailHeader({
   actions,
   tags = [],
   meta,
+  shouldClampDescription = true,
 }: {
   byline: ReactNode
   title: string
@@ -90,6 +91,8 @@ export function DetailHeader({
   tags?: ReadonlyArray<DetailTag>
   /** A quiet line under the description, like "Updated Sep 27, 2026". */
   meta?: string
+  /** False for a one-sentence description, which shows in full: no "Show more". */
+  shouldClampDescription?: boolean
 }) {
   const hasTags = tags.length > 0
 
@@ -118,11 +121,21 @@ export function DetailHeader({
               actions && 'max-w-3xl'
             )}
           >
-            {description ? (
+            {description && shouldClampDescription ? (
               <DetailDescription
                 className={actions ? undefined : 'max-w-4xl'}
                 text={description}
               />
+            ) : null}
+            {description && !shouldClampDescription ? (
+              <p
+                className={cn(
+                  'type-lead mt-2 max-w-2xl',
+                  actions ? undefined : 'max-w-4xl'
+                )}
+              >
+                {description}
+              </p>
             ) : null}
             {/* With a pills row, the date joins it instead (below). */}
             {meta && !hasTags ? (

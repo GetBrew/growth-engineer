@@ -134,11 +134,14 @@ export function loadLlmsIndex(): Record<EntityType, Array<LlmsEntry>> {
         type: 'workflow' as const,
         key: workflow.key,
       }
+      // Its motion first, the label the listing files it under.
+      const motion =
+        catalog.tags.get(`motion:${workflow.motion}`)?.label ?? workflow.motion
       return {
         title: workflow.title,
         path: refToPath(ref),
         file: refToFilePath(ref),
-        summary: `${workflow.summary} By @${workflow.author}, ${workflow.toolCount} ${workflow.toolCount === 1 ? 'tool' : 'tools'}.`,
+        summary: `${motion}. ${workflow.summary} By @${workflow.author}, ${workflow.toolCount} ${workflow.toolCount === 1 ? 'tool' : 'tools'}.`,
       }
     }),
     company: [...catalog.companies.values()].sort(byKey).map((company) => {

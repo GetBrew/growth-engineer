@@ -43,7 +43,10 @@ function Index() {
       />
       <WorkflowsIndex
         stats={hasCopyCounter() ? loadCopyStats() : null}
-        tags={tags.filter((tag) => tag.counts.workflows > 0)}
+        // The listing filters by the one label every workflow carries.
+        tags={tags.filter(
+          (tag) => tag.namespace === 'motion' && tag.counts.workflows > 0
+        )}
         workflows={workflows}
       />
     </>

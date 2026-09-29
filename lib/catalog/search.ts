@@ -180,8 +180,9 @@ export type WorkflowSort = 'featured' | 'new' | CopyAngle
 
 /**
  * Workflows: featured order, newest, or ranked by copies (Hot: this week;
- * Popular: all time — ties in featured order), within one tag, narrowed by
- * words. A copy angle with no `stats` is the featured order.
+ * Popular: all time — ties in featured order), within one tag and one
+ * company whose tools they use, narrowed by words. A copy angle with no
+ * `stats` is the featured order.
  */
 export function searchWorkflowItems(
   items: ReadonlyArray<WorkflowSearchItem>,
@@ -189,6 +190,8 @@ export function searchWorkflowItems(
     q: string
     sort: WorkflowSort
     tag?: string
+    /** A company key: only workflows using one of its tools. */
+    company?: string
     limit?: number
     stats?: CopyStatsByKey | null
   }
@@ -200,6 +203,11 @@ export function searchWorkflowItems(
   const { sort, stats } = input
   const inTag = items
     .filter((item) => !input.tag || item.tags.includes(input.tag))
+    .filter(
+      (item) =>
+        !input.company ||
+        item.tools.some((tool) => tool.companyKey === input.company)
+    )
     .sort((a, b) =>
       sort === 'new'
         ? b.updatedAt - a.updatedAt ||

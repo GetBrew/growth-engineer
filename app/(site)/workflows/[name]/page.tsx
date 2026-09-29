@@ -1,3 +1,5 @@
+import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -6,18 +8,19 @@ import {
   UsesStatFallback,
 } from '@/components/detail/copy-count'
 import { CopyFileButton } from '@/components/detail/copy-file-button'
-import {
-  DETAIL_DATE,
-  DetailByline,
-  DetailHeader,
-} from '@/components/detail/header'
+import { GetStarted } from '@/components/detail/get-started'
+import { DetailByline, DetailHeader } from '@/components/detail/header'
 import { HowItRuns } from '@/components/detail/how-it-runs'
 import { MarkdownFile } from '@/components/detail/markdown-file'
 import { MarkdownPreview } from '@/components/detail/markdown-preview'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
 import { ShareButton } from '@/components/detail/share-button'
-import { TagBox } from '@/components/detail/tag-box'
+import { PANEL_HEADING } from '@/components/detail/styles'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
+import {
+  WorkflowInputs,
+  WorkflowOutcome,
+} from '@/components/detail/workflow-brief'
 import { WorkflowUses } from '@/components/detail/workflow-uses'
 import { BackLink } from '@/components/layout/back-link'
 import { MaskIcon } from '@/components/layout/mask-icon'
@@ -31,6 +34,7 @@ import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { workflowJsonLd } from '@/lib/seo/structured-data'
 import { hasCopyCounter } from '@/lib/usage/copies'
+import { cn } from '@/lib/utils/cn'
 
 type Params = Promise<{ name: string }>
 
@@ -104,6 +108,18 @@ async function WorkflowDetail({ params }: { params: Params }) {
   const { workflow, updatedAt, tools, tags } = result
   const filePath = refToFilePath({ type: 'workflow', key: workflow.key })
   const isCounting = hasCopyCounter()
+  const motion =
+    tags.find((tag) => tag.key === `motion:${workflow.motion}`)?.label ??
+    workflow.motion
+  // The companies whose tools the steps use, once each, in first-use order.
+  const companies = [
+    ...new Map(
+      tools.map(({ company }) => [
+        company.key,
+        { key: company.key, name: company.name },
+      ])
+    ).values(),
+  ]
 
   const author = {
     name: workflow.author,
@@ -113,7 +129,9 @@ async function WorkflowDetail({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-(--space-block)">
-      <JsonLd data={workflowJsonLd(SITE_ORIGIN, workflow, tools, updatedAt)} />
+      <JsonLd
+        data={workflowJsonLd(SITE_ORIGIN, workflow, tools, updatedAt, motion)}
+      />
       <DetailHeader
         byline={
           <DetailByline avatars={[{ name: author.name, src: author.avatar }]}>
@@ -134,29 +152,26 @@ async function WorkflowDetail({ params }: { params: Params }) {
           </DetailByline>
         }
         description={workflow.summary}
-        meta={`Updated ${DETAIL_DATE.format(updatedAt)}`}
+        // One sentence of 140 characters at most: shown whole.
+        shouldClampDescription={false}
+        tags={[
+          ...(workflow.status === 'deprecated'
+            ? [{ label: 'Deprecated', emphasis: true }]
+            : []),
+          { label: motion, href: `/workflows?motion=${workflow.motion}` },
+        ]}
         title={workflow.title}
       />
 
+      {/* The side column comes first in the page, so focus follows what a
+          phone shows: the actions, then the brief. From lg the grid places
+          it on the right, where it stays in view. */}
       <div className="grid gap-(--space-block) lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-        <section className="flex min-w-0 flex-col gap-(--space-md)">
-          <MarkdownFile
-            fileName={filePath.split('/').pop() ?? 'workflow.md'}
-            markdown={document.markdown}
-            preview={<MarkdownPreview markdown={document.markdown} />}
-          />
-        </section>
-
-        {/* The actions head the side column, so the title and summary above
-            take the page's full width; from lg the column stays in view.
-            Under lg the column dissolves into the page's single column
-            (`contents`): the actions lead, then the file, then the rest
-            of the column after it. */}
         <CopyCountProvider isCounting={isCounting} workflowKey={workflow.key}>
-          <aside className="max-lg:contents lg:sticky lg:top-[calc(var(--header-height)+2rem)] lg:flex lg:flex-col lg:gap-(--space-xl)">
+          <aside className="flex flex-col gap-(--space-xl) lg:sticky lg:top-[calc(var(--header-height)+2rem)] lg:col-start-2 lg:row-start-1">
             {/* One row under lg, Copy taking the rest of it; from lg, Copy
                 spans the column and the others sit on the line below. */}
-            <div className="flex flex-wrap items-center gap-2 max-lg:order-first">
+            <div className="flex flex-wrap items-center gap-2">
               <CopyFileButton
                 className="order-last flex-1 lg:order-first lg:basis-full"
                 label="Copy workflow"
@@ -184,29 +199,52 @@ async function WorkflowDetail({ params }: { params: Params }) {
                 <WorkflowUses workflowKey={workflow.key} />
               </Suspense>
             ) : null}
-            <TagBox
-              tags={[
-                ...(workflow.status === 'deprecated'
-                  ? [{ label: 'Deprecated', emphasis: true }]
-                  : []),
-                ...tags.map((tag) => ({
-                  label: tag.label,
-                  href: `/workflows?${tag.key.replace(':', '=')}`,
-                })),
-              ]}
-            />
-            <HowItRuns
-              steps={workflow.steps}
-              tools={tools.map(({ tool, company }) => ({
-                key: tool.key,
-                name: tool.name,
-                companyName: company.name,
-                logoUrl: company.logo?.url,
-                access: [...new Set(tool.access.map((entry) => entry.type))],
-              }))}
+            <GetStarted
+              companies={companies}
+              questions={workflow.inputs.length}
             />
           </aside>
         </CopyCountProvider>
+
+        {/* The brief a person reads first; the file the agent runs is one
+            click away, and it is what Copy copies. */}
+        <div className="flex min-w-0 flex-col gap-(--space-block) lg:col-start-1 lg:row-start-1">
+          <WorkflowOutcome outcome={workflow.outcome} />
+          <HowItRuns
+            steps={workflow.steps}
+            tools={tools.map(({ tool, company }) => ({
+              key: tool.key,
+              name: tool.name,
+              companyName: company.name,
+              logoUrl: company.logo?.url,
+            }))}
+          />
+          <WorkflowInputs inputs={workflow.inputs} />
+          <details className="group flex flex-col gap-3">
+            <summary
+              className={cn(
+                PANEL_HEADING,
+                'focus-ring cursor-pointer list-none gap-2 rounded-md [&::-webkit-details-marker]:hidden'
+              )}
+            >
+              The file your agent runs
+              <HugeiconsIcon
+                aria-hidden="true"
+                className="text-soft transition-transform duration-200 group-open:rotate-180"
+                icon={ArrowDown01Icon}
+                size={16}
+                strokeWidth={1.8}
+              />
+            </summary>
+            <div className="mt-3">
+              <MarkdownFile
+                fileName={filePath.split('/').pop() ?? 'workflow.md'}
+                markdown={document.markdown}
+                preview={<MarkdownPreview markdown={document.markdown} />}
+              />
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   )
