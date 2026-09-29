@@ -4,6 +4,7 @@ domain: heyreach.io
 category: sales-engagement
 tagline: LinkedIn outreach automation that rotates campaigns across multiple sender accounts, with a unified inbox and a public API.
 docs: https://documenter.getpostman.com/view/23808049/2sA2xb5F75
+logo: https://cdn.growth.engineer/icons/companies/heyreach-5356c2dd.webp
 api:
   url: https://api.heyreach.io
   auth: api_key

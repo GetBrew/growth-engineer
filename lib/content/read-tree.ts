@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import type { ContentProblem } from './errors'
+import { LOGO_FILE, type LogoExtension, logoProblems } from './logos'
 
 /**
  * The source tree on disk, classified by path. THE ONLY MODULE THAT TOUCHES
@@ -9,7 +10,8 @@ import type { ContentProblem } from './errors'
  * build is testable with in-memory fixtures and the pages never read a file.
  *
  *   companies/<handle>/company.md     (the company and its ways in)
- *   companies/<handle>/logo.<ext>     (optional: svg, png, jpg or webp)
+ *   companies/<handle>/logo.<ext>     (a logo waiting for a maintainer to
+ *                                      move it to the CDN: lib/content/logos.ts)
  *   companies/<handle>/tools/<name>.md
  *   workflows/<name>.md              (flat: the author is in the file)
  *   tags.yml                         (the whole vocabulary, one file)
@@ -31,33 +33,19 @@ export type ContentTree = {
   files: Array<ContentFile>
   /** Problems the walk itself found: files that fit no slot. */
   problems: Array<ContentProblem>
-  /** Each company's logo, by handle: its extension, like `svg`. */
-  logos: Map<string, LogoExtension>
+  /** Logo files waiting to be uploaded, by handle: the extension, like `svg`. */
+  pendingLogos: Map<string, LogoExtension>
   /** Changes when any content file or logo is added, removed, renamed or edited. */
   fingerprint: string
 }
 
 const MARKDOWN = /\.md$/
-const LOGO = /^logo\.(svg|png|jpg|webp)$/
-
-export type LogoExtension = 'svg' | 'png' | 'jpg' | 'webp'
-
-/** Where a company's logo sits in the repository. */
-function logoPath(handle: string, extension: LogoExtension): string {
-  return path.join('companies', handle, `logo.${extension}`)
-}
-
-/**
- * Logos are drawn at 16–44px and served as they are (no image optimizer), so
- * a logo over this is a 900px export someone forgot to shrink.
- */
-export const MAX_LOGO_BYTES = 32 * 1024
 
 /** One walk's state: the root, what it found, and what it could not place. */
 class Walk {
   readonly files: Array<ContentFile> = []
   readonly problems: Array<ContentProblem> = []
-  readonly logos = new Map<string, LogoExtension>()
+  readonly pendingLogos = new Map<string, LogoExtension>()
   readonly root: string
 
   constructor(root: string) {
@@ -146,33 +134,39 @@ function walkCompany(walk: Walk, handle: string): void {
           source: walk.read(file.relative),
         })
       }
-    } else if (LOGO.test(entry) && walk.isFile(relative)) {
+    } else if (LOGO_FILE.test(entry) && walk.isFile(relative)) {
       walkLogo(walk, handle, relative, entry)
     } else {
       walk.reject(
         relative,
-        'a company folder holds company.md, tools/ and an optional logo.svg, logo.png, logo.jpg or logo.webp'
+        'a company folder holds company.md, tools/ and, until a maintainer uploads it, logo.svg, logo.png, logo.jpg or logo.webp'
       )
     }
   }
 }
 
-/** A company's logo: drawn small and served as is, so it stays light. */
+/**
+ * A logo a contributor added, checked by the rules the upload applies, so a
+ * pull request hears about a bad file before a maintainer does.
+ */
 function walkLogo(
   walk: Walk,
   handle: string,
   relative: string,
   entry: string
 ): void {
-  const bytes = statSync(path.join(walk.root, relative)).size
-  if (bytes > MAX_LOGO_BYTES) {
-    walk.reject(
-      relative,
-      `${Math.ceil(bytes / 1024)} KB; a logo is drawn at 44px and served as is — keep it under ${MAX_LOGO_BYTES / 1024} KB (an SVG, or a PNG at most 128px square)`
-    )
+  const extension = entry.slice('logo.'.length) as LogoExtension
+  const other = walk.pendingLogos.get(handle)
+  if (other) {
+    walk.reject(relative, `a company has one logo: keep this or logo.${other}`)
     return
   }
-  walk.logos.set(handle, entry.slice('logo.'.length) as LogoExtension)
+  const bytes = readFileSync(path.join(walk.root, relative))
+  for (const problem of logoProblems(bytes, extension)) {
+    walk.reject(relative, problem)
+  }
+  // A bad file still counts as the company's logo: its problems are enough.
+  walk.pendingLogos.set(handle, extension)
 }
 
 /** workflows/ is FLAT: one .md per workflow, its author in the header. */
@@ -224,18 +218,9 @@ export function readContentTree(root = process.cwd()): ContentTree {
   return {
     files: walk.files,
     problems: walk.problems,
-    logos: walk.logos,
+    pendingLogos: walk.pendingLogos,
     fingerprint,
   }
-}
-
-/** A logo's bytes, for the route that serves it (app/logos/[file]/route.ts). */
-export function readLogo(
-  handle: string,
-  extension: LogoExtension,
-  root = process.cwd()
-): Buffer {
-  return readFileSync(path.join(root, logoPath(handle, extension)))
 }
 
 /** Every path under a directory, recursively, with its size and mtime. */

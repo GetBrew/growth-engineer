@@ -5,6 +5,7 @@ category: crm
 tagline: The CRM with a built-in AI teammate that calls leads, qualifies prospects, books meetings and keeps the CRM up to date.
 docs: https://developer.close.com
 github: https://github.com/closeio
+logo: https://cdn.growth.engineer/icons/companies/close-95f67709.png
 mcp:
   url: https://mcp.close.com/mcp
   auth: oauth

@@ -450,7 +450,12 @@ describe('structured data', () => {
     expect(graph[0]).toMatchObject({
       '@type': 'Organization',
       name: company.name,
+      // The CDN URL as is: never the site's origin glued in front of it.
+      logo: company.logo?.url,
     })
+    expect(company.logo?.url).toMatch(
+      /^https:\/\/cdn\.growth\.engineer\/icons\/companies\/clay-/
+    )
     const collection = collectionJsonLd(
       origin,
       { path: '/tools', name: 'Tools', description: 'd' },

@@ -5,6 +5,7 @@ category: project-management
 tagline: Work management for tasks, projects and portfolios.
 docs: https://developers.asana.com
 github: https://github.com/Asana
+logo: https://cdn.growth.engineer/icons/companies/asana-4a3af6d9.png
 mcp:
   url: https://mcp.asana.com/v2/mcp
   auth: oauth

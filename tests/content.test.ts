@@ -33,7 +33,7 @@ describe('the content tree', () => {
     const tree = readContentTree()
     expect(tree.problems).toEqual([])
     catalog = buildCatalog(tree.files, {
-      logos: tree.logos,
+      pendingLogos: tree.pendingLogos,
       problems: tree.problems,
     })
   })
@@ -285,7 +285,7 @@ describe('the content tree', () => {
 
   test('two builds of the same tree render byte-identical files', () => {
     const tree = readContentTree()
-    const again = buildCatalog(tree.files, { logos: tree.logos })
+    const again = buildCatalog(tree.files, { pendingLogos: tree.pendingLogos })
     for (const [ref, document] of catalog.documents) {
       expect(again.documents.get(ref)?.markdown, ref).toBe(document.markdown)
     }

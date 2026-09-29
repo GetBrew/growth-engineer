@@ -7,6 +7,7 @@ import {
   isValidTagKey,
 } from '@/lib/catalog/keys'
 import { MAX_WORKFLOW_STEPS } from '@/lib/catalog/render-markdown'
+import { parseLogoUrl } from '@/lib/content/logos'
 
 /**
  * The frontmatter of every source file, one strict schema per file kind.
@@ -242,6 +243,14 @@ export const companySchema = z.strictObject({
   tagline: sentence.optional(),
   docs: url.optional(),
   github: url.optional(),
+  /** The logo on cdn.growth.engineer, written by `pnpm logos:upload`. */
+  logo: z
+    .string()
+    .refine((value) => parseLogoUrl(value) !== undefined, {
+      message:
+        'must be a cdn.growth.engineer logo URL, which `pnpm logos:upload` writes: add the image as logo.svg (or .png, .jpg, .webp) beside company.md instead',
+    })
+    .optional(),
   mcp: mcpWay.optional(),
   cli: cliWay.optional(),
   api: apiWay.optional(),

@@ -5,6 +5,7 @@ category: email
 tagline: AI-native email platform that designs on-brand emails from a prompt, builds the audience and sends them.
 docs: https://docs.brew.new
 github: https://github.com/GetBrew
+logo: https://cdn.growth.engineer/icons/companies/brew-b04538a5.png
 mcp:
   url: https://brew.new/api/mcp
   auth: oauth

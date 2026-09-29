@@ -5,6 +5,7 @@ category: scraper
 tagline: The web data API for AI agents — search the web, scrape any page and interact with it.
 docs: https://docs.firecrawl.dev
 github: https://github.com/firecrawl
+logo: https://cdn.growth.engineer/icons/companies/firecrawl-b21c1bac.png
 mcp:
   url: https://mcp.firecrawl.dev/v2/mcp-oauth
   auth: oauth

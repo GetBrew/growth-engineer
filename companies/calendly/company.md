@@ -5,6 +5,7 @@ category: scheduling
 tagline: Meeting scheduling software for booking links, open times and booked meetings.
 docs: https://developer.calendly.com
 github: https://github.com/calendly
+logo: https://cdn.growth.engineer/icons/companies/calendly-ef2004d8.svg
 mcp:
   url: https://mcp.calendly.com
   auth: oauth

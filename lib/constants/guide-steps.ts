@@ -179,7 +179,6 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     sample: {
       caption: 'companies/apollo/',
       code: `company.md
-logo.webp
 tools/enrich-person.md`,
     },
   },
@@ -187,7 +186,7 @@ tools/enrich-person.md`,
     key: 'company',
     title: 'Write company.md',
     detail:
-      'Add `name`, your bare `domain` (no `https://`), a `category` from `tags.yml`, and `updated`, the date you checked the facts. The body is a short description. Optional fields only show when filled in, so leave out anything you cannot verify publicly. Add your logo next to it as `logo.svg` (or png, jpg or webp), under 32 KB. Without one, the site shows your first letter.',
+      'Add `name`, your bare `domain` (no `https://`), a `category` from `tags.yml`, and `updated`, the date you checked the facts. The body is a short description. Optional fields only show when filled in, so leave out anything you cannot verify publicly. Add your logo next to it as `logo.svg` (or png, jpg or webp): your current icon, square, under 32 KB, with fixed colours. A maintainer moves it to our CDN before merging.',
     sample: { file: 'companies/apollo/company.md' },
   },
   {

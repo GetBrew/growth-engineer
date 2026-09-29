@@ -7,9 +7,10 @@ import {
 import type { Company, Tag } from '@/lib/types/catalog'
 import { dateToMs } from './derive'
 import type { ProblemList } from './errors'
+import { type LogoExtension, parseLogoUrl } from './logos'
 import { parseFile } from './parse-file'
 import { proseProblems } from './prose'
-import type { ContentFile, LogoExtension } from './read-tree'
+import type { ContentFile } from './read-tree'
 
 /**
  * Companies: one file each, `companies/<handle>/company.md`, holding who
@@ -23,8 +24,7 @@ type CompanyFile = ContentFile & { kind: 'company' }
 
 function toCompany(
   file: CompanyFile,
-  parsed: { data: CompanyFrontmatter; body: string },
-  logo: LogoExtension | undefined
+  parsed: { data: CompanyFrontmatter; body: string }
 ): Company {
   const { data, body } = parsed
   return {
@@ -34,8 +34,9 @@ function toCompany(
     category: data.category,
     ...(data.tagline ? { tagline: data.tagline } : {}),
     ...(body ? { description: body } : {}),
-    // A logo is optional: with none, the site draws the name's first letter.
-    ...(logo ? { logo: { url: `/logos/${file.handle}.${logo}` } } : {}),
+    // Until a maintainer uploads a new company's logo, the site draws the
+    // name's first letter.
+    ...(data.logo ? { logo: { url: data.logo } } : {}),
     links: {
       website: `https://${data.domain}`,
       ...(data.docs ? { docs: data.docs } : {}),
@@ -49,10 +50,28 @@ function toCompany(
   }
 }
 
+/**
+ * Every company has a logo: its CDN URL, or a file beside company.md that a
+ * maintainer has yet to upload. A URL names the company it belongs to.
+ */
+function logoProblemOf(
+  handle: string,
+  logo: string | undefined,
+  isPending: boolean
+): string | undefined {
+  const owner = logo ? parseLogoUrl(logo)?.handle : undefined
+  if (owner && owner !== handle) {
+    return `logo: the URL is the logo of "${owner}", not "${handle}"`
+  }
+  if (!(logo || isPending)) {
+    return 'no logo: add the image beside company.md as logo.svg (or .png, .jpg, .webp), and a maintainer puts it on the CDN'
+  }
+}
+
 export function buildCompanies(
   files: ReadonlyArray<ContentFile>,
   tags: ReadonlyMap<string, Tag>,
-  logos: ReadonlyMap<string, LogoExtension>,
+  pendingLogos: ReadonlyMap<string, LogoExtension>,
   problems: ProblemList
 ): { companies: Map<string, Company>; ways: Map<string, CompanyWays> } {
   const companies = new Map<string, Company>()
@@ -85,7 +104,15 @@ export function buildCompanies(
     )) {
       problems.add(file.path, problem.message, problem.line)
     }
-    companies.set(file.handle, toCompany(file, parsed, logos.get(file.handle)))
+    const logoProblem = logoProblemOf(
+      file.handle,
+      parsed.data.logo,
+      pendingLogos.has(file.handle)
+    )
+    if (logoProblem) {
+      problems.add(file.path, logoProblem)
+    }
+    companies.set(file.handle, toCompany(file, parsed))
     const { mcp, cli, api } = parsed.data
     ways.set(file.handle, {
       ...(mcp ? { mcp } : {}),

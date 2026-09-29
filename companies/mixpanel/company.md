@@ -5,6 +5,7 @@ category: product-analytics
 tagline: Product analytics, session replay, experiments and feature flags on your event data.
 docs: https://docs.mixpanel.com
 github: https://github.com/mixpanel
+logo: https://cdn.growth.engineer/icons/companies/mixpanel-45c88cca.png
 mcp:
   url: https://mcp.mixpanel.com/mcp
   auth: oauth

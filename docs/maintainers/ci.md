@@ -1,7 +1,7 @@
 # CI
 
-Five jobs, each checking something a reviewer can't reliably check by reading
-a diff, plus `test`, the one required check, which needs all five. They run on
+Six jobs, each checking something a reviewer can't reliably check by reading
+a diff, plus `test`, the one required check, which needs all six. They run on
 every pull request, including one from a fork: no job needs a secret, and the
 token is read-only.
 
@@ -12,6 +12,7 @@ token is read-only.
 | `build` | The production build works on the pull request: every catalog page and file prerenders, and no route's client JavaScript grew past its budget |
 | `test (unit)` | The hermetic unit suite, including the content suite over the real tree |
 | `hygiene` | Docs links, the content tree, dead code, duplicate dependencies |
+| `logos` | Every company's logo is on cdn.growth.engineer with the bytes its URL names, and none is waiting for upload |
 
 ## Why the typecheck is a matrix
 
@@ -42,6 +43,16 @@ See [`performance.md`](performance.md).
 pull request that only adds a company gets a step named after what it
 changed, with every problem listed, instead of a failed unit-test job.
 
+## Why `logos` fails a contributor's new logo
+
+A contributor can't upload to the CDN, so a new company arrives with its logo
+as a file beside `company.md`. `pnpm content:check` checks the file itself.
+The `logos` job then fails until a maintainer runs `pnpm logos:upload` on the
+branch, which moves the file to the CDN and writes its URL into
+`company.md`. That keeps a logo from merging as a file the site never shows.
+The job reads the public CDN and needs no secret. The flow is in
+[`logos.md`](logos.md).
+
 ## Why hygiene uses `continue-on-error`
 
 The hygiene gates are independent, but steps run in order and a failure stops
@@ -56,7 +67,7 @@ failed, so one run lists every problem.
 
 `test` is the one check to require in branch protection. It `needs` every
 other job (lint, both typecheck legs, the build and its bundle budget, the
-unit suite and hygiene), so one name covers them all and a new job only has
+unit suite, hygiene and the logos), so one name covers them all and a new job only has
 to join that list. `if: always()` matters: without it, a failed job makes
 `test` skipped, and branch protection lets a skipped required check through.
 To require it: Settings → Branches → add a rule for `main` → require status

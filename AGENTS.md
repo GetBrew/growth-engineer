@@ -25,9 +25,8 @@ Adding or fixing a company, tool, workflow or tag touches only `companies/`,
 `workflows/` and `tags.yml`, then `pnpm content:check`. Start at
 [`CONTRIBUTING.md`](CONTRIBUTING.md); every field is in the folder READMEs
 ([`companies/`](companies/README.md), [`workflows/`](workflows/README.md)),
-and two skills do it end to end:
-[`add-workflow`](.agents/skills/add-workflow/SKILL.md) and
-[`research-company`](.agents/skills/research-company/SKILL.md). Never edit a
+and two skills do it end to end: [`add-workflow`](.agents/skills/add-workflow/SKILL.md)
+and [`research-company`](.agents/skills/research-company/SKILL.md). Never edit a
 rendered file or the app to change a fact. The rest of this file is for
 changing the site itself.
 
@@ -103,7 +102,7 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   fields rejected), reserved handles, every step's tool resolves and is
   published, tags exist, aliases never shadow a live key, a published tool
   has ≥ 1 call on a declared way in and `docs:`, a tool file has no body,
-  logos stay under 32 KB, files within their line caps. A new rule ships
+  every company has a logo, files within their line caps. A new rule ships
   with a negative test in `tests/content-schema.test.ts` — a guard is not done until it has FAILED.
 - Computed values (tags, `searchText`) come from `lib/content/derive.ts`;
   the links and tag counts from `lib/content/build-relations.ts`, read through
@@ -197,3 +196,4 @@ same batch; `pnpm docs:check` fails on a broken link or this file over cap.
 | Validation, the heavy lock, dev servers, worktrees | [`docs/maintainers/validation.md`](docs/maintainers/validation.md) |
 | CI jobs and why each exists | [`docs/maintainers/ci.md`](docs/maintainers/ci.md) |
 | Cache Components, bundle budget, Turbopack | [`docs/maintainers/performance.md`](docs/maintainers/performance.md) |
+| Company logos: the CDN, the rules, `pnpm logos:upload` | [`docs/maintainers/logos.md`](docs/maintainers/logos.md) |

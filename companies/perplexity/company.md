@@ -5,6 +5,7 @@ category: web-search
 tagline: Real-time web search, web-grounded answers and research for agents and apps.
 docs: https://docs.perplexity.ai
 github: https://github.com/perplexityai
+logo: https://cdn.growth.engineer/icons/companies/perplexity-a0dd976f.png
 mcp:
   url: https://api.perplexity.ai/mcp
   auth: oauth

@@ -5,6 +5,7 @@ category: ai-model
 tagline: "Claude: models and agent tooling for drafting, reasoning and classification."
 docs: https://platform.claude.com/docs/en/home
 github: https://github.com/anthropics
+logo: https://cdn.growth.engineer/icons/companies/anthropic-c9192291.png
 cli:
   install: curl -fsSL https://claude.ai/install.sh | bash
   binary: claude

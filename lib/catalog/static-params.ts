@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { parseLogoUrl } from '@/lib/content/logos'
 import { getCatalog } from './catalog'
 import { parseRef, refToFilePath, tagFilePath } from './keys'
 
@@ -21,11 +22,12 @@ export function toolParams(): Array<{ handle: string; name: string }> {
   })
 }
 
-/** `/logos/<handle>.<ext>`: every company that has a logo. */
+/** `/logos/<handle>.<ext>`: the site's old logo URLs, now redirects to the CDN. */
 export function logoParams(): Array<{ file: string }> {
-  return [...getCatalog().companies.values()].flatMap((company) =>
-    company.logo ? [{ file: company.logo.url.slice('/logos/'.length) }] : []
-  )
+  return [...getCatalog().companies.values()].flatMap((company) => {
+    const logo = company.logo ? parseLogoUrl(company.logo.url) : undefined
+    return logo ? [{ file: `${company.key}.${logo.extension}` }] : []
+  })
 }
 
 export function workflowParams(): Array<{ name: string }> {

@@ -5,6 +5,7 @@ category: automation
 tagline: Visual automation platform; run and build scenarios across 3,500+ apps from an agent.
 docs: https://developers.make.com
 github: https://github.com/integromat
+logo: https://cdn.growth.engineer/icons/companies/make-9841d7a2.png
 mcp:
   url: https://mcp.make.com
   auth: oauth

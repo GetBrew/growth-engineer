@@ -56,7 +56,6 @@ offers that way.
 | --- | --- | --- |
 | every entry's `tags` (capability, category, `has:*`) | its file, its company, its tools | `derive.ts` |
 | `searchText` | its words plus its tags' labels and synonyms | `derive.ts` |
-| a company's `logo` URL | `companies/<handle>/logo.<ext>`, when there is one | `read-tree.ts`, `build-companies.ts` |
 | a shared call's `endpoint` | a generic operation several of a company's tools share (`stripe_api_read`) carries each tool's API call, so files say `with GET /v1/invoices` | `build-tools.ts` |
 | `toolKeys` | the steps that name a tool | `build-workflows.ts` |
 | the links: company ↔ tools ↔ workflows, and each tag's members — written into both rendered files (`tools:` / `workflows:`) | tool folders, step links, tags | `build-relations.ts`, read through `relationsOf` |
@@ -76,8 +75,12 @@ is in a workflow's body (`pnpm content:check`):
 - unknown header fields; malformed dates, URLs and env var names; one-line
   fields with a line break, or a `summary` or `tagline` that opens a
   markdown block
-- reserved or malformed handles and names; a file or folder that fits no slot;
-  a logo over 32 KB
+- reserved or malformed handles and names; a file or folder that fits no slot
+- a company with no logo: neither a `logo:` URL nor a `logo.<ext>` file
+  waiting for upload; a `logo:` that is not a cdn.growth.engineer logo URL,
+  or is another company's; a logo file over 32 KB, not square, smaller than
+  64px, not the format its name says, or an SVG that runs script, loads a
+  file or follows the viewer's theme ([`docs/maintainers/logos.md`](maintainers/logos.md))
 - a capability, category or tag missing from `tags.yml`, or a derived tag
   written by hand
 - a call on a way the company does not declare, or in the wrong shape; an API

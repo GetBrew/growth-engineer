@@ -50,10 +50,11 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * No image optimizer: every image is a small static file served from the
-   * CDN as it is — logos are capped at 32 KB by `content:check`, the agent
-   * marks are SVGs, and a contributor's GitHub photo is a plain <img>. Nothing
-   * is resized on request, and there is no open image proxy to abuse.
+   * No image optimizer: every image is a small static file served as it is.
+   * Company logos come from cdn.growth.engineer, capped at 32 KB and square
+   * (lib/content/logos.ts), the agent marks are SVGs, and a contributor's
+   * GitHub photo is a plain <img>. Nothing is resized on request, and there
+   * is no open image proxy to abuse.
    */
   images: { unoptimized: true },
 

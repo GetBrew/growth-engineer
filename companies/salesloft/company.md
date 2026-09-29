@@ -4,6 +4,7 @@ domain: salesloft.com
 category: sales-engagement
 tagline: Revenue platform where sales teams run cadences, record conversations and manage deals.
 docs: https://developers.salesloft.com
+logo: https://cdn.growth.engineer/icons/companies/salesloft-d54b2173.svg
 mcp:
   url: https://mcp.salesloft.com/sse
   auth: oauth

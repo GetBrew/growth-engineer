@@ -5,6 +5,7 @@ category: geo
 tagline: Notra is a modern GEO tool that asks ChatGPT, Claude and Gemini the questions your buyers ask. See if you show up, who shows up instead and how to fix it.
 docs: https://docs.usenotra.com
 github: https://github.com/usenotra
+logo: https://cdn.growth.engineer/icons/companies/notra-0ffbcc08.svg
 mcp:
   url: https://mcp.usenotra.com/mcp
   auth: oauth

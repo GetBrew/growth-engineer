@@ -5,6 +5,7 @@ category: scheduling
 tagline: Open-source scheduling software, with booking pages for people and a scheduling API for apps.
 docs: https://cal.com/docs
 github: https://github.com/calcom
+logo: https://cdn.growth.engineer/icons/companies/cal-com-1221b163.png
 mcp:
   url: https://mcp.cal.com/mcp
   auth: oauth

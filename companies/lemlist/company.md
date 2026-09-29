@@ -5,6 +5,7 @@ category: sales-engagement
 tagline: Sales engagement platform to find leads, enrich contacts and run multichannel outreach campaigns.
 docs: https://developer.lemlist.com
 github: https://github.com/l3mpire
+logo: https://cdn.growth.engineer/icons/companies/lemlist-9a037c14.svg
 mcp:
   url: https://app.lemlist.com/mcp
   auth: oauth

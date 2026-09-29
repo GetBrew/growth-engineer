@@ -12,6 +12,7 @@ exists, but running it after every patch is how people stop running it.
 | Once per unit of work | `pnpm check` (Biome + `tsgo`) | seconds |
 | Final handoff | `pnpm tsc` then `pnpm lint` | a minute or two |
 | Touched `companies/`, `workflows/` or `tags.yml` | `pnpm content:check`: every problem with its file path | ~1s |
+| Added or replaced a logo file | `pnpm logos:upload`, then `pnpm logos:check` ([`logos.md`](logos.md)) | seconds |
 | Touched the renderer | `pnpm test:run tests/render-markdown.test.ts`: the goldens, byte for byte | ~1s |
 | Docs only | `pnpm docs:check` | instant |
 | Everything | `pnpm validate` | minutes |

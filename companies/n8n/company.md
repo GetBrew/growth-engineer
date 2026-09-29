@@ -5,6 +5,7 @@ category: automation
 tagline: Workflow automation with AI for technical teams, on n8n Cloud or self-hosted.
 docs: https://docs.n8n.io
 github: https://github.com/n8n-io
+logo: https://cdn.growth.engineer/icons/companies/n8n-9e06da3e.png
 mcp:
   url: https://{n8n_host}/mcp-server/http
   auth: oauth

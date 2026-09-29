@@ -97,7 +97,8 @@ export function companyJsonLd(
         '@id': `${origin}${path}#organization`,
         name: company.name,
         url: company.links.website,
-        ...(company.logo ? { logo: absolute(origin, company.logo.url) } : {}),
+        // Already absolute: logos live on cdn.growth.engineer.
+        ...(company.logo ? { logo: company.logo.url } : {}),
         ...(company.description || company.tagline
           ? { description: company.description ?? company.tagline }
           : {}),

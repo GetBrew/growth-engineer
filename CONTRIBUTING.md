@@ -10,7 +10,7 @@ contribution is a pull request that adds or edits them.
 | You want to | Add or edit | Fields and a template | An agent can do it with |
 | --- | --- | --- | --- |
 | Share a growth play | `workflows/<name>.md` | [`workflows/README.md`](workflows/README.md) | the [`add-workflow`](.agents/skills/add-workflow/SKILL.md) skill |
-| Add a company and what an agent can call on it | `companies/<handle>/company.md`, `tools/<name>.md`, an optional `logo.svg` | [`companies/README.md`](companies/README.md) | the [`research-company`](.agents/skills/research-company/SKILL.md) skill |
+| Add a company and what an agent can call on it | `companies/<handle>/company.md`, `tools/<name>.md` and its `logo.svg` | [`companies/README.md`](companies/README.md) | the [`research-company`](.agents/skills/research-company/SKILL.md) skill |
 | Fix a fact | the file that states it | the same READMEs | |
 
 A new tag (a capability, category, channel or motion) goes in

@@ -5,6 +5,7 @@ category: data-provider
 tagline: Find and verify professional email addresses, enrich people and companies, and run email outreach.
 docs: https://hunter.io/api-documentation/v2
 github: https://github.com/hunter-io
+logo: https://cdn.growth.engineer/icons/companies/hunter-94c334ed.png
 mcp:
   url: https://mcp.hunter.io/mcp
   auth: oauth

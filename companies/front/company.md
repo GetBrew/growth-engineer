@@ -5,6 +5,7 @@ category: support
 tagline: Customer service platform that handles email, SMS, chat and other channels in one place.
 docs: https://dev.frontapp.com
 github: https://github.com/frontapp
+logo: https://cdn.growth.engineer/icons/companies/front-6e9bcb66.png
 mcp:
   url: https://mcp.frontapp.com/mcp
   auth: oauth

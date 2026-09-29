@@ -5,6 +5,7 @@ category: data-provider
 tagline: Contact data, work emails and outbound sequences in one place.
 docs: https://docs.apollo.io
 github: https://github.com/apolloio
+logo: https://cdn.growth.engineer/icons/companies/apollo-25ae17ed.png
 mcp:
   url: https://mcp.apollo.io/mcp
   auth: oauth
