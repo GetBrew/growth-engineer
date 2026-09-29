@@ -19,7 +19,7 @@ export function BrewLink({ className }: { className?: string }) {
         className="object-contain"
         fill
         sizes="48px"
-        src="/logos/brew.svg"
+        src="/brand/brew-wordmark.svg"
       />
     </a>
   )

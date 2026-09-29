@@ -151,13 +151,12 @@ describe('sitemap.xml', () => {
     for (const key of catalog.workflows.keys()) {
       expect(urls).toContain(`${SITE_ORIGIN}/workflows/${key}`)
     }
-    // The home page, three listings, /docs and each guide.
-    expect(urls).toContain(`${SITE_ORIGIN}/docs`)
+    // The home page, three listings and each guide.
     for (const guide of GUIDES) {
       expect(urls).toContain(`${SITE_ORIGIN}${guidePath(guide)}`)
     }
     expect(urls.length).toBe(
-      5 +
+      4 +
         GUIDES.length +
         catalog.companies.size +
         catalog.tools.size +
@@ -484,10 +483,7 @@ describe('structured data', () => {
         steps.map((step) => `${page}#${step.key}`)
       )
       const crumbs = graph[2]?.itemListElement as Array<{ item: string }>
-      expect(crumbs.map((crumb) => crumb.item)).toEqual([
-        `${origin}/docs`,
-        page,
-      ])
+      expect(crumbs.map((crumb) => crumb.item)).toEqual([`${origin}/`, page])
     }
   })
 

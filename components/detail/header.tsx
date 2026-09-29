@@ -1,5 +1,3 @@
-import { LinkSquare02Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { DetailDescription } from '@/components/detail/summary'
@@ -85,9 +83,6 @@ export function DetailHeader({
   description,
   actions,
   tags = [],
-  links = [],
-  dates = [],
-  available = [],
   meta,
 }: {
   byline: ReactNode
@@ -97,14 +92,10 @@ export function DetailHeader({
       them there instead, and its title and summary take the full width. */
   actions?: ReactNode
   tags?: ReadonlyArray<DetailTag>
-  links?: ReadonlyArray<{ label: string; href: string; icon?: IconSvgElement }>
-  dates?: ReadonlyArray<string>
-  available?: ReadonlyArray<string>
   /** A quiet line under the description, like "Updated Sep 27, 2026". */
   meta?: string
 }) {
-  const hasSideMeta = dates.length > 0 || available.length > 0
-  const hasTags = tags.length > 0 || links.length > 0
+  const hasTags = tags.length > 0
 
   return (
     <div className="flex flex-col">
@@ -120,7 +111,9 @@ export function DetailHeader({
               actions ? 'max-w-3xl' : 'max-w-5xl'
             )}
           >
-            <h1 className="type-page-title text-balance">{title}</h1>
+            <h1 className="type-page-title text-balance">
+              <UnbrokenHyphens text={title} />
+            </h1>
           </div>
 
           <div
@@ -135,7 +128,8 @@ export function DetailHeader({
                 text={description}
               />
             ) : null}
-            {meta ? (
+            {/* With a pills row, the date joins it instead (below). */}
+            {meta && !hasTags ? (
               <p className="type-label mt-3 text-subtle">{meta}</p>
             ) : null}
           </div>
@@ -148,68 +142,37 @@ export function DetailHeader({
         </div>
       </header>
 
-      {hasTags || hasSideMeta ? (
-        // Side by side only from lg, like the actions above: on a tablet both
-        // halves wrapped, leaving a tag and a chip stranded on lines of their own.
-        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            {tags.map((tag) => (
-              <DetailTagPill key={tag.label} tag={tag} />
-            ))}
-
-            {links.map((link) => (
-              <a
-                className={cn(
-                  badgeVariants({ variant: 'plain', interactive: true }),
-                  'gap-1.5'
-                )}
-                href={link.href}
-                key={link.label}
-                rel="noreferrer"
-                target="_blank"
-              >
-                {link.icon ? (
-                  <HugeiconsIcon
-                    aria-hidden="true"
-                    icon={link.icon}
-                    size={13}
-                    strokeWidth={1.8}
-                  />
-                ) : null}
-                {link.label}
-                {link.icon ? null : (
-                  <HugeiconsIcon
-                    aria-hidden="true"
-                    icon={LinkSquare02Icon}
-                    size={11}
-                    strokeWidth={1.8}
-                  />
-                )}
-              </a>
-            ))}
-          </div>
-
-          {hasSideMeta ? (
-            <div className="type-label flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 text-subtle">
-              {dates.map((date) => (
-                <span key={date}>{date}</span>
-              ))}
-              {/* One unit, so a narrow screen wraps the whole group rather
-                  than leaving its last chip alone on a line. */}
-              {available.length > 0 ? (
-                <span className="flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="mr-1">Ways in</span>
-                  {available.map((item) => (
-                    <Badge key={item} size="label" variant="access">
-                      {item}
-                    </Badge>
-                  ))}
-                </span>
-              ) : null}
-            </div>
+      {hasTags ? (
+        <div className="mt-6 flex min-w-0 flex-wrap items-center gap-1.5">
+          {meta ? (
+            <span className="type-label mr-2 text-subtle">{meta}</span>
           ) : null}
+
+          {tags.map((tag) => (
+            <DetailTagPill key={tag.label} tag={tag} />
+          ))}
         </div>
       ) : null}
     </div>
+  )
+}
+
+/**
+ * A browser may break a line right after a hyphen, and a balanced title
+ * often takes it: "Spot and recover at-" / "risk customer accounts". Each
+ * hyphenated word is kept whole, so lines only break between words.
+ */
+const HYPHENATED = /(\S+-\S+)/
+
+function UnbrokenHyphens({ text }: { text: string }) {
+  return text.split(HYPHENATED).map((part, index) =>
+    index % 2 === 1 ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: the parts never reorder
+      <span className="whitespace-nowrap" key={index}>
+        {part}
+      </span>
+    ) : (
+      part
+    )
   )
 }

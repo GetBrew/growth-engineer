@@ -114,13 +114,6 @@ function ToolsExplorerView({
   const isPill = (chip: string) => chip.startsWith(SHELF) || chip === HAS_MCP
   const pillChips = state.chips.filter(isPill)
   const searchChips = state.chips.filter((chip) => !isPill(chip))
-  const toggle = (chip: string) =>
-    searchHref('/tools', {
-      words: state.words,
-      chips: pillChips.includes(chip)
-        ? [...searchChips, ...pillChips.filter((other) => other !== chip)]
-        : [...searchChips, ...pillChips, chip],
-    })
   const capabilityLabels = new Map(
     tags
       .filter((tag) => tag.namespace === 'capability')
@@ -130,6 +123,15 @@ function ToolsExplorerView({
     q: state.words.join(' '),
     chips: state.chips,
   })
+  // An empty search is dropped from the tabs, or every tab opens nothing.
+  const tabWords = results.length > 0 ? state.words : []
+  const toggle = (chip: string) =>
+    searchHref('/tools', {
+      words: tabWords,
+      chips: pillChips.includes(chip)
+        ? [...searchChips, ...pillChips.filter((other) => other !== chip)]
+        : [...searchChips, ...pillChips, chip],
+    })
   const shelves = groupByCapability(results, capabilityLabels)
   // Counted, so FilterPills shows the busiest few and puts the rest under
   // More; "Has MCP" has no count, so it always keeps its place up front.
@@ -172,6 +174,7 @@ function ToolsExplorerView({
       <div className="flex flex-col gap-(--space-3xl)">
         {shelves.map(({ capability, cards }) => (
           <CategorySection
+            noun="tools"
             entries={toolEntries(cards)}
             key={capability.slug}
             moreHref={withExpandedView(
@@ -188,6 +191,7 @@ function ToolsExplorerView({
   } else {
     content = (
       <CategorySection
+        noun="tools"
         entries={toolEntries(results)}
         isExpanded={isExpanded}
         moreHref={withExpandedView(currentHref)}
@@ -199,7 +203,8 @@ function ToolsExplorerView({
   return (
     <div className="flex flex-col gap-(--space-lg)">
       <SectionHeading
-        description="Every tool, shelved by the job it does, so vendors compare side by side. Each one is a single call your agent can make over MCP, CLI or API."
+        as="h1"
+        description="Single actions your agent can run, grouped by job."
         title="Discover tools"
       />
 
@@ -212,7 +217,7 @@ function ToolsExplorerView({
                 label: 'Filter tools by what they do',
                 all: {
                   href: searchHref('/tools', {
-                    words: state.words,
+                    words: tabWords,
                     chips: searchChips,
                   }),
                   active: pillChips.length === 0,

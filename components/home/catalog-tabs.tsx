@@ -62,14 +62,6 @@ export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
 
         {activeTab ? (
           <div className="flex w-full items-center gap-2 sm:w-auto">
-            <CatalogSearch
-              action={activeTab.href}
-              className="min-w-0 flex-1 sm:w-80 sm:flex-none"
-              key={activeTab.value}
-              label={`Search ${subject}`}
-              params={activeView?.params}
-              placeholder={`Search ${subject}`}
-            />
             {activeTab.views && activeView ? (
               <OrderMenu
                 onChange={(value) =>
@@ -79,6 +71,14 @@ export function CatalogTabs({ tabs }: { tabs: ReadonlyArray<CatalogTab> }) {
                 value={activeView.value}
               />
             ) : null}
+            <CatalogSearch
+              action={activeTab.href}
+              className="min-w-0 flex-1 sm:w-80 sm:flex-none"
+              key={activeTab.value}
+              label={`Search ${subject}`}
+              params={activeView?.params}
+              placeholder={`Search ${subject}`}
+            />
           </div>
         ) : null}
       </div>

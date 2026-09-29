@@ -42,6 +42,9 @@ const GITHUB_LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/
  * and file the site serves, plus the words that would read as one.
  */
 export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
+  'add-a-tool',
+  'add-a-workflow',
+  'add-your-company',
   'admin',
   'api',
   'apple-icon',

@@ -79,8 +79,7 @@ export function loadSitemapEntries(): Array<SitemapEntry> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-    // The docs: no entity date behind them, so no lastmod.
-    { path: '/docs', changeFrequency: 'monthly', priority: 0.5 },
+    // The guides: no entity date behind them, so no lastmod.
     ...GUIDES.map((guide) => ({
       path: guidePath(guide),
       changeFrequency: 'monthly' as const,

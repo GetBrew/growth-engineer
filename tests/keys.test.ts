@@ -80,24 +80,18 @@ describe('reserved handles', () => {
   test('cover every top-level route and file the site serves', () => {
     // If a route is added under app/ its first segment must be reserved, or a
     // company could claim a handle that shadows it.
-    const appDir = path.join(REPO_ROOT, 'app')
-    const routeSegments = fs
-      .readdirSync(appDir, { withFileTypes: true })
-      .flatMap((entry) => {
-        if (!entry.isDirectory()) {
+    // A route group (`(site)`, `(site)/(docs)`) adds no segment, so its
+    // children are top-level segments too, however deep the groups nest.
+    const topSegments = (dir: string): Array<string> =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        if (!entry.isDirectory() || entry.name.startsWith('[')) {
           return []
         }
-        if (entry.name.startsWith('(')) {
-          // A route group: its children are the top-level segments.
-          return fs
-            .readdirSync(path.join(appDir, entry.name), { withFileTypes: true })
-            .filter(
-              (child) => child.isDirectory() && !child.name.startsWith('[')
-            )
-            .map((child) => child.name)
-        }
-        return entry.name.startsWith('[') ? [] : [entry.name]
+        return entry.name.startsWith('(')
+          ? topSegments(path.join(dir, entry.name))
+          : [entry.name]
       })
+    const routeSegments = topSegments(path.join(REPO_ROOT, 'app'))
     for (const segment of routeSegments) {
       expect(
         RESERVED_HANDLES.has(segment),

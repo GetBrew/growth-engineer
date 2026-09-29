@@ -101,7 +101,7 @@ describe('what runs the proxy', () => {
       '/tools/apollo/enrich-person',
       '/companies/apollo',
       '/tags/capability/enrich-contacts',
-      '/docs',
+      '/add-a-workflow',
       '/tools/apollo/enrich-person.md',
       '/llms.txt',
       '/llms-full.txt',

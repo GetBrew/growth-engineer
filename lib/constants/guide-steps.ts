@@ -40,10 +40,10 @@ export type ResolvedGuideStep = Omit<GuideStep, 'sample'> & {
 }
 
 const CHECK_DETAIL =
-  'One command parses every file, resolves every reference and renders the result. It reports every problem at once, each with the file that caused it (and the line, for a problem in the body). The same checks run again in CI on your pull request.'
+  'Run one command to check everything. It reads every file, checks every link and builds the pages, then lists every problem at once with the file (and line) that caused it. The same check runs again on your pull request.'
 
 const PR_DETAIL =
-  'Send one company, tool or workflow per pull request. Say what you added and how you checked the facts. Reviewers check accuracy; the build handles formatting.'
+  'Send one company, tool or workflow per pull request. Say what you added and how you checked the facts. Reviewers check the facts, and the build handles formatting.'
 
 const TERMINAL = 'Terminal'
 
@@ -61,13 +61,13 @@ const TOOL_STEPS: ReadonlyArray<GuideStep> = [
     key: 'capability',
     title: 'Pick the capability',
     detail:
-      '`capability` lists your function next to every other vendor’s version of the same job, so it must be one of the capabilities in `tags.yml`, the one file that holds every tag. Look there first. If none fits, add an entry — a label and a few synonyms — in the same pull request.',
+      'Each tool has one `capability`, which puts it next to other vendors that do the same job. Pick one from `tags.yml`, the file that lists every tag. If none fits, add a new entry with a label and a few synonyms in the same pull request.',
   },
   {
     key: 'one-function',
     title: 'Create one file per function',
     detail:
-      'Name the file after the function it calls. Apollo enriching a person, searching for people and enriching a company is three files, not one product page. The path is the tool’s key, and the key is its URL.',
+      'Name the file after the action it performs. Apollo can enrich a person, search for people and enrich a company, so that is three files, not one product page. The file path is the tool’s key and its URL.',
     sample: {
       caption: 'companies/apollo/tools/',
       code: `enrich-person.md
@@ -79,7 +79,7 @@ enrich-company.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'A tool file is a YAML header between `---` lines and nothing else. Unknown fields are rejected, so a typo fails the check with the file path instead of silently vanishing. `name` says what the function does, starting with a verb (“Enrich a person”), and the `summary` is one sentence about what the call returns or changes. When there is something to know before calling — an id to fetch first, a result to poll for, a cost — say it in `notes`, one line; every workflow that uses the tool prints it.',
+      'A tool file is only a YAML header between two `---` lines. Unknown fields are rejected, so a typo fails the check and names the file. Start `name` with a verb, like “Enrich a person”. Keep `summary` to one sentence about what the call returns or changes. If there is something to know before calling, such as an ID to fetch first, a result to wait for, or a cost, add it to `notes` in one line. Every workflow that uses the tool shows it.',
     // `aliases` belongs to this file alone: copied, it claims a key twice.
     sample: {
       file: 'companies/apollo/tools/enrich-person.md',
@@ -91,14 +91,14 @@ enrich-company.md`,
     key: 'calls',
     title: 'Name the call on each way in',
     detail:
-      '`mcp`, `cli` and `api` name the exact call on each way in that your `company.md` declares: the MCP tool name, the CLI command (starting with the binary), or `METHOD /path` for an API — exactly as the vendor’s docs print it, with `docs` pointing at the page that names it. A published tool needs at least one call and a `docs` page; until it has both, set `status: draft`. A draft has no page and no file.',
+      'For each way in that your `company.md` declares, name the exact call: the MCP tool name under `mcp`, the CLI command (starting with the program name) under `cli`, or `METHOD /path` under `api`. Write it exactly as the vendor’s docs do, and point `docs` at that page. A published tool needs at least one call and a `docs` link. Until then, set `status: draft`. A draft gets no page and no file.',
     sample: { file: 'companies/stripe/company.md', excerpt: 'header' },
   },
   {
     key: 'updated',
     title: 'Date it',
     detail:
-      'Set `updated` to the day you last checked the facts, as `YYYY-MM-DD`. A workflow’s date is the newest of its own and its tools’ dates, so this date also moves every workflow that uses the tool.',
+      'Set `updated` to the day you last checked the facts, as `YYYY-MM-DD`. A workflow takes the newest date of its tools, so this also updates every workflow that uses the tool.',
   },
   {
     key: 'check',
@@ -120,7 +120,7 @@ const WORKFLOW_STEPS: ReadonlyArray<GuideStep> = [
     key: 'file',
     title: 'Create the file',
     detail:
-      'Add one file to `workflows/`, which has no subfolders. The file name becomes the key and the URL. To rename it later, list the old name under `aliases` and the old URL redirects.',
+      'Add one file to `workflows/`. The folder has no subfolders. The file name becomes the workflow’s key and URL. To rename it later, list the old name under `aliases` so the old URL still works.',
     sample: {
       caption: 'workflows/',
       code: `funding-signal-outbound.md
@@ -132,7 +132,7 @@ competitor-intent.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'Phrase the `title` as the result it reaches, not the tools it uses. The `summary` is one sentence. `author` is your GitHub login — workflows are by people, not companies, so the page shows your avatar and links to your profile. Under `tags`, add the motion and channel it serves (`motion:outbound`, `channel:email`) from `tags.yml`; its capabilities come from its tools.',
+      'Write the `title` as the result it reaches, not the tools it uses. Keep `summary` to one sentence. Set `author` to your GitHub login, so the page shows your avatar and links to your profile. Under `tags`, add the motion and channel it serves from `tags.yml`, like `motion:outbound` and `channel:email`. Its capabilities come from its tools automatically.',
     // `featured` is set by maintainers: never copied.
     sample: { file: WORKFLOW, excerpt: 'header', omit: ['featured'] },
   },
@@ -140,21 +140,21 @@ competitor-intent.md`,
     key: 'inputs',
     title: 'List what the agent must ask for',
     detail:
-      'Under `## Inputs`, one line per input: its name in `snake_case` and backticks, a colon, then what it is. Add `, e.g.` and an example when it helps. Steps refer to an input by the same name in backticks, never as `{{templates}}`.',
+      'Under `## Inputs`, write one line per input: its name in `snake_case` and backticks, a colon, then what it is. Add “, e.g.” and an example when it helps. Steps refer to an input by the same name in backticks, never as `{{templates}}`.',
     sample: { file: WORKFLOW, excerpt: '## Inputs' },
   },
   {
     key: 'steps',
     title: 'Write the steps',
     detail:
-      'Under `## Steps`, a numbered list of one to ten steps: the step’s title in bold, “with” the tool it uses — a published tool’s key, linked to `../companies/<handle>/tools/<name>.md` — a full stop, then what to do with it. A step the agent does itself, like writing a draft, has no link. End a step with “Keep …” when a later step needs its result. Say what to do, not how the tool works: the tool’s own file already covers setup.',
+      'Under `## Steps`, write a numbered list of one to ten steps. Each step starts with a bold title, then “with” and the tool it uses, linked to `../companies/<handle>/tools/<name>.md`, then a full stop and what to do. A step the agent does itself, like writing a draft, has no link. If a later step needs a result, end the step with “Keep …”. Say what to do, not how the tool works. The tool’s own file covers setup.',
     sample: { file: WORKFLOW, excerpt: '## Steps' },
   },
   {
     key: 'done',
     title: 'Say when it is done',
     detail:
-      'Under `## Done when`, list at least one check that means the job is finished. Leave out safety rules such as asking before sending: every file ends with them automatically.',
+      'Under `## Done when`, list at least one check that shows the job is finished. Leave out safety rules like asking before sending. Every file adds them at the end automatically.',
     sample: { file: WORKFLOW, excerpt: '## Done when' },
   },
   {
@@ -175,7 +175,7 @@ const COMPANY_STEPS: ReadonlyArray<GuideStep> = [
     key: 'handle',
     title: 'Choose the handle',
     detail:
-      'Lowercase letters, digits and hyphens, 2–39 characters, and not a reserved word such as `tools`, `workflows`, `docs` or `mcp`. It becomes your company URL and the first half of every tool key, and it is permanent — a rename only ever redirects.',
+      'Use lowercase letters, numbers and hyphens, 2 to 39 characters long. Reserved words such as `tools`, `workflows`, `docs` or `mcp` are not allowed. The handle becomes your company URL and the first part of every tool key. It is permanent, so a rename only adds a redirect.',
     sample: {
       caption: 'companies/apollo/',
       code: `company.md
@@ -187,21 +187,21 @@ tools/enrich-person.md`,
     key: 'company',
     title: 'Write company.md',
     detail:
-      '`name`, a bare `domain` with no scheme, a `category` listed in `tags.yml`, and `updated`, the date you checked the facts. The body is a short description. Optional fields are shown when present — leave out anything you cannot verify publicly. Add your logo beside it as `logo.svg` (or png, jpg, webp) under 32 KB; without one, the site shows your initial.',
+      'Add `name`, your bare `domain` (no `https://`), a `category` from `tags.yml`, and `updated`, the date you checked the facts. The body is a short description. Optional fields only show when filled in, so leave out anything you cannot verify publicly. Add your logo next to it as `logo.svg` (or png, jpg or webp), under 32 KB. Without one, the site shows your first letter.',
     sample: { file: 'companies/apollo/company.md' },
   },
   {
     key: 'ways',
     title: 'Say how an agent reaches you',
     detail:
-      'In the same header, `mcp`, `cli` and `api` describe each way into your product, once, for every tool to share: the MCP server’s URL or command, the CLI’s install command and binary, the API’s base URL — each with how it authenticates. An API key names the environment variable it goes in, never the key; a remote MCP server signs in with `oauth` or needs `none` — if it takes a key, list your API instead. A community-run way in names its `maintainer`.',
+      'In the same header, describe each way into your product once, under `mcp`, `cli` and `api`, so every tool can share it. Give the MCP server URL or command, the CLI install command and program name, or the API base URL, each with how it signs in. For an API key, name the environment variable it goes in, never the key itself. A remote MCP server signs in with `oauth` or needs `none`. If it needs a key, list your API instead. For a way in run by the community, name its `maintainer`.',
     sample: { file: 'companies/stripe/company.md', excerpt: 'header' },
   },
   {
     key: 'tools',
     title: 'Add your tools',
     detail:
-      'Every function an agent can call gets its own file under `tools/`, named after the function and naming its exact call on each way in. That is the “Add a tool” guide, repeated once per function.',
+      'Every action an agent can call gets its own file under `tools/`, named after the action, with its exact call on each way in. Follow the “Add a tool” guide once for each one.',
     sample: {
       caption: 'companies/apollo/tools/',
       code: `enrich-person.md

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { CompanyDirectory } from '@/components/catalog/company-directory'
-import { HeroBanner } from '@/components/common/hero-banner'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
 import { loadCompanySearchItems, loadTagChips } from '@/lib/catalog/loaders'
@@ -24,12 +23,9 @@ export const metadata: Metadata = pageMetadata({
 /** Prerendered in full; the directory narrows itself in the browser. */
 export default function CompaniesPage() {
   return (
-    <>
-      <HeroBanner isCompact title="The companies behind the tools" />
-      <Page>
-        <Directory />
-      </Page>
-    </>
+    <Page>
+      <Directory />
+    </Page>
   )
 }
 
