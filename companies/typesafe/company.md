@@ -5,6 +5,7 @@ category: ai-model
 tagline: Jev, a decision model that answers typed questions about text with calibrated probabilities instead of writing text.
 docs: https://docs.typesafe.ai
 github: https://github.com/typesafe-ai
+logo: https://cdn.growth.engineer/icons/companies/typesafe-640ee119.png
 api:
   url: https://api.typesafe.ai
   auth: api_key
