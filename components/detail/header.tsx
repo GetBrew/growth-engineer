@@ -37,11 +37,7 @@ export function DetailByline({
               key={avatar.name}
             >
               {avatar.src ? (
-                <AvatarImage
-                  alt={avatar.name}
-                  className={avatar.logo ? 'object-contain p-1.5' : undefined}
-                  src={avatar.src}
-                />
+                <AvatarImage alt={avatar.name} src={avatar.src} />
               ) : null}
               <AvatarFallback className={cn('type-label text-soft', fill)}>
                 {avatar.name.charAt(0)}

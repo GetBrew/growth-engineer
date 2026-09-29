@@ -24,7 +24,7 @@ export function EntityLogo({
       {src ? (
         <Image
           alt=""
-          className="size-full object-contain p-[18%]"
+          className="size-full object-cover"
           height={size}
           src={src}
           width={size}
