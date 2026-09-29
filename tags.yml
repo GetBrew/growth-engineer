@@ -8,8 +8,9 @@
 #               (a Slack alert is `channel:chat`) — in its `tags:`.
 #   motion      the one go-to-market motion a workflow serves (`motion:` in
 #               its header): inbound (they came to you), outbound (you reach
-#               out first), plg (the product sells itself), retention (keep
-#               and grow customers).
+#               out first), content (what people and AI answers read about
+#               you), plg (the product sells itself), retention (keep and
+#               grow customers).
 #
 # One more namespace is computed, never written here: has:mcp|cli|api, the
 # ways in. `label` is what the site shows; `synonyms` feed search, so
@@ -235,6 +236,9 @@ channel:
     synonyms: [website, web, landing page]
 
 motion:
+  content:
+    label: Content
+    synonyms: [content, content marketing, blog, articles, changelog, seo, geo]
   inbound:
     label: Inbound
     synonyms: [inbound, warm inbound, leads, midbound, website visitors]
