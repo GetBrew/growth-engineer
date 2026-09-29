@@ -16,8 +16,8 @@ export type CompanyAvatar = {
 }
 
 const SIZE = {
-  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11', image: 'p-1.5' },
-  sm: { stack: '[&>*+*]:-ml-1.5', avatar: 'size-7', image: 'p-1' },
+  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11' },
+  sm: { stack: '[&>*+*]:-ml-1.5', avatar: 'size-7' },
 } as const
 
 const LIFT =
@@ -34,11 +34,7 @@ function Logo({
     <Avatar
       className={cn(SIZE[size].avatar, 'bg-background ring-2 ring-background')}
     >
-      <AvatarImage
-        alt=""
-        className={cn('object-contain', SIZE[size].image)}
-        src={company.logoUrl}
-      />
+      <AvatarImage alt="" src={company.logoUrl} />
       <AvatarFallback className="type-label bg-background text-soft">
         {company.name.charAt(0)}
       </AvatarFallback>
