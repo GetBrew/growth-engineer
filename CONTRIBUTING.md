@@ -15,7 +15,8 @@ contribution is a pull request that adds or edits them.
 
 A new tag (a capability, category, channel or motion) goes in
 [`tags.yml`](tags.yml), in the same pull request as the first file that uses
-it. The top of that file explains each kind.
+it. The top of that file explains each kind; a workflow names exactly one
+motion.
 
 Can't open a pull request yourself?
 [Open an issue](https://github.com/GetBrew/growth-engineer/issues/new/choose)

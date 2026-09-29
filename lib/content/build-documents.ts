@@ -109,6 +109,7 @@ export function buildDocuments(
       renderWorkflowDocument({
         key: workflow.key,
         title: workflow.title,
+        summary: workflow.summary,
         author: workflow.author,
         tools: tools.map((tool) => ({
           key: tool.key,
@@ -125,7 +126,7 @@ export function buildDocuments(
           ...(step.toolKey === undefined ? {} : { toolKey: step.toolKey }),
           instruction: step.instruction,
         })),
-        doneWhen: workflow.doneWhen,
+        outcome: workflow.outcome,
         ...(workflow.notes === undefined ? {} : { notes: workflow.notes }),
         isDeprecated: workflow.status === 'deprecated',
         updatedAt,

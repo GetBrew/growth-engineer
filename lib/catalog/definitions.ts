@@ -62,7 +62,7 @@ export const DEFINITIONS: ReadonlyArray<Definition> = [
     definition:
       'Several tools in order, with the instructions that reach a result, written by a person.',
     detail:
-      'Up to ten steps, each naming one tool or none when the agent does it itself; inputs the agent asks the user for; the checks that mean it is done. A growth hack is a workflow — there is no second kind. The author is a GitHub login.',
+      'Up to ten steps, each naming one tool or none when the agent does it itself; inputs the agent asks the user for; the outcome the user has when it ends, which is how the agent knows it is done; the one go-to-market motion it serves. A growth hack is a workflow — there is no second kind. The author is a GitHub login.',
     path: 'workflows/<name>.md',
   },
   {
@@ -81,7 +81,7 @@ export const TAG_NAMESPACE_MEANINGS = {
   capability: 'What a tool does: every vendor’s version of the same job.',
   category: 'What kind of company it is.',
   channel: 'Where a workflow reaches people.',
-  motion: 'Which go-to-market motion a workflow serves.',
+  motion: 'The one go-to-market motion a workflow serves.',
   has: 'A way in: everything an agent can reach over it.',
 } as const
 

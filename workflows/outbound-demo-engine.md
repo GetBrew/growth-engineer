@@ -1,13 +1,19 @@
 ---
 title: How Brew books 20 demos per week with outbound
-summary: Run cold email and LinkedIn as one system, put a finished piece of your product's work in front of each prospect before they ask, and steer every warm reply to one of three outcomes.
+summary: Runs cold email and LinkedIn as one system, opens with finished work for each prospect, and steers every warm reply to one next step.
 author: philsoerensen
+motion: outbound
 tags:
-  - motion:outbound
   - channel:email
   - channel:linkedin
-updated: 2026-09-28
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- An answer, or a note on why it was skipped, for every reply on either channel by the end of the day it arrived.
+- Every no suppressed on both channels, not only the one it came from.
+- A weekly table of people contacted, replies, warm replies and demos booked.
 
 ## Inputs
 
@@ -30,12 +36,6 @@ updated: 2026-09-28
 8. **Reply on LinkedIn** with [heyreach/send-message](../companies/heyreach/tools/send-message.md). Answer the actual question first, in the sender's own voice, short and specific. Every warm reply steers to exactly one of three outcomes: try the product self-serve, book a call at `booking_link`, or take the done-for-you offer. Show the user each reply before it sends.
 9. **Reply on email** with [instantly/reply-to-email](../companies/instantly/tools/reply-to-email.md). Same playbook as LinkedIn, and when a prospect bites on the offer, the reply carries the deliverable link built in step 4. A not-now gets a date to reconnect, not a push.
 10. **Suppress every no, on both channels**. Keep one suppression list. A no, an unsubscribe or a wrong-person reply on either channel stops the sequence and blocks the person on the other channel too, since the campaigns do not share their no's on their own.
-
-## Done when
-
-- Every reply from either channel has an answer, or a note saying why it was skipped, by the end of the day it arrived.
-- Every no is suppressed on both channels, not only the one it came from.
-- The user has a weekly table of contacted, replies, warm replies and demos booked, tracked against the weekly demo target.
 
 ## Notes
 

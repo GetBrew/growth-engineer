@@ -1,13 +1,12 @@
 ---
 name: add-workflow
-description: Write a growth.engineer workflow — workflows/<name>.md, a growth play as up to ten steps across catalog tools, with the inputs to ask for and the checks that mean it is done — and open a pull request. Use when asked to add, write, contribute or turn a growth hack, GTM play or playbook into a workflow, or to fix an existing workflow so an agent can run it.
+description: Write a growth.engineer workflow — workflows/<name>.md, a growth play as up to ten steps across catalog tools, with the outcome the user gets, its one motion and the inputs to ask for — and open a pull request. Use when asked to add, write, contribute or turn a growth hack, GTM play or playbook into a workflow, or to fix an existing workflow so an agent can run it.
 ---
 
 # Add a workflow
 
-A workflow is a growth play an agent can run from one file: the tools in
-order, what to do with each, what to ask the user for, and how to know it is
-done. The format is defined in `workflows/README.md` — read it first and copy
+A workflow is a growth play an agent can run from one file: what the user
+gets, the tools in order, what to do with each, and what to ask the user for. The format is defined in `workflows/README.md` — read it first and copy
 its template; this skill says how to write one that runs.
 
 **Input:** the play, in the user's words ("when someone stars our repo, find
@@ -18,10 +17,20 @@ for the job and name the choice in `## Notes`.
 **Output:** `workflows/<name>.md`, any missing tool files, a passing
 `pnpm content:check`, and a pull request.
 
-## 1. Name the result
+## 1. Name the result and the outcome
 
-- `title` is the result, not the method: "Turn new GitHub stargazers into
-  qualified conversations", not "GitHub + PDL + lemlist".
+- `title` is the result, verb first, in 60 characters or fewer, not the
+  method: "Email new GitHub stargazers who fit your ideal customer", not
+  "GitHub + PDL + lemlist".
+- `summary` is one sentence of 140 characters or fewer on what it does, in
+  order: "Finds X, does Y, and Z in <tool>." Present tense, US spelling, no
+  words a reader can't check (meaningful, useful, thoughtful).
+- `motion` is the one motion it serves, from `tags.yml`.
+- `## Outcome` opens the body: one to four things the user has when the run
+  ends (a table, drafts, records, sent emails), each one checkable and in
+  plain words, never an input's `name`. It is
+  what people read to decide and what the agent treats as done. Never a
+  promise of replies, meetings or revenue.
 - The file name is the key and the URL, forever: short, kebab-case, the play
   (`github-stargazers-outbound`). Check `workflows/` for one that already does
   this; improve it instead of adding a second.
@@ -64,6 +73,10 @@ key, as in the template in `workflows/README.md`), then what to do.
   in `## Inputs`: ``- `snake_case`: what it is, e.g. an example``. Name every
   value a call needs that no step produces (a campaign's custom variable, a
   deal stage, an owner).
+- **Ask in the user's words.** A campaign's name beats its id when the agent
+  can look the id up with a read-only call. When an input must be set up once
+  first (a campaign template, a CRM property, a database), say so in its
+  description.
 - **Ask before it acts.** Show drafts before anything is sent. The file's Rules
   already say to ask before sending, spending or changing data; don't repeat
   them in every step.
@@ -79,11 +92,11 @@ key, as in the template in `workflows/README.md`), then what to do.
 
 ## 4. Finish the file
 
-- `## Done when`: the checks that mean the job is finished, as results
-  ("Every funded company has a contact, or a note explaining why not").
-- Header: `title`, `summary` (one sentence), `author` (the GitHub login),
-  `tags` (`motion:` and `channel:` entries from `tags.yml` only — its header
-  says what each motion means), `updated` (today). Leave `featured` to
+- Check the `## Outcome` against the steps: every item is something a step
+  (or the agent's closing summary) produces.
+- Header: `title`, `summary`, `author` (the GitHub login), `motion` (one
+  `motion:` slug from `tags.yml`; its header says what each means), `tags`
+  (`channel:` entries only), `updated` (today). Leave `featured` to
   maintainers.
 
 ## 5. Check it runs

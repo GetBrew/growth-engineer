@@ -1,13 +1,18 @@
 ---
-title: Create a webinar follow-up that reflects attendance
-summary: Send different next steps to attendees, no-shows and highly engaged viewers without manual list work.
+title: Email webinar no-shows, attendees and engaged viewers
+summary: Sorts a Zoom webinar's registrants into no-shows, attendees and engaged viewers, tags them in HubSpot, and emails each group.
 author: thedogwiththedataonit
+motion: inbound
 tags:
-  - motion:inbound
   - channel:email
 featured: true
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- Every registrant in exactly one list, recorded on their HubSpot contact.
+- Three approved emails sent: the recording to no-shows, your next step to attendees and a booking link to engaged viewers.
 
 ## Inputs
 
@@ -16,7 +21,7 @@ updated: 2026-09-27
 - `recording_url`: the link to the recording, for no-shows
 - `next_step`: what attendees should do next, with its link, e.g. start a trial at https://acme.example/trial
 - `booking_url`: where engaged attendees book a call
-- `list_property`: the HubSpot contact property that records each person's list as `no_show`, `attended` or `engaged`, e.g. webinar_follow_up
+- `list_property`: the HubSpot contact property, set up once, that records each person's list as `no_show`, `attended` or `engaged`, e.g. webinar_follow_up
 
 ## Steps
 
@@ -26,8 +31,3 @@ updated: 2026-09-27
 4. **Write three emails** with [brew/generate-email](../companies/brew/tools/generate-email.md). Generate one email per list: `recording_url` for no-shows, `next_step` for attendees, `booking_url` for the engaged. Show the drafts to the user. Keep each approved email's `emailVersionId` and subject.
 5. **Tag contacts** with [hubspot/upsert-contacts](../companies/hubspot/tools/upsert-contacts.md). Create or update every person, matched on email, with `list_property` set to their list.
 6. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). Once the user confirms the registrants agreed to hear from you, send each list its approved email, 50 inline recipients per send, each send with its own idempotency key.
-
-## Done when
-
-- Every registrant is in exactly one of the three lists.
-- Approved emails are sent and `list_property` is set on every contact.

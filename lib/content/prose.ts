@@ -19,7 +19,7 @@ const RESERVED = new Set([
   'set up',
   'inputs',
   'steps',
-  'done when',
+  'outcome',
   'notes',
   'rules',
   'tools',

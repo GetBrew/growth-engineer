@@ -1,13 +1,19 @@
 ---
 title: Recover failed payments before the subscription cancels
-summary: Catch past-due subscriptions early, send a friendly link to fix the card, and hand the biggest accounts to a person.
+summary: Finds past-due Stripe subscriptions, emails each customer a link to pay with Resend, and posts the largest amounts to Slack.
 author: thedogwiththedataonit
+motion: retention
 tags:
-  - motion:retention
   - channel:email
   - channel:chat
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- An email with a link to pay for every customer with a past-due subscription, or a note on why not, such as Stripe already emailing them.
+- A Slack post for each customer who owes more than your escalation amount.
+- The total amount due, by currency.
 
 ## Inputs
 
@@ -23,8 +29,3 @@ updated: 2026-09-27
 3. **Write the nudges**. Skip this step and the next when `stripe_emails_on` is yes, so no one gets two emails. Otherwise draft one short, friendly email per customer, with a subject and a plain-text body: the payment did not go through, each `hosted_invoice_url` to pay or update the card, and the next retry date, or that no retries are left when `next_payment_attempt` is empty. Show the drafts to the user.
 4. **Send** with [resend/send-email](../companies/resend/tools/send-email.md). After the user approves, send each email from `sender` to its `customer_email`, one recipient per email. Keep each email's ID.
 5. **Escalate the big ones** with [slack/post-message](../companies/slack/tools/post-message.md). Post one message per customer who owes `escalate_amount` or more to `cs_channel`, with `customer_name`, the amount and the next retry date.
-
-## Done when
-
-- Every customer with a past-due subscription got an email, or has a note saying why not.
-- `cs_channel` has one post per large account, and the user has the total amount due by currency.

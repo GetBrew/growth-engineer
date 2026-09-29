@@ -285,7 +285,7 @@ describe('get, on a fixture catalog', () => {
       kind: 'tags',
       path: 'tags.yml',
       source:
-        'capability:\n  manage-crm:\n    label: Manage a CRM\ncategory:\n  crm:\n    label: CRM\nchannel:\n  email:\n    label: Email\n',
+        'capability:\n  manage-crm:\n    label: Manage a CRM\ncategory:\n  crm:\n    label: CRM\nchannel:\n  email:\n    label: Email\nmotion:\n  outbound:\n    label: Outbound\n',
     },
     {
       kind: 'company',
@@ -315,7 +315,7 @@ describe('get, on a fixture catalog', () => {
       path: 'workflows/old-way.md',
       name: 'old-way',
       source:
-        '---\ntitle: The old way\nsummary: Kept for reference.\nauthor: jdoe\naliases: [acme]\nstatus: deprecated\nupdated: 2026-09-16\n---\n\n## Steps\n\n1. **Create** with [acme/create-record](../companies/acme/tools/create-record.md). Make one.\n\n## Done when\n\n- It exists.\n',
+        '---\ntitle: The old way\nsummary: Kept for reference.\nauthor: jdoe\nmotion: outbound\naliases: [acme]\nstatus: deprecated\nupdated: 2026-09-16\n---\n\n## Outcome\n\n- A record exists.\n\n## Steps\n\n1. **Create** with [acme/create-record](../companies/acme/tools/create-record.md). Make one.\n',
     },
   ]
   const catalog = buildCatalog(files)

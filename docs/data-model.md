@@ -46,9 +46,9 @@ in.
 
 Every entry carries the tags it earns, computed at build: a tool its
 capability, its company's category and its ways in; a company its category
-and its published tools' capabilities and ways in; a workflow its motion and
-channel tags, its tools' capabilities, and `has:<type>` when every tool
-offers that way.
+and its published tools' capabilities and ways in; a workflow the one motion
+it names (`motion:`, like a company's `category:`), its channel tags, its
+tools' capabilities, and `has:<type>` when every tool offers that way.
 
 ## What the build computes (never written in a file)
 
@@ -93,6 +93,9 @@ is in a workflow's body (`pnpm content:check`):
 - a workflow step whose tool does not exist or does not fit the workflow's
   status; a workflow whose steps name no tool; more than ten steps; a body
   section out of order or misnamed
+- a workflow with no `motion`, a motion missing from `tags.yml`, or a
+  `motion:` tag in `tags:`; no `## Outcome`, or more than four items in it;
+  a title over 60 characters or a summary over 140
 - an alias that shadows an existing key (drafts included) or is claimed twice
 - a file that renders past its line cap (tool or company ≈ 80, workflow ≈
   200) — checked once everything above passes, since only a valid catalog

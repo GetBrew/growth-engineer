@@ -8,7 +8,7 @@ and the goldens in `tests/fixtures/markdown/` pin. The SOURCE files under
 `companies/` and `workflows/` are the input to that renderer: a YAML header
 of facts and, for a company or a workflow, a markdown body a person reads on
 GitHub (a tool file is its header alone). A workflow's body is
-already written in this format — its inputs, steps and checks — so the
+already written in this format — its outcome, inputs and steps — so the
 source and the file read alike; the renderer adds the setup for each tool,
 names the tools, and appends the rules.
 
@@ -18,7 +18,7 @@ names the tools, and appends the rules.
 | --- | --- |
 | Files are generated, never hand-edited. | The renderer builds each file from the source files at build time. When a company's MCP URL changes in its `company.md`, every tool and workflow file that prints it is rebuilt on the next deploy. |
 | Files work in any agent. | Plain markdown, a short flat YAML header, no agent-specific syntax. MCP servers appear in the common `mcpServers` JSON shape with the URL spelled out too. |
-| Everything needed to run is in the file. | Setup, inputs, steps and finish checks are inline, and so is what to know before each call: a way's `notes` under the way, a tool's `notes` under its company's setup. Links are only for getting keys or reading more. |
+| Everything needed to run is in the file. | The outcome, setup, inputs and steps are inline, and so is what to know before each call: a way's `notes` under the way, a tool's `notes` under its company's setup. Links are only for getting keys or reading more. |
 | Setup picks the best way in. | Official MCP, then official CLI, then official API, then community options. Tool files list every option; workflow files show at most two per tool, and set each company's way up once, listing every call on it. |
 | Inputs are named, not templated. | `target_accounts` appears in backticks and the file tells the agent to ask the user for it. No template engine. |
 | The file tells the agent to check access first. | After setup, one read-only call to each service, like a list or a search, before step 1 — never a send, create or spend to test access. |
@@ -34,11 +34,11 @@ names the tools, and appends the rules.
 | Section | Tool file | Workflow file |
 | --- | --- | --- |
 | Header | `ref`, `name`, `company`, `workflows`, `access`, `tags`, `docs`, `status`, `updated` | `ref`, `title`, `author`, `tools`, `tags`, `status`, `updated` |
-| Title | Name and a one-line summary | The result, plus one line telling the agent what to do |
+| Title | Name and a one-line summary | The result, its one-sentence summary, then one line telling the agent what to do and that the outcome means done |
+| Outcome | — | What the user has when the run ends: the checks that mean it is done |
 | Inputs | — | Named inputs the agent asks the user for |
 | Set up | Every way in | The best one or two ways in for each tool |
 | Steps | — | Numbered steps, each naming its tool and its company, `with Enrich a person (Apollo).` (a workflow using a single tool names it once up front instead); a step with no tool says `yourself.` |
-| Done when | — | Checks that mean the job is finished |
 | Notes | — | Optional, written by the author |
 | Rules | Always | Always |
 
@@ -92,9 +92,10 @@ byte-identical files (`tests/content.test.ts` pins this).
 ## Publishing a workflow
 
 1. Write `workflows/<name>.md` with your GitHub login as `author`: a header
-   with a title phrased as the result, then `## Inputs`, `## Steps` (pick a
-   tool, write what to do) and `## Done when`, the checks that mean it is
-   done ([`workflows/README.md`](../workflows/README.md)).
+   with a title phrased as the result and its one `motion`, then
+   `## Outcome` (what the user has at the end), `## Inputs` and `## Steps`
+   (pick a tool, write what to do)
+   ([`workflows/README.md`](../workflows/README.md)).
 2. `pnpm content:check` renders the exact file and lists every problem with
    its file (and line, for a problem in the body); `pnpm dev` shows the page.
 3. Open a pull request. CI runs the same checks; a maintainer reviews the

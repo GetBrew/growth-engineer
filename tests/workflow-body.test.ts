@@ -15,8 +15,12 @@ function read(lines: ReadonlyArray<string>, firstLine = 1) {
 }
 
 describe('workflow body', () => {
-  test('reads inputs, steps, checks and notes', () => {
+  test('reads the outcome, inputs, steps and notes', () => {
     const { body, problems } = read([
+      '## Outcome',
+      '',
+      '- No duplicates remain.',
+      '',
       '## Inputs',
       '',
       '- `region`: where to look, e.g. EMEA',
@@ -26,10 +30,6 @@ describe('workflow body', () => {
       '',
       `1. **Dedupe** with ${LINK}. Merge duplicates.`,
       `2. **Tell the owner** with ${LINK}. Send \`owner\` the list.`,
-      '',
-      '## Done when',
-      '',
-      '- No duplicates remain.',
       '',
       '## Notes',
       '',
@@ -52,41 +52,41 @@ describe('workflow body', () => {
         instruction: 'Send `owner` the list.',
       },
     ])
-    expect(body.doneWhen).toEqual(['No duplicates remain.'])
+    expect(body.outcome).toEqual(['No duplicates remain.'])
     expect(body.notes).toBe('Run it weekly.')
     expect(body.lines).toEqual({
-      inputs: [3, 4],
-      steps: [8, 9],
-      doneWhen: [13],
+      outcome: [3],
+      inputs: [7, 8],
+      steps: [12, 13],
     })
   })
 
   test('joins a wrapped item and counts lines from the file', () => {
     const { body, problems } = read(
       [
+        '## Outcome',
+        '',
+        '* Clean.',
+        '',
         '## Steps',
         '',
         `1. **Dedupe** with ${LINK}. Merge`,
         '   duplicates by email.',
-        '',
-        '## Done when',
-        '',
-        '* Clean.',
       ],
       9
     )
     expect(problems).toEqual([])
     expect(body.steps[0]?.instruction).toBe('Merge duplicates by email.')
-    expect(body.lines.steps).toEqual([11])
-    expect(body.lines.doneWhen).toEqual([16])
+    expect(body.lines.outcome).toEqual([11])
+    expect(body.lines.steps).toEqual([15])
   })
 
   test('accepts headings in any case and `1)` markers', () => {
     const { body, problems } = read([
-      '## STEPS',
-      `1) **Dedupe** with ${LINK}. Merge duplicates.`,
-      '## done when',
+      '## OUTCOME',
       '- Clean.',
+      '## steps',
+      `1) **Dedupe** with ${LINK}. Merge duplicates.`,
     ])
     expect(problems).toEqual([])
     expect(body.steps).toHaveLength(1)
@@ -95,10 +95,10 @@ describe('workflow body', () => {
   test('keeps notes verbatim, headings and code included', () => {
     const notes = ['### Why weekly', '', '```bash', '## not a section', '```']
     const { body, problems } = read([
+      '## Outcome',
+      '- Clean.',
       '## Steps',
       `1. **Dedupe** with ${LINK}. Merge duplicates.`,
-      '## Done when',
-      '- Clean.',
       '## Notes',
       '',
       ...notes,

@@ -1,13 +1,18 @@
 ---
-title: Surface product-qualified expansion opportunities
-summary: Watch account usage, flag teams approaching meaningful limits, and give sales a clear reason to engage.
+title: Tell sales when an account's usage passes your threshold
+summary: Finds accounts over your weekly-active-user threshold in Amplitude, marks and notes them in Attio, and posts each one to Slack for sales.
 author: thedogwiththedataonit
+motion: plg
 tags:
-  - motion:midbound
-  - motion:plg
   - channel:chat
-updated: 2026-09-27
+updated: 2026-09-29
 ---
+
+## Outcome
+
+- Every account over your usage threshold marked expansion-ready in Attio, with a note on the metric and the week.
+- A Slack post for sales about each of those accounts.
+- The domains that have no Attio record.
 
 ## Inputs
 
@@ -15,7 +20,7 @@ updated: 2026-09-27
 - `account_property`: the Amplitude user property that holds each account's domain, e.g. company_domain
 - `usage_threshold`: the weekly active users that signal a bigger team, e.g. 25
 - `lookback_days`: the window to check, in full weeks, e.g. 14
-- `ready_attribute`: the Attio company checkbox that marks expansion-ready accounts, e.g. expansion_ready
+- `ready_attribute`: the Attio company checkbox, set up once, that marks expansion-ready accounts, e.g. expansion_ready
 - `sales_channel`: the Slack channel to post in, e.g. #expansion
 
 ## Steps
@@ -25,8 +30,3 @@ updated: 2026-09-27
 3. **Mark them** with [attio/update-record](../companies/attio/tools/update-record.md). Set `ready_attribute` to true on each record ID.
 4. **Note the reason** with [attio/create-note](../companies/attio/tools/create-note.md). Add a note to each record with the weekly active users and the week.
 5. **Tell sales** with [slack/post-message](../companies/slack/tools/post-message.md). Post one message per account to `sales_channel` with its name, the metric and the week.
-
-## Done when
-
-- Every account over the line is marked and noted in the CRM.
-- `sales_channel` has one post per account, and the user has the domains with no record.

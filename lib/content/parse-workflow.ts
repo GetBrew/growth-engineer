@@ -25,9 +25,9 @@ export type ParsedWorkflow = {
 }
 
 const ENTRY_NAME: Record<keyof typeof WORKFLOW_BODY_SECTIONS, string> = {
+  outcome: 'outcome',
   inputs: 'input',
   steps: 'step',
-  doneWhen: 'check',
 }
 
 /**
@@ -83,7 +83,7 @@ export function parseWorkflowFile(
   }
   const before = problems.size
 
-  // Inputs, steps and checks look like header fields but live in the body:
+  // The outcome, inputs and steps look like header fields but live in the body:
   // a file that puts them in the header hears where they go.
   const header = { ...split.data }
   for (const [field, section] of Object.entries(WORKFLOW_BODY_SECTIONS)) {
@@ -105,9 +105,9 @@ export function parseWorkflowFile(
     problems.add(path, problem.message, problem.line)
   }
   const fields = workflowBodySchema.safeParse({
+    outcome: body.body.outcome,
     inputs: body.body.inputs,
     steps: body.body.steps,
-    doneWhen: body.body.doneWhen,
   })
   if (!fields.success) {
     const flagged = new Set(body.problems.map((problem) => problem.line))

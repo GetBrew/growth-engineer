@@ -68,11 +68,12 @@ export function companyTags(
 }
 
 /**
- * A workflow: its authored motion and channel tags, its tools' capabilities,
+ * A workflow: its motion, its authored channel tags, its tools' capabilities,
  * and `has:<way>` when EVERY tool offers that way — so `has:mcp` finds the
  * workflows an agent can run over MCP alone.
  */
 export function workflowTags(
+  motion: string,
   authored: ReadonlyArray<string>,
   tools: ReadonlyArray<{
     capability: string
@@ -86,6 +87,7 @@ export function workflowTags(
     : []
   return [
     ...new Set([
+      `motion:${motion}`,
       ...authored,
       ...tools.map((tool) => `capability:${tool.capability}`),
       ...shared,

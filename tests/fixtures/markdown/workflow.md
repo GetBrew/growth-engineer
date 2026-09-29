@@ -9,7 +9,14 @@ updated: 2026-09-16
 
 # Turn high-intent accounts into booked meetings
 
-Set up the tools below, then run the steps in order for the user, carrying each step's results into the next.
+Finds the head of sales at each target account with Apollo, drafts an email to each, and sends the approved ones with Brew.
+
+Set up the tools below, then run the steps in order for the user, carrying each step's results into the next. The run is done when the user has the outcome below.
+
+## Outcome
+
+- A contact for every account, or a note on why there is none.
+- Each approved email sent, and a summary table of who got one.
 
 ## Inputs
 
@@ -50,11 +57,6 @@ Before step 1, confirm access to each service with its cheapest read-only call, 
 1. **Find contacts** with Enrich up to 10 people (Apollo). For each domain in `target_accounts`, find the head of sales. Keep their name, title, and work email.
 2. **Write emails** yourself. Draft a short, specific email to each contact from step 1. Show the drafts to the user.
 3. **Send** with Send email (Brew). After the user approves, send each one from `sender_email`.
-
-## Done when
-
-- Every account has a contact, or a note explaining why not.
-- Approved emails are sent, and the user has a summary table.
 
 ## Rules
 

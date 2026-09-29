@@ -14,9 +14,10 @@ import type { ContentFile } from './read-tree'
 /**
  * Workflows: a header of facts and a body of steps (./parse-workflow.ts),
  * then the cross-file checks — every step's tool fits the workflow's status
- * (below), and the workflow tags itself with motion and channel only; its
- * capabilities come from its tools. A draft is checked and left out: no
- * page, no file. Every miss is a problem with a file path, never a crash.
+ * (below), the workflow names one motion from tags.yml and tags itself with
+ * channels only; its capabilities come from its tools. A draft is checked and
+ * left out: no page, no file. Every miss is a problem with a file path, never
+ * a crash.
  *
  *   workflow status   may use tools that are
  *   published         published
@@ -36,10 +37,25 @@ type WorkflowContext = {
 
 type Status = 'published' | 'deprecated' | 'draft'
 
-/** The namespaces a workflow tags itself with; the rest are computed. */
-const WORKFLOW_TAG_NAMESPACES: ReadonlyArray<string> = ['motion', 'channel']
+/** The one motion a workflow serves is in tags.yml, like a company's category. */
+function checkMotion(
+  file: WorkflowFile,
+  motion: string,
+  tags: ReadonlyMap<string, Tag>,
+  problems: ProblemList
+): void {
+  if (!tags.has(`motion:${motion}`)) {
+    const motions = [...tags.values()]
+      .filter((tag) => tag.namespace === 'motion')
+      .map((tag) => tag.slug)
+    problems.add(
+      file.path,
+      `motion "${motion}" is not in tags.yml: use one of ${motions.join(', ')}`
+    )
+  }
+}
 
-/** A workflow names only motion and channel tags, each one in tags.yml. */
+/** A workflow tags itself with channels only, each one in tags.yml. */
 function checkTags(
   file: WorkflowFile,
   keys: ReadonlyArray<string>,
@@ -47,11 +63,16 @@ function checkTags(
   problems: ProblemList
 ): void {
   for (const tagKey of keys) {
-    const namespace = tagKey.split(':')[0] ?? ''
-    if (!WORKFLOW_TAG_NAMESPACES.includes(namespace)) {
+    const [namespace = '', slug = ''] = tagKey.split(':')
+    if (namespace === 'motion') {
       problems.add(
         file.path,
-        `tags: "${tagKey}" is computed from the workflow's tools; tag a workflow with motion: and channel: only`
+        `tags: "${tagKey}" goes in its own field, \`motion: ${slug}\`: a workflow names one motion`
+      )
+    } else if (namespace !== 'channel') {
+      problems.add(
+        file.path,
+        `tags: "${tagKey}" is computed from the workflow's tools; tag a workflow with channel: only`
       )
     } else if (!tags.has(tagKey)) {
       problems.add(file.path, `tags: "${tagKey}" is not in tags.yml`)
@@ -125,6 +146,7 @@ function toWorkflow(
   }))
   const toolKeys = distinctToolKeys(steps)
   const tags = workflowTags(
+    data.motion,
     data.tags,
     toolKeys.flatMap((key) => {
       const tool = context.tools.get(key)
@@ -136,10 +158,11 @@ function toWorkflow(
     author: data.author,
     title: data.title,
     summary: data.summary,
+    motion: data.motion,
     tags,
+    outcome: data.outcome,
     inputs: data.inputs,
     steps,
-    doneWhen: data.doneWhen,
     ...(notes ? { notes } : {}),
     isFeatured: data.featured,
     toolKeys,
@@ -195,6 +218,7 @@ export function buildWorkflows(
     if (!parsed) {
       continue
     }
+    checkMotion(file, parsed.data.motion, context.tags, problems)
     checkTags(file, parsed.data.tags, context.tags, problems)
     checkSteps(file, parsed, context, problems)
     if (parsed.data.status === 'draft') {

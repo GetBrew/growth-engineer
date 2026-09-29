@@ -19,8 +19,8 @@ credentials are buried, and the workflow is a Notion page no one can run.
 ## The idea
 
 Every tool and workflow is one markdown file any agent can run. The file
-carries the setup (every way in, best first), the inputs to ask for, the
-steps, the checks that mean it is done, and the rules. It is plain markdown
+carries what it does, the outcome it ends with, the setup (every way in, best
+first), the inputs to ask for, the steps, and the rules. It is plain markdown
 with a flat header and no syntax tied to one agent app. The main thing a
 person does on the site is copy a file into their agent; each page shows the
 file with a Copy button.
@@ -28,8 +28,8 @@ file with a Copy button.
 That decision shapes the rest:
 
 - **Named for the result.** A workflow's title is the result it reaches
-  ("Turn fresh funding news into qualified outbound"), not the tools inside
-  it.
+  ("Email buyers at newly funded companies"), not the tools inside it, and it
+  names the one motion it serves (outbound, inbound, product-led, retention).
 - **Readable by agents.** One render function generates every file from
   structured source files, so the files are consistent and current, and no
   one edits them by hand. Every company, tool and workflow page answers

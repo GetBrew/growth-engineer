@@ -66,7 +66,7 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
   [`lib/content/build-documents.ts`](lib/content/build-documents.ts) at build time. Nothing renders on the request path; a rendered file is
   never hand-edited. A SOURCE file is a YAML header of facts; a company or
   workflow adds a markdown body (a tool file is its header alone): a
-  workflow's inputs, steps and checks are body sections ([`lib/content/workflow-body.ts`](lib/content/workflow-body.ts));
+  workflow's outcome, inputs and steps are body sections ([`lib/content/workflow-body.ts`](lib/content/workflow-body.ts));
   the build adds setup and rules.
 - The format is the contract in [`docs/markdown-files.md`](docs/markdown-files.md):
   flat YAML header, setup picks the best way in (official MCP → CLI → API →

@@ -20,6 +20,7 @@ import { yamlList, yamlScalar } from './render-header'
  * The contract (docs/markdown-files.md):
  *   - plain markdown with a short, flat YAML header; no agent-specific syntax
  *   - everything needed to run is inline; links only for keys and reading more
+ *   - a workflow states its goal first: the summary, then the outcome
  *   - setup picks the best way in (./render-access.ts)
  *   - inputs are named in backticks, never templated
  *   - what to know before a call travels with it (`notes`), into workflows too
@@ -62,6 +63,8 @@ type WorkflowFileStep = {
 export type WorkflowFileInput = {
   key: string
   title: string
+  /** One sentence on what it does: the file's first paragraph. */
+  summary: string
   /** The GitHub login of whoever wrote it. */
   author: string
   tools: ReadonlyArray<WorkflowFileTool>
@@ -69,7 +72,8 @@ export type WorkflowFileInput = {
   tags: ReadonlyArray<string>
   inputs: ReadonlyArray<{ name: string; description: string; example?: string }>
   steps: ReadonlyArray<WorkflowFileStep>
-  doneWhen: ReadonlyArray<string>
+  /** What the user has when the run ends: the checks that mean it is done. */
+  outcome: ReadonlyArray<string>
   notes?: string
   isDeprecated?: boolean
   updatedAt: number
@@ -195,6 +199,12 @@ export function renderToolDocument(tool: ToolFileInput): RenderedDocument {
 
 /* ──────────────────────────────── workflow ───────────────────────────────── */
 
+function outcomeSection(outcome: WorkflowFileInput['outcome']): Array<string> {
+  return outcome.length === 0
+    ? []
+    : ['', '## Outcome', '', ...outcome.map((item) => `- ${item}`)]
+}
+
 function inputsSection(inputs: WorkflowFileInput['inputs']): Array<string> {
   if (inputs.length === 0) {
     return []
@@ -272,6 +282,13 @@ export function renderWorkflowDocument(
     workflow.isDeprecated,
     'This workflow is deprecated. Ask the user before running it.'
   )
+  const intro = soleTool
+    ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user, carrying each step's results into the next.`
+    : "Set up the tools below, then run the steps in order for the user, carrying each step's results into the next."
+  const done =
+    workflow.outcome.length > 0
+      ? ' The run is done when the user has the outcome below.'
+      : ''
 
   const lines: Array<string> = [
     '---',
@@ -287,22 +304,15 @@ export function renderWorkflowDocument(
     `# ${workflow.title}`,
     ...deprecated.notice,
     '',
-    soleTool
-      ? `Set up ${toolLabel(soleTool)}, then run the steps in order for the user, carrying each step's results into the next.`
-      : "Set up the tools below, then run the steps in order for the user, carrying each step's results into the next.",
+    workflow.summary,
+    '',
+    `${intro}${done}`,
+    ...outcomeSection(workflow.outcome),
     ...inputsSection(workflow.inputs),
     ...workflowSetup(usedTools),
     ...stepsSection(workflow.steps, toolsByKey, soleTool !== undefined),
   ]
 
-  if (workflow.doneWhen.length > 0) {
-    lines.push(
-      '',
-      '## Done when',
-      '',
-      ...workflow.doneWhen.map((check) => `- ${check}`)
-    )
-  }
   if (workflow.notes) {
     lines.push('', '## Notes', '', workflow.notes.trim())
   }
