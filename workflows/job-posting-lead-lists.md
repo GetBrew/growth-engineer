@@ -35,4 +35,6 @@ updated: 2026-09-29
 
 Step 7 needs a HeyReach campaign already built with LinkedIn sender accounts assigned; point every approved lead at it rather than one campaign per run.
 
-Adapted from ShipGTM's [signal-based lead list guide](https://shipgtm.substack.com/p/signal-based-lead-lists-job-postings), which builds this on Clay, Salesforce and LinkedIn.
+Steps 1 and 2 can run on [sumble/search-organizations](../companies/sumble/tools/search-organizations.md) and [sumble/search-jobs](../companies/sumble/tools/search-jobs.md), or on [coresignal/search-companies](../companies/coresignal/tools/search-companies.md) and [coresignal/search-jobs](../companies/coresignal/tools/search-jobs.md), instead of Clay — the guide names both as job-posting data sources with the same shape.
+
+Adapted from ShipGTM's [signal-based lead list guide](https://shipgtm.substack.com/p/signal-based-lead-lists-job-postings), which builds this on Clay, Salesforce and LinkedIn, and names Sumble and CoreSignal as alternative data sources.
