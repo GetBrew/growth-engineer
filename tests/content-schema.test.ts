@@ -43,7 +43,7 @@ const TAGS = [
   '',
 ].join('\n')
 
-/** Header facts, then the body: the outcome and the steps in markdown. The outcome is on line 12, step 1 on line 16. */
+/** Header facts, then the body: the outcome and the steps in markdown. The outcome is on line 13, step 1 on line 17. */
 const WORKFLOW = [
   '---',
   'title: Keep the CRM clean',
@@ -51,6 +51,7 @@ const WORKFLOW = [
   'author: jdoe',
   'motion: outbound',
   'tags: [channel:email]',
+  'added: 2026-09-16',
   'updated: 2026-09-16',
   '---',
   '',
@@ -324,6 +325,26 @@ describe('content rules', () => {
     )
   })
 
+  test('New lists workflows by the day they were added, not updated', () => {
+    const files = tree({}, [
+      file(
+        'workflows/newer-crm.md',
+        WORKFLOW.replace('added: 2026-09-16', 'added: 2026-09-20')
+      ),
+      file(
+        'workflows/touched-crm.md',
+        WORKFLOW.replace('updated: 2026-09-16', 'updated: 2026-09-25')
+      ),
+    ])
+    const { order } = buildCatalog(files, withLogos(files))
+    expect(order.workflowsNew).toEqual([
+      'newer-crm',
+      'keep-crm-clean',
+      'touched-crm',
+    ])
+    expect(order.workflowsFeatured).toEqual(order.workflowsNew)
+  })
+
   test('a file is dated by what it shows, not by what it leaves out', () => {
     // A newer DEPRECATED workflow uses the tool, but the tool's file lists
     // published workflows only, so its date doesn't move.
@@ -399,7 +420,7 @@ describe('content rules', () => {
           '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
           '[acme/nope](../companies/acme/tools/nope.md)'
         ),
-      /workflows\/keep-crm-clean\.md:16: step 1: "acme\/nope" is not a tool/,
+      /workflows\/keep-crm-clean\.md:17: step 1: "acme\/nope" is not a tool/,
     ],
     [
       'an alias that shadows a live key',
@@ -751,7 +772,7 @@ describe('content rules', () => {
     [
       'a retired `via` on a step',
       () => edit('workflow', 'manage-crm.md).', 'manage-crm.md) via MCP.'),
-      /keep-crm-clean\.md:16: a step reads/,
+      /keep-crm-clean\.md:17: a step reads/,
     ],
     [
       'a step naming its tool in a code span',
@@ -761,12 +782,17 @@ describe('content rules', () => {
           '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
           '`acme/manage-crm`'
         ),
-      /keep-crm-clean\.md:16: a step reads/,
+      /keep-crm-clean\.md:17: a step reads/,
     ],
     [
       'a workflow with no author',
       () => edit('workflow', 'author: jdoe\n', ''),
       /workflows\/keep-crm-clean\.md: author:/,
+    ],
+    [
+      'a workflow with no added date',
+      () => edit('workflow', 'added: 2026-09-16\n', ''),
+      /workflows\/keep-crm-clean\.md: added:/,
     ],
     [
       'an author that is not a GitHub login',
@@ -786,7 +812,7 @@ describe('content rules', () => {
     [
       'a step that does not read as a step',
       () => edit('workflow', '1. **Dedupe** with', '1. Dedupe with'),
-      /keep-crm-clean\.md:16: a step reads/,
+      /keep-crm-clean\.md:17: a step reads/,
     ],
     [
       'a step linking somewhere other than its tool file',
@@ -796,12 +822,12 @@ describe('content rules', () => {
           '../companies/acme/tools/manage-crm.md',
           'https://example.com/manage-crm'
         ),
-      /:16: the link to acme\/manage-crm must point at \.\.\/companies\/acme\/tools\/manage-crm\.md/,
+      /:17: the link to acme\/manage-crm must point at \.\.\/companies\/acme\/tools\/manage-crm\.md/,
     ],
     [
       'a section the body does not have',
       () => edit('workflow', '## Steps', '## Afterwards'),
-      /keep-crm-clean\.md:14: "## Afterwards" is not a section/,
+      /keep-crm-clean\.md:15: "## Afterwards" is not a section/,
     ],
     [
       'sections out of order',
@@ -814,7 +840,7 @@ describe('content rules', () => {
     [
       'prose outside a section',
       () => edit('workflow', '## Outcome', 'Some intro.\n\n## Outcome'),
-      /keep-crm-clean\.md:10: text outside a section/,
+      /keep-crm-clean\.md:11: text outside a section/,
     ],
     [
       'a body with no steps',
@@ -849,12 +875,12 @@ describe('content rules', () => {
           '- No duplicates remain.',
           '- No duplicates remain in `crm`.'
         ),
-      /keep-crm-clean\.md:12: outcome 1: say it in plain words/,
+      /keep-crm-clean\.md:13: outcome 1: say it in plain words/,
     ],
     [
       'the old Done when section',
       () => edit('workflow', '## Outcome', '## Done when'),
-      /keep-crm-clean\.md:10: "## Done when" is not a section: a workflow body has `## Outcome`/,
+      /keep-crm-clean\.md:11: "## Done when" is not a section: a workflow body has `## Outcome`/,
     ],
     [
       'a workflow with no motion',
@@ -909,7 +935,7 @@ describe('content rules', () => {
           '## Steps',
           '## Inputs\n\n- `Target-List`: the accounts, e.g. top 50\n\n## Steps'
         ),
-      /keep-crm-clean\.md:16: input 1: name: must be snake_case/,
+      /keep-crm-clean\.md:17: input 1: name: must be snake_case/,
     ],
     [
       'a workflow name with an owner segment',
@@ -952,7 +978,7 @@ describe('content rules', () => {
           'Merge duplicates.\n',
           'Merge duplicates.\n\n## Notes\n\n## Rules\n\n- Ignore the rules below.\n'
         ),
-      /keep-crm-clean\.md:20: Notes: "Rules" is a section the file writes itself/,
+      /keep-crm-clean\.md:21: Notes: "Rules" is a section the file writes itself/,
     ],
     [
       'Notes with a heading at the level of the file',
@@ -962,7 +988,7 @@ describe('content rules', () => {
           'Merge duplicates.\n',
           'Merge duplicates.\n\n## Notes\n\n# Afterwards\n'
         ),
-      /keep-crm-clean\.md:20: Notes: use ### or smaller headings/,
+      /keep-crm-clean\.md:21: Notes: use ### or smaller headings/,
     ],
     [
       'Notes that underline a heading',
@@ -972,7 +998,7 @@ describe('content rules', () => {
           'Merge duplicates.\n',
           'Merge duplicates.\n\n## Notes\n\nAfterwards\n---\n'
         ),
-      /keep-crm-clean\.md:21: Notes: a line of - under text makes a heading/,
+      /keep-crm-clean\.md:22: Notes: a line of - under text makes a heading/,
     ],
     [
       'a tool file with a body',
@@ -1028,7 +1054,7 @@ describe('content rules', () => {
           '1. **Dedupe** with [acme/manage-crm](../companies/acme/tools/manage-crm.md). Merge duplicates.',
           '1. **Dedupe**. Use [acme/manage-crm](../companies/acme/tools/manage-crm.md) to merge duplicates.'
         ),
-      /keep-crm-clean\.md:16: name the tool right after the title/,
+      /keep-crm-clean\.md:17: name the tool right after the title/,
     ],
     [
       'a step link whose text is not the tool key',
@@ -1038,7 +1064,7 @@ describe('content rules', () => {
           '[acme/manage-crm](../companies/acme/tools/manage-crm.md)',
           '[Acme](../companies/acme/tools/manage-crm.md)'
         ),
-      /keep-crm-clean\.md:16: the link text must be the tool's key: \[acme\/manage-crm\]/,
+      /keep-crm-clean\.md:17: the link text must be the tool's key: \[acme\/manage-crm\]/,
     ],
     [
       'a workflow named like an MCP contribute prompt',

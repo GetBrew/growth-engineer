@@ -37,7 +37,7 @@ capability:
     synonyms: [audience, audiences, segments, lists, cohorts, contact lists]
   classify-signals:
     label: Classify signals
-    synonyms: [classification, scoring, triage]
+    synonyms: [classification, scoring, triage, lead scoring, decisions, categorize, labeling, sentiment]
   collect-payments:
     label: Collect payments
     synonyms: [payments, billing, subscriptions, checkout]
@@ -92,6 +92,9 @@ capability:
   research-accounts:
     label: Research accounts
     synonyms: [account research, deal research, account brief, account questions]
+  research-keywords:
+    label: Research keywords
+    synonyms: [keyword research, search volume, keyword difficulty, seo keywords, organic keywords]
   review-recordings:
     label: Review recordings
     synonyms: [recordings, transcripts, call recordings, meeting notes, action items]

@@ -123,6 +123,7 @@ export function workflowSearchItem(
     ...workflowListItem(catalog, workflow),
     tags: workflow.tags,
     searchText: workflow.searchText,
+    addedAt: workflow.addedAt,
     updatedAt: workflow.updatedAt,
     featuredIndex,
   }

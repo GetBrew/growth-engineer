@@ -315,7 +315,7 @@ describe('get, on a fixture catalog', () => {
       path: 'workflows/old-way.md',
       name: 'old-way',
       source:
-        '---\ntitle: The old way\nsummary: Kept for reference.\nauthor: jdoe\nmotion: outbound\naliases: [acme]\nstatus: deprecated\nupdated: 2026-09-16\n---\n\n## Outcome\n\n- A record exists.\n\n## Steps\n\n1. **Create** with [acme/create-record](../companies/acme/tools/create-record.md). Make one.\n',
+        '---\ntitle: The old way\nsummary: Kept for reference.\nauthor: jdoe\nmotion: outbound\naliases: [acme]\nstatus: deprecated\nadded: 2026-09-16\nupdated: 2026-09-16\n---\n\n## Outcome\n\n- A record exists.\n\n## Steps\n\n1. **Create** with [acme/create-record](../companies/acme/tools/create-record.md). Make one.\n',
     },
   ]
   const catalog = buildCatalog(files)

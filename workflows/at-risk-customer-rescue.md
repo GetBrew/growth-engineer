@@ -6,6 +6,7 @@ motion: retention
 tags:
   - channel:chat
   - channel:email
+added: 2026-09-22
 updated: 2026-09-29
 ---
 

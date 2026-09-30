@@ -138,7 +138,7 @@ export function resolveAlias(entityType: EntityType, key: string) {
 
 /* ─────────────────────────────────── lists ───────────────────────────────── */
 
-/** Featured (featured first, then newest) or New. */
+/** Featured (featured first, then newest added) or New (newest added). */
 export function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
   const catalog = getCatalog()
   const order =

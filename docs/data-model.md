@@ -60,7 +60,7 @@ tools' capabilities, and `has:<type>` when every tool offers that way.
 | `toolKeys` | the steps that name a tool | `build-workflows.ts` |
 | the links: company ↔ tools ↔ workflows, and each tag's members — written into both rendered files (`tools:` / `workflows:`) | tool folders, step links, tags | `build-relations.ts`, read through `relationsOf` |
 | tag `counts` | the tag's members | `build-relations.ts` |
-| listing orders (featured, new, name) | `featured`, `updated`, `name` | `build-catalog.ts` |
+| listing orders (featured, new, name) | `featured`, a workflow's `added` (a tool's `updated`), `name` | `build-catalog.ts` |
 | the rendered files and their line counts | everything above | `build-documents.ts` |
 
 A rendered file's `updated` is the newest `updated` of every source file
