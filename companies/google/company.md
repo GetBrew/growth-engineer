@@ -9,6 +9,7 @@ mcp:
   url: https://gmailmcp.googleapis.com/mcp/v1
   auth: oauth
   docs: https://developers.google.com/workspace/gmail/api/guides/configure-mcp-server
+  notes: A Developer Preview, open only to Google Workspace accounts in the Workspace Developer Preview Program.
 api:
   url: https://gmail.googleapis.com
   auth: oauth

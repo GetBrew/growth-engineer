@@ -10,7 +10,7 @@ api:
   auth: api_key
   env: SUMBLE_API_KEY
   keyUrl: https://sumble.com/account/api-keys
-  docs: https://docs.sumble.com/api
+  docs: https://docs.sumble.com/api/api
 updated: 2026-09-29
 ---
 

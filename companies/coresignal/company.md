@@ -18,5 +18,6 @@ updated: 2026-09-29
 Coresignal collects and refreshes company, employee and job-posting records
 from public sources, searchable and enrichable over its Company, Employee
 and Jobs APIs. It also runs a remote MCP server at
-`https://mcp.coresignal.com/mcp`, authenticated with the same API key, for
-agents that connect over MCP instead of the REST API.
+`https://mcp.coresignal.com/mcp/v2`, which signs in with OAuth through the
+Coresignal dashboard; the older `https://mcp.coresignal.com/mcp`, which takes
+the API key, is being retired.
