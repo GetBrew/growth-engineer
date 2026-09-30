@@ -76,10 +76,15 @@ function newestFirst<T extends { key: string; updatedAt: number }>(
   return b.updatedAt - a.updatedAt || a.key.localeCompare(b.key)
 }
 
-/** Featured workflows first, then the rest; newest first within each. */
+/** Workflows by the day they were added, newest first; a day's by key. */
+function addedFirst(a: Workflow, b: Workflow): number {
+  return b.addedAt - a.addedAt || a.key.localeCompare(b.key)
+}
+
+/** Featured workflows first, then the rest; newest added first within each. */
 function featuredFirst(workflows: ReadonlyArray<Workflow>): Array<Workflow> {
   return [...workflows].sort(
-    (a, b) => Number(b.isFeatured) - Number(a.isFeatured) || newestFirst(a, b)
+    (a, b) => Number(b.isFeatured) - Number(a.isFeatured) || addedFirst(a, b)
   )
 }
 
@@ -165,7 +170,7 @@ function assemble(entities: {
       (workflow) => workflow.key
     ),
     workflowsNew: published(workflows.values())
-      .sort(newestFirst)
+      .sort(addedFirst)
       .map((workflow) => workflow.key),
     // Listed: published, with at least one published tool to show.
     companies: published(companies.values())

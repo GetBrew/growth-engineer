@@ -411,6 +411,12 @@ describe('the content tree', () => {
         (row) => row.workflow.key
       )
     ).toEqual(catalog.order.workflowsFeatured)
+    // New in the browser is the prerendered New list: newest added first.
+    expect(
+      searchWorkflowItems(workflows, { q: '', sort: 'new' }).map(
+        (row) => row.workflow.key
+      )
+    ).toEqual(catalog.order.workflowsNew)
     const email = searchWorkflowItems(workflows, {
       q: 'email',
       sort: 'featured',

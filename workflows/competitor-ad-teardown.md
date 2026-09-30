@@ -3,6 +3,7 @@ title: Break down competitors' longest-running ads
 summary: Scrapes competitors' Meta Ad Library ads with an Apify Actor, labels each ad's hook and offer with Jev, and saves the patterns to Notion.
 author: thedogwiththedataonit
 motion: content
+added: 2026-09-29
 updated: 2026-09-29
 ---
 

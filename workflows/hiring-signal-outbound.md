@@ -5,6 +5,7 @@ author: thedogwiththedataonit
 motion: outbound
 tags:
   - channel:email
+added: 2026-09-29
 updated: 2026-09-29
 ---
 

@@ -151,7 +151,7 @@ export function loadCompanies(limit = MAX_LIST) {
     })
 }
 
-/** Featured (featured first, then newest) or New. */
+/** Featured (featured first, then newest added) or New (newest added). */
 export function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
   const catalog = getCatalog()
   const order =

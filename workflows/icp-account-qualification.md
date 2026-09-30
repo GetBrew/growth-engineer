@@ -3,6 +3,7 @@ title: Qualify accounts against your ICP before buying contacts
 summary: Lists companies with Hunter, reads each homepage with Firecrawl, checks fit and business model with Jev, and finds buyers at the fits only.
 author: thedogwiththedataonit
 motion: outbound
+added: 2026-09-29
 updated: 2026-09-29
 ---
 

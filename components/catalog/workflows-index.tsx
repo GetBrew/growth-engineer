@@ -233,7 +233,7 @@ const HEADING: Record<Sort, { title: string; description: string }> = {
   },
   new: {
     title: 'New workflows',
-    description: 'The newest and latest-updated workflows first.',
+    description: 'The workflows added to the catalog most recently.',
   },
   hot: {
     title: COPY_ANGLES.hot.title,

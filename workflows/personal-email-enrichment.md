@@ -3,6 +3,7 @@ title: Resolve a personal email into its likely company
 summary: Researches the person behind a personal email with Exa, enriches the company with Harmonic, and logs the result in HubSpot.
 author: shipgtm
 motion: inbound
+added: 2026-09-30
 updated: 2026-09-29
 ---
 

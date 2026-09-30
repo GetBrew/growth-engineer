@@ -324,11 +324,13 @@ export const workflowHeaderSchema = z.strictObject({
   motion: keyPart,
   /** Channel tags; the motion is its own field, and capabilities come from the tools. */
   tags: z.array(tagKey).default([]),
-  /** On the featured list, set by maintainers; featured workflows sort newest first. */
+  /** On the featured list, set by maintainers; featured workflows sort newest added first. */
   featured: z.boolean().default(false),
   aliases: z.array(keyPart).default([]),
   /** A draft is checked but never published: no page, no file. */
   status: z.enum(['published', 'deprecated', 'draft']).default('published'),
+  /** The day it joined the catalog; never changes. "New" sorts by it. */
+  added: isoDate,
   updated: isoDate,
 })
 

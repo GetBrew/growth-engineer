@@ -38,8 +38,10 @@ export type ToolSearchItem = ToolListItem & {
 export type WorkflowSearchItem = WorkflowListItem & {
   tags: ReadonlyArray<string>
   searchText: string
+  /** The day it joined the catalog: what "New" sorts by. */
+  addedAt: number
   updatedAt: number
-  /** Position on the featured list (featured first, then newest). */
+  /** Position on the featured list (featured first, then newest added). */
   featuredIndex: number
 }
 
@@ -179,7 +181,7 @@ export function searchToolItems(
 export type WorkflowSort = 'featured' | 'new' | CopyAngle
 
 /**
- * Workflows: featured order, newest, or ranked by copies (Hot: this week;
+ * Workflows: featured order, newest added, or ranked by copies (Hot: this week;
  * Popular: all time — ties in featured order), within one tag and one
  * company whose tools they use, narrowed by words. A copy angle with no
  * `stats` is the featured order.
@@ -210,8 +212,7 @@ export function searchWorkflowItems(
     )
     .sort((a, b) =>
       sort === 'new'
-        ? b.updatedAt - a.updatedAt ||
-          a.workflow.key.localeCompare(b.workflow.key)
+        ? b.addedAt - a.addedAt || a.workflow.key.localeCompare(b.workflow.key)
         : a.featuredIndex - b.featuredIndex
     )
   const ordered =

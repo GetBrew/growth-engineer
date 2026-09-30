@@ -96,8 +96,8 @@ key, as in the template in `workflows/README.md`), then what to do.
   (or the agent's closing summary) produces.
 - Header: `title`, `summary`, `author` (the GitHub login), `motion` (one
   `motion:` slug from `tags.yml`; its header says what each means), `tags`
-  (`channel:` entries only), `updated` (today). Leave `featured` to
-  maintainers.
+  (`channel:` entries only), `added` and `updated` (both today). Leave
+  `featured` to maintainers.
 
 ## 5. Check it runs
 

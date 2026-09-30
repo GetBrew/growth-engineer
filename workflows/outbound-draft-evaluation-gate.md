@@ -3,6 +3,7 @@ title: Gate outbound drafts behind a Jev evaluation check
 summary: Drafts each message with Claude, saves it to Gmail, scores it with Jev, and revises or sends it once it passes.
 author: shipgtm
 motion: outbound
+added: 2026-09-30
 updated: 2026-09-29
 ---
 

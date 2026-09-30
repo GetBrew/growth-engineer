@@ -132,7 +132,7 @@ competitor-intent.md`,
     key: 'header',
     title: 'Write the header',
     detail:
-      'Write the `title` as the result it reaches, verb first, in 60 characters or fewer, not the tools it uses. Keep `summary` to one sentence of 140 characters or fewer that says what it does, like “Finds X, does Y, and Z in <tool>.” Set `author` to your GitHub login, so the page shows your avatar and links to your profile. Set `motion` to the one motion it serves from `tags.yml`, like `outbound`, and under `tags` add the channels it reaches people on, like `channel:email`. Its capabilities come from its tools automatically.',
+      'Write the `title` as the result it reaches, verb first, in 60 characters or fewer, not the tools it uses. Keep `summary` to one sentence of 140 characters or fewer that says what it does, like “Finds X, does Y, and Z in <tool>.” Set `author` to your GitHub login, so the page shows your avatar and links to your profile. Set `motion` to the one motion it serves from `tags.yml`, like `outbound`, and under `tags` add the channels it reaches people on, like `channel:email`. Its capabilities come from its tools automatically. Set `added` and `updated` to today, as `YYYY-MM-DD`; `added` never changes after that, and the New list sorts by it.',
     // `featured` is set by maintainers: never copied.
     sample: { file: WORKFLOW, excerpt: 'header', omit: ['featured'] },
   },

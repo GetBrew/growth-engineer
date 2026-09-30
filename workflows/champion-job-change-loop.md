@@ -6,6 +6,7 @@ motion: outbound
 tags:
   - channel:linkedin
   - channel:email
+added: 2026-09-22
 updated: 2026-09-29
 ---
 
