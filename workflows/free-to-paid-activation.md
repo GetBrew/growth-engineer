@@ -5,6 +5,7 @@ author: thedogwiththedataonit
 motion: plg
 tags:
   - channel:email
+added: 2026-09-22
 updated: 2026-09-29
 ---
 

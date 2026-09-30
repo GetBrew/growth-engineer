@@ -149,6 +149,8 @@ export type Workflow = {
   toolKeys: ReadonlyArray<string>
   toolCount: number
   status: Status
+  /** The day it joined the catalog: what "New" sorts by. */
+  addedAt: number
   updatedAt: number
   aliases: ReadonlyArray<string>
   searchText: string

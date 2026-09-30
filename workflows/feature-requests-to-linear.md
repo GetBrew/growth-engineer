@@ -3,6 +3,7 @@ title: Attach feature requests from support chats to Linear issues
 summary: Finds feature requests in recent Intercom conversations with Jev, matches each to an open Linear issue, and attaches the customer's ask.
 author: thedogwiththedataonit
 motion: retention
+added: 2026-09-29
 updated: 2026-09-29
 ---
 

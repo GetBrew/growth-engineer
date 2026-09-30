@@ -3,6 +3,7 @@ title: Sort contacts into buyer personas from their job titles
 summary: Finds HubSpot contacts with no persona, maps each job title to a persona and seniority with Jev, and adds them to a list per persona.
 author: thedogwiththedataonit
 motion: outbound
+added: 2026-09-29
 updated: 2026-09-29
 ---
 

@@ -168,6 +168,7 @@ function toWorkflow(
     toolKeys,
     toolCount: toolKeys.length,
     status: data.status === 'deprecated' ? 'deprecated' : 'published',
+    addedAt: dateToMs(data.added),
     updatedAt: dateToMs(data.updated),
     aliases: data.aliases,
     // Both halves of each tool key: `apollo/enrich-person` finds the workflow

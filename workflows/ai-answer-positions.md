@@ -3,6 +3,7 @@ title: Sort AI answers by how they treat your brand
 summary: Pulls the AI answers Profound recorded for your category, labels how each one treats your brand with Jev, and saves a report in Notion.
 author: thedogwiththedataonit
 motion: content
+added: 2026-09-29
 updated: 2026-09-29
 ---
 

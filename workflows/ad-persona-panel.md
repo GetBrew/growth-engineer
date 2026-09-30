@@ -3,6 +3,7 @@ title: Test ad drafts against your buyer personas before you spend
 summary: Asks Jev whether each buyer persona would stop for, understand and believe each ad draft, ranks the drafts, and saves the grid in Notion.
 author: thedogwiththedataonit
 motion: content
+added: 2026-09-29
 updated: 2026-09-29
 ---
 

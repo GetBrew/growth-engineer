@@ -6,6 +6,7 @@ motion: inbound
 tags:
   - channel:email
   - channel:chat
+added: 2026-09-29
 updated: 2026-09-29
 ---
 
