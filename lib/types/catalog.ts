@@ -262,6 +262,8 @@ export type PaletteItem = {
   title: string
   /** The one line under the title: a tagline, summary or company name. */
   subtitle: string
+  /** Who it is at a glance: a company's logo, or a workflow author's photo. */
+  image?: { url: string; isPhoto: boolean }
   href: string
   /** Lowercased haystack; `searchPaletteItems` matches token prefixes in it. */
   searchText: string

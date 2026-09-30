@@ -10,12 +10,6 @@ import {
 } from '@/components/detail/styles'
 import type { Workflow } from '@/lib/types/catalog'
 
-/**
- * The top of a workflow's page, read before anything else: what the user has
- * when the run ends, and what the agent will ask them for. Both come straight
- * from the workflow's own file, so the page and the file say the same thing.
- */
-
 export function WorkflowOutcome({ outcome }: { outcome: Workflow['outcome'] }) {
   return (
     <section className="flex flex-col gap-3">
@@ -34,27 +28,24 @@ export function WorkflowOutcome({ outcome }: { outcome: Workflow['outcome'] }) {
   )
 }
 
-/**
- * What the agent asks for, as a person reads it: the question, then an
- * example. The input names are for the agent; the file carries them.
- */
 export function WorkflowInputs({ inputs }: { inputs: Workflow['inputs'] }) {
   if (inputs.length === 0) {
     return null
   }
   return (
     <section
-      className="flex scroll-mt-[calc(var(--header-height)+2rem)] flex-col gap-3"
+      className="flex scroll-mt-(--sticky-top) flex-col gap-3"
       id="asked-for"
     >
       <h2 className={PANEL_HEADING}>You'll be asked for</h2>
+
       <ul className={BRIEF_LIST}>
         {inputs.map((input) => (
           <li className={BRIEF_ITEM} key={input.name}>
             <span aria-hidden="true" className={BRIEF_MARKER}>
               <span className="size-1.5 rounded-full bg-current" />
             </span>
-            <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex min-w-0 flex-col gap-0.5">
               <p className={BRIEF_PRIMARY}>
                 {input.description.charAt(0).toUpperCase()}
                 {input.description.slice(1)}

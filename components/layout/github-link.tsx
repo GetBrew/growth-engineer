@@ -3,7 +3,6 @@ import { buttonVariants } from '@/components/ui/button'
 import { GITHUB_URL } from '@/lib/github'
 import { cn } from '@/lib/utils/cn'
 
-/** "Contribute", with GitHub's mark: a pull request is how anything is added. */
 export function GithubLink({ className }: { className?: string }) {
   return (
     <a

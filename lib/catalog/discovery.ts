@@ -68,12 +68,6 @@ export function loadSitemapEntries(): Array<SitemapEntry> {
       priority: 0.9,
     },
     {
-      path: '/workflows',
-      updatedAt: kinds.workflows,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
       path: '/companies',
       updatedAt: kinds.companies,
       changeFrequency: 'weekly',

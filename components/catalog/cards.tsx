@@ -44,7 +44,7 @@ function CatalogRow({
         <ItemTitle className="type-item line-clamp-none flex w-full flex-wrap gap-x-2 gap-y-1">
           <span className="min-w-0 max-w-full truncate">{title}</span>
         </ItemTitle>
-        <ItemDescription className="type-body sm:line-clamp-1">
+        <ItemDescription className="sm:line-clamp-1">
           {description}
         </ItemDescription>
       </ItemContent>

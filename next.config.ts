@@ -66,12 +66,11 @@ const nextConfig: NextConfig = {
    */
   async redirects() {
     return [
-      { source: '/workflow', destination: '/workflows', permanent: true },
-      {
-        source: '/workflow/:path*',
-        destination: '/workflows',
-        permanent: true,
-      },
+      { source: '/workflow', destination: '/', permanent: true },
+      { source: '/workflow/:path*', destination: '/', permanent: true },
+      // The home page is the workflow list: the listing's URL, query and
+      // all (`?q=`, `?sort=`, `?motion=`), lands there.
+      { source: '/workflows', destination: '/', permanent: true },
       // Workflows used to live at `/workflows/<owner>/<name>`; the key is one
       // part now and the author lives in the file. Old links keep working —
       // but never a workflow's own social card, `/workflows/<name>/opengraph-image-…`.
@@ -129,8 +128,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       // A growth hack IS a workflow; the concept went, the URL keeps its promise.
-      { source: '/hacks', destination: '/workflows', permanent: true },
-      { source: '/hacks/:path*', destination: '/workflows', permanent: true },
+      { source: '/hacks', destination: '/', permanent: true },
+      { source: '/hacks/:path*', destination: '/', permanent: true },
       // Submissions are pull requests: the form and the sign-in are gone.
       {
         source: '/submit',

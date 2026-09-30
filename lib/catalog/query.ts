@@ -123,6 +123,23 @@ export function searchHref(pathname: string, state: SearchState): string {
   return query ? `${pathname}?${query}` : pathname
 }
 
+/**
+ * Chips as a URL writes them — `?motion=outbound&channel=email,chat` — for a
+ * link, or a search form's hidden fields, that keeps them on.
+ */
+export function chipParams(
+  chips: ReadonlyArray<string>
+): Record<string, string> {
+  return Object.fromEntries(
+    TAG_NAMESPACES.flatMap((namespace) => {
+      const slugs = chips
+        .filter((chip) => chip.startsWith(`${namespace}:`))
+        .map((chip) => chip.slice(namespace.length + 1))
+      return slugs.length > 0 ? [[namespace, slugs.join(',')]] : []
+    })
+  )
+}
+
 /** What the search box shows for a state: words, then chips. */
 export function searchText(state: SearchState): string {
   return [...state.words, ...state.chips].join(' ')

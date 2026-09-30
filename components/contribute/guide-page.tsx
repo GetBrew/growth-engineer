@@ -9,8 +9,7 @@ import { GuideVideo } from '@/components/contribute/guide-video'
 import { CopyFileButton } from '@/components/detail/copy-file-button'
 import { DetailHeader } from '@/components/detail/header'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
-import { ShareButton } from '@/components/detail/share-button'
-import { PANEL_HEADING } from '@/components/detail/styles'
+import { SIDE_HEADING } from '@/components/detail/styles'
 import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
@@ -75,7 +74,6 @@ function GuideDetail({ slug }: { slug: string }) {
       <DetailHeader
         actions={
           <>
-            <ShareButton text={found.summary} title={found.title} />
             <ViewSourceButton href={guideDocUrl(found)} />
             {/* A guide has no file in the catalog to point at, so the download
                 carries its markdown itself. */}
@@ -100,15 +98,15 @@ function GuideDetail({ slug }: { slug: string }) {
         title={found.title}
       />
 
-      <div className="grid gap-(--space-block) lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <div className="grid gap-(--space-block) lg:grid-cols-(--grid-detail) lg:items-start">
         <section className="flex min-w-0 flex-col gap-(--space-block)">
           {found.loomId ? (
             <GuideVideo loomId={found.loomId} title={found.title} />
           ) : null}
 
           <div className="flex max-w-3xl flex-col gap-(--space-sm)">
-            <p className="type-body">{found.intro}</p>
-            <p className="type-body rounded-2xl border border-dashed bg-surface px-4 py-3">
+            <p className="type-helper text-soft">{found.intro}</p>
+            <p className="type-helper rounded-2xl border border-dashed bg-surface px-4 py-3 text-soft">
               <b className="type-emphasis text-foreground">Note. </b>
               <CodeText text={found.note} />
             </p>
@@ -117,12 +115,12 @@ function GuideDetail({ slug }: { slug: string }) {
           <GuideSteps steps={steps} />
         </section>
 
-        <aside className="flex flex-col gap-(--space-md) lg:sticky lg:top-[calc(var(--header-height)+2rem)]">
+        <aside className="flex flex-col gap-(--space-md) lg:sticky lg:top-(--sticky-top)">
           {/* The step list is for jumping around a long page beside it; on a
               phone it would sit under the steps it lists, so it is desktop
               only. The previous and next guides show everywhere. */}
           <section className="hidden flex-col gap-(--space-xs) lg:flex">
-            <h2 className={PANEL_HEADING}>In this guide</h2>
+            <h2 className={SIDE_HEADING}>In this guide</h2>
             <ol className="flex flex-col rounded-2xl border bg-background p-2">
               {steps.map((step, index) => (
                 <li key={step.key}>

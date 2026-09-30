@@ -1,5 +1,5 @@
 import { CodeText } from '@/components/common/code-text'
-import { CopyButton } from '@/components/contribute/copy-button'
+import { CopyButton } from '@/components/common/copy-button'
 import type { ResolvedGuideStep } from '@/lib/constants/guide-steps'
 
 /**
@@ -20,7 +20,7 @@ export function GuideSteps({
       <ol className="flex flex-col gap-(--space-lg)">
         {steps.map((step, index) => (
           <li
-            className="flex max-w-3xl scroll-mt-[calc(var(--header-height)+2rem)] flex-col gap-2"
+            className="flex max-w-3xl scroll-mt-(--sticky-top) flex-col gap-2"
             id={step.key}
             key={step.key}
           >
@@ -29,7 +29,7 @@ export function GuideSteps({
               {step.title}
             </h3>
 
-            <p className="type-body">
+            <p className="type-helper text-soft">
               <CodeText text={step.detail} />
             </p>
 
@@ -48,7 +48,7 @@ export function GuideSteps({
                 </figcaption>
                 {/* Long lines wrap instead of hiding past the edge; the copy
                     button still copies them as written. */}
-                <pre className="type-label whitespace-pre-wrap break-words p-4 font-mono text-soft leading-6">
+                <pre className="type-code whitespace-pre-wrap break-words p-4 text-soft">
                   <code>{step.sample.code}</code>
                 </pre>
               </figure>

@@ -1,4 +1,3 @@
-/* Without the mask the pills pop in and out at the viewport's hard edges. */
 .viewport {
   mask-image: linear-gradient(
     to right,
@@ -9,9 +8,6 @@
   );
 }
 
-/* One lap = half the track, because every row renders its list twice. The
-   three rows run at different speeds and alternate direction, so the wall
-   never looks like one block sliding. */
 .track {
   animation: contribution-scroll var(--duration) linear infinite;
 }

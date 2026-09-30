@@ -137,10 +137,9 @@ describe('sitemap.xml', () => {
     const entries = await sitemap()
     const urls = entries.map((entry) => entry.url)
     expect(new Set(urls).size).toBe(urls.length)
-    expect(urls.slice(0, 4)).toEqual(
-      ['/', '/tools', '/workflows', '/companies'].map(
-        (path) => `${SITE_ORIGIN}${path}`
-      )
+    // The home page is the workflow list; tools and companies have their own.
+    expect(urls.slice(0, 3)).toEqual(
+      ['/', '/tools', '/companies'].map((path) => `${SITE_ORIGIN}${path}`)
     )
     for (const key of catalog.companies.keys()) {
       expect(urls).toContain(`${SITE_ORIGIN}/companies/${key}`)
@@ -151,12 +150,12 @@ describe('sitemap.xml', () => {
     for (const key of catalog.workflows.keys()) {
       expect(urls).toContain(`${SITE_ORIGIN}/workflows/${key}`)
     }
-    // The home page, three listings and each guide.
+    // The home page, two listings and each guide.
     for (const guide of GUIDES) {
       expect(urls).toContain(`${SITE_ORIGIN}${guidePath(guide)}`)
     }
     expect(urls.length).toBe(
-      4 +
+      3 +
         GUIDES.length +
         catalog.companies.size +
         catalog.tools.size +

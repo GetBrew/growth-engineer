@@ -6,12 +6,15 @@ import { buttonVariants } from '@/components/ui/button'
 import { useCopy } from '@/lib/hooks/use-copy'
 import { cn } from '@/lib/utils/cn'
 
-/**
- * Copies a sample to the clipboard, showing a tick for a moment after. The
- * same gesture the rendered file gets on a detail page
- * (`components/detail/markdown-file.tsx`), at the size a caption bar allows.
- */
-export function CopyButton({ text, label }: { text: string; label: string }) {
+export function CopyButton({
+  text,
+  label,
+  onCopied,
+}: {
+  text: string
+  label: string
+  onCopied?: () => void
+}) {
   const { copied, copy } = useCopy()
 
   return (
@@ -21,7 +24,11 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
         buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
         'shrink-0 text-faint hover:text-foreground'
       )}
-      onClick={() => copy(text)}
+      onClick={async () => {
+        if (await copy(text)) {
+          onCopied?.()
+        }
+      }}
       type="button"
     >
       <HugeiconsIcon

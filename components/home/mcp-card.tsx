@@ -22,15 +22,8 @@ import {
 } from '@/lib/stores/agents'
 import { McpStepsDialog } from './mcp-steps-dialog'
 
-/** The previous / next agent arrows: quiet until hovered. */
 const NAV = 'rounded-lg text-faint hover:bg-hover hover:text-foreground'
 
-/**
- * The connection card: pick an agent, copy the server URL, or copy a prompt
- * that asks the agent to connect itself. `url` is the deployment's own
- * `/mcp` (app/mcp/route.ts), passed from the server so it is the origin the
- * page was built for — never a hardcoded host.
- */
 export function McpCard({ url }: { url: string }) {
   const agent = useSelectedAgent()
   const urlCopy = useCopy()
@@ -46,7 +39,7 @@ export function McpCard({ url }: { url: string }) {
   }
 
   return (
-    <div className="flex w-full max-w-[26rem] flex-col gap-4 rounded-3xl border border-border bg-background p-5 lg:shrink-0">
+    <div className="flex w-full max-w-104 flex-col gap-4 rounded-3xl border border-border bg-background p-5 lg:shrink-0">
       <div className="flex items-center justify-between gap-3">
         <span className="type-item">
           Connect with {agent.headline ?? agent.name}
@@ -61,9 +54,8 @@ export function McpCard({ url }: { url: string }) {
           >
             <HugeiconsIcon
               aria-hidden="true"
-              className="size-[15px]"
               icon={ArrowLeft01Icon}
-              size={15}
+              size={16}
               strokeWidth={2}
             />
           </Button>
@@ -89,9 +81,8 @@ export function McpCard({ url }: { url: string }) {
           >
             <HugeiconsIcon
               aria-hidden="true"
-              className="size-[15px]"
               icon={ArrowRight01Icon}
-              size={15}
+              size={16}
               strokeWidth={2}
             />
           </Button>
@@ -135,16 +126,15 @@ export function McpCard({ url }: { url: string }) {
           <div className="flex items-center gap-2 rounded-2xl bg-muted px-3.5 py-2.5">
             <code className="type-label min-w-0 flex-1 truncate">{url}</code>
             <Button
-              className="rounded-lg text-muted-foreground hover:bg-transparent hover:text-foreground"
+              className="rounded-lg text-soft hover:bg-transparent hover:text-foreground"
               onClick={() => urlCopy.copy(url)}
               size="icon-sm"
               variant="ghost"
             >
               <HugeiconsIcon
                 aria-hidden="true"
-                className="size-[15px]"
                 icon={urlCopy.copied ? Tick02Icon : Copy01Icon}
-                size={15}
+                size={16}
                 strokeWidth={1.8}
               />
               <span className="sr-only">

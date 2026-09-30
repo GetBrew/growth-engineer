@@ -3,20 +3,12 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { EntityLogo } from '@/components/common/entity-logo'
 
-/** One folded-away entry: what the row names it by, and its logo. */
 export type FoldedEntry = {
   key: string
   name: string
   logo: { name: string; logoUrl?: string }
 }
 
-/**
- * The last slot of a folded listing, drawn as one more row: stacked logos
- * where a row has its logo, "N more tools" where it has its title, the first
- * names where it has its description. It sits in the same grid or list as
- * the rows, so a category reads as full rows rather than rows plus a footer.
- * Tools and companies fold; the workflows list is always shown in full.
- */
 export function SeeMoreRow({
   href,
   hidden,
@@ -24,7 +16,6 @@ export function SeeMoreRow({
 }: {
   href: string
   hidden: ReadonlyArray<FoldedEntry>
-  /** Plural, lowercase: "tools", "companies". */
   noun: string
 }) {
   return (
@@ -47,7 +38,7 @@ export function SeeMoreRow({
         <span className="type-item">
           {hidden.length} more {noun}
         </span>
-        <span className="type-body truncate">
+        <span className="type-helper truncate text-soft">
           {namesLine(hidden.map((entry) => entry.name))}
         </span>
       </span>
@@ -64,7 +55,6 @@ export function SeeMoreRow({
   )
 }
 
-/** "Apollo", "Apollo and Clay", "Apollo, Clay, and more". */
 function namesLine(names: ReadonlyArray<string>): string {
   const [first, second] = names
   if (names.length === 1) {

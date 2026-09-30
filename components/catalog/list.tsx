@@ -24,15 +24,11 @@ export type CatalogListItem = {
 
   contributor?: { name?: string; imageUrl?: string }
 
-  /**
-   * Draws the kind's own icon in the leading slot instead of a photo. A guide
-   * is about workflows or tools in general, so there is no one logo or face
-   * that stands for it. The icon stays in ink: the entity colours mark a real
-   * entry, and a row about a kind is not one.
-   */
   entity?: EntityKind
 
   companies?: ReadonlyArray<CompanyAvatar>
+
+  usage?: ReactNode
 }
 
 const MAX_COMPANIES = 3
@@ -80,10 +76,11 @@ function CatalogListRow({
   contributor,
   companies,
   entity,
+  usage,
 }: CatalogListItem) {
   return (
     <Link
-      className="focus-ring group/row flex items-center gap-4 rounded-lg py-4"
+      className="focus-ring group/row flex min-h-21.5 items-center gap-4 rounded-lg py-4"
       href={href}
     >
       {companies ? (
@@ -98,37 +95,39 @@ function CatalogListRow({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="type-item min-w-0 max-w-full truncate">{title}</span>
+        <span className="type-item min-w-0 max-w-full truncate text-foreground">
+          {title}
+        </span>
         {description ? (
-          <p className="type-body line-clamp-2 sm:line-clamp-1">
-            {description}
-          </p>
+          <p className="type-helper truncate text-soft">{description}</p>
         ) : null}
       </div>
 
-      {companies && companies.length > 0 ? (
-        <div className="hidden sm:block">
-          <CompanyAvatars
-            companies={companies.slice(0, MAX_COMPANIES)}
-            links={false}
-            more={
-              companies.length > MAX_COMPANIES
-                ? `+${companies.length - MAX_COMPANIES}`
-                : undefined
-            }
-            size="sm"
-          />
+      {companies || usage !== undefined ? (
+        <div className="hidden shrink-0 items-center gap-3 md:flex">
+          {companies ? (
+            <div className="flex w-27.5 justify-end">
+              {companies.length > 0 ? (
+                <CompanyAvatars
+                  companies={companies.slice(0, MAX_COMPANIES)}
+                  links={false}
+                  more={
+                    companies.length > MAX_COMPANIES
+                      ? `+${companies.length - MAX_COMPANIES}`
+                      : undefined
+                  }
+                  size="sm"
+                />
+              ) : null}
+            </div>
+          ) : null}
+          {usage === undefined ? null : (
+            <div className="flex w-20 flex-col items-end gap-0.5 whitespace-nowrap text-right">
+              {usage}
+            </div>
+          )}
         </div>
       ) : null}
-
-      <span className="hidden size-7 shrink-0 place-items-center text-soft opacity-0 transition-opacity duration-200 group-hover/row:opacity-100 group-focus-visible/row:opacity-100 sm:grid">
-        <HugeiconsIcon
-          aria-hidden="true"
-          icon={ArrowRight02Icon}
-          size={14}
-          strokeWidth={2}
-        />
-      </span>
     </Link>
   )
 }
@@ -156,15 +155,9 @@ function Contributor({
         </Avatar>
       )}
 
-      {/* The badge says whose face this is and where to find them. A kind's
-          icon is nobody's face, so it carries no badge. */}
       {entity ? null : (
         <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-background ring-2 ring-background">
-          <MaskIcon
-            className="text-muted-foreground"
-            size={12}
-            src="/social/github.svg"
-          />
+          <MaskIcon className="text-soft" size={12} src="/social/github.svg" />
         </span>
       )}
       {contributor?.name ? (
@@ -195,7 +188,7 @@ export function workflowListItem({
 
   return {
     id: workflow.key,
-    companies, // ← this is what selects the layout
+    companies,
     contributor: {
       name: workflow.author,
       imageUrl: githubAvatarUrl(workflow.author),

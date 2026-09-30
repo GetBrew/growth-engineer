@@ -1,114 +1,110 @@
 /*
  * Type system
  *
- * WEIGHTS ARE GEIST'S, NOT THE ORIGINAL FACE'S. The scale was drawn for
- * Season, whose intermediate weights (450/520/560) sat where they were meant
- * to. Geist runs optically heavier at the same number, so 560 everywhere made
- * every list and button read as semibold.
+ * THE NEXT.JS SCALE, UNDER THIS SITE'S ROLE NAMES. The values follow the
+ * Next.js docs (Vercel's Geist type scale), which is drawn for Geist, the
+ * face this site uses; the names say what the text is for, so a component
+ * asks for `type-item`, never for "16px medium".
  *
- * Geist's own system favours Regular and leans on SIZE for hierarchy, with
- * Medium for emphasis (vercel.com/geist/typography). So there are three
- * weights here and no more:
+ * Four kinds of text, and one weight each. Headings sit one step under
+ * the Next.js 600: at these sizes Geist reads heavy at 600, and 500 keeps
+ * titles firm without shouting.
  *
- *   400  reading text — body, lead, helper. Geist Regular.
- *   500  everything structural — headings, row titles, controls, labels.
- *   600  ONE exception: a heading at body size, where weight is the only
- *        thing telling it apart from the paragraph next to it.
+ *   heading  500  titles; tight tracking (about -2% at 14-20px, -4% at
+ *                 24-32px, -6% from 40px)
+ *   copy     400  text that may wrap to several lines: a roomier line height
+ *   label    400  text that stays on one line: a tight line height
+ *   button   500  controls: buttons, tabs, inputs, field labels
  *
- * Hierarchy is carried by size and colour. Reach for a bigger role before a
- * heavier one; a new weight is a change to this comment, not to a component.
+ * Sizes and line heights sit on the 4px grid; 13px (code) is the one
+ * exception. Hierarchy is carried by size and colour; a new size or weight
+ * is a change to this file, never a class in a component (the typography
+ * test fails on one).
  *
- * Display      30 -> 48 / 1.05 / 500
- * Page title   30 -> 32 / 1.08 / 500
- * Section      24 / 1.2  / 500
- * Category     19 / 26.6 / 500
- * Item         17 / 25.5 / 500
- * Body         16 / 24   / 400
- * Control      14 / 18   / 500
- * Label        12 / 16   / 500
+ * Role         Next.js      Size / line height / weight
+ * Display      heading-48   32 -> 40 -> 48 / 40 -> 48 -> 56 / 500
+ * Page title   heading-32   24 -> 32 / 32 -> 40 / 500
+ * Section      heading-24   24 / 32 / 500
+ * Category     heading-20   20 / 26 / 500
+ * Form title   heading-20   20 / 26 / 500
+ * Item         heading-16   16 / 24 / 500   list and card titles
+ * Subsection   heading-16   16 / 24 / 500   step and panel titles
+ * Lead         copy-18      18 / 28 / 400
+ * Body         copy-16      16 / 24 / 400
+ * Helper       copy-14      14 / 20 / 400   descriptions, summaries
+ * Stat         label-14     14 / 20 / 400   one-line figures ("431 uses")
+ * Control      button-14    14 / 20 / 500
+ * Field label  button-14    14 / 20 / 500
+ * Label, meta  label-12     12 / 16 / 400
+ * Code         copy-13-mono 13 / 20 / 400   code blocks, samples, inline
  */
 
 @utility type-display {
-  font-size: 30px;
-  line-height: 1.05;
+  font-size: 32px;
+  line-height: 40px;
   font-weight: 500;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.04em;
   @media (width >= 40rem) {
-    font-size: 36px;
+    font-size: 40px;
+    line-height: 48px;
+    letter-spacing: -0.06em;
   }
   @media (width >= 64rem) {
     font-size: 48px;
+    line-height: 56px;
   }
 }
 
+/* One step down on the narrowest phones, so a long name still fits. */
 @utility type-page-title {
-  font-size: 30px;
-  line-height: 1.08;
+  font-size: 32px;
+  line-height: 40px;
   font-weight: 500;
-  letter-spacing: -0.02em;
-  @media (width >= 40rem) {
-    font-size: 32px;
+  letter-spacing: -0.04em;
+  @media (width < 22.5rem) {
+    font-size: 24px;
+    line-height: 32px;
   }
 }
 
 @utility type-section {
   font-size: 24px;
-  line-height: 1.2;
+  line-height: 32px;
   font-weight: 500;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.04em;
 }
 
 @utility type-category {
-  font-size: 19px;
-  line-height: 26.6px;
+  font-size: 20px;
+  line-height: 26px;
   font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+@utility type-form-title {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 @utility type-item {
-  font-size: 17px;
-  line-height: 25.5px;
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 @utility type-subsection {
   font-size: 16px;
-  line-height: 20.4px;
-  font-weight: 600;
-}
-
-/*
- * Controls sit one step below body text. At 16px their 500 weight read as
- * LARGER than the 16/400 copy beside them — same size, more ink — so the size
- * drops to offset the weight and a button now sits level with a paragraph.
- */
-@utility type-control {
-  font-size: 14px;
-  line-height: 18px;
+  line-height: 24px;
   font-weight: 500;
-}
-
-/* Forms use the compact scale from the product input convention. */
-@utility type-form-title {
-  font-size: 22px;
-  line-height: 26.4px;
-  font-weight: 500;
-}
-
-@utility type-field-label {
-  font-size: 14px;
-  line-height: 21px;
-  font-weight: 500;
-}
-
-@utility type-helper {
-  font-size: 14px;
-  line-height: 21px;
-  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 @utility type-lead {
-  font-size: 17px;
-  line-height: 25.5px;
+  font-size: 18px;
+  line-height: 28px;
   font-weight: 400;
   color: var(--soft);
 }
@@ -120,10 +116,35 @@
   color: var(--soft);
 }
 
+@utility type-helper {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+@utility type-stat {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-control {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+@utility type-field-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
 /*
  * Inline emphasis inside running text — the one role that sets NO size, so a
- * `<b>` takes the size of whatever role it sits in and only gains weight.
- * Without this there was nothing to point `<b>` at, and it got `font-semibold`.
+ * `<b>` or a link takes the size of whatever role it sits in and only gains
+ * weight.
  */
 @utility type-emphasis {
   font-weight: 500;
@@ -132,13 +153,13 @@
 @utility type-label {
   font-size: 12px;
   line-height: 16px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 @utility type-meta {
   font-size: 12px;
   line-height: 16px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--faint);
 }
 
@@ -148,4 +169,36 @@
   font-weight: 500;
   letter-spacing: 0.08em;
   color: var(--faint);
+}
+
+/* Code blocks and samples: the mono face, 13px on a 20px line. */
+@utility type-code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+/* Code inside a sentence: the code size, 13px, on the sentence's own line
+   height, so it never lands between steps of the scale. */
+@utility type-code-inline {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* The count on a small round badge ("+2"): below the scale on purpose, it
+   has to fit a 16px circle. */
+@utility type-badge {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The footer's giant wordmark: sized to the viewport, not the scale. */
+@utility type-wordmark {
+  font-size: 13.5vw;
+  line-height: 0.78;
+  font-weight: 500;
+  letter-spacing: -0.055em;
 }

@@ -6,20 +6,18 @@ import {
   LinkSquare02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import Image from 'next/image'
 import { useEffect, useId, useRef, useState } from 'react'
 import {
   DETAIL_ACTION_ICON,
   HEADER_ACTION_COLLAPSING,
 } from '@/components/detail/styles'
+import { MaskIcon } from '@/components/layout/mask-icon'
+import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 
-/**
- * A chat link carries its prompt in the URL, and long URLs get cut. Past this
- * many encoded characters the prompt points at the file instead of holding it.
- */
 const MAX_PROMPT_CHARS = 8000
 
-/** The same file the Copy button copies — or, when it is long, where it lives. */
 function agentPrompt(markdown: string, fileUrl: string | undefined): string {
   const inline = encodeURIComponent(markdown)
   if (!fileUrl || inline.length <= MAX_PROMPT_CHARS) {
@@ -30,25 +28,26 @@ function agentPrompt(markdown: string, fileUrl: string | undefined): string {
   )
 }
 
-/**
- * "Open in": the file in ChatGPT or Claude, or downloaded. Copying is the
- * page's primary button. Hand-rolled on purpose: a menu primitive adds ~45 KB
- * to every page this is on, for three links. So it is a disclosure, not an
- * ARIA menu — the items are ordinary links in the tab order, and Escape, a
- * click outside or tabbing away closes it.
- */
 export function OpenInAgentMenu({
   markdown,
   filePath,
   fileUrl,
   title,
+  sourceHref,
+  isWide = false,
+  className,
 }: {
   markdown: string
-  /** What Download saves: the `.md` path, or a data URL. */
+
   filePath: string
-  /** The file's absolute URL, for a prompt too long to carry inline. */
   fileUrl?: string
   title: string
+  /** The file on GitHub: a last item, where a page has no button of its own. */
+  sourceHref?: string
+  /** A labelled outline button that fills its space (a workflow's, beside
+      Copy), its menu opening from its right edge at every width. */
+  isWide?: boolean
+  className?: string
 }) {
   const [open, setOpen] = useState(false)
   const container = useRef<HTMLDivElement>(null)
@@ -59,7 +58,7 @@ export function OpenInAgentMenu({
     if (!open) {
       return
     }
-    // A click or a tab to anything outside closes it.
+
     const onOutside = (event: Event) => {
       if (!container.current?.contains(event.target as Node)) {
         setOpen(false)
@@ -82,20 +81,44 @@ export function OpenInAgentMenu({
   }, [open])
 
   const prompt = agentPrompt(markdown, fileUrl)
+  // Each opens a new chat with the file (or, past the URL budget, a line
+  // pointing at it) already in the box; the logos are the agent strip's.
   const agents = [
-    { label: 'Open in ChatGPT', href: `https://chatgpt.com/?q=${prompt}` },
-    { label: 'Open in Claude', href: `https://claude.ai/new?q=${prompt}` },
+    {
+      label: 'ChatGPT',
+      logo: '/marquee/openai.svg',
+      href: `https://chatgpt.com/?q=${prompt}`,
+    },
+    {
+      label: 'Claude',
+      logo: '/marquee/claude.svg',
+      href: `https://claude.ai/new?q=${prompt}`,
+    },
+    {
+      label: 'Grok',
+      logo: '/marquee/grok.svg',
+      href: `https://grok.com/?q=${prompt}`,
+    },
+    {
+      label: 'Cursor',
+      logo: '/marquee/cursor.svg',
+      href: `https://cursor.com/link/prompt?text=${prompt}`,
+    },
   ]
   const itemClass =
     'type-control flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-soft hover:bg-hover hover:text-foreground focus-ring focus-visible:bg-hover focus-visible:text-foreground'
   const close = () => setOpen(false)
 
   return (
-    <div className="relative" ref={container}>
+    <div className={cn('relative', className)} ref={container}>
       <button
         aria-controls={panelId}
         aria-expanded={open}
-        className={HEADER_ACTION_COLLAPSING}
+        className={
+          isWide
+            ? cn(buttonVariants({ variant: 'outline', size: 'pill' }), 'w-full')
+            : HEADER_ACTION_COLLAPSING
+        }
         onClick={() => setOpen((value) => !value)}
         ref={trigger}
         type="button"
@@ -106,11 +129,12 @@ export function OpenInAgentMenu({
           size={DETAIL_ACTION_ICON}
           strokeWidth={1.8}
         />
-        <span className="max-sm:sr-only">Open in</span>
+        <span className={isWide ? undefined : 'max-sm:sr-only'}>Open in</span>
         <HugeiconsIcon
           aria-hidden="true"
           className={cn(
-            'size-3.5 transition-transform max-sm:hidden',
+            'size-3.5 transition-transform',
+            !isWide && 'max-sm:hidden',
             open && 'rotate-180'
           )}
           icon={ArrowDown01Icon}
@@ -118,7 +142,12 @@ export function OpenInAgentMenu({
       </button>
       {open ? (
         <div
-          className="floating-panel absolute top-13 right-0 z-30 w-72 rounded-2xl p-2.5"
+          // Under lg the button leads its row, so the menu opens rightward
+          // from it; from lg it ends the row, so the menu opens leftward.
+          className={cn(
+            'floating-panel absolute top-full z-30 mt-3 w-72 p-2',
+            isWide ? 'right-0' : 'left-0 lg:right-0 lg:left-auto'
+          )}
           id={panelId}
         >
           {agents.map((agent) => (
@@ -130,14 +159,17 @@ export function OpenInAgentMenu({
               rel="noreferrer"
               target="_blank"
             >
-              <HugeiconsIcon
-                aria-hidden="true"
-                className="size-4"
-                icon={LinkSquare02Icon}
+              <Image
+                alt=""
+                className="size-4 shrink-0 object-contain"
+                height={16}
+                src={agent.logo}
+                width={16}
               />
               {agent.label}
             </a>
           ))}
+          <div aria-hidden="true" className="mx-3 my-1 border-t" />
           <a
             className={itemClass}
             download={`${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`}
@@ -151,6 +183,18 @@ export function OpenInAgentMenu({
             />
             Download .md
           </a>
+          {sourceHref ? (
+            <a
+              className={itemClass}
+              href={sourceHref}
+              onClick={close}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <MaskIcon size={16} src="/social/github.svg" />
+              View on GitHub
+            </a>
+          ) : null}
         </div>
       ) : null}
     </div>

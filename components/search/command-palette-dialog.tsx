@@ -14,8 +14,11 @@ import {
   useState,
 } from 'react'
 import { EntityIcon } from '@/components/common/entity-icon'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { badgeVariants } from '@/components/ui/badge'
 import { Kbd } from '@/components/ui/kbd'
 import {
+  DIALOG_BACKDROP,
   Sheet,
   SheetBackdrop,
   SheetDescription,
@@ -42,6 +45,7 @@ type Option = {
   href: string
   title: string
   subtitle?: string
+  image?: PaletteItem['image']
   entity: Section['entity']
   isMore?: boolean
 }
@@ -70,6 +74,7 @@ function groupResults(
       href: item.href,
       title: item.title,
       subtitle: item.subtitle,
+      ...(item.image ? { image: item.image } : {}),
       entity: item.kind,
     }))
     if (items.length > PER_GROUP) {
@@ -210,7 +215,7 @@ export function CommandPaletteDialog({
           <div className="flex flex-wrap gap-2 px-3 pb-2">
             {suggestions.map((suggestion) => (
               <button
-                className="focus-ring type-label rounded-full border px-3 py-1.5 text-faint transition-colors duration-200 hover:bg-hover hover:text-foreground"
+                className={badgeVariants({ size: 'label', interactive: true })}
                 key={suggestion}
                 onClick={() => suggest(suggestion)}
                 type="button"
@@ -224,7 +229,7 @@ export function CommandPaletteDialog({
     )
   } else if (groups.length === 0) {
     body = (
-      <p className="type-body px-3 py-10 text-center">
+      <p className="type-helper px-3 py-10 text-center text-soft">
         Nothing matches that yet.
       </p>
     )
@@ -242,7 +247,7 @@ export function CommandPaletteDialog({
   return (
     <Sheet onOpenChange={setCommandPaletteOpen} open={isOpen}>
       <SheetPortal>
-        <SheetBackdrop className="bg-background/60 backdrop-blur-sm" />
+        <SheetBackdrop className={DIALOG_BACKDROP} />
         <SheetPopup className="floating-panel fixed top-[12vh] left-1/2 w-[min(40rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden">
           <SheetTitle className="sr-only">Search the catalog</SheetTitle>
           <SheetDescription className="sr-only">
@@ -255,7 +260,7 @@ export function CommandPaletteDialog({
               aria-hidden="true"
               className="shrink-0 text-subtle"
               icon={Search01Icon}
-              size={20}
+              size={18}
               strokeWidth={1.8}
             />
             <input
@@ -339,7 +344,35 @@ function Row({
       role="option"
       tabIndex={-1}
     >
-      <EntityIcon className="text-subtle" entity={option.entity} size={18} />
+      {option.image ? (
+        // The logo or photo the rest of the site shows for it: a logo
+        // inset in a bordered circle, a photo filling it.
+        <Avatar
+          className={cn(
+            'size-7 shrink-0 bg-background',
+            !option.image.isPhoto && 'border border-border'
+          )}
+        >
+          <AvatarImage
+            alt=""
+            className={
+              option.image.isPhoto ? 'object-cover' : 'object-contain p-0.75'
+            }
+            src={option.image.url}
+          />
+          <AvatarFallback className="type-label bg-background text-soft">
+            {option.title.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+      ) : (
+        <span className="grid size-7 shrink-0 place-items-center">
+          <EntityIcon
+            className="text-subtle"
+            entity={option.entity}
+            size={18}
+          />
+        </span>
+      )}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="type-control truncate">{option.title}</span>
         {option.subtitle ? (

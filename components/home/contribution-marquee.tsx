@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import { EntityLogo } from '@/components/common/entity-logo'
 import { MaskIcon } from '@/components/layout/mask-icon'
-import { loadCompanies, loadWorkflows } from '@/lib/catalog/loaders'
+import { loadWorkflows } from '@/lib/catalog/loaders'
 import { githubAvatarUrl, githubProfileUrl } from '@/lib/github'
 import { cn } from '@/lib/utils/cn'
 import styles from './contribution-marquee.module.css'
@@ -24,10 +24,7 @@ const ROWS = [
 ]
 
 export function ContributionMarquee() {
-  const [workflows, companies] = [
-    loadWorkflows('featured', 30),
-    loadCompanies(24),
-  ]
+  const workflows = loadWorkflows('featured', 30)
 
   const kinds: Array<Array<Pill>> = [
     workflows.map(({ workflow, tools }) => ({
@@ -37,13 +34,6 @@ export function ContributionMarquee() {
       logoUrl: tools[0]?.logoUrl,
       name: tools[0]?.companyName ?? workflow.title,
       author: workflow.author,
-    })),
-    companies.map(({ company }) => ({
-      id: `company:${company.key}`,
-      href: `/companies/${company.key}`,
-      label: company.name,
-      logoUrl: company.logoUrl,
-      name: company.name,
     })),
     [...new Set(workflows.map(({ workflow }) => workflow.author))].map(
       (login) => ({
@@ -99,7 +89,6 @@ function MarqueeRow({
           <ul
             aria-hidden={copy === 1 ? true : undefined}
             className="flex shrink-0 items-center gap-3 pr-3"
-            // The second copy only fills the loop: no tab stops, no reading.
             inert={copy === 1}
             key={copy}
           >
@@ -149,7 +138,7 @@ function PillBody({ pill }: { pill: Pill }) {
       <span className="type-control text-foreground">{pill.label}</span>
       {pill.author ? (
         <span className="type-control flex shrink-0 items-center gap-1.5 text-faint">
-          <MaskIcon size={15} src="/social/github.svg" />
+          <MaskIcon size={16} src="/social/github.svg" />
           {pill.author}
         </span>
       ) : null}

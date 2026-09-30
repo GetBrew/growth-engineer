@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils/cn'
 const LINK =
   'focus-ring type-control inline-flex h-8 items-center rounded-full px-3 text-soft transition-colors hover:bg-hover hover:text-foreground'
 
+const NAV_SECTIONS = SECTIONS.filter((section) => section.entity !== 'workflow')
+
 const ROW_ITEM =
   'focus-ring type-control flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-soft transition-colors hover:bg-hover hover:text-foreground'
 
@@ -33,7 +35,7 @@ function isCurrent(pathname: string | null, href: string): boolean {
 function Links({ pathname }: { pathname: string | null }) {
   return (
     <nav aria-label="Sections" className="ml-6 hidden items-center sm:flex">
-      {SECTIONS.map((section) => {
+      {NAV_SECTIONS.map((section) => {
         const current = isCurrent(pathname, section.href)
         return (
           <Link
@@ -70,7 +72,7 @@ function Menu({ pathname }: { pathname: string | null }) {
             open && 'rotate-180'
           )}
           icon={ArrowDown01Icon}
-          size={15}
+          size={16}
           strokeWidth={1.8}
         />
       </PopoverTrigger>
@@ -83,7 +85,7 @@ function Menu({ pathname }: { pathname: string | null }) {
           Browse
         </PopoverTitle>
         <ul>
-          {SECTIONS.map((section) => {
+          {NAV_SECTIONS.map((section) => {
             const current = isCurrent(pathname, section.href)
             return (
               <li key={section.href}>
@@ -108,13 +110,6 @@ function Menu({ pathname }: { pathname: string | null }) {
   )
 }
 
-/**
- * The navbar is in every page's HTML with nothing marked current; once the
- * page has hydrated it reads the path and highlights the section. Reading the
- * path during the prerender would suspend on every route with params — the
- * navbar would ship as a hidden segment revealed by script — so it waits for
- * the browser instead. The markup is identical either way: nothing moves.
- */
 function LinksAtPath() {
   return <Links pathname={usePathname()} />
 }

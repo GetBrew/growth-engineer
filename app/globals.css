@@ -216,6 +216,29 @@
   }
 }
 
+/*
+ * Layout
+ *
+ * The detail pages' shared measures, named so the workflow page, the guides
+ * and a record's tabs cannot drift apart.
+ *
+ *   --sticky-top    where a sticky aside rests, and where a section a link
+ *                   jumps to lands: 2rem below the header
+ *   --grid-detail   the record and its 320px aside
+ *   --grid-tabs     a record's 200px tab list and its panel
+ *   --grid-header   a record's title, and its actions at their own width
+ *   --grid-brief    a brief list's 20px marker column, and its text
+ *   --grid-step     a step's 28px logo column, and its text
+ */
+:root {
+  --sticky-top: calc(var(--header-height) + 2rem);
+  --grid-detail: minmax(0, 1fr) 20rem;
+  --grid-tabs: 12.5rem minmax(0, 1fr);
+  --grid-header: minmax(0, 1fr) auto;
+  --grid-brief: 1.25rem minmax(0, 1fr);
+  --grid-step: 1.75rem minmax(0, 1fr);
+}
+
 /* The site's content column: pages and footer line up on one edge. */
 @utility page-container {
   margin-inline: auto;

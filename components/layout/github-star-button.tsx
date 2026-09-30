@@ -4,12 +4,6 @@ import { GITHUB_URL } from '@/lib/github'
 import { formatStars, repoStars } from '@/lib/github-stars'
 import { cn } from '@/lib/utils/cn'
 
-/**
- * The header's link to the repository: GitHub's mark, "Star" and the star
- * count, like GitHub's own button. The count is fixed at build
- * (lib/github-stars.ts); when GitHub did not answer, the button shows without
- * it. Phones drop the word and keep the mark and the count.
- */
 export function GithubStarButton() {
   const stars = repoStars()
   const label =

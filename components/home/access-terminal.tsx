@@ -5,18 +5,8 @@ import { orderAccess } from '@/lib/catalog/render-access'
 import { SITE_ORIGIN } from '@/lib/env'
 import styles from './access-terminal.module.css'
 
-/**
- * The workflow the session fetches. A three-step one on purpose: three tool
- * lines keep the card the height of the three pill rows beside it. If it is
- * ever removed, the top featured workflow stands in.
- */
 const EXAMPLE_WORKFLOW = 'high-intent-visitors'
 
-/**
- * A session that really works: fetching a workflow's file, then — from that
- * same file — each tool it uses and the way in the file sets up first. Every
- * line is read from the catalog at build; nothing here is a mock-up.
- */
 export function AccessTerminal() {
   const result = loadExample()
   if (!result) {
@@ -36,10 +26,6 @@ export function AccessTerminal() {
       : []
   })
 
-  // One grid for every line, so the way in, the tool and its call each start
-  // at the same column on every row. The call only shows once the card is
-  // wide enough to hold it; below that a row is the tool alone, never a
-  // half-cut command.
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-surface">
       <div className="flex items-center gap-1.5 border-b px-4 py-2">

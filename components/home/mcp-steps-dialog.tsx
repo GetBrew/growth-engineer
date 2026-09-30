@@ -4,6 +4,8 @@ import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
 import {
+  DIALOG_BACKDROP,
+  DIALOG_POPUP,
   Sheet,
   SheetBackdrop,
   SheetClose,
@@ -13,6 +15,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { type Agent, stepWithUrl } from '@/lib/stores/agents'
+import { cn } from '@/lib/utils/cn'
 
 export function McpStepsDialog({
   agent,
@@ -35,14 +38,14 @@ export function McpStepsDialog({
       open={open}
     >
       <SheetPortal>
-        <SheetBackdrop className="bg-background/60 backdrop-blur-sm transition-opacity duration-200 ease-out data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none" />
-        <SheetPopup className="floating-panel fixed top-1/2 left-1/2 w-[min(32rem,calc(100vw-2rem))] origin-center -translate-x-1/2 -translate-y-1/2 overflow-hidden p-6 transition-[opacity,scale] duration-200 ease-out data-ending-style:scale-[0.97] data-starting-style:scale-[0.97] data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none">
+        <SheetBackdrop className={DIALOG_BACKDROP} />
+        <SheetPopup className={cn(DIALOG_POPUP, 'max-w-lg p-6')}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 flex-col">
               <SheetTitle className="type-section">
                 Connect with {agent.name}
               </SheetTitle>
-              <SheetDescription className="type-body mt-1 text-foreground/60">
+              <SheetDescription className="mt-1">
                 Every step, in order.
               </SheetDescription>
             </div>

@@ -257,7 +257,7 @@ export function workflowJsonLd(
         },
       },
       breadcrumb(origin, [
-        { name: 'Workflows', path: '/workflows' },
+        { name: 'Workflows', path: '/' },
         { name: workflow.title, path },
       ]),
     ],
