@@ -36,7 +36,7 @@ Next.js 16 (App Router, Cache Components, Turbopack) · a build-time content
 compiler (`lib/content/`) · Tailwind v4 · shadcn on Base UI · Biome · Vitest
 · pnpm. **The catalog has no backend, no database and no auth provider**;
 the one runtime store is an optional Upstash Redis counting workflow copies
-(`lib/usage/copies.ts`: Uses, Hot, Popular). Every route is public; every
+(`lib/usage/copies.ts`: Uses, Popular). Every route is public; every
 env var is optional (`.env.example`, read only through `lib/env.ts`).
 
 ## Validation — proportional, not ceremonial

@@ -9,7 +9,7 @@ import { visitorId } from '@/lib/usage/visitor'
 
 /**
  * How many times each workflow's file was copied — the "Uses" on its page and
- * the Hot and Popular angles on the listings. Upstash Redis, from lib/env.ts:
+ * the Popular order on the home page. Upstash Redis, from lib/env.ts:
  *
  *   workflow:copies               hash  key → copies, all time
  *   workflow:copies:<YYYY-MM-DD>  hash  key → copies that UTC day, kept 60 days
@@ -37,7 +37,7 @@ function namespace(): string {
 
 const TOTALS = `${namespace()}workflow:copies`
 const DAY_BUCKET_TTL_SECONDS = 60 * 24 * 60 * 60
-/** Two weeks of days: this week's velocity, and last week's to compare. */
+/** Two weeks of days: this week's copies, and last week's to compare. */
 const DAYS_READ = 14
 /** Past this, the store is skipped for this read rather than hold a page. */
 const TIMEOUT_MS = 2000

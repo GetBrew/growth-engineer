@@ -68,7 +68,7 @@ and the folder READMEs have the field reference and templates.
   60 requests an hour per address, and a build machine may share its address.
   When GitHub does not answer within two seconds, the button shows without a
   count and the build carries on.
-- **Copy counter.** A workflow's "Uses" and the Hot and Popular lists need
+- **Copy counter.** A workflow's "Uses" and the Popular order need
   Upstash for Redis, added to the project from the Vercel Marketplace. It sets
   `KV_REST_API_URL`, `KV_REST_API_TOKEN` (the write secret, used only by the
   count route) and `KV_REST_API_READ_ONLY_TOKEN` (what pages read with).
@@ -77,7 +77,8 @@ and the folder READMEs have the field reference and templates.
     a keyed hash of the address (an IPv6 client by its /64), claimed with
     `SET NX`; the address itself is never stored.
   - A counted copy adds one to the hash `workflow:copies` and to that UTC
-    day's `workflow:copies:<date>`, kept 60 days. Hot is the last 7 days.
+    day's `workflow:copies:<date>`, kept 60 days. "This week" is the last
+    7 days.
   - Pages read every count in one round trip, at most once a minute, and
     stream them into `<Suspense>` holes; the rest of each page is
     prerendered (`lib/usage/copies.ts`).

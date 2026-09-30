@@ -160,12 +160,12 @@ export function loadToolSearchItems() {
   })
 }
 
-/** Every published workflow in featured order, with what search needs. */
+/** Every published workflow, newest added first, with what search needs. */
 export function loadWorkflowSearchItems() {
   const catalog = getCatalog()
-  return catalog.order.workflowsFeatured.flatMap((key, index) => {
+  return catalog.order.workflowsNew.flatMap((key) => {
     const workflow = catalog.workflows.get(key)
-    return workflow ? [workflowSearchItem(catalog, workflow, index)] : []
+    return workflow ? [workflowSearchItem(catalog, workflow)] : []
   })
 }
 

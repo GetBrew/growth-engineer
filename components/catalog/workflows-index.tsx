@@ -20,29 +20,15 @@ import {
 } from '@/lib/catalog/search'
 import { useIsClient } from '@/lib/hooks/use-is-client'
 import type { TagChip } from '@/lib/types/catalog'
-import {
-  COPY_ANGLES,
-  type CopyAngle,
-  type CopyStatsByKey,
-  statsFor,
-} from '@/lib/usage/stats'
+import { type CopyStatsByKey, statsFor } from '@/lib/usage/stats'
 
 const BASE = '/'
 
 type StatsPromise = Promise<CopyStatsByKey | null> | null
 
+/** New is the default; Popular only when there are copies to count. */
 function parseSort(value: string | null, isCounting: boolean): Sort {
-  if (value === 'new') {
-    return 'new'
-  }
-  if (isCounting && (value === 'hot' || value === 'popular')) {
-    return value
-  }
-  return 'featured'
-}
-
-function isAngle(sort: Sort): sort is CopyAngle {
-  return sort === 'hot' || sort === 'popular'
+  return isCounting && value === 'popular' ? 'popular' : 'new'
 }
 
 function chipsFrom(
@@ -68,7 +54,7 @@ type Query = {
 
 function href({ sort, q, chips, company }: Query): string {
   const params = new URLSearchParams()
-  if (sort !== 'featured') {
+  if (sort !== 'new') {
     params.set('sort', sort)
   }
   for (const [name, value] of Object.entries(chipParams(chips))) {
@@ -100,25 +86,16 @@ function withoutFilter(query: Query, option: FilterOption): string {
       })
 }
 
+const ORDER_LABEL: Record<Sort, string> = { new: 'New', popular: 'Popular' }
+
 function orderLinks(
-  query: Query,
-  isCounting: boolean
+  query: Query
 ): Array<{ value: Sort; label: string; href: string }> {
-  const orders: Array<Sort> = isCounting
-    ? ['featured', 'hot', 'popular', 'new']
-    : ['featured', 'new']
-  return orders.map((order) => ({
+  return (['new', 'popular'] as const).map((order) => ({
     value: order,
     label: ORDER_LABEL[order],
     href: href({ ...query, sort: order }),
   }))
-}
-
-const ORDER_LABEL: Record<Sort, string> = {
-  featured: 'Featured',
-  hot: COPY_ANGLES.hot.label,
-  popular: COPY_ANGLES.popular.label,
-  new: 'New',
 }
 
 function emptyCopy(
@@ -193,7 +170,7 @@ function WorkflowsIndexView({
     sort,
     chips,
     ...(company ? { company } : {}),
-    stats: isAngle(sort) ? counts : null,
+    stats: sort === 'popular' ? counts : null,
   })
   const hasFilters = Boolean(q || chips.length > 0 || company)
   const empty = emptyCopy(q, hasFilters)
@@ -213,7 +190,7 @@ function WorkflowsIndexView({
           label="Search workflows"
           options={options}
           params={{
-            sort: sort === 'featured' ? undefined : sort,
+            sort: sort === 'new' ? undefined : sort,
             ...chipParams(chips),
             company: company || undefined,
           }}
@@ -221,11 +198,13 @@ function WorkflowsIndexView({
           placeholder={`Search ${workflows.length} workflows`}
           removeHref={(option) => withoutFilter(query, option)}
         />
-        <OrderTabs
-          label="Order workflows"
-          orders={orderLinks(query, isCounting)}
-          value={sort}
-        />
+        {isCounting ? (
+          <OrderTabs
+            label="Order workflows"
+            orders={orderLinks(query)}
+            value={sort}
+          />
+        ) : null}
       </div>
 
       {rows.length === 0 ? (

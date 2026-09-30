@@ -81,7 +81,7 @@ ways in, write actions through an API, an admin app, teams and reviews,
 vector search, and versions with version history. Each can arrive without
 changing a key or a file: a pull request is the submission pipeline, and git
 is the history. The one usage signal so far is how often each workflow is
-copied, which orders the Hot and Popular lists.
+copied, which orders the Popular list.
 
 ## Principles
 

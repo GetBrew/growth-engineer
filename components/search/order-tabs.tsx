@@ -3,7 +3,7 @@ import { TAB_TRIGGER, tabsListVariants } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils/cn'
 
 /**
- * Which way a list is ordered — Featured, Hot, Popular, New — as tabs whose
+ * Which way a list is ordered — New, Popular — as tabs whose
  * state is the URL: each is a link that keeps the rest of the query, so an
  * order can be shared and an agent can open the same list. The look is the
  * Tabs component's (`TAB_TRIGGER`).
