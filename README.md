@@ -144,8 +144,8 @@ lib/catalog/render-markdown.ts   one renderer, golden-tested
 ```
 
 The one runtime store is optional: an Upstash Redis that counts how often each
-workflow is copied, for its "Uses" and the Hot and Popular lists. Without it,
-the counts are hidden.
+workflow is copied, for its "Uses" and the Popular order. Without it, the
+counts are hidden.
 
 Visits are measured with Vercel Web Analytics and Speed Insights, and AI
 crawlers and AI-referred visits with Notra. See

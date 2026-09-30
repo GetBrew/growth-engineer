@@ -5,12 +5,12 @@ import {
   type CopyStatsByKey,
   formatCount,
   placeOn,
-  rankByAngle,
+  rankByCopies,
 } from '@/lib/usage/stats'
 
 /**
- * The angles the copy counts open — Hot (this week) and Popular (all time) —
- * are pure, so the listing sorts in the browser exactly as tested here.
+ * Popular — every copy ever made — is pure, so the listing sorts in the
+ * browser exactly as tested here.
  */
 
 const STATS: CopyStatsByKey = {
@@ -19,18 +19,12 @@ const STATS: CopyStatsByKey = {
   c: { total: 10, week: 0, lastWeek: 9 },
 }
 
-describe('ranking by an angle', () => {
+describe('ranking by copies', () => {
   const keys = ['c', 'a', 'b', 'never-copied']
   const byKey = (key: string) => key
 
-  test('Hot is this week, Popular is all time', () => {
-    expect(rankByAngle(keys, byKey, STATS, 'hot')).toEqual([
-      'b',
-      'a',
-      'c',
-      'never-copied',
-    ])
-    expect(rankByAngle(keys, byKey, STATS, 'popular')).toEqual([
+  test('Popular is all time, not this week', () => {
+    expect(rankByCopies(keys, byKey, STATS)).toEqual([
       'c',
       'a',
       'b',
@@ -39,18 +33,16 @@ describe('ranking by an angle', () => {
   })
 
   test('a tie keeps the order it came in', () => {
-    expect(rankByAngle(['a', 'c'], byKey, STATS, 'popular')).toEqual(['a', 'c'])
-    expect(rankByAngle(['c', 'a'], byKey, STATS, 'popular')).toEqual(['c', 'a'])
+    expect(rankByCopies(['a', 'c'], byKey, STATS)).toEqual(['a', 'c'])
+    expect(rankByCopies(['c', 'a'], byKey, STATS)).toEqual(['c', 'a'])
   })
 
-  test('a place is claimed only with copies on the angle', () => {
-    expect(placeOn(STATS, 'b', 'hot')).toBe(1)
-    expect(placeOn(STATS, 'a', 'hot')).toBe(2)
-    expect(placeOn(STATS, 'c', 'hot')).toBeNull()
-    expect(placeOn(STATS, 'never-copied', 'popular')).toBeNull()
+  test('a place is claimed only with copies', () => {
+    expect(placeOn(STATS, 'b')).toBe(3)
+    expect(placeOn(STATS, 'never-copied')).toBeNull()
     // Equal counts share a place.
-    expect(placeOn(STATS, 'a', 'popular')).toBe(1)
-    expect(placeOn(STATS, 'c', 'popular')).toBe(1)
+    expect(placeOn(STATS, 'a')).toBe(1)
+    expect(placeOn(STATS, 'c')).toBe(1)
   })
 
   test('counts read short', () => {
@@ -62,26 +54,25 @@ describe('ranking by an angle', () => {
 
 describe('the workflows listing', () => {
   const items = loadWorkflowSearchItems()
-  const featured = searchWorkflowItems(items, { q: '', sort: 'featured' })
-  const [first, second, third] = featured.map((item) => item.workflow.key)
+  const newest = searchWorkflowItems(items, { q: '', sort: 'new' })
+  const [first, second, third] = newest.map((item) => item.workflow.key)
   const stats: CopyStatsByKey = {
     [third as string]: { total: 50, week: 2, lastWeek: 0 },
     [second as string]: { total: 5, week: 9, lastWeek: 0 },
   }
-  const keysFor = (sort: 'hot' | 'popular' | 'featured', q = '') =>
-    searchWorkflowItems(items, { q, sort, stats }).map(
+  const keysFor = (sort: 'new' | 'popular') =>
+    searchWorkflowItems(items, { q: '', sort, stats }).map(
       (item) => item.workflow.key
     )
 
-  test('orders Hot and Popular by the counts, the rest as featured', () => {
-    expect(keysFor('hot').slice(0, 3)).toEqual([second, third, first])
+  test('orders Popular by the counts, ties newest first; New ignores them', () => {
     expect(keysFor('popular').slice(0, 3)).toEqual([third, second, first])
-    expect(keysFor('featured')[0]).toBe(first)
+    expect(keysFor('new').slice(0, 3)).toEqual([first, second, third])
   })
 
-  test('an angle with no counts is the featured order', () => {
+  test('Popular with no counts is the New order', () => {
     expect(
-      searchWorkflowItems(items, { q: '', sort: 'hot', stats: null })
-    ).toEqual(featured)
+      searchWorkflowItems(items, { q: '', sort: 'popular', stats: null })
+    ).toEqual(newest)
   })
 })

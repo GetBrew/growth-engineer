@@ -116,8 +116,7 @@ export function toolSearchItem(catalog: Catalog, tool: Tool): ToolSearchItem {
 
 export function workflowSearchItem(
   catalog: Catalog,
-  workflow: Workflow,
-  featuredIndex: number
+  workflow: Workflow
 ): WorkflowSearchItem {
   return {
     ...workflowListItem(catalog, workflow),
@@ -125,7 +124,6 @@ export function workflowSearchItem(
     searchText: workflow.searchText,
     addedAt: workflow.addedAt,
     updatedAt: workflow.updatedAt,
-    featuredIndex,
   }
 }
 

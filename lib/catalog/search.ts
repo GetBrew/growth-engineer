@@ -4,11 +4,7 @@ import type {
   ToolListItem,
   WorkflowListItem,
 } from '@/lib/types/catalog'
-import {
-  type CopyAngle,
-  type CopyStatsByKey,
-  rankByAngle,
-} from '@/lib/usage/stats'
+import { type CopyStatsByKey, rankByCopies } from '@/lib/usage/stats'
 import { TAG_NAMESPACES, type TagNamespace } from './keys'
 import { MAX_CHIPS } from './query'
 import { matchWords, queryWords } from './search-words'
@@ -41,8 +37,6 @@ export type WorkflowSearchItem = WorkflowListItem & {
   /** The day it joined the catalog: what "New" sorts by. */
   addedAt: number
   updatedAt: number
-  /** Position on the featured list (featured first, then newest added). */
-  featuredIndex: number
 }
 
 export type CompanySearchItem = CompanyListItem & {
@@ -178,13 +172,13 @@ export function searchToolItems(
   }
 }
 
-export type WorkflowSort = 'featured' | 'new' | CopyAngle
+export type WorkflowSort = 'new' | 'popular'
 
 /**
- * Workflows: featured order, newest added, or ranked by copies (Hot: this week;
- * Popular: all time — ties in featured order), within the chips (OR within a
- * namespace, AND across) and one company whose tools they use, narrowed by
- * words. A copy angle with no `stats` is the featured order.
+ * Workflows: newest added, or Popular — ranked by copies ever made, ties
+ * newest first — within the chips (OR within a namespace, AND across) and
+ * one company whose tools they use, narrowed by words. Popular with no
+ * `stats` is the New order.
  */
 export function searchWorkflowItems(
   items: ReadonlyArray<WorkflowSearchItem>,
@@ -216,14 +210,13 @@ export function searchWorkflowItems(
         !input.company ||
         item.tools.some((tool) => tool.companyKey === input.company)
     )
-    .sort((a, b) =>
-      sort === 'new'
-        ? b.addedAt - a.addedAt || a.workflow.key.localeCompare(b.workflow.key)
-        : a.featuredIndex - b.featuredIndex
+    .sort(
+      (a, b) =>
+        b.addedAt - a.addedAt || a.workflow.key.localeCompare(b.workflow.key)
     )
   const ordered =
-    (sort === 'hot' || sort === 'popular') && stats
-      ? rankByAngle(inTag, (item) => item.workflow.key, stats, sort)
+    sort === 'popular' && stats
+      ? rankByCopies(inTag, (item) => item.workflow.key, stats)
       : inTag
   const ranked = rank(
     ordered.map((item, index) => ({

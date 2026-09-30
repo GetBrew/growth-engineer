@@ -168,10 +168,10 @@ describe('the content tree', () => {
     }
     // The label a listing filters by answers exactly its workflows.
     const outbound = searchWorkflowItems(
-      [...catalog.workflows.values()].map((workflow, index) =>
-        workflowSearchItem(catalog, workflow, index)
+      [...catalog.workflows.values()].map((workflow) =>
+        workflowSearchItem(catalog, workflow)
       ),
-      { q: '', sort: 'featured', chips: ['motion:outbound'] }
+      { q: '', sort: 'new', chips: ['motion:outbound'] }
     )
     expect(outbound.map((item) => item.workflow.key).sort()).toEqual(
       [...catalog.workflows.values()]
@@ -182,12 +182,12 @@ describe('the content tree', () => {
   })
 
   test('"Works with" keeps exactly the workflows using that company', () => {
-    const items = [...catalog.workflows.values()].map((workflow, index) =>
-      workflowSearchItem(catalog, workflow, index)
+    const items = [...catalog.workflows.values()].map((workflow) =>
+      workflowSearchItem(catalog, workflow)
     )
     const usesHubspot = searchWorkflowItems(items, {
       q: '',
-      sort: 'featured',
+      sort: 'new',
       company: 'hubspot',
     })
     expect(usesHubspot.length).toBeGreaterThan(0)
@@ -402,15 +402,11 @@ describe('the content tree', () => {
   })
 
   test('search: workflows by words, author and tag; companies by words and category', () => {
-    const workflows = catalog.order.workflowsFeatured.flatMap((key, index) => {
+    // Handed over in another order, so the sort is what puts newest first.
+    const workflows = catalog.order.workflowsFeatured.flatMap((key) => {
       const workflow = catalog.workflows.get(key)
-      return workflow ? [workflowSearchItem(catalog, workflow, index)] : []
+      return workflow ? [workflowSearchItem(catalog, workflow)] : []
     })
-    expect(
-      searchWorkflowItems(workflows, { q: '', sort: 'featured' }).map(
-        (row) => row.workflow.key
-      )
-    ).toEqual(catalog.order.workflowsFeatured)
     // New in the browser is the prerendered New list: newest added first.
     expect(
       searchWorkflowItems(workflows, { q: '', sort: 'new' }).map(
@@ -419,13 +415,13 @@ describe('the content tree', () => {
     ).toEqual(catalog.order.workflowsNew)
     const email = searchWorkflowItems(workflows, {
       q: 'email',
-      sort: 'featured',
+      sort: 'new',
       chips: ['channel:email'],
     })
     expect(email.length).toBeGreaterThan(0)
     // Chips of two kinds narrow together (AND); two of one kind widen (OR).
     const keysFor = (chips: Array<string>) =>
-      searchWorkflowItems(workflows, { q: '', sort: 'featured', chips }).map(
+      searchWorkflowItems(workflows, { q: '', sort: 'new', chips }).map(
         (row) => row.workflow.key
       )
     const both = keysFor(['motion:outbound', 'channel:email'])

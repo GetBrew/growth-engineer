@@ -12,66 +12,39 @@ export type CopyStatsByKey = Readonly<Record<string, CopyStats>>
 
 const NO_COPIES: CopyStats = { total: 0, week: 0, lastWeek: 0 }
 
-/**
- * The angles the counts open. HOT is velocity: copies over the last 7 days.
- * POPULAR is every copy ever made.
- */
-export type CopyAngle = 'hot' | 'popular'
-
-export const COPY_ANGLES: Readonly<
-  Record<CopyAngle, { label: string; title: string }>
-> = {
-  hot: { label: 'Hot', title: 'Hot this week' },
-  popular: { label: 'Popular', title: 'Most popular' },
-}
-
 export function statsFor(stats: CopyStatsByKey, key: string): CopyStats {
   return stats[key] ?? NO_COPIES
 }
 
-/** The number an angle ranks by. */
-function angleValue(stats: CopyStats, angle: CopyAngle): number {
-  return angle === 'hot' ? stats.week : stats.total
-}
-
 /**
- * Items ranked by an angle, most first. Ties keep the order they came in
- * (featured, or newest), so a catalog nobody has copied yet reads as it did.
+ * Items ranked by copies ever made (Popular), most first. Ties keep the order
+ * they came in (newest), so a catalog nobody has copied yet reads as it did.
  */
-export function rankByAngle<Item>(
+export function rankByCopies<Item>(
   items: ReadonlyArray<Item>,
   keyOf: (item: Item) => string,
-  stats: CopyStatsByKey,
-  angle: CopyAngle
+  stats: CopyStatsByKey
 ): Array<Item> {
   return items
     .map((item, index) => ({
       item,
       index,
-      value: angleValue(statsFor(stats, keyOf(item)), angle),
+      value: statsFor(stats, keyOf(item)).total,
     }))
     .sort((a, b) => b.value - a.value || a.index - b.index)
     .map(({ item }) => item)
 }
 
 /**
- * Where a workflow places on an angle: 1 for the most copied. `null` when it
- * has no copies there, so a page never claims "#16" for nothing.
+ * Where a workflow places by copies: 1 for the most copied. `null` when it
+ * has none, so a page never claims "#16" for nothing.
  */
-export function placeOn(
-  stats: CopyStatsByKey,
-  key: string,
-  angle: CopyAngle
-): number | null {
-  const value = angleValue(statsFor(stats, key), angle)
+export function placeOn(stats: CopyStatsByKey, key: string): number | null {
+  const value = statsFor(stats, key).total
   if (value === 0) {
     return null
   }
-  return (
-    1 +
-    Object.values(stats).filter((other) => angleValue(other, angle) > value)
-      .length
-  )
+  return 1 + Object.values(stats).filter((other) => other.total > value).length
 }
 
 const COMPACT = new Intl.NumberFormat('en-US', {

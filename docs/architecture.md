@@ -91,7 +91,7 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | Route | At build | Why |
 | --- | --- | --- |
 | `/companies/[handle]`, `/tools/[handle]/[name]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
-| `/workflows/[name]`, `/` | partial prerender (`◐`) when the copy counter is on, else fully static (`○`) | the page is the prerendered shell; only the copy counts (a workflow's Uses; the order of Hot and Popular) are holes, read at request time (`connection()`) through a `'use cache'` that asks the store at most once a minute, in one round trip, with the read-only token |
+| `/workflows/[name]`, `/` | partial prerender (`◐`) when the copy counter is on, else fully static (`○`) | the page is the prerendered shell; only the copy counts (a workflow's Uses; the Popular order) are holes, read at request time (`connection()`) through a `'use cache'` that asks the store at most once a minute, in one round trip, with the read-only token |
 | `/api/markdown/[...path]` — every file, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
