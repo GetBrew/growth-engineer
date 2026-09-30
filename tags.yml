@@ -131,6 +131,9 @@ capability:
   track-ai-visibility:
     label: Track AI visibility
     synonyms: [geo, aeo, ai search, ai visibility, llm visibility, answer engine optimization, brand mentions, share of voice]
+  track-email-engagement:
+    label: Track email engagement
+    synonyms: [email metrics, email analytics, open rate, click rate, deliverability, bounces, unsubscribes, campaign stats, who opened, who clicked]
   track-revenue:
     label: Track revenue
     synonyms: [revenue, mrr, arr, invoices]
