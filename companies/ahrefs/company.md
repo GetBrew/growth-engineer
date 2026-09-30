@@ -4,6 +4,7 @@ domain: ahrefs.com
 category: data-provider
 tagline: Search visibility data — keyword volume, difficulty and organic rankings — from Ahrefs' web index.
 docs: https://docs.ahrefs.com/en/api/docs/introduction
+logo: https://cdn.growth.engineer/icons/companies/ahrefs-0d9d29fa.png
 api:
   url: https://api.ahrefs.com/v3
   auth: api_key

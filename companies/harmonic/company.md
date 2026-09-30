@@ -4,6 +4,7 @@ domain: harmonic.ai
 category: data-provider
 tagline: Startup and company data — funding, headcount, web traffic and traction — from one API.
 docs: https://console.harmonic.ai/docs/api-reference/introduction
+logo: https://cdn.growth.engineer/icons/companies/harmonic-92834f41.png
 api:
   url: https://api.harmonic.ai
   auth: api_key

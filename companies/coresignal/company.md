@@ -4,6 +4,7 @@ domain: coresignal.com
 category: data-provider
 tagline: Real-time public web data on companies, employees and job postings, over one API.
 docs: https://docs.coresignal.com
+logo: https://cdn.growth.engineer/icons/companies/coresignal-5854238b.png
 api:
   url: https://api.coresignal.com/cdapi/v2
   auth: api_key

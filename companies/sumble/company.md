@@ -4,6 +4,7 @@ domain: sumble.com
 category: data-provider
 tagline: Account intelligence from job postings, org structure and tech stack, built for GTM teams.
 docs: https://docs.sumble.com
+logo: https://cdn.growth.engineer/icons/companies/sumble-92fe0328.png
 api:
   url: https://api.sumble.com
   auth: api_key

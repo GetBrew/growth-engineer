@@ -4,6 +4,7 @@ domain: google.com
 category: email
 tagline: Send, draft and search email through the Gmail API, with an MCP server for agent access.
 docs: https://developers.google.com/gmail/api
+logo: https://cdn.growth.engineer/icons/companies/google-b5a2d723.png
 mcp:
   url: https://gmailmcp.googleapis.com/mcp/v1
   auth: oauth

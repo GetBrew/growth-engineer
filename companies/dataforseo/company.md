@@ -4,6 +4,7 @@ domain: dataforseo.com
 category: data-provider
 tagline: SERP, keyword and backlink data, aggregated from search engines and the web.
 docs: https://docs.dataforseo.com/v3
+logo: https://cdn.growth.engineer/icons/companies/dataforseo-92ce10fd.png
 api:
   url: https://api.dataforseo.com/v3
   auth: api_key
