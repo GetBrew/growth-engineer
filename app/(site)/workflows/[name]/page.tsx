@@ -166,10 +166,9 @@ async function WorkflowDetail({ params }: { params: Params }) {
           phone shows: the actions, then the brief. From lg the grid places
           it on the right, where it stays in view. */}
       <div className="grid gap-(--space-block) lg:grid-cols-(--grid-detail) lg:items-start">
+        {/* Both copy buttons, the side column's and the file's, count. */}
         <CopyCountProvider isCounting={isCounting} workflowKey={workflow.key}>
           <aside className="flex flex-col gap-(--space-xl) lg:sticky lg:top-(--sticky-top) lg:col-start-2 lg:row-start-1">
-            {/* One row under lg, Copy taking the rest of it; from lg, Copy
-                spans the column and the others sit on the line below. */}
             {/* Copy, and Open in beside it holding every other way to take
                 the file: an agent, a download, its source on GitHub. */}
             <div className="flex items-center gap-2">
@@ -205,59 +204,59 @@ async function WorkflowDetail({ params }: { params: Params }) {
               questions={workflow.inputs.length}
             />
           </aside>
-        </CopyCountProvider>
 
-        {/* The brief a person reads first; the file the agent runs is one
+          {/* The brief a person reads first; the file the agent runs is one
             click away, and it is what Copy copies. */}
-        <div className="flex min-w-0 flex-col gap-(--space-block) lg:col-start-1 lg:row-start-1">
-          <WorkflowOutcome outcome={workflow.outcome} />
-          <HowItRuns
-            steps={workflow.steps}
-            tools={tools.map(({ tool, company }) => ({
-              key: tool.key,
-              name: tool.name,
-              companyName: company.name,
-              logoUrl: company.logo?.url,
-            }))}
-          />
-          <WorkflowInputs inputs={workflow.inputs} />
-          {/* The file the agent runs, one row until it is opened: the row
+          <div className="flex min-w-0 flex-col gap-(--space-block) lg:col-start-1 lg:row-start-1">
+            <WorkflowOutcome outcome={workflow.outcome} />
+            <HowItRuns
+              steps={workflow.steps}
+              tools={tools.map(({ tool, company }) => ({
+                key: tool.key,
+                name: tool.name,
+                companyName: company.name,
+                logoUrl: company.logo?.url,
+              }))}
+            />
+            <WorkflowInputs inputs={workflow.inputs} />
+            {/* The file the agent runs, one row until it is opened: the row
               names it, so the file below needs no heading of its own. */}
-          <details className="group">
-            <summary className="focus-ring flex h-12 cursor-pointer list-none items-center gap-3 rounded-xl border px-4 transition-colors duration-200 hover:bg-hover [&::-webkit-details-marker]:hidden">
-              <HugeiconsIcon
-                aria-hidden="true"
-                className="shrink-0 text-soft"
-                icon={File02Icon}
-                size={16}
-                strokeWidth={1.8}
-              />
-              <span className="type-control min-w-0 flex-1 truncate text-foreground">
-                {filePath.split('/').pop() ?? 'workflow.md'}
-              </span>
-              <span className="type-helper shrink-0 text-soft group-open:hidden">
-                View markdown
-              </span>
-              <span className="type-helper hidden shrink-0 text-soft group-open:inline">
-                Hide markdown
-              </span>
-              <HugeiconsIcon
-                aria-hidden="true"
-                className="shrink-0 text-soft transition-transform duration-200 group-open:rotate-180"
-                icon={ArrowDown01Icon}
-                size={16}
-                strokeWidth={1.8}
-              />
-            </summary>
-            <div className="mt-3">
-              <MarkdownFile
-                companies={companies}
-                markdown={document.markdown}
-                preview={<MarkdownPreview markdown={document.markdown} />}
-              />
-            </div>
-          </details>
-        </div>
+            <details className="group">
+              <summary className="focus-ring flex h-12 cursor-pointer list-none items-center gap-3 rounded-xl border px-4 transition-colors duration-200 hover:bg-hover [&::-webkit-details-marker]:hidden">
+                <HugeiconsIcon
+                  aria-hidden="true"
+                  className="shrink-0 text-soft"
+                  icon={File02Icon}
+                  size={16}
+                  strokeWidth={1.8}
+                />
+                <span className="type-control min-w-0 flex-1 truncate text-foreground">
+                  {filePath.split('/').pop() ?? 'workflow.md'}
+                </span>
+                <span className="type-helper shrink-0 text-soft group-open:hidden">
+                  View markdown
+                </span>
+                <span className="type-helper hidden shrink-0 text-soft group-open:inline">
+                  Hide markdown
+                </span>
+                <HugeiconsIcon
+                  aria-hidden="true"
+                  className="shrink-0 text-soft transition-transform duration-200 group-open:rotate-180"
+                  icon={ArrowDown01Icon}
+                  size={16}
+                  strokeWidth={1.8}
+                />
+              </summary>
+              <div className="mt-3">
+                <MarkdownFile
+                  companies={companies}
+                  markdown={document.markdown}
+                  preview={<MarkdownPreview markdown={document.markdown} />}
+                />
+              </div>
+            </details>
+          </div>
+        </CopyCountProvider>
       </div>
     </div>
   )

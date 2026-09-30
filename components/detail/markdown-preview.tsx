@@ -2,9 +2,21 @@ import type { ComponentProps } from 'react'
 import Markdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
+/**
+ * A rendered file, drawn as a page — ON THE SERVER, at build. The files are
+ * static, so their HTML is too: no markdown parser ships to the browser, and
+ * the preview is in the prerendered page before any script runs.
+ *
+ * react-markdown renders to React elements, never raw HTML: a contributor's
+ * notes cannot inject markup, and `javascript:` links are dropped by its
+ * default URL transform. The file's headings step down one level, because the
+ * page already has an h1.
+ */
+
 const FRONTMATTER = /^---\n[\s\S]*?\n---\n+/
 const EXTERNAL = /^https?:/
 
+/** Drop react-markdown's `node` so it never reaches the DOM as an attribute. */
 function bare<T extends { node?: unknown }>({
   node: _node,
   ...props

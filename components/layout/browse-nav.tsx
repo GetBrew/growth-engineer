@@ -110,6 +110,13 @@ function Menu({ pathname }: { pathname: string | null }) {
   )
 }
 
+/**
+ * The navbar is in every page's HTML with nothing marked current; once the
+ * page has hydrated it reads the path and highlights the section. Reading the
+ * path during the prerender would suspend on every route with params — the
+ * navbar would ship as a hidden segment revealed by script — so it waits for
+ * the browser instead. The markup is identical either way: nothing moves.
+ */
 function LinksAtPath() {
   return <Links pathname={usePathname()} />
 }

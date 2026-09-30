@@ -18,9 +18,9 @@ export function CategorySection({
 }: {
   title: string
   entries: ReadonlyArray<CategoryEntry>
-
+  /** Plural, lowercase, for the "more" row: "tools", "companies". */
   noun: string
-
+  /** Where the "more" row goes; without it every row is shown. */
   moreHref?: string
   isExpanded?: boolean
 }) {

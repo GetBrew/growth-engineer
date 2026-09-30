@@ -86,7 +86,8 @@ export function DetailHeader({
   byline: ReactNode
   title: string
   description?: string
-
+  /** Beside the title from lg. A page with a side column (a workflow's) keeps
+      them there instead, and its title and summary take the full width. */
   actions?: ReactNode
   tags?: ReadonlyArray<DetailTag>
   meta?: string

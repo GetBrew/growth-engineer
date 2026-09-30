@@ -118,7 +118,13 @@ export function FilterSearch({
       event.preventDefault()
       router.push(removeHref(last), { scroll: false })
     } else if (event.key === 'Escape') {
+      // A search input clears itself on Escape; here Escape only closes
+      // the list, and the words stay.
+      event.preventDefault()
       setIsOpen(false)
+    } else if (event.key === 'ArrowDown' && !isOpen) {
+      event.preventDefault()
+      setIsOpen(true)
     } else if (event.key === 'ArrowDown' && suggestions.length > 0) {
       event.preventDefault()
       setActiveIndex((current) => (current + 1) % suggestions.length)
@@ -158,7 +164,9 @@ export function FilterSearch({
           />
         </InputGroupAddon>
         {active.length > 0 ? (
-          <div className="flex shrink-0 items-center gap-1 pl-1.5">
+          // The chips scroll sideways rather than push the clear button out
+          // of the box on a phone.
+          <div className="flex min-w-0 shrink items-center gap-1 overflow-x-auto pl-1.5 [scrollbar-width:none]">
             {active.map((option) => (
               <Link
                 aria-label={`Remove the ${option.label} filter`}
@@ -233,7 +241,9 @@ export function FilterSearch({
         role="listbox"
       >
         {text.trim() === '' ? (
-          <p className="eyebrow px-3 pt-2 pb-1 uppercase">Filter by</p>
+          <p aria-hidden="true" className="eyebrow px-3 pt-2 pb-1 uppercase">
+            Filter by
+          </p>
         ) : null}
         {suggestions.map((suggestion, index) => (
           <Link

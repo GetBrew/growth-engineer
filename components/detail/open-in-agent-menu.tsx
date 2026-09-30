@@ -16,8 +16,13 @@ import { MaskIcon } from '@/components/layout/mask-icon'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 
+/**
+ * A chat link carries its prompt in the URL, and long URLs get cut. Past this
+ * many encoded characters the prompt points at the file instead of holding it.
+ */
 const MAX_PROMPT_CHARS = 8000
 
+/** The same file the Copy button copies — or, when it is long, where it lives. */
 function agentPrompt(markdown: string, fileUrl: string | undefined): string {
   const inline = encodeURIComponent(markdown)
   if (!fileUrl || inline.length <= MAX_PROMPT_CHARS) {
@@ -28,6 +33,13 @@ function agentPrompt(markdown: string, fileUrl: string | undefined): string {
   )
 }
 
+/**
+ * "Open in": the file in an agent (ChatGPT, Claude, Grok, Cursor), downloaded,
+ * or on GitHub. Copying is the page's primary button. Hand-rolled on purpose:
+ * a menu primitive adds ~45 KB to every page this is on, for a few links. So
+ * it is a disclosure, not an ARIA menu — the items are ordinary links in the
+ * tab order, and Escape, a click outside or tabbing away closes it.
+ */
 export function OpenInAgentMenu({
   markdown,
   filePath,
@@ -38,8 +50,9 @@ export function OpenInAgentMenu({
   className,
 }: {
   markdown: string
-
+  /** What Download saves: the `.md` path, or a data URL. */
   filePath: string
+  /** The file's absolute URL, for a prompt too long to carry inline. */
   fileUrl?: string
   title: string
   /** The file on GitHub: a last item, where a page has no button of its own. */
@@ -58,7 +71,7 @@ export function OpenInAgentMenu({
     if (!open) {
       return
     }
-
+    // A click or a tab to anything outside closes it.
     const onOutside = (event: Event) => {
       if (!container.current?.contains(event.target as Node)) {
         setOpen(false)
