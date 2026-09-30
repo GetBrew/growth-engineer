@@ -1,6 +1,6 @@
 ---
 title: Resolve a personal email into its likely company
-summary: Looks up the person and company behind a personal email, corroborates the match, enriches the company, and scores confidence.
+summary: Researches the person behind a personal email with Exa, corroborates the match, and logs the result in HubSpot with a confidence score.
 author: shipgtm
 motion: inbound
 updated: 2026-09-29
@@ -8,9 +8,9 @@ updated: 2026-09-29
 
 ## Outcome
 
-- The likely person and company behind the email, or a clear "unresolved" when no source confirms one.
-- An identity confidence and a fit score for the match against your target segment.
-- Anything low-confidence or conflicting flagged for manual review instead of guessed.
+- The likely person and company behind the email, each with a citation, or a clear "unresolved" when the sources disagree or nothing turns up.
+- A HubSpot contact logged with the match and its identity confidence.
+- A fit score against your target segment, with low-confidence matches flagged for review.
 
 ## Inputs
 
@@ -19,13 +19,14 @@ updated: 2026-09-29
 
 ## Steps
 
-1. **Look up the person and company** with [hunter/enrich-person-and-company](../companies/hunter/tools/enrich-person-and-company.md). Look up `personal_email`. Keep the person's name, LinkedIn, location and employer, and the employer's domain.
-2. **Corroborate the match** with [people-data-labs/enrich-person](../companies/people-data-labs/tools/enrich-person.md). Enrich the same email, requiring an employer match. Keep whether its employer and location agree with step 1, as the identity confidence.
-3. **Enrich the company** with [apollo/enrich-company](../companies/apollo/tools/enrich-company.md). Look up the employer domain from step 1. Keep industry, employee count and funding for a fit check.
-4. **Score and flag**. Give the match an identity confidence from whether steps 1 and 2 agree on employer and location, and a fit score from whether the enriched company matches `target_segment`. Flag anything below high confidence on either for manual review instead of guessing.
+1. **Search for the person** with [exa/answer-question](../companies/exa/tools/answer-question.md). Ask who publicly holds `personal_email`'s handle or the name clues it gives, grounded in web sources. Keep the candidate's name, LinkedIn URL and claimed employer, with the citations.
+2. **Corroborate the profile** with [exa/get-page-contents](../companies/exa/tools/get-page-contents.md). Read the candidate's LinkedIn or bio page directly. Keep whether it confirms the same employer and role step 1 found, as the identity confidence.
+3. **Research the company** with [exa/search-web](../companies/exa/tools/search-web.md). Search the employer's own site and recent news for its industry, size and funding stage, for a fit check.
+4. **Log the match** with [hubspot/upsert-contacts](../companies/hubspot/tools/upsert-contacts.md). Create or update a contact for `personal_email` with the resolved name, employer and identity confidence, matched on email.
+5. **Score and flag**. Give the match a fit score from whether step 3's company matches `target_segment`. Flag anything low-confidence or conflicting for manual review instead of guessing.
 
 ## Notes
 
-This looks up public business identity only; discard anything below your confidence bar rather than storing it, and never use a result Hunter or PDL returned as unresolved.
+This looks up public business identity only; discard anything below your confidence bar rather than logging it, and never treat a candidate step 2 couldn't confirm as resolved.
 
-Adapted from ShipGTM's [personal email enrichment guide](https://shipgtm.substack.com/p/unlocking-company-data-from-personal).
+Adapted from ShipGTM's [personal email enrichment guide](https://shipgtm.substack.com/p/unlocking-company-data-from-personal), which uses the Exa API for people and company research and HubSpot as the CRM of record.
