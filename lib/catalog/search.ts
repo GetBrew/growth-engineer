@@ -182,16 +182,17 @@ export type WorkflowSort = 'featured' | 'new' | CopyAngle
 
 /**
  * Workflows: featured order, newest added, or ranked by copies (Hot: this week;
- * Popular: all time — ties in featured order), within one tag and one
- * company whose tools they use, narrowed by words. A copy angle with no
- * `stats` is the featured order.
+ * Popular: all time — ties in featured order), within the chips (OR within a
+ * namespace, AND across) and one company whose tools they use, narrowed by
+ * words. A copy angle with no `stats` is the featured order.
  */
 export function searchWorkflowItems(
   items: ReadonlyArray<WorkflowSearchItem>,
   input: {
     q: string
     sort: WorkflowSort
-    tag?: string
+    /** Full tag keys: `motion:outbound`, `channel:email`. */
+    chips?: ReadonlyArray<string>
     /** A company key: only workflows using one of its tools. */
     company?: string
     limit?: number
@@ -203,8 +204,13 @@ export function searchWorkflowItems(
     return []
   }
   const { sort, stats } = input
+  const groups = groupByNamespace(parseChips(input.chips ?? []))
   const inTag = items
-    .filter((item) => !input.tag || item.tags.includes(input.tag))
+    .filter((item) =>
+      [...groups].every(([namespace, slugs]) =>
+        slugs.some((slug) => item.tags.includes(`${namespace}:${slug}`))
+      )
+    )
     .filter(
       (item) =>
         !input.company ||

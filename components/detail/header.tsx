@@ -27,13 +27,13 @@ export function DetailByline({
   children: ReactNode
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <div className="flex [&>*+*]:-ml-2">
         {avatars.map((avatar) => {
           const fill = avatar.logo ? 'bg-background' : 'bg-muted'
           return (
             <Avatar
-              className={cn('size-9 ring-2 ring-background', fill)}
+              className={cn('size-6 ring-2 ring-background', fill)}
               key={avatar.name}
             >
               {avatar.src ? (
@@ -46,7 +46,7 @@ export function DetailByline({
           )
         })}
       </div>
-      <p className="type-body text-subtle">{children}</p>
+      <p className="type-helper text-soft">{children}</p>
     </div>
   )
 }
@@ -58,7 +58,6 @@ export type DetailTag = {
   emphasis?: boolean
 }
 
-/** One tag as a pill: a link to the listing it filters, or plain. */
 function DetailTagPill({ tag }: { tag: DetailTag }) {
   const variant = tag.emphasis ? 'emphasis' : 'plain'
   return tag.href ? (
@@ -81,6 +80,8 @@ export function DetailHeader({
   tags = [],
   meta,
   shouldClampDescription = true,
+  hasIconActions = false,
+  hasButtonActions = false,
 }: {
   byline: ReactNode
   title: string
@@ -89,62 +90,60 @@ export function DetailHeader({
       them there instead, and its title and summary take the full width. */
   actions?: ReactNode
   tags?: ReadonlyArray<DetailTag>
-  /** A quiet line under the description, like "Updated Sep 27, 2026". */
   meta?: string
-  /** False for a one-sentence description, which shows in full: no "Show more". */
   shouldClampDescription?: boolean
+  hasIconActions?: boolean
+  /** The actions are full buttons (a tool's Copy and Open in): under lg
+      they share the page's width, edge to edge, each taking half. */
+  hasButtonActions?: boolean
 }) {
   const hasTags = tags.length > 0
 
   return (
     <div className="flex flex-col">
       <header>
-        {byline}
-
-        {/* The actions join the title's row only from lg: on a tablet they
-            squeezed the title into a column a few words wide. */}
-        <div className="mt-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-x-8">
-          <div
-            className={cn(
-              'flex flex-wrap items-center gap-x-3 gap-y-2 lg:col-start-1 lg:row-start-1',
-              actions ? 'max-w-3xl' : 'max-w-5xl'
-            )}
-          >
+        {hasIconActions && actions ? (
+          <div className="flex items-center justify-between gap-3">
+            {byline}
+            <div className="-my-2 -mr-2 flex shrink-0 items-center lg:hidden">
+              {actions}
+            </div>
+          </div>
+        ) : (
+          byline
+        )}
+        <div
+          className={cn(
+            'lg:grid lg:grid-cols-(--grid-header) lg:items-start lg:gap-x-8',
+            byline ? 'mt-3' : undefined
+          )}
+        >
+          <div className="flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-2 lg:col-start-1 lg:row-start-1">
             <h1 className="type-page-title text-balance">
               <UnbrokenHyphens text={title} />
             </h1>
           </div>
 
-          <div
-            className={cn(
-              'lg:col-start-1 lg:row-start-2',
-              actions && 'max-w-3xl'
-            )}
-          >
+          <div className="lg:col-start-1 lg:row-start-2">
             {description && shouldClampDescription ? (
-              <DetailDescription
-                className={actions ? undefined : 'max-w-4xl'}
-                text={description}
-              />
+              <DetailDescription text={description} />
             ) : null}
             {description && !shouldClampDescription ? (
-              <p
-                className={cn(
-                  'type-lead mt-2 max-w-2xl',
-                  actions ? undefined : 'max-w-4xl'
-                )}
-              >
-                {description}
-              </p>
+              <p className="type-body mt-2 max-w-2xl">{description}</p>
             ) : null}
-            {/* With a pills row, the date joins it instead (below). */}
             {meta && !hasTags ? (
               <p className="type-label mt-3 text-subtle">{meta}</p>
             ) : null}
           </div>
 
           {actions ? (
-            <div className="mt-6 flex shrink-0 items-center gap-2 max-lg:-ml-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0">
+            <div
+              className={cn(
+                'mt-6 flex shrink-0 items-center gap-2 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0',
+                hasButtonActions ? 'max-lg:*:flex-1' : 'max-lg:-ml-3',
+                hasIconActions && 'max-lg:hidden'
+              )}
+            >
               {actions}
             </div>
           ) : null}
@@ -166,11 +165,6 @@ export function DetailHeader({
   )
 }
 
-/**
- * A browser may break a line right after a hyphen, and a balanced title
- * often takes it: "Spot and recover at-" / "risk customer accounts". Each
- * hyphenated word is kept whole, so lines only break between words.
- */
 const HYPHENATED = /(\S+-\S+)/
 
 function UnbrokenHyphens({ text }: { text: string }) {

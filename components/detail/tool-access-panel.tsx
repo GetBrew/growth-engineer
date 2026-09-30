@@ -46,7 +46,7 @@ export function ToolAccessPanel({ tool }: { tool: Tool }) {
                 {originLine(entry)}
               </TableCell>
               <TableCell className="py-4">
-                <code className="type-label rounded-md bg-muted px-2 py-1 font-mono">
+                <code className="type-code rounded bg-muted px-1.5 py-0.5 text-foreground">
                   {entry.operation}
                 </code>
               </TableCell>
@@ -65,7 +65,7 @@ export function ToolAccessPanel({ tool }: { tool: Tool }) {
                     <HugeiconsIcon
                       aria-hidden="true"
                       icon={LinkSquare02Icon}
-                      size={11}
+                      size={12}
                       strokeWidth={1.8}
                     />
                   </a>

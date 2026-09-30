@@ -7,6 +7,8 @@ import {
   useRef,
   useState,
 } from 'react'
+import { UsageFigures } from '@/components/catalog/usage-figures'
+import { SIDE_HEADING } from '@/components/detail/styles'
 import { formatCount, formatExact } from '@/lib/usage/stats'
 
 type CopyCount = { added: number; record: () => void }
@@ -59,46 +61,59 @@ export function useRecordCopy(): (() => void) | undefined {
   return useContext(CopyCountContext)?.record
 }
 
-/** One quiet line under the actions. */
-const LINE = 'type-helper text-soft'
-
-/** "Not copied yet", "Copied once", "Copied 1.2K times". */
-function copiedText(copies: number): string {
-  if (copies === 0) {
-    return 'Not copied yet'
-  }
-  return copies === 1 ? 'Copied once' : `Copied ${formatCount(copies)} times`
-}
-
 /**
- * How many times the file was copied into an agent, counting this page's own
- * copy once the server has. A rounded 1.2K keeps the exact count in its title.
+ * The side column's Uses: a heading like Get started's, then the figures the
+ * home page's list shows for the same workflow — "12 total", "+3 this week",
+ * the heading naming them — counting this page's own copy once the server
+ * has. A rounded 1.2K keeps the
+ * exact count in its title.
  */
-export function UsesStat({ total }: { total: number }) {
+export function UsesStat({ total, week }: { total: number; week: number }) {
   const added = useContext(CopyCountContext)?.added ?? 0
   const copies = total + added
   return (
-    <p
-      className={LINE}
-      title={
-        formatCount(copies) === formatExact(copies)
-          ? undefined
-          : `Copied ${formatExact(copies)} times`
-      }
-    >
-      {copiedText(copies)}
-    </p>
+    <UsesSection>
+      <p
+        className="flex items-baseline gap-2"
+        title={
+          formatCount(copies) === formatExact(copies)
+            ? undefined
+            : `${formatExact(copies)} uses`
+        }
+      >
+        {copies === 0 ? (
+          <span className="type-helper text-soft">Not copied yet</span>
+        ) : (
+          <UsageFigures isUnderHeading total={copies} week={week + added} />
+        )}
+      </p>
+    </UsesSection>
   )
 }
 
 /**
- * The line's place while the count streams in: empty, at the line's height,
- * so nothing moves when it lands. No pulse, no spinner.
+ * Its place while the count streams in: the heading, and an empty line at
+ * the figures' height, so nothing moves when it lands. No pulse, no spinner.
  */
 export function UsesStatFallback() {
   return (
-    <p aria-hidden="true" className={LINE}>
-      &nbsp;
-    </p>
+    <UsesSection>
+      <p aria-hidden="true" className="type-stat">
+        &nbsp;
+      </p>
+    </UsesSection>
+  )
+}
+
+/**
+ * One line under lg — "Uses  2 total  +2 this week" — where the column stacks
+ * under the buttons; from lg, a heading over its figures like Get started's.
+ */
+function UsesSection({ children }: { children: ReactNode }) {
+  return (
+    <section className="flex items-baseline gap-2 lg:flex-col lg:items-start lg:gap-3">
+      <h2 className={SIDE_HEADING}>Uses</h2>
+      {children}
+    </section>
   )
 }

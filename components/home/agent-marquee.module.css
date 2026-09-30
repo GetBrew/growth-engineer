@@ -1,4 +1,3 @@
-/* Without the mask, logos pop in and out at the viewport's hard edges. */
 .viewport {
   mask-image: linear-gradient(
     to right,
@@ -9,9 +8,6 @@
   );
 }
 
-/* One lap = half the track: two of the four copies of the list. ~5s per item
-   keeps the names readable; add an agent, add to the duration or the band
-   speeds up. 6 agents x 2 copies -> 60s. */
 .track {
   animation: agent-scroll 60s linear infinite;
 }
@@ -26,7 +22,6 @@
   }
 }
 
-/* Two quick beats, then a rest — a heartbeat, not a blink. */
 .heart {
   animation: heartbeat 2.4s ease-in-out infinite;
   transform-origin: center;

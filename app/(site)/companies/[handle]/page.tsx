@@ -1,16 +1,22 @@
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
+import type { ReactNode } from 'react'
 import {
   CatalogList,
   toolListItem,
   workflowListItem,
 } from '@/components/catalog/list'
 import { CodeText } from '@/components/common/code-text'
-import { EntityLogo } from '@/components/common/entity-logo'
 import { NoResults } from '@/components/common/no-results'
-import { ShareButton } from '@/components/detail/share-button'
 import {
+  DETAIL_DATE,
+  DetailByline,
+  DetailHeader,
+} from '@/components/detail/header'
+import {
+  DETAIL_ACTION_ICON,
   HEADER_ACTION_COLLAPSING,
   LINK_ICON,
   PANEL_HEADING,
@@ -20,11 +26,11 @@ import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
-import { Badge } from '@/components/ui/badge'
 import { isValidHandle, refToFilePath, refToPath } from '@/lib/catalog/keys'
 import {
   loadCompany,
   loadDocument,
+  loadTagChips,
   loadToolsByCompany,
   loadWorkflowsByCompany,
   resolveAlias,
@@ -86,11 +92,12 @@ async function CompanyDetail({ params }: { params: Params }) {
   if (!isValidHandle(handle)) {
     notFound()
   }
-  const [company, tools, workflows, document] = [
+  const [company, tools, workflows, document, tags] = [
     loadCompany(handle),
     loadToolsByCompany(handle),
     loadWorkflowsByCompany(handle),
     loadDocument('company', handle),
+    loadTagChips(),
   ]
   if (!company) {
     const alias = resolveAlias('company', handle)
@@ -99,9 +106,12 @@ async function CompanyDetail({ params }: { params: Params }) {
     }
     notFound()
   }
+  const category = tags.find(
+    (tag) => tag.key === `category:${company.category}`
+  )?.label
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-(--space-block)">
       <JsonLd
         data={companyJsonLd(
           SITE_ORIGIN,
@@ -109,31 +119,9 @@ async function CompanyDetail({ params }: { params: Params }) {
           document?.updatedAt ?? company.updatedAt
         )}
       />
-      <header>
-        {/* One row on every screen: the name on the left, the actions as
-            icons on the right (labels join them from sm). */}
-        <div className="flex items-center justify-between gap-3 sm:gap-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <EntityLogo
-              logoUrl={company.logo?.url}
-              name={company.name}
-              size={44}
-            />
-            {/* A step smaller on the narrowest phones; a longer name wraps
-                rather than losing its end. */}
-            <h1 className="type-page-title min-w-0 max-[22.5rem]:text-[26px]">
-              {company.name}
-            </h1>
-          </div>
-
-          {/* Phones: 32px icons so the name keeps its room beside them, and
-              -mr-2 lines the last glyph up with the page edge (a borderless
-              icon's padding would indent it). */}
-          <div className="flex shrink-0 items-center gap-2.5 max-sm:-mr-2 max-sm:gap-0 max-sm:[&_a]:size-8 max-sm:[&_button]:size-8">
-            <ShareButton
-              text={company.tagline ?? company.description}
-              title={company.name}
-            />
+      <DetailHeader
+        actions={
+          <>
             <ViewSourceButton entityKey={company.key} type="company" />
             <a
               className={HEADER_ACTION_COLLAPSING}
@@ -144,124 +132,159 @@ async function CompanyDetail({ params }: { params: Params }) {
               <HugeiconsIcon
                 aria-hidden="true"
                 icon={LINK_ICON.website}
-                size={16}
+                size={DETAIL_ACTION_ICON}
                 strokeWidth={1.8}
               />
               <span className="max-sm:sr-only">Website</span>
             </a>
-          </div>
-        </div>
+          </>
+        }
+        byline={
+          <DetailByline
+            avatars={[
+              { name: company.name, src: company.logo?.url, logo: true },
+            ]}
+          >
+            {category ? (
+              <Link
+                className="focus-ring rounded-sm text-foreground underline-offset-4 hover:underline"
+                href={`/companies?category=${company.category}`}
+              >
+                {category}
+              </Link>
+            ) : (
+              company.domain
+            )}
+          </DetailByline>
+        }
+        description={company.tagline}
+        hasIconActions
+        meta={`Updated ${DETAIL_DATE.format(document?.updatedAt ?? company.updatedAt)}`}
+        tags={
+          company.status === 'deprecated'
+            ? [{ label: 'Deprecated', emphasis: true }]
+            : []
+        }
+        title={company.name}
+      />
 
-        {company.status === 'deprecated' ? (
-          <div className="mt-6 flex flex-wrap items-center gap-1.5">
-            <Badge variant="emphasis">Deprecated</Badge>
-          </div>
-        ) : null}
-      </header>
-
-      <div className="mt-[calc(var(--space-block)/2)] border-t border-dashed pt-[calc(var(--space-block)/2)]">
-        <DetailTabs
-          label="Company sections"
-          sections={[
-            {
-              value: 'overview',
-              label: 'Overview',
-              content: (
-                <div className="flex flex-col gap-8">
-                  <section className="flex flex-col gap-3">
-                    <h2 className={cn(PANEL_HEADING, 'min-h-0')}>Overview</h2>
-                    {/* The body is markdown: one <p> per paragraph, and
-                        `backticks` set as code. */}
-                    <div className="flex max-w-2xl flex-col gap-4">
-                      {(
-                        company.description ??
-                        company.tagline ??
-                        `${company.name} has no description yet.`
-                      )
-                        .split(BLANK_LINE)
-                        .map((paragraph) => (
-                          <p className="type-body" key={paragraph}>
-                            <CodeText text={paragraph.trim()} />
-                          </p>
-                        ))}
-                    </div>
-                  </section>
+      <DetailTabs
+        label="Company sections"
+        sections={[
+          {
+            value: 'overview',
+            label: 'Overview',
+            content: (
+              <Panel title="Overview">
+                {/* The body is markdown: one <p> per paragraph, and
+                    `backticks` set as code. */}
+                <div className="flex max-w-2xl flex-col gap-4">
+                  {(
+                    company.description ??
+                    company.tagline ??
+                    `${company.name} has no description yet.`
+                  )
+                    .split(BLANK_LINE)
+                    .map((paragraph) => (
+                      <p className="type-helper text-soft" key={paragraph}>
+                        <CodeText text={paragraph.trim()} />
+                      </p>
+                    ))}
                 </div>
-              ),
-            },
-            {
-              value: 'workflows',
-              label: 'Workflows',
-              count: workflows.length,
-              content: (
-                <section className="flex flex-col">
-                  <div className="flex flex-col gap-(--space-3xs)">
-                    <h2 className={cn(PANEL_HEADING, 'min-h-0')}>Workflows</h2>
-                    <p className="type-body">
-                      {workflows.length}{' '}
-                      {workflows.length === 1 ? 'workflow' : 'workflows'} using{' '}
-                      {company.name}.
-                    </p>
-                  </div>
-                  {workflows.length === 0 ? (
-                    <NoResults
-                      description={`No published workflow uses ${company.name} yet.`}
-                      entity="workflow"
-                      title="No workflows yet"
-                    />
-                  ) : (
-                    <CatalogList items={workflows.map(workflowListItem)} />
-                  )}
-                </section>
-              ),
-            },
-            {
-              value: 'tools',
-              label: 'Tools',
-              count: tools.length,
-              content: (
-                <section className="flex flex-col">
-                  <div className="flex flex-col gap-(--space-3xs)">
-                    <h2 className={cn(PANEL_HEADING, 'min-h-0')}>Tools</h2>
-                    <p className="type-body">
-                      What agents can reach at {company.name}.
-                    </p>
-                  </div>
-                  {tools.length === 0 ? (
-                    <NoResults
-                      description="A tool is listed once an agent can reach it over MCP, CLI or API."
-                      entity="tool"
-                      title="No published tools yet"
-                    />
-                  ) : (
-                    <CatalogList
-                      items={tools.map((tool) =>
-                        toolListItem({
-                          tool: {
-                            key: tool.key,
-                            name: tool.name,
-                            summary: tool.summary,
-                            access: [
-                              ...new Set(
-                                tool.access.map((entry) => entry.type)
-                              ),
-                            ],
-                          },
-                          company: {
-                            key: company.key,
-                            name: company.name,
-                            logoUrl: company.logo?.url,
-                          },
-                        })
-                      )}
-                    />
-                  )}
-                </section>
-              ),
-            },
-          ]}
-        />
-      </div>
+              </Panel>
+            ),
+          },
+          {
+            value: 'workflows',
+            label: 'Workflows',
+            count: workflows.length,
+            content: (
+              <Panel
+                description={`Workflows that use ${company.name}'s tools.`}
+                title="Workflows"
+              >
+                {workflows.length === 0 ? (
+                  <NoResults
+                    description={`No published workflow uses ${company.name} yet.`}
+                    entity="workflow"
+                    title="No workflows yet"
+                  />
+                ) : (
+                  <CatalogList items={workflows.map(workflowListItem)} />
+                )}
+              </Panel>
+            ),
+          },
+          {
+            value: 'tools',
+            label: 'Tools',
+            count: tools.length,
+            content: (
+              <Panel
+                description={`What agents can reach at ${company.name}.`}
+                title="Tools"
+              >
+                {tools.length === 0 ? (
+                  <NoResults
+                    description="A tool is listed once an agent can reach it over MCP, CLI or API."
+                    entity="tool"
+                    title="No published tools yet"
+                  />
+                ) : (
+                  <CatalogList
+                    items={tools.map((tool) => ({
+                      ...toolListItem({
+                        tool: {
+                          key: tool.key,
+                          name: tool.name,
+                          summary: tool.summary,
+                          access: [
+                            ...new Set(tool.access.map((entry) => entry.type)),
+                          ],
+                        },
+                        company: {
+                          key: company.key,
+                          name: company.name,
+                          logoUrl: company.logo?.url,
+                        },
+                      }),
+                      // Every tool here is this company's: no name before
+                      // the summary.
+                      description: tool.summary,
+                    }))}
+                  />
+                )}
+              </Panel>
+            ),
+          },
+        ]}
+      />
     </div>
+  )
+}
+
+/**
+ * One tab's panel, the same shape for all three: its heading, one quiet
+ * line saying what is in it (the count is on the tab), then the content.
+ */
+function Panel({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: string
+  children: ReactNode
+}) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h2 className={cn(PANEL_HEADING, 'min-h-0')}>{title}</h2>
+        {description ? (
+          <p className="type-helper text-soft">{description}</p>
+        ) : null}
+      </div>
+      {children}
+    </section>
   )
 }

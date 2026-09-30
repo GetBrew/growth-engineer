@@ -4,20 +4,13 @@ import { useState } from 'react'
 import { useClampOverflow } from '@/lib/hooks/use-clamp-overflow'
 import { cn } from '@/lib/utils/cn'
 
-export function DetailDescription({
-  text,
-  className,
-}: {
-  text: string
-  /** Its measure; `max-w-2xl` beside the header's actions. */
-  className?: string
-}) {
+export function DetailDescription({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false)
   const [ref, overflows] = useClampOverflow<HTMLParagraphElement>(!expanded)
 
   return (
-    <div className={cn('mt-2 max-w-2xl', className)}>
-      <p className={cn('type-lead', expanded || 'line-clamp-2')} ref={ref}>
+    <div className="mt-2 max-w-2xl">
+      <p className={cn('type-body', expanded || 'line-clamp-2')} ref={ref}>
         {text}
       </p>
       {overflows ? (

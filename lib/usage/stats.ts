@@ -30,7 +30,7 @@ export function statsFor(stats: CopyStatsByKey, key: string): CopyStats {
 }
 
 /** The number an angle ranks by. */
-export function angleValue(stats: CopyStats, angle: CopyAngle): number {
+function angleValue(stats: CopyStats, angle: CopyAngle): number {
   return angle === 'hot' ? stats.week : stats.total
 }
 

@@ -12,10 +12,8 @@ import {
 import { MarkdownFile } from '@/components/detail/markdown-file'
 import { MarkdownPreview } from '@/components/detail/markdown-preview'
 import { OpenInAgentMenu } from '@/components/detail/open-in-agent-menu'
-import { ShareButton } from '@/components/detail/share-button'
 import { PANEL_HEADING } from '@/components/detail/styles'
 import { ToolAccessPanel } from '@/components/detail/tool-access-panel'
-import { ViewSourceButton } from '@/components/detail/view-source-button'
 import { BackLink } from '@/components/layout/back-link'
 import { Page } from '@/components/layout/page'
 import { JsonLd } from '@/components/seo/json-ld'
@@ -28,6 +26,7 @@ import {
 } from '@/lib/catalog/loaders'
 import { toolParams } from '@/lib/catalog/static-params'
 import { SITE_ORIGIN } from '@/lib/env'
+import { sourceFileUrl } from '@/lib/github'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { toolJsonLd } from '@/lib/seo/structured-data'
 
@@ -103,6 +102,12 @@ async function ToolDetail({ params }: { params: Params }) {
     notFound()
   }
   const { tool, company } = result
+  // The toast after a copy shows whose tool this is.
+  const toolCompany = {
+    key: company.key,
+    name: company.name,
+    logoUrl: company.logo?.url,
+  }
   // The file's date: the tool's, its company's and its workflows', newest.
   const updatedAt = document.updatedAt
   const filePath = refToFilePath({
@@ -116,21 +121,23 @@ async function ToolDetail({ params }: { params: Params }) {
       <DetailHeader
         actions={
           <>
-            <ShareButton text={tool.summary} title={tool.name} />
-            <ViewSourceButton entityKey={tool.key} type="tool" />
-            <OpenInAgentMenu
-              filePath={filePath}
-              fileUrl={`${SITE_ORIGIN}${filePath}`}
-              markdown={document.markdown}
-              title={tool.name}
-            />
             <CopyFileButton
+              companies={[toolCompany]}
               label="Copy tool"
               markdown={document.markdown}
               noun="Tool"
             />
+            <OpenInAgentMenu
+              filePath={filePath}
+              fileUrl={`${SITE_ORIGIN}${filePath}`}
+              isWide
+              markdown={document.markdown}
+              sourceHref={sourceFileUrl({ type: 'tool', key: tool.key })}
+              title={tool.name}
+            />
           </>
         }
+        hasButtonActions
         byline={
           <DetailByline
             avatars={[
@@ -159,6 +166,7 @@ async function ToolDetail({ params }: { params: Params }) {
       <div className="flex min-w-0 flex-col gap-(--space-block)">
         <section className="flex flex-col gap-(--space-md)">
           <MarkdownFile
+            companies={[toolCompany]}
             fileName={filePath.split('/').pop() ?? 'tool.md'}
             markdown={document.markdown}
             preview={<MarkdownPreview markdown={document.markdown} />}

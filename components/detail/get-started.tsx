@@ -1,3 +1,10 @@
+import {
+  BrickWallShieldIcon,
+  BubbleChatQuestionIcon,
+  CopyCheckIcon,
+  Link04Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import Link from 'next/link'
 import { Fragment, type ReactNode } from 'react'
 import {
@@ -10,9 +17,8 @@ import {
 } from '@/components/detail/styles'
 
 const LINK =
-  'focus-ring rounded-sm text-foreground underline underline-offset-4 decoration-border hover:decoration-foreground'
+  'focus-ring type-emphasis rounded-sm text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors hover:decoration-foreground'
 
-/** What comes before the item at `index`: "A, B and C". */
 function separator(index: number, count: number): string {
   if (index === 0) {
     return ''
@@ -20,7 +26,6 @@ function separator(index: number, count: number): string {
   return index === count - 1 ? ' and ' : ', '
 }
 
-/** Each company as a link to its page, joined "A, B and C". */
 function companyLinks(
   companies: ReadonlyArray<{ key: string; name: string }>
 ): ReactNode {
@@ -34,28 +39,34 @@ function companyLinks(
   ))
 }
 
-/**
- * Where to start, beside the Copy button: connect the tools (each company's
- * page says how), copy the file, answer its questions. The note under it is
- * what every workflow file's Rules make the agent do, so it holds for any
- * workflow.
- */
 export function GetStarted({
   companies,
   questions,
 }: {
-  /** The companies whose tools the steps use, in first-use order. */
   companies: ReadonlyArray<{ key: string; name: string }>
-  /** How many inputs the agent asks for. */
   questions: number
 }) {
-  const steps: Array<{ key: string; content: ReactNode }> = [
-    { key: 'connect', content: <>Connect {companyLinks(companies)}.</> },
-    { key: 'copy', content: 'Copy the workflow into your agent.' },
+  const rows: Array<{
+    key: string
+    icon: IconSvgElement
+    content: ReactNode
+    isNote?: boolean
+  }> = [
+    {
+      key: 'connect',
+      icon: Link04Icon,
+      content: <>Connect {companyLinks(companies)}.</>,
+    },
+    {
+      key: 'copy',
+      icon: CopyCheckIcon,
+      content: 'Copy the workflow into your agent.',
+    },
     ...(questions > 0
       ? [
           {
             key: 'answer',
+            icon: BubbleChatQuestionIcon,
             content: (
               <>
                 Answer its{' '}
@@ -68,22 +79,28 @@ export function GetStarted({
           },
         ]
       : []),
+    {
+      key: 'safe',
+      icon: BrickWallShieldIcon,
+      content: 'It asks before it sends, spends or changes anything.',
+      isNote: true,
+    },
   ]
   return (
     <section className="flex flex-col gap-3">
       <h2 className={SIDE_HEADING}>Get started</h2>
-      <ol className={BRIEF_LIST}>
-        {steps.map((step, index) => (
-          <li className={BRIEF_ITEM} key={step.key}>
-            <span className={BRIEF_MARKER}>{index + 1}</span>
-            <p className={BRIEF_PRIMARY}>{step.content}</p>
+      <ul className={BRIEF_LIST}>
+        {rows.map((row) => (
+          <li className={BRIEF_ITEM} key={row.key}>
+            <span aria-hidden="true" className={BRIEF_MARKER}>
+              <HugeiconsIcon icon={row.icon} size={16} strokeWidth={1.8} />
+            </span>
+            <p className={row.isNote ? BRIEF_SECONDARY : BRIEF_PRIMARY}>
+              {row.content}
+            </p>
           </li>
         ))}
-      </ol>
-      {/* On the steps' text line: 20px marker column + 12px gutter. */}
-      <p className={`${BRIEF_SECONDARY} pl-8`}>
-        It asks before it sends, spends or changes anything.
-      </p>
+      </ul>
     </section>
   )
 }

@@ -68,7 +68,7 @@ Optional. Anything else the agent should know, in any markdown.
 | `tags` | no | The `channel:` entries from `tags.yml` it reaches people on. Its capabilities come from its tools, and `has:*` from their ways in; both are computed, never listed. |
 | `added` | yes | `YYYY-MM-DD`, the day it joins the catalog: write today's date. It never changes after that; the New list sorts by it. |
 | `updated` | yes | `YYYY-MM-DD`, the day you last changed it. |
-| `featured` | no | `true` puts it on the featured list at the top of `/workflows`. Set by maintainers; leave it out. |
+| `featured` | no | `true` puts it on the featured list at the top of the home page. Set by maintainers; leave it out. |
 | `aliases`, `status` | no | Old names to redirect; `published` (default), `deprecated`, or `draft` (checked, never published, and free to use draft tools). A published workflow uses published tools only. |
 
 ### The body

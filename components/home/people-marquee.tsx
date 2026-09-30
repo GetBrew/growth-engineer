@@ -12,24 +12,22 @@ const PEOPLE = [
 
 export function PeopleMarquee() {
   return (
-    // Illustrations, not portraits of real users: decoration, so it is hidden
-    // from screen readers rather than labelled as people.
     <ul aria-hidden="true" className="flex items-center">
       {PEOPLE.map((person, index) => (
         <li
-          className={`${styles.item} -ml-3 first:ml-0`}
+          className={`${styles.item} -ml-2.5 first:ml-0`}
           key={person.id}
           style={{ '--index': index } as CSSProperties}
         >
           <span
-            className={`${styles.avatar} relative block size-10 overflow-hidden rounded-full border-2 border-background bg-muted shadow-xs sm:size-12`}
+            className={`${styles.avatar} relative block size-11 overflow-hidden rounded-full border border-border bg-muted shadow-xs`}
           >
             <Image
               alt=""
               className="object-cover"
               fill
               loading="eager"
-              sizes="48px"
+              sizes="44px"
               src={person.src}
             />
           </span>

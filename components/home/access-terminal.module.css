@@ -1,7 +1,3 @@
-/* Each line fades up in turn, so the block reads as a session playing out
-   rather than a list that was always there. `backwards` matters: without it a
-   line paints at full opacity before its delay elapses and the whole block
-   flashes complete, then replays. */
 .line {
   animation: terminal-line 0.4s var(--ease-expo-out) backwards;
   animation-delay: calc(var(--index) * 220ms);
@@ -14,7 +10,6 @@
   }
 }
 
-/* The prompt keeps a cursor once the last line has landed. */
 .caret {
   animation: terminal-caret 1.1s steps(1) infinite;
 }

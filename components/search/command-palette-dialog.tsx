@@ -1,8 +1,7 @@
 'use client'
 
-import { ArrowRight01Icon, Search01Icon } from '@hugeicons/core-free-icons'
+import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   type KeyboardEvent,
@@ -13,9 +12,10 @@ import {
   useRef,
   useState,
 } from 'react'
-import { EntityIcon } from '@/components/common/entity-icon'
+import { badgeVariants } from '@/components/ui/badge'
 import { Kbd } from '@/components/ui/kbd'
 import {
+  DIALOG_BACKDROP,
   Sheet,
   SheetBackdrop,
   SheetDescription,
@@ -31,20 +31,10 @@ import {
   useCommandPaletteOpen,
 } from '@/lib/stores/command-palette'
 import type { PaletteItem } from '@/lib/types/catalog'
-import { cn } from '@/lib/utils/cn'
+import { type Option, Row } from './command-palette-row'
 
 /** Rows per kind before the group ends in "See all". */
 const PER_GROUP = 5
-
-/** One navigable row: a result, a "see all" link, or a section to jump to. */
-type Option = {
-  id: string
-  href: string
-  title: string
-  subtitle?: string
-  entity: Section['entity']
-  isMore?: boolean
-}
 
 type Group = { section: Section; options: Array<Option> }
 
@@ -70,6 +60,7 @@ function groupResults(
       href: item.href,
       title: item.title,
       subtitle: item.subtitle,
+      ...(item.image ? { image: item.image } : {}),
       entity: item.kind,
     }))
     if (items.length > PER_GROUP) {
@@ -210,7 +201,7 @@ export function CommandPaletteDialog({
           <div className="flex flex-wrap gap-2 px-3 pb-2">
             {suggestions.map((suggestion) => (
               <button
-                className="focus-ring type-label rounded-full border px-3 py-1.5 text-faint transition-colors duration-200 hover:bg-hover hover:text-foreground"
+                className={badgeVariants({ size: 'label', interactive: true })}
                 key={suggestion}
                 onClick={() => suggest(suggestion)}
                 type="button"
@@ -224,7 +215,7 @@ export function CommandPaletteDialog({
     )
   } else if (groups.length === 0) {
     body = (
-      <p className="type-body px-3 py-10 text-center">
+      <p className="type-helper px-3 py-10 text-center text-soft">
         Nothing matches that yet.
       </p>
     )
@@ -242,7 +233,7 @@ export function CommandPaletteDialog({
   return (
     <Sheet onOpenChange={setCommandPaletteOpen} open={isOpen}>
       <SheetPortal>
-        <SheetBackdrop className="bg-background/60 backdrop-blur-sm" />
+        <SheetBackdrop className={DIALOG_BACKDROP} />
         <SheetPopup className="floating-panel fixed top-[12vh] left-1/2 w-[min(40rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden">
           <SheetTitle className="sr-only">Search the catalog</SheetTitle>
           <SheetDescription className="sr-only">
@@ -255,7 +246,7 @@ export function CommandPaletteDialog({
               aria-hidden="true"
               className="shrink-0 text-subtle"
               icon={Search01Icon}
-              size={20}
+              size={18}
               strokeWidth={1.8}
             />
             <input
@@ -291,71 +282,6 @@ export function CommandPaletteDialog({
         </SheetPopup>
       </SheetPortal>
     </Sheet>
-  )
-}
-
-/**
- * A real link, so it prefetches and opens in a new tab like any other; the
- * input keeps focus and points at the highlighted row.
- *
- * ONE row is highlighted at a time: pointing at a row selects it, the way
- * the arrow keys do, instead of a hover tint beside the keyboard's. It is
- * mousemove, not mouseenter, so rows scrolling under a resting pointer while
- * the arrow keys move do not steal the selection.
- */
-function Row({
-  id,
-  isActive,
-  onPoint,
-  onSelect,
-  option,
-}: {
-  id: string
-  isActive: boolean
-  onPoint: () => void
-  onSelect: () => void
-  option: Option
-}) {
-  const ref = useRef<HTMLAnchorElement>(null)
-
-  useEffect(() => {
-    if (isActive) {
-      ref.current?.scrollIntoView({ block: 'nearest' })
-    }
-  }, [isActive])
-
-  return (
-    <Link
-      aria-selected={isActive}
-      className={cn(
-        'focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left',
-        isActive && 'bg-muted'
-      )}
-      href={option.href}
-      id={id}
-      onClick={onSelect}
-      onMouseMove={isActive ? undefined : onPoint}
-      ref={ref}
-      role="option"
-      tabIndex={-1}
-    >
-      <EntityIcon className="text-subtle" entity={option.entity} size={18} />
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="type-control truncate">{option.title}</span>
-        {option.subtitle ? (
-          <span className="type-meta truncate">{option.subtitle}</span>
-        ) : null}
-      </span>
-      {option.isMore ? (
-        <HugeiconsIcon
-          aria-hidden="true"
-          className="shrink-0 text-subtle"
-          icon={ArrowRight01Icon}
-          size={16}
-          strokeWidth={1.8}
-        />
-      ) : null}
-    </Link>
   )
 }
 

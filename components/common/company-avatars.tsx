@@ -16,14 +16,18 @@ export type CompanyAvatar = {
 }
 
 const SIZE = {
-  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11' },
-  sm: { stack: '[&>*+*]:-ml-1.5', avatar: 'size-7' },
+  md: { stack: '[&>*+*]:-ml-3', avatar: 'size-11', image: '' },
+  sm: {
+    stack: '[&>*+*]:-ml-1.5',
+    avatar: 'size-7 border border-border',
+    image: 'object-contain p-0.75',
+  },
 } as const
 
 const LIFT =
   'relative cursor-pointer rounded-full transition-transform duration-200 ease-out hover:z-10 hover:-translate-y-1 motion-reduce:transition-none'
 
-function Logo({
+export function CompanyLogo({
   company,
   size,
 }: {
@@ -34,7 +38,7 @@ function Logo({
     <Avatar
       className={cn(SIZE[size].avatar, 'bg-background ring-2 ring-background')}
     >
-      <AvatarImage alt="" src={company.logoUrl} />
+      <AvatarImage alt="" className={SIZE[size].image} src={company.logoUrl} />
       <AvatarFallback className="type-label bg-background text-soft">
         {company.name.charAt(0)}
       </AvatarFallback>
@@ -44,14 +48,10 @@ function Logo({
 
 function MoreChip({ label, size }: { label: string; size: keyof typeof SIZE }) {
   return (
-    // A small count pinned to the last logo's corner, like a notification
-    // badge: it says there are more without taking a slot in the row.
     <span
       className={cn(
-        'pointer-events-none absolute right-0 bottom-0 z-20 grid translate-x-1/3 translate-y-1/4 place-items-center rounded-full border bg-background font-medium text-soft tabular-nums ring-2 ring-background',
-        size === 'md'
-          ? 'h-5 min-w-5 px-1 text-[11px]/none'
-          : 'h-4 min-w-4 px-0.5 text-[9px]/none'
+        'type-badge pointer-events-none absolute right-0 bottom-0 z-20 grid translate-x-1/3 translate-y-1/4 place-items-center rounded-full border bg-background text-soft ring-2 ring-background',
+        size === 'md' ? 'h-5 min-w-5 px-1' : 'h-4 min-w-4 px-0.5'
       )}
     >
       {label}
@@ -79,7 +79,7 @@ export function CompanyAvatars({
       <div className={stack}>
         {companies.map((company) => (
           <span className="relative rounded-full" key={company.key}>
-            <Logo company={company} size={size} />
+            <CompanyLogo company={company} size={size} />
           </span>
         ))}
         {more ? <MoreChip label={more} size={size} /> : null}
@@ -108,7 +108,7 @@ export function CompanyAvatars({
                 )
               }
             >
-              <Logo company={company} size={size} />
+              <CompanyLogo company={company} size={size} />
             </TooltipTrigger>
             <TooltipContent>{company.name}</TooltipContent>
           </Tooltip>

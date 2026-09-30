@@ -19,18 +19,18 @@ export function DetailTabs({
 }) {
   return (
     <Tabs
-      className="grid gap-10 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-14"
+      className="grid grid-cols-1 gap-10 lg:grid-cols-(--grid-tabs) lg:gap-14"
       defaultValue={sections[0]?.value}
       orientation="vertical"
     >
       <TabsList
         aria-label={label}
-        className="scrollbar-none h-auto w-full justify-start gap-1 overflow-x-auto rounded-none bg-transparent p-0 group-data-vertical/tabs:flex-row group-data-vertical/tabs:p-0 lg:sticky lg:top-[calc(var(--header-height)+2rem)] lg:gap-0.5 lg:self-start lg:group-data-vertical/tabs:flex-col"
+        className="scrollbar-none h-auto w-full justify-start gap-1 overflow-x-auto rounded-none bg-transparent p-0 group-data-vertical/tabs:flex-row group-data-vertical/tabs:p-0 lg:sticky lg:top-(--sticky-top) lg:gap-0.5 lg:self-start lg:group-data-vertical/tabs:flex-col"
         variant="plain"
       >
         {sections.map((section) => (
           <TabsTrigger
-            className="h-auto flex-none justify-between gap-3 rounded-xl px-3 py-2 hover:bg-hover data-active:bg-hover data-active:text-foreground group-data-vertical/tabs:w-auto group-data-vertical/tabs:justify-between lg:group-data-vertical/tabs:w-full"
+            className="h-8 flex-none justify-between gap-3 rounded-full px-3 hover:bg-hover data-active:bg-hover data-active:text-foreground group-data-vertical/tabs:w-auto group-data-vertical/tabs:justify-between lg:group-data-vertical/tabs:w-full"
             key={section.value}
             value={section.value}
           >

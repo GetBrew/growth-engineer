@@ -171,7 +171,7 @@ describe('the content tree', () => {
       [...catalog.workflows.values()].map((workflow, index) =>
         workflowSearchItem(catalog, workflow, index)
       ),
-      { q: '', sort: 'featured', tag: 'motion:outbound' }
+      { q: '', sort: 'featured', chips: ['motion:outbound'] }
     )
     expect(outbound.map((item) => item.workflow.key).sort()).toEqual(
       [...catalog.workflows.values()]
@@ -420,14 +420,31 @@ describe('the content tree', () => {
     const email = searchWorkflowItems(workflows, {
       q: 'email',
       sort: 'featured',
-      tag: 'channel:email',
+      chips: ['channel:email'],
     })
     expect(email.length).toBeGreaterThan(0)
+    // Chips of two kinds narrow together (AND); two of one kind widen (OR).
+    const keysFor = (chips: Array<string>) =>
+      searchWorkflowItems(workflows, { q: '', sort: 'featured', chips }).map(
+        (row) => row.workflow.key
+      )
+    const both = keysFor(['motion:outbound', 'channel:email'])
+    expect(both.length).toBeGreaterThan(0)
+    expect(
+      both.every(
+        (key) =>
+          keysFor(['motion:outbound']).includes(key) &&
+          keysFor(['channel:email']).includes(key)
+      )
+    ).toBe(true)
+    expect(keysFor(['motion:outbound', 'motion:inbound']).length).toBe(
+      keysFor(['motion:outbound']).length + keysFor(['motion:inbound']).length
+    )
     expect(
       searchWorkflowItems(workflows, {
         q: 'email',
         sort: 'new',
-        tag: 'channel:not-real',
+        chips: ['channel:not-real'],
       })
     ).toEqual([])
     // The author is searchable: a person's workflows, by login.

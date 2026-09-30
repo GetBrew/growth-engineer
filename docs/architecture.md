@@ -91,11 +91,11 @@ signature, in-memory by implementation; no `'use cache'`, no `cacheTag`, no
 | Route | At build | Why |
 | --- | --- | --- |
 | `/companies/[handle]`, `/tools/[handle]/[name]` | fully static (`○`) | `generateStaticParams` + in-memory reads |
-| `/workflows/[name]`, `/workflows`, `/` | partial prerender (`◐`) when the copy counter is on, else fully static (`○`) | the page is the prerendered shell; only the copy counts (a workflow's Uses; the order of Hot and Popular) are holes, read at request time (`connection()`) through a `'use cache'` that asks the store at most once a minute, in one round trip, with the read-only token |
+| `/workflows/[name]`, `/` | partial prerender (`◐`) when the copy counter is on, else fully static (`○`) | the page is the prerendered shell; only the copy counts (a workflow's Uses; the order of Hot and Popular) are holes, read at request time (`connection()`) through a `'use cache'` that asks the store at most once a minute, in one round trip, with the read-only token |
 | `/api/markdown/[...path]` — every file, every alias | static (`●`) | the handler never reads the request; an alias is a 308 with a relative `Location` |
 | `/tools/[handle]` shortcuts, `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/sitemap.xml` | static | no request-time input |
 | `…/opengraph-image` — one card per company, tool and workflow | static (`●`) | `generateStaticParams` on the image route; `next/og` draws it at build |
-| `/tools`, `/companies`, `/workflows` | fully static (`○`) | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
+| `/tools`, `/companies`, and the workflow list on `/` (`/workflows` redirects there, query and all) | fully static (`○`), `/` as above | every item is prerendered with no query; once hydrated, a client component reads the URL and narrows the list in the browser with the same pure search the tests run |
 | `/add-a-workflow`, `/add-a-tool`, `/add-your-company` | fully static (`○`) | in-memory reads only; the guides quote their samples from the tree at build |
 | `/mcp` | on request (`ƒ`) | a POST per tool call or prompt; stateless, the same catalog; read-only except `submit_feedback`, which posts to Notra |
 | `/api/workflows/[name]/copies` | on request (`ƒ`) | one POST per page view that copies; a visitor counts once per workflow per 24 hours (`SET NX` on a hash of the address), then the total and today's bucket |
@@ -140,6 +140,11 @@ namespace, AND across; partial chip completion; the canonical URL).
 
 - The listings and the ⌘K palette need EVERY word; they rank by score, then
   date, then key, over items prerendered into the page — nothing fetches.
+- The home page's box suggests filters as you type
+  (`lib/catalog/filter-suggestions.ts`): "outbound" offers the Outbound
+  motion, "apollo" the company. A pick is a link to the URL with that chip
+  (`/?motion=outbound&channel=email&q=funding`); Enter picks only an exact
+  name, so any other word stays a word search.
 - MCP `search` (`lib/mcp/search-tool.ts`) filters by type, tags, company,
   the tool a workflow uses, and author; when no entry matches every word it
   returns the closest matches with `isPartial: true` instead of nothing. MCP

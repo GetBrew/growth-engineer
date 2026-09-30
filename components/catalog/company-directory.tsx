@@ -8,8 +8,8 @@ import {
 } from '@/components/catalog/category-section'
 import { NoResults } from '@/components/common/no-results'
 import { SectionHeading } from '@/components/layout/section-heading'
-import { CatalogSearch } from '@/components/search/catalog-search'
-import { ListingToolbar } from '@/components/search/listing-toolbar'
+import { FilterSearch } from '@/components/search/filter-search'
+import { tagFilterOptions } from '@/lib/catalog/filter-suggestions'
 import {
   type CompanySearchItem,
   searchCompanyItems,
@@ -29,19 +29,16 @@ function companiesHref(q: string, category: string): string {
   return query ? `/companies?${query}` : '/companies'
 }
 
+/** What the box offers before anything is typed: the busiest categories. */
+const COMPANY_EMPTY = { kinds: ['category'], limit: 8 } as const
+
 type DirectoryProps = {
   companies: ReadonlyArray<CompanySearchItem>
   categories: ReadonlyArray<TagChip>
 }
 
-/** No query: what the prerendered page shows before the URL is read. */
 const NO_PARAMS = new URLSearchParams()
 
-/**
- * Every company, prerendered, narrowed by the URL in the browser: the
- * prerender draws the directory with no query (every company and link, fully
- * static); once hydrated it reads the URL and follows it.
- */
 export function CompanyDirectory(props: DirectoryProps) {
   return useIsClient() ? (
     <CompanyDirectoryFromUrl {...props} />
@@ -65,12 +62,16 @@ function CompanyDirectoryView({
     q,
     ...(category ? { category } : {}),
   })
-  // An empty search is dropped from the tabs, or every tab opens nothing.
-  const tabQ = rows.length > 0 ? q : ''
+
+  const options = tagFilterOptions(
+    categories,
+    (key) => categories.find((tag) => tag.key === key)?.counts.companies ?? 0
+  )
+  const active = options.filter(
+    (option) => option.key === `category:${category}`
+  )
   const isExpanded = searchParams.get('view') === 'all'
-  // Grouped by slug, so each section's "more" row opens its own category. A
-  // company with no category lands in Other, which has nothing to open and
-  // so always shows in full.
+
   const sections = new Map<
     string,
     { label: string; slug?: string; rows: Array<CompanySearchItem> }
@@ -95,31 +96,21 @@ function CompanyDirectoryView({
       />
 
       <div className="flex flex-col gap-(--space-3xl)">
-        <ListingToolbar
-          groups={[
-            {
-              key: 'category',
-              label: 'Filter companies by category',
-              all: { href: companiesHref(tabQ, ''), active: !category },
-              moreTitle: 'More categories',
-              options: categories.map((tag) => ({
-                key: tag.key,
-                label: tag.label,
-                count: tag.counts.companies,
-                href: companiesHref(tabQ, tag.slug),
-                active: category === tag.slug,
-              })),
-            },
-          ]}
-          search={
-            <CatalogSearch
-              action="/companies"
-              defaultValue={q}
-              label="Search companies"
-              params={{ category }}
-              placeholder="Search companies…"
-            />
+        <FilterSearch
+          action="/companies"
+          active={active}
+          clearHref="/companies"
+          defaultValue={q}
+          empty={COMPANY_EMPTY}
+          label="Search companies"
+          options={options}
+          params={{ category: category || undefined }}
+          // A company has one category: picking another replaces it.
+          pickHref={(option, words) =>
+            companiesHref(words, option.key.slice('category:'.length))
           }
+          placeholder={`Search ${companies.length} companies`}
+          removeHref={() => companiesHref(q, '')}
         />
 
         {sections.size === 0 ? (

@@ -7,11 +7,6 @@ import { AGENTS, showStepsFor, useSelectedAgent } from '@/lib/stores/agents'
 import { cn } from '@/lib/utils/cn'
 import styles from './agent-marquee.module.css'
 
-/**
- * The track holds the list four times and slides half its width, so the
- * seam is never on screen however few agents there are; only the first copy
- * is reachable by keyboard or screen reader.
- */
 const COPIES = [0, 1, 2, 3] as const
 
 export function AgentMarquee() {
@@ -68,7 +63,7 @@ export function AgentMarquee() {
                       <span
                         className={cn(
                           'type-label whitespace-nowrap transition-colors duration-300 group-hover/agent:text-foreground',
-                          isActive ? 'text-foreground' : 'text-muted-foreground'
+                          isActive ? 'text-foreground' : 'text-soft'
                         )}
                       >
                         {agent.name}

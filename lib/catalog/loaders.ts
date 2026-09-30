@@ -13,11 +13,9 @@ import type {
 import { getCatalog, getSourceFile } from './catalog'
 import { type EntityType, formatRef } from './keys'
 import {
-  companyListItem,
   companySearchItem,
   paletteItems,
   tagChip,
-  toolListItem,
   toolSearchItem,
   workflowListItem,
   workflowSearchItem,
@@ -140,17 +138,6 @@ export function resolveAlias(entityType: EntityType, key: string) {
 
 /* ─────────────────────────────────── lists ───────────────────────────────── */
 
-/** Published companies in name order, as rows without their category. */
-export function loadCompanies(limit = MAX_LIST) {
-  const catalog = getCatalog()
-  return catalog.order.companies
-    .slice(0, Math.min(limit, MAX_LIST))
-    .flatMap((key) => {
-      const company = catalog.companies.get(key)
-      return company ? [companyListItem(catalog, company, false)] : []
-    })
-}
-
 /** Featured (featured first, then newest added) or New (newest added). */
 export function loadWorkflows(sort: 'featured' | 'new', limit = 30) {
   const catalog = getCatalog()
@@ -194,15 +181,6 @@ export function loadCompanySearchItems() {
 /** Every tag as a filter chip, with its counts. */
 export function loadTagChips() {
   return [...getCatalog().tags.values()].map(tagChip)
-}
-
-/** The newest published tools, as list rows. */
-export function loadNewTools(limit = 12) {
-  const catalog = getCatalog()
-  return catalog.order.toolsNew.slice(0, limit).flatMap((key) => {
-    const tool = catalog.tools.get(key)
-    return tool ? [toolListItem(catalog, tool)] : []
-  })
 }
 
 /**

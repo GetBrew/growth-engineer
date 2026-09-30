@@ -9,9 +9,6 @@ import { BrandLockup } from './brand'
 import { BrewLink } from './brew-link'
 import styles from './footer.module.css'
 
-// Three columns of equal weight. Explore holds every listing; Contribute
-// points at the guide for each kind of file (each guide links on to its
-// README on GitHub).
 const COLUMNS = [
   {
     heading: 'Explore',
@@ -32,11 +29,6 @@ const COLUMNS = [
   },
 ] as const
 
-// Three little hearts above the big one, graduated so they read as a group
-// rather than a row: the red one leads, the other two step down behind it.
-// The colours are borrowed for their hue, not their meaning: these are
-// confetti, and a hardcoded hex would be the only colour outside the tokens.
-// Black is not among them — it would repeat the big heart they sit above.
 const SPARKS = [
   {
     id: 'a',
@@ -71,7 +63,6 @@ const YEAR = process.env.BUILD_YEAR
 const LINK =
   'type-label rounded-sm text-soft transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground'
 
-/** A page on this site, or another site in a new tab. */
 function FooterLink({ href, label }: { href: string; label: string }) {
   if (href.startsWith('/')) {
     return (
@@ -124,9 +115,6 @@ export function Footer() {
         <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="type-label text-faint">© {YEAR} growth.engineer</p>
 
-          {/* Three pieces, not five: "by the … team" wrapped the wordmark in
-              words on both sides, and a logo mid-sentence reads as a gap. The
-              mark ends the line, which is how a credit normally runs. */}
           <p
             className={`${styles.group} type-label flex items-center gap-1.5 text-faint`}
           >
@@ -161,9 +149,6 @@ export function Footer() {
               ))}
             </span>
             by
-            {/* The wordmark ships at h-4, which paints 1.58x the 12px text
-                beside it and overhangs it top and bottom. h-3 brings its ink
-                to about 1.2x, which reads as a logo rather than a shout. */}
             <BrewLink className="h-3 w-9" />
           </p>
         </div>
@@ -171,7 +156,7 @@ export function Footer() {
 
       <div
         aria-hidden="true"
-        className="mb-[-0.04em] select-none whitespace-nowrap px-2 text-center font-medium text-[13.5vw] text-foreground/[0.07] leading-[0.78] tracking-[-0.055em]"
+        className="type-wordmark mb-[-0.04em] select-none whitespace-nowrap px-2 text-center text-foreground/[0.07]"
       >
         growth.engineer
       </div>

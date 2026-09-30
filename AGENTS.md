@@ -169,10 +169,10 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
 
 ## Code conventions
 
-- Tailwind: `flex gap-*`, never `space-x/y-*`; `flex-1` pairs with `min-w-0`.
-- File size target ~200 lines, cap 400 (data tables exempt).
-- One concern per file; name files by what they render; `Array<T>`; booleans
-  take `is/has/should/can`; environment through `lib/env.ts`.
+- Tailwind: `flex gap-*`, never `space-x/y-*`; `flex-1` pairs with `min-w-0`;
+  type only through a `type-*` role in `app/typography.css` (test-enforced).
+- One concern per file, ~200 lines (cap 400, data tables exempt); name files
+  by what they render; `Array<T>`; booleans take `is/has/should/can`; env via `lib/env.ts`.
 - Icons from `@hugeicons/react` + `@hugeicons/core-free-icons`; Geist Sans
   and Geist Mono through `next/font`.
 - Nothing invented in the catalog or the UI: no placeholder facts, fake stats,

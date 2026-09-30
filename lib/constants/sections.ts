@@ -19,7 +19,8 @@ export type Section = {
 }
 
 export const SECTIONS: ReadonlyArray<Section> = [
-  { entity: 'workflow', href: '/workflows', label: 'Workflows' },
+  // The home page IS the workflow list.
+  { entity: 'workflow', href: '/', label: 'Workflows' },
   { entity: 'tool', href: '/tools', label: 'Tools' },
   { entity: 'company', href: '/companies', label: 'Companies' },
 ]

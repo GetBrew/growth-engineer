@@ -1,5 +1,6 @@
 import { ACCESS_ORDER } from '@/lib/constants/catalog'
 import type { Catalog } from '@/lib/content/build-catalog'
+import { githubAvatarUrl } from '@/lib/github'
 import type {
   AccessType,
   Category,
@@ -36,7 +37,7 @@ function categoryOf(catalog: Catalog, company: Company): Category | undefined {
   return tag ? { slug: tag.slug, label: tag.label } : undefined
 }
 
-export function toolListItem(catalog: Catalog, tool: Tool): ToolListItem {
+function toolListItem(catalog: Catalog, tool: Tool): ToolListItem {
   const company = catalog.companies.get(tool.companyKey)
   const category = company ? categoryOf(catalog, company) : undefined
   return {
@@ -55,7 +56,7 @@ export function toolListItem(catalog: Catalog, tool: Tool): ToolListItem {
   }
 }
 
-export function companyListItem(
+function companyListItem(
   catalog: Catalog,
   company: Company,
   includeCategory = true
@@ -160,8 +161,11 @@ function toolPaletteItem(catalog: Catalog, tool: Tool): PaletteItem {
     kind: 'tool',
     key: tool.key,
     // A bare capability name ("Enrich contacts") is ambiguous across vendors.
-    title: company ? `${company.name} · ${tool.name}` : tool.name,
+    title: company ? `${tool.name} by ${company.name}` : tool.name,
     subtitle: tool.summary,
+    ...(company?.logo
+      ? { image: { url: company.logo.url, isPhoto: false } }
+      : {}),
     href: `/tools/${tool.key}`,
     searchText: tool.searchText,
     updatedAt: tool.updatedAt,
@@ -174,6 +178,7 @@ function workflowPaletteItem(workflow: Workflow): PaletteItem {
     key: workflow.key,
     title: workflow.title,
     subtitle: workflow.summary,
+    image: { url: githubAvatarUrl(workflow.author, 64), isPhoto: true },
     href: `/workflows/${workflow.key}`,
     searchText: workflow.searchText,
     updatedAt: workflow.updatedAt,
@@ -186,6 +191,9 @@ function companyPaletteItem(company: Company): PaletteItem {
     key: company.key,
     title: company.name,
     subtitle: company.tagline ?? company.description ?? company.domain,
+    ...(company.logo
+      ? { image: { url: company.logo.url, isPhoto: false } }
+      : {}),
     href: `/companies/${company.key}`,
     searchText: company.searchText,
     updatedAt: company.updatedAt,

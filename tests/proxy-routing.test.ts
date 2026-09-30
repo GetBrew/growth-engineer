@@ -95,8 +95,7 @@ describe('what runs the proxy', () => {
   test('a page view, a file and the index files', () => {
     for (const url of [
       '/',
-      '/workflows',
-      '/workflows?q=outbound',
+      '/?q=outbound',
       '/workflows/funding-signal-outbound',
       '/tools/apollo/enrich-person',
       '/companies/apollo',
@@ -115,9 +114,7 @@ describe('what runs the proxy', () => {
   })
 
   test('never a prefetch, a client navigation, an asset, the API or /mcp', () => {
-    expect(runs('/workflows', { rsc: '1', 'next-router-prefetch': '1' })).toBe(
-      false
-    )
+    expect(runs('/', { rsc: '1', 'next-router-prefetch': '1' })).toBe(false)
     expect(runs('/workflows/funding-signal-outbound', { rsc: '1' })).toBe(false)
     for (const url of [
       '/_next/static/chunks/main.js',
