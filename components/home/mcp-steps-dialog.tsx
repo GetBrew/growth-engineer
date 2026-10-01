@@ -1,7 +1,6 @@
 'use client'
 
-import Image from 'next/image'
-
+import { CodeText } from '@/components/common/code-text'
 import { Button } from '@/components/ui/button'
 import {
   DIALOG_BACKDROP,
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/sheet'
 import { type Agent, stepWithUrl } from '@/lib/stores/agents'
 import { cn } from '@/lib/utils/cn'
+import { AgentSwitcher } from './agent-switcher'
 
 export function McpStepsDialog({
   agent,
@@ -50,16 +50,8 @@ export function McpStepsDialog({
               </SheetDescription>
             </div>
 
-            <span className="entity-shadow grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl border bg-background">
-              <Image
-                alt=""
-                className="size-6 object-contain"
-                height={24}
-                key={agent.logo}
-                src={agent.logo}
-                width={24}
-              />
-            </span>
+            {/* Switch agents here, without closing and reopening. */}
+            <AgentSwitcher size="md" />
           </div>
 
           <ol className="mt-5 flex flex-col gap-3">
@@ -69,7 +61,7 @@ export function McpStepsDialog({
                   {index + 1}
                 </span>
                 <span className="type-body min-w-0 break-words text-foreground">
-                  {stepWithUrl(step, url)}
+                  <CodeText text={stepWithUrl(step, url)} />
                 </span>
               </li>
             ))}
@@ -81,7 +73,22 @@ export function McpStepsDialog({
             </code>
           </div>
 
-          <div className="mt-5 flex justify-end">
+          {/* The client's own guide, quietly, for when its screens have
+              moved on before these steps have. */}
+          <div className="mt-5 flex items-center justify-between gap-4">
+            {/* Smaller than the steps, and only the link underlined: a label,
+                then where it goes. */}
+            <p className="type-label text-soft">
+              Need help?{' '}
+              <a
+                className="focus-ring rounded-sm text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors hover:decoration-foreground"
+                href={agent.guide}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Official guide
+              </a>
+            </p>
             <SheetClose render={<Button size="pill" variant="outline" />}>
               Done
             </SheetClose>

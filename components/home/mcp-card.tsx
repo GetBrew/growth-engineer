@@ -1,28 +1,22 @@
 'use client'
 
 import {
-  ArrowLeft01Icon,
-  ArrowRight01Icon,
   Copy01Icon,
   SparklesIcon,
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { useCopy } from '@/lib/hooks/use-copy'
 import {
-  AGENTS,
   aiPrompt,
   closeSteps,
   openSteps,
-  selectAgent,
   useSelectedAgent,
   useStepsOpen,
 } from '@/lib/stores/agents'
+import { AgentSwitcher } from './agent-switcher'
 import { McpStepsDialog } from './mcp-steps-dialog'
-
-const NAV = 'rounded-lg text-faint hover:bg-hover hover:text-foreground'
 
 export function McpCard({ url }: { url: string }) {
   const agent = useSelectedAgent()
@@ -30,63 +24,13 @@ export function McpCard({ url }: { url: string }) {
   const prompt = useCopy()
   const showSteps = useStepsOpen()
 
-  function step(by: number) {
-    const at = AGENTS.findIndex((one) => one.name === agent.name)
-    const next = AGENTS[(at + by + AGENTS.length) % AGENTS.length]
-    if (next) {
-      selectAgent(next)
-    }
-  }
-
   return (
     <div className="flex w-full max-w-104 flex-col gap-4 rounded-3xl border border-border bg-background p-5 lg:shrink-0">
       <div className="flex items-center justify-between gap-3">
         <span className="type-item">
           Connect with {agent.headline ?? agent.name}
         </span>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button
-            aria-label="Previous agent"
-            className={NAV}
-            onClick={() => step(-1)}
-            size="icon-sm"
-            variant="ghost"
-          >
-            <HugeiconsIcon
-              aria-hidden="true"
-              icon={ArrowLeft01Icon}
-              size={16}
-              strokeWidth={2}
-            />
-          </Button>
-
-          <span className="entity-shadow grid size-8 shrink-0 place-items-center overflow-hidden rounded-xl border bg-background">
-            <Image
-              alt=""
-              className="size-5 object-contain"
-              height={20}
-              key={agent.logo}
-              loading="eager"
-              src={agent.logo}
-              width={20}
-            />
-          </span>
-
-          <Button
-            aria-label="Next agent"
-            className={NAV}
-            onClick={() => step(1)}
-            size="icon-sm"
-            variant="ghost"
-          >
-            <HugeiconsIcon
-              aria-hidden="true"
-              icon={ArrowRight01Icon}
-              size={16}
-              strokeWidth={2}
-            />
-          </Button>
-        </div>
+        <AgentSwitcher />
       </div>
 
       <div className="flex flex-col gap-3">
