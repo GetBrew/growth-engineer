@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react'
  * clients that take a remote (Streamable HTTP) MCP server by URL are listed,
  * and the steps say what the server needs: nothing — it is public, read-only
  * and has no sign-in. `SERVER_URL` in a step is replaced with the real URL
- * where it is shown.
+ * where it is shown, and `backticks` mark what to type or paste, set as code.
  */
 
 export type Agent = {
@@ -15,6 +15,9 @@ export type Agent = {
   headline?: string
   logo: string
   steps: ReadonlyArray<string>
+  /** The client's own setup guide: the fallback when its screens change
+      before these steps do, and the source to check them against. */
+  guide: string
 }
 
 const SERVER_URL = '<server URL>'
@@ -23,56 +26,72 @@ export const AGENTS = [
   {
     name: 'Claude',
     logo: '/marquee/claude.svg',
+    guide:
+      'https://support.claude.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp',
     steps: [
       'Open Claude and go to Settings, then Connectors.',
-      'Choose Add custom connector and name it growth.engineer.',
-      `Paste ${SERVER_URL} as the URL and choose Add. There is nothing to sign in to.`,
-      'Turn the connector on in a chat; its search and get tools appear.',
+      'Click Add, then choose Add custom connector.',
+      `Name it growth.engineer, paste \`${SERVER_URL}\` and click Add. There is nothing to sign in to.`,
+      'In a chat, open the + menu, then Connectors, and turn growth.engineer on.',
     ],
   },
   {
     name: 'Claude Code',
     logo: '/marquee/claude-code.svg',
+    guide: 'https://code.claude.com/docs/en/mcp',
     steps: [
-      `In your terminal, run: claude mcp add --transport http growth-engineer ${SERVER_URL}`,
-      'Start Claude Code and run /mcp to see the server connected.',
+      'Open your terminal.',
+      // User scope: every project, not only the folder it was run in.
+      `Run: \`claude mcp add --transport http growth-engineer --scope user ${SERVER_URL}\``,
+      'Run `claude mcp list` to check it was added.',
+      'Start Claude Code and run `/mcp` to see it connected.',
+      'Ask Claude to use the growth-engineer tools.',
     ],
   },
   {
     name: 'ChatGPT',
     logo: '/marquee/openai.svg',
+    guide: 'https://developers.openai.com/plugins/deploy/connect-chatgpt',
     steps: [
-      'Open ChatGPT and go to Settings, then Apps & Connectors.',
-      'Under Advanced settings, turn on Developer mode, then choose Create.',
-      `Name it growth.engineer, paste ${SERVER_URL} and pick No authentication.`,
-      'Enable it in a new chat to use its tools.',
+      'Open ChatGPT and click Plugins in the sidebar.',
+      'Click Add, then choose Create MCP App.',
+      `Name it growth.engineer, paste \`${SERVER_URL}\` and pick No authentication.`,
+      'Accept the warning and click Create.',
+      'Select growth.engineer in a new chat to use its tools.',
     ],
   },
   {
     name: 'Codex',
     logo: '/marquee/codex.svg',
+    guide: 'https://learn.chatgpt.com/docs/extend/mcp?surface=cli',
     steps: [
-      'Open ~/.codex/config.toml.',
-      `Add a [mcp_servers.growth-engineer] table with url = "${SERVER_URL}".`,
-      'Restart Codex and run /mcp to see the server.',
+      'Open your terminal.',
+      `Run: \`codex mcp add growth-engineer --url ${SERVER_URL}\``,
+      'Run `codex mcp list` to check it was added.',
+      'Open or restart Codex.',
+      'Ask Codex to use the growth-engineer tools.',
     ],
   },
   {
     name: 'Cursor',
     logo: '/marquee/cursor.svg',
+    guide: 'https://cursor.com/docs/mcp',
     steps: [
-      'Open Cursor Settings, then MCP, and choose Add new MCP server.',
-      `In mcp.json, add "growth-engineer": { "url": "${SERVER_URL}" } under mcpServers.`,
-      'Save; the tools show in the agent panel.',
+      'Open `~/.cursor/mcp.json`, or create it if it is missing.',
+      `Under \`"mcpServers"\`, add \`"growth-engineer": { "url": "${SERVER_URL}" }\`.`,
+      'Save, then open Customize in the sidebar and check growth-engineer is on.',
+      'Ask the agent to use the growth-engineer tools.',
     ],
   },
   {
     name: 'MCP',
     headline: 'any MCP client',
     logo: '/marquee/mcp.svg',
+    guide:
+      'https://modelcontextprotocol.io/docs/2026-07-28/develop/connect-remote-servers',
     steps: [
       "Open your client's MCP configuration.",
-      `Add a Streamable HTTP server with the URL ${SERVER_URL}.`,
+      `Add a Streamable HTTP server with the URL \`${SERVER_URL}\`.`,
       'No authentication is needed. Reload the client so it picks the server up.',
     ],
   },
@@ -98,13 +117,22 @@ function subscribe(onStoreChange: () => void) {
   return () => listeners.delete(onStoreChange)
 }
 
-export function selectAgent(agent: Agent) {
+function selectAgent(agent: Agent) {
   if (selected.name === agent.name) {
     return
   }
 
   selected = agent
   publish()
+}
+
+/** The next (1) or previous (-1) agent, round the list. */
+export function stepAgent(by: number) {
+  const at = AGENTS.findIndex((one) => one.name === selected.name)
+  const next = AGENTS[(at + by + AGENTS.length) % AGENTS.length]
+  if (next) {
+    selectAgent(next)
+  }
 }
 
 export function useSelectedAgent() {

@@ -67,11 +67,11 @@ through adding to the catalog.
 
 | Client | How to add it |
 | --- | --- |
-| Claude | Settings → Connectors → Add custom connector, then paste the URL. |
-| Claude Code | `claude mcp add --transport http growth-engineer https://www.growth.engineer/mcp` |
-| ChatGPT | Settings → Apps & Connectors → Advanced settings, turn on Developer mode, then Create. Paste the URL and pick No authentication. |
-| Codex | In `~/.codex/config.toml`, add a `[mcp_servers.growth-engineer]` table with `url = "https://www.growth.engineer/mcp"`. |
-| Cursor | In `mcp.json`, add `"growth-engineer": { "url": "https://www.growth.engineer/mcp" }` under `mcpServers`. |
+| Claude | Settings → Connectors → Add → Add custom connector. Name it growth.engineer, paste the URL and click Add. |
+| Claude Code | `claude mcp add --transport http growth-engineer --scope user https://www.growth.engineer/mcp` |
+| ChatGPT | Plugins in the sidebar → Add → Create MCP App. Paste the URL, pick No authentication, accept the warning and click Create. |
+| Codex | `codex mcp add growth-engineer --url https://www.growth.engineer/mcp` |
+| Cursor | In `~/.cursor/mcp.json`, add `"growth-engineer": { "url": "https://www.growth.engineer/mcp" }` under `mcpServers`. |
 
 ### Or fetch the files
 
