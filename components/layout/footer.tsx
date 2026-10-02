@@ -5,9 +5,11 @@ import type { CSSProperties } from 'react'
 import { SITE } from '@/lib/catalog/definitions'
 import { GUIDES, guidePath } from '@/lib/constants/guides'
 import { SECTIONS } from '@/lib/constants/sections'
+import { newsletterEnv } from '@/lib/env'
 import { BrandLockup } from './brand'
 import { BrewLink } from './brew-link'
 import styles from './footer.module.css'
+import { NewsletterForm } from './newsletter-form'
 
 const COLUMNS = [
   {
@@ -91,6 +93,13 @@ export function Footer() {
                 {SITE.tagline}
               </p>
             </div>
+            {/* Only where a Brew key is set: never shown and failing. */}
+            {newsletterEnv() ? (
+              <div className="flex w-full flex-col gap-3">
+                <p className="eyebrow">Subscribe</p>
+                <NewsletterForm />
+              </div>
+            ) : null}
           </div>
 
           <nav

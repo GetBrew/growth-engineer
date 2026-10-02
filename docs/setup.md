@@ -23,6 +23,7 @@ you need one.
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN` | The copy counter's store. Development counts under its own keys. |
 | `GITHUB_TOKEN` | Raises the GitHub API limit for the header's star count. It needs no scopes. |
 | `NOTRA_GEO_TOKEN` | Notra's ingest token for AI-traffic analytics. Leave it unset locally. |
+| `BREW_API_KEY`, `BREW_BRAND_ID`, `BREW_WELCOME_TRIGGER_ID` | The footer's newsletter sign-up, which adds subscribers to Brew. Unset, it is hidden. The brand ID is only for an organization's key; the trigger, when set, starts the Brew automation that sends the welcome email. |
 
 ## 2. Run it
 
@@ -94,6 +95,13 @@ and the folder READMEs have the field reference and templates.
   previews and local runs send nothing. The proxy then reports each page
   view, file and `/llms.txt` fetch to Notra after the response, and Notra
   keeps AI crawlers and visits referred by an AI assistant.
+- **Newsletter.** Set `BREW_API_KEY` (and `BREW_BRAND_ID` for an
+  organization's key) for Production, then redeploy: the footer shows the
+  sign-up only when a key was set at build. Each new address costs a Brew
+  deliverability check (2 credits); the copy counter's store limits a visitor
+  to 5 tries an hour. For a welcome email, publish a Brew automation on a
+  custom trigger with an `email` field and set its ID as
+  `BREW_WELCOME_TRIGGER_ID`; the key needs permission to fire triggers.
 - **Agent feedback.** The MCP server's `submit_feedback` tool posts to the
   Notra feedback URL in `lib/mcp/feedback-tool.ts`. It needs no token. A fork
   should point it at its own inbox.
