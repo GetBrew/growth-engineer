@@ -1,0 +1,54 @@
+/* The sign-up's thank-you, played ONCE and held: the letter settles in, the
+   words rise after it, and the heart in "Thank you" beats twice, softly,
+   like a real one. Only when motion is welcome; otherwise the finished
+   picture. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .mark {
+    animation: settle 0.4s ease-out both;
+  }
+  .words {
+    animation: rise 0.4s ease-out 0.15s both;
+  }
+  .heart {
+    display: inline-block;
+    animation: beat 0.9s ease-in-out 0.6s both;
+  }
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Lub, dub, rest. */
+@keyframes beat {
+  0%,
+  45%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.25);
+  }
+  30% {
+    transform: scale(1.1);
+  }
+}

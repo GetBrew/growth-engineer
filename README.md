@@ -145,7 +145,9 @@ lib/catalog/render-markdown.ts   one renderer, golden-tested
 
 The one runtime store is optional: an Upstash Redis that counts how often each
 workflow is copied, for its "Uses" and the Popular order. Without it, the
-counts are hidden.
+counts are hidden. The footer's newsletter sign-up adds subscribers to Brew
+from a server action, with the Brew key kept on the server; without a key, it
+is hidden.
 
 Visits are measured with Vercel Web Analytics and Speed Insights, and AI
 crawlers and AI-referred visits with Notra. See
@@ -197,6 +199,7 @@ variables:
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN` | The copy counter. Without them, the counts are hidden. |
 | `GITHUB_TOKEN` | The star count in the header. Without it, GitHub allows 60 unauthenticated requests an hour. |
 | `NOTRA_GEO_TOKEN` | AI-traffic analytics: the proxy reports AI crawlers and AI-referred visits to Notra. Without it, nothing is sent. |
+| `BREW_API_KEY`, `BREW_BRAND_ID`, `BREW_WELCOME_TRIGGER_ID` | The footer's newsletter sign-up, sent to Brew, and the trigger whose automation sends the welcome email. Without a key, the sign-up is hidden; without a trigger, no welcome is sent. |
 
 ### Scripts
 
