@@ -6,7 +6,8 @@ import { z } from 'zod'
  * away as a 500. The catalog is built from the repository, so what ships to
  * the browser is `NEXT_PUBLIC_*` only. The server secrets are the copy
  * counter's store (`copyCounterEnv()`), an optional GitHub token
- * (`githubToken()`) and Notra's ingest token (`notraGeoToken()`), each read
+ * (`githubToken()`), Notra's ingest token (`notraGeoToken()`) and the
+ * newsletter's Brew key (`newsletterEnv()`), each read
  * when called — never at import, so no bundle carries them. One more is for
  * maintainers' machines only: the CDN token `pnpm logos:upload` uses
  * (`logoUploadToken()`).
@@ -109,4 +110,38 @@ export function logoUploadToken(): string | undefined {
   return present(z.string().optional()).parse(
     process.env.GROWTH_ENGINEER_BLOB_READ_WRITE_TOKEN
   )
+}
+
+const newsletterSchema = z.object({
+  apiKey: present(z.string().optional()),
+  brandId: present(z.string().optional()),
+  welcomeTriggerId: present(z.string().optional()),
+})
+
+/**
+ * Brew, where the footer's newsletter sign-up adds a contact
+ * (lib/newsletter/subscribe.ts). SERVER ONLY, read when called. A key bound
+ * to one brand needs nothing else; an organization's key names its brand in
+ * `BREW_BRAND_ID`. `BREW_WELCOME_TRIGGER_ID` names the Brew trigger a new
+ * subscriber fires, so its automation sends the welcome email; unset, no
+ * welcome is sent. Unset key, as on a fresh clone, a fork or the test suite,
+ * the sign-up is hidden rather than shown and failing.
+ */
+export function newsletterEnv(): {
+  apiKey: string
+  brandId?: string
+  welcomeTriggerId?: string
+} | null {
+  const { apiKey, brandId, welcomeTriggerId } = newsletterSchema.parse({
+    apiKey: process.env.BREW_API_KEY,
+    brandId: process.env.BREW_BRAND_ID,
+    welcomeTriggerId: process.env.BREW_WELCOME_TRIGGER_ID,
+  })
+  return apiKey
+    ? {
+        apiKey,
+        ...(brandId ? { brandId } : {}),
+        ...(welcomeTriggerId ? { welcomeTriggerId } : {}),
+      }
+    : null
 }

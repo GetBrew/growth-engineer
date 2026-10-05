@@ -36,8 +36,8 @@ Next.js 16 (App Router, Cache Components, Turbopack) · a build-time content
 compiler (`lib/content/`) · Tailwind v4 · shadcn on Base UI · Biome · Vitest
 · pnpm. **The catalog has no backend, no database and no auth provider**;
 the one runtime store is an optional Upstash Redis counting workflow copies
-(`lib/usage/copies.ts`: Uses, Popular). Every route is public; every
-env var is optional (`.env.example`, read only through `lib/env.ts`).
+(`lib/usage/copies.ts`); the newsletter posts to Brew (`lib/newsletter/`).
+Every route is public; every env var is optional (`.env.example`, `lib/env.ts`).
 
 ## Validation — proportional, not ceremonial
 
@@ -140,8 +140,8 @@ on: [`docs/maintainers/ci.md`](docs/maintainers/ci.md).
 - EVERY page and permutation is generated at build. Listings prerender every
   item with no query and, once hydrated (`useIsClient`), narrow themselves
   from the URL (`useSearchParams`; pure search in `lib/catalog/search.ts`).
-  No page reads `searchParams` on the server. The dynamic routes are `/mcp`
-  and the copy counter's POST (`/api/workflows/<name>/copies`). The proxy runs
+  No page reads `searchParams` on the server. The dynamic routes are `/mcp`,
+  the copies POST (`/api/workflows/<name>/copies`), the newsletter's `subscribe`. The proxy runs
   for `.md` files, `Accept: text/markdown` and page views (the Notra report),
   never a prefetch or an asset. A detail page says `export const instant = false`.
 - NOTHING LOADS: no skeletons, no spinners, no fetch after load, no
