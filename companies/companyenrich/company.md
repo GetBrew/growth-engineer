@@ -5,6 +5,7 @@ category: data-provider
 tagline: Company and people data APIs for enrichment, semantic search and lookalike discovery.
 docs: https://docs.companyenrich.com/docs/getting-started
 github: https://github.com/companyenrich
+logo: https://cdn.growth.engineer/icons/companies/companyenrich-c6aaf1d2.png
 api:
   url: https://api.companyenrich.com
   auth: api_key
