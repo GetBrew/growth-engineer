@@ -4,6 +4,7 @@ domain: usebouncer.com
 category: data-provider
 tagline: Verify email addresses one at a time or in lists of up to 100,000 before you send.
 docs: https://docs.usebouncer.com
+logo: https://cdn.growth.engineer/icons/companies/bouncer-95c22c40.png
 mcp:
   url: https://api.usebouncer.com/mcp
   auth: oauth
