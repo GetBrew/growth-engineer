@@ -52,7 +52,7 @@ capability:
     synonyms: [company enrichment, firmographics, company data, headcount, funding]
   enrich-contacts:
     label: Enrich contacts
-    synonyms: [enrich, enrichment, data enrichment, contact data]
+    synonyms: [enrich, enrichment, data enrichment, contact data, linkedin profile, profile data]
   enroll-in-sequence:
     label: Enroll in sequences
     synonyms: [sequence, sequences, cadence, outreach sequence, campaign enrollment, sequencer]
