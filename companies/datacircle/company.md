@@ -29,4 +29,5 @@ Datacircle key. That's the only change. Right now we have 3 live LinkedIn
 profile APIs that we trust: Up2Data, HarvestAPI and Fetchin. Each request goes
 to the provider and gets the profile as it is today.
 
-Free: 10M+ U.S. B2B leads, as a flat file. Download it at datacircle.dev.
+Sign up at datacircle.dev with your work email: a $5 credit, that's 2,105
+LinkedIn profiles at $2.375 per 1,000.
