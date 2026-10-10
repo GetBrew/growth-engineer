@@ -52,7 +52,7 @@ capability:
     synonyms: [company enrichment, firmographics, company data, headcount, funding]
   enrich-contacts:
     label: Enrich contacts
-    synonyms: [enrich, enrichment, data enrichment, contact data]
+    synonyms: [enrich, enrichment, data enrichment, contact data, linkedin profile, profile data]
   enroll-in-sequence:
     label: Enroll in sequences
     synonyms: [sequence, sequences, cadence, outreach sequence, campaign enrollment, sequencer]
@@ -62,9 +62,6 @@ capability:
   find-work-emails:
     label: Find work emails
     synonyms: [email finder, find emails, work email, email lookup]
-  get-linkedin-profiles:
-    label: Get LinkedIn profiles
-    synonyms: [linkedin profile, linkedin data, profile data, profile enrichment]
   host-meetings:
     label: Host meetings
     synonyms: [meetings, video calls, webinars]

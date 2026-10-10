@@ -4,6 +4,7 @@ domain: datacircle.dev
 category: data-provider
 tagline: "A data co-op: B2B data APIs with no markup"
 docs: https://docs.datacircle.dev
+logo: https://cdn.growth.engineer/icons/companies/datacircle-50dc829e.jpg
 mcp:
   url: https://api.datacircle.dev/mcp
   auth: oauth
@@ -16,18 +17,16 @@ api:
   scheme: Token
   keyUrl: https://datacircle.dev/login
   docs: https://docs.datacircle.dev/quickstart
-  notes: Send the provider's own request with an X-Data-Provider header naming it (up2data, harvestapi or fetchin). Every JSON answer adds datacircle_meta, with the call's cost and the balance left; an empty balance answers 402.
+  notes: Send the provider's own request with an X-Data-Provider header naming it (up2data, harvestapi or fetchin). Every JSON answer adds datacircle_meta, with the call's cost and the balance left; a balance that can't cover the call answers 402.
 updated: 2026-10-10
 ---
 
-Datacircle is a data co-op. Query your favorite B2B data APIs through us.
-Same request, same price, no markup. Every morning, you get the flat file of
-your data plus everyone else's.
+Datacircle is a data co-op: it passes requests to B2B data providers' APIs
+at the providers' own prices, with no markup. An agent sends the provider's
+own request to api.datacircle.dev with a Datacircle key and an
+`X-Data-Provider` header, and each request fetches the data live.
 
-You send the provider's own request to api.datacircle.dev, with your
-Datacircle key. That's the only change. Right now we have 3 live LinkedIn
-profile APIs that we trust: Up2Data, HarvestAPI and Fetchin. Each request goes
-to the provider and gets the profile as it is today.
-
-Sign up at datacircle.dev with your work email: a $5 credit, that's 2,105
-LinkedIn profiles at $2.375 per 1,000.
+Three LinkedIn profile APIs are live: Up2Data, HarvestAPI and Fetchin.
+Workspaces that have added $50 in funds also get a flat file every morning of
+their data plus every other member's. A new account signed up with a work
+email starts with a $5 credit.
