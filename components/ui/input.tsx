@@ -1,4 +1,3 @@
-import { Input as InputPrimitive } from '@base-ui/react/input'
 import { cva, type VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
 import { cn } from '@/lib/utils/cn'
@@ -27,6 +26,11 @@ const inputVariants = cva(
   }
 )
 
+/**
+ * A native `<input>`, not Base UI's: its Input is a Field control, and no
+ * input here sits in a Field, so it only added ~23 KB to every page that
+ * loads one (the footer's sign-up box is on all of them).
+ */
 function Input({
   className,
   type,
@@ -35,7 +39,7 @@ function Input({
   ...props
 }: React.ComponentProps<'input'> & VariantProps<typeof inputVariants>) {
   return (
-    <InputPrimitive
+    <input
       type={type}
       data-slot="input"
       className={cn(inputVariants({ variant, controlSize }), className)}
