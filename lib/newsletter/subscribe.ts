@@ -30,10 +30,10 @@ type BrewInit = Omit<RequestInit, 'headers'> & {
  * The footer's newsletter sign-up: a server action, so the Brew key — read
  * from the deployment's environment — never reaches the browser, and the
  * open-source code holds no secret. An address already subscribed is told
- * so, and one Brew suppressed is not added back; otherwise Brew checks the
- * mailbox exists (2 credits) and only an address that passes is added, as a
- * subscribed contact with the form's consent — so a newsletter never bounces
- * off one. A new subscriber then fires the welcome trigger, after the reply.
+ * so, and one Brew suppressed is not added back; otherwise Brew checks
+ * deliverability (2 credits) and only an address that passes is added as a
+ * subscribed contact with the form's consent. Validation reduces invalid
+ * addresses; it cannot guarantee future delivery. A new subscriber then fires the welcome trigger, after the reply.
  * If the check cannot run, nothing is added and the reader is asked to try
  * again: the list's deliverability is worth more than one sign-up.
  * `website` is a honeypot hidden from people: a bot that fills it is told it

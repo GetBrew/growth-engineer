@@ -7,7 +7,7 @@ tags:
   - channel:email
 featured: true
 added: 2026-09-22
-updated: 2026-09-29
+updated: 2026-10-11
 ---
 
 ## Outcome
@@ -25,7 +25,7 @@ updated: 2026-09-29
 ## Steps
 
 1. **Read the asset** with [firecrawl/scrape-url](../companies/firecrawl/tools/scrape-url.md). Fetch `asset_url` as markdown. Keep its section headings and one line on each.
-2. **Pull downloads** with [hubspot/search-crm-records](../companies/hubspot/tools/search-crm-records.md). Search contacts whose `recent_conversion_event_name` contains `download_form` and whose `recent_conversion_date` falls within `follow_up_window`, leaving out anyone with `hs_email_optout` set. Keep name, email, job title, company and industry.
-3. **Write follow-ups** with [brew/generate-email](../companies/brew/tools/generate-email.md). Generate one email per contact that picks the section from step 1 most relevant to their role and industry. Show the drafts to the user. Keep each approved email's `emailVersionId` and subject.
-4. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). Send each approved email to its one contact, with the idempotency key `<emailVersionId>:<email>`.
-5. **Log the send** with [notion/create-page](../companies/notion/tools/create-page.md). Add one row per sent email to `nurture_log` with the contact, the section referenced and the date.
+2. **Pull downloads** with [hubspot/search-crm-records](../companies/hubspot/tools/search-crm-records.md). Search contacts whose `recent_conversion_event_name` contains `download_form` and whose `recent_conversion_date` falls within `follow_up_window`, requiring a recorded marketing opt-in and leaving out anyone with `hs_email_optout` set. Absence of an opt-out alone is not consent. Keep name, email, job title, company and industry.
+3. **Write follow-ups** with [brew/generate-email](../companies/brew/tools/generate-email.md). Generate one email per contact that picks the section from step 1 most relevant to their role and industry. Show the drafts to the user. Keep each approved email's `emailId`, `emailVersionId` and subject.
+4. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). Match each consent-qualified address to an existing subscribed Brew contact. If it is missing, stop for the user to prepare their consented contact list. Send each approved email to that contact, with the idempotency key `<emailVersionId>:<email>`.
+5. **Log the send** with [notion/create-page](../companies/notion/tools/create-page.md). Follow each returned sendId until delivery is reported, then add one row per delivered email to `nurture_log` with the contact, the section referenced and the date.
