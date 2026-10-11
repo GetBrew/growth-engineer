@@ -11,8 +11,8 @@ updated: 2026-10-11
 
 ## Outcome
 
-- One approved trial-offer email, sent to every opted-in user who reached your activation event and to no paying customer.
-- The number of users emailed.
+- One approved trial-offer email, queued for eligible opted-in users who reached your activation event, excluding paying customers.
+- The number of accepted recipients and the send IDs for tracking delivery.
 
 ## Inputs
 

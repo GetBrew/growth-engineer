@@ -13,7 +13,7 @@ updated: 2026-10-11
 ## Outcome
 
 - Every registrant in exactly one list, recorded on their HubSpot contact.
-- Three approved emails sent: the recording to no-shows, your next step to attendees and a booking link to engaged viewers.
+- Three approved emails queued for eligible opted-in contacts: the recording to no-shows, your next step to attendees and a booking link to engaged viewers.
 
 ## Inputs
 
