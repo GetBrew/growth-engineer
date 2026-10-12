@@ -6,13 +6,13 @@ motion: plg
 tags:
   - channel:email
 added: 2026-09-22
-updated: 2026-09-29
+updated: 2026-10-11
 ---
 
 ## Outcome
 
-- One approved trial-offer email, sent to every opted-in user who reached your activation event and to no paying customer.
-- The number of users emailed.
+- One approved trial-offer email, queued for eligible opted-in users who reached your activation event, excluding paying customers.
+- The number of accepted recipients and the send IDs for tracking delivery.
 
 ## Inputs
 
@@ -28,5 +28,5 @@ updated: 2026-09-29
 1. **Find activated users** with [posthog/run-sql-query](../companies/posthog/tools/run-sql-query.md). List people whose `consent_property` is true and who fired `activation_event` at least `min_events` times in the last `lookback_days`. Keep each person's email and event count.
 2. **Find their customers** with [stripe/list-customers](../companies/stripe/tools/list-customers.md). Look up each email, as stored and lowercased. Keep every customer ID it returns; people with no customer stay on the list.
 3. **Skip paying customers** with [stripe/list-subscriptions](../companies/stripe/tools/list-subscriptions.md). Remove anyone whose customer has a subscription on a paid price that is not canceled. Keep the emails that remain.
-4. **Write the email** with [brew/generate-email](../companies/brew/tools/generate-email.md). Generate one email that offers `trial_plan` around what these users already did, linking to `trial_url`. Show it to the user. Keep its `emailVersionId` and subject.
-5. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). After the user approves, send it to the remaining emails, 50 inline recipients per send, each send with its own idempotency key.
+4. **Write the email** with [brew/generate-email](../companies/brew/tools/generate-email.md). Generate one email that offers `trial_plan` around what these users already did, linking to `trial_url`. Show it to the user. Keep its `emailId`, `emailVersionId` and subject.
+5. **Send** with [brew/send-email](../companies/brew/tools/send-email.md). Match the consent-qualified addresses to existing subscribed Brew contacts first; stop for the user to prepare any missing contacts. After the user approves, send it to the remaining emails, 50 inline recipients per send, each send with its own idempotency key.

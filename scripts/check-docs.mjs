@@ -16,6 +16,7 @@ import path from 'node:path'
 import process from 'node:process'
 
 const AGENTS_MD_MAX_LINES = 200
+const AGENTS_MD_MAX_BYTES = 8192
 const ROOT = process.cwd()
 const SKIP_DIRECTORIES = new Set([
   'node_modules',
@@ -74,7 +75,13 @@ for (const file of markdownFiles(ROOT)) {
 
 const agentsPath = path.join(ROOT, 'AGENTS.md')
 if (fs.existsSync(agentsPath)) {
-  const lineCount = fs.readFileSync(agentsPath, 'utf8').split('\n').length
+  const content = fs.readFileSync(agentsPath, 'utf8')
+  const lineCount = content.split('\n').length
+  if (Buffer.byteLength(content) > AGENTS_MD_MAX_BYTES) {
+    failures.push(
+      'AGENTS.md exceeds 8 KiB. Move details into linked documentation.'
+    )
+  }
   if (lineCount > AGENTS_MD_MAX_LINES) {
     failures.push(
       `AGENTS.md is ${lineCount} lines (cap ${AGENTS_MD_MAX_LINES}). Move detail into docs/ and link to it.`
