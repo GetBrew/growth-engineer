@@ -180,10 +180,19 @@ const mcpWay = z
     authRules(value, context)
   })
 
+/**
+ * The install command prints on its own line inside the file's ```sh block,
+ * so it is one line and never the fence that would close that block early.
+ */
+const installCommand = line.refine((value) => !value.startsWith('```'), {
+  message:
+    'must not start with ```: it would close the code block it prints in',
+})
+
 const cliWay = z
   .strictObject({
     ...wayCommon,
-    install: text,
+    install: installCommand,
     binary: z
       .string()
       .regex(/^[a-z0-9][a-z0-9._-]*$/, 'must be the command name, like `gh`'),
@@ -279,7 +288,7 @@ export const toolSchema = z.strictObject({
     )
     .optional(),
   /** The command, starting with the company's CLI binary. */
-  cli: text.optional(),
+  cli: line.optional(),
   /** `METHOD /path`, as the API reference prints it; path parameters in braces. */
   api: z
     .string()
@@ -393,7 +402,7 @@ export const workflowBodySchema = z.strictObject({
 
 const tagEntry = z.strictObject({
   label: line,
-  synonyms: z.array(text).default([]),
+  synonyms: z.array(line).default([]),
 })
 
 /** A namespace: slug → entry. Slugs are checked in build-tags.ts. */

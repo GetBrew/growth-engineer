@@ -95,7 +95,7 @@ below. Each way says how it authenticates:
 | Way | Fields |
 | --- | --- |
 | `mcp` | exactly one of `url` (a remote server) or `command` (a local one, like `npx -y vendor-mcp`: plain words, no quotes) |
-| `cli` | `install` (`brew install gh`) and `binary` (`gh`) |
+| `cli` | `install` (`brew install gh`, one line) and `binary` (`gh`) |
 | `api` | `url` (the base every call's path follows); `header` (a header name, like `X-Api-Key`) and `scheme` (the word before the key, like `Basic` or `Token`) when the key is not sent as `Authorization: Bearer` |
 
 - `auth` is `none`, `oauth` or `api_key`. An API key names the environment
