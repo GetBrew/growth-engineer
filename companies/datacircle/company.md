@@ -9,15 +9,7 @@ mcp:
   url: https://api.datacircle.dev/mcp
   auth: none
   docs: https://datacircle.dev/docs/mcp
-api:
-  url: https://api.datacircle.dev
-  auth: api_key
-  env: DATACIRCLE_API_KEY
-  scheme: Token
-  keyUrl: https://datacircle.dev/login
-  docs: https://docs.datacircle.dev/quickstart
-  notes: Send the provider's own request with an X-Data-Provider header naming it (up2data, harvestapi or fetchin). Every JSON answer adds datacircle_meta, with the call's cost and the balance left; a balance that can't cover the call answers 402.
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 Datacircle lists all the GTM APIs.
