@@ -8,7 +8,7 @@ mcp:
   url: https://api.meetonbridge.com/mcp
   auth: oauth
   docs: https://docs.meetonbridge.com/integrations/bridge-mcp
-  notes: Not available on the Starter plan or a trial. At sign-in the user grants read access, or read and write access for the calls that book, invite, create or send.
+  notes: Needs a paid Bridge plan (Professional or above); not on the free Starter plan or a trial. At sign-in the user grants read access, or read and write access for the calls that book, invite, create or send.
 updated: 2026-10-27
 ---
 
@@ -22,4 +22,4 @@ The hosted MCP server covers the whole meeting lifecycle: free time and
 booking pages, pre-meeting briefs and the meeting Notepad, Bridge video
 meetings and invitations, notes and transcripts, follow-up plans and Bridge
 agents, and search across people, companies and topics. It signs in with
-OAuth and is not available on the Starter plan or a trial.
+OAuth and needs a paid Bridge plan (Professional or above).
