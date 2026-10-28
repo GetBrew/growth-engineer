@@ -4,6 +4,7 @@ domain: heyreagent.com
 category: sales-engagement
 tagline: A hosted MCP server and API that run actions on your own LinkedIn account, one at a time.
 docs: https://heyreagent.com/docs
+logo: https://cdn.growth.engineer/icons/companies/heyreagent-1b6ee215.svg
 mcp:
   url: https://api.heyreagent.com/mcp
   auth: oauth

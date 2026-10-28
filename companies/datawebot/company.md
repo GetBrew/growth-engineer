@@ -2,9 +2,10 @@
 name: datawebot
 domain: datawebot.com
 category: scraper
-tagline: Ecommerce product data for agents — search products across online shops and list every seller's price with a direct link.
+tagline: "Ecommerce product data for agents: search products across online shops and list every seller's price with a direct link."
 docs: https://www.datawebot.com/docs/agents
 github: https://github.com/datawebot
+logo: https://cdn.growth.engineer/icons/companies/datawebot-02dcb6b9.svg
 mcp:
   url: https://mcp.datawebot.com/mcp
   auth: oauth

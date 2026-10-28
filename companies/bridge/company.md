@@ -4,11 +4,12 @@ domain: meetonbridge.com
 category: video
 tagline: AI meeting platform for scheduling, hosting, notes and the memory of every conversation.
 docs: https://docs.meetonbridge.com
+logo: https://cdn.growth.engineer/icons/companies/bridge-2a0e3592.png
 mcp:
   url: https://api.meetonbridge.com/mcp
   auth: oauth
   docs: https://docs.meetonbridge.com/integrations/bridge-mcp
-  notes: Needs a paid Bridge plan (Professional or above); not on the free Starter plan or a trial. At sign-in the user grants read access, or read and write access for the calls that book, invite, create or send.
+  notes: Needs a paid Bridge plan (Professional or above); not on the free Starter plan or a trial. At sign-in the user grants read, or read and write, access. Call get_bridge_context first for the tools the plan and connection allow.
 updated: 2026-10-27
 ---
 
