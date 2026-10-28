@@ -44,6 +44,9 @@ capability:
   collect-responses:
     label: Collect form responses
     synonyms: [forms, surveys, form responses, submissions, lead capture, nps]
+  compare-apis:
+    label: Compare APIs
+    synonyms: [api directory, api pricing, api comparison, gtm apis, api plans]
   design-assets:
     label: Design assets
     synonyms: [design, graphics, creative, mockups]
