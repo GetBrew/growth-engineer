@@ -4,6 +4,7 @@ domain: alphaosint.com
 category: data-provider
 tagline: Structured data from public business records, such as LinkedIn profiles, company pages and job listings, run as Apify Actors over MCP or a REST API.
 docs: https://alphaosint.com/directory/
+logo: https://cdn.growth.engineer/icons/companies/alphaosint-e0aa0810.svg
 mcp:
   url: https://mcp.apify.com/?tools=johnvc/linkedin-profile-api,johnvc/linkedin-company-api,johnvc/linkedin-people-search-api,johnvc/linkedin-company-employees-api,johnvc/crunchbase-company-api,johnvc/google-maps-places-api,johnvc/Google-Jobs-Scraper,johnvc/linkedin-jobs-api
   auth: oauth
