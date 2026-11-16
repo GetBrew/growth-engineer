@@ -22,13 +22,13 @@ api:
   env: GYT_API_KEY
   keyUrl: https://getyoutubetranscript.com/dashboard
   docs: https://getyoutubetranscript.com/docs
-  notes: "Each successful call costs 1 credit; new accounts get 100 free credits, no card. A video with captions turned off returns an empty transcript rather than an error."
+  notes: "Transcripts, searches and channel video pages cost 1 credit each, and failed requests cost nothing. `GET /credits` is free, the cheapest check of a key. New accounts get 100 free credits, no card."
 status: published
-updated: 2026-11-15
+updated: 2026-11-16
 ---
 
 GetYouTubeTranscript returns the transcript of a YouTube video as text or JSON,
 with optional timestamps, in any caption language the video has. It also
-searches YouTube and lists a channel's uploads, playlists and posts, so an
+searches YouTube and lists a channel's uploads and a playlist's videos, so an
 agent can research what creators and competitors say in their videos. It reads
 the captions a video already has; it does not run speech-to-text.
