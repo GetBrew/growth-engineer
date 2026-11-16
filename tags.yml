@@ -65,6 +65,9 @@ capability:
   find-work-emails:
     label: Find work emails
     synonyms: [email finder, find emails, work email, email lookup]
+  get-video-transcripts:
+    label: Get video transcripts
+    synonyms: [transcripts, youtube transcripts, captions, subtitles, video to text]
   host-meetings:
     label: Host meetings
     synonyms: [meetings, video calls, webinars]
@@ -110,6 +113,9 @@ capability:
   search-conversations:
     label: Search conversations
     synonyms: [conversations, support tickets, inbox, messages, chat history]
+  search-videos:
+    label: Search videos
+    synonyms: [youtube search, video search, channel videos, youtube channels]
   search-web:
     label: Search the web
     synonyms: [web search, research, answers, deep research]
