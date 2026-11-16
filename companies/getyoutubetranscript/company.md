@@ -5,6 +5,7 @@ category: data-provider
 tagline: YouTube transcripts, search and channel data for agents, from one API, MCP server or CLI.
 docs: https://getyoutubetranscript.com/docs
 github: https://github.com/tubeagentkit
+logo: https://cdn.growth.engineer/icons/companies/getyoutubetranscript-c2855b3a.png
 mcp:
   url: https://getyoutubetranscript.com/api/mcp
   auth: oauth

@@ -4,6 +4,7 @@ domain: anymailfinder.com
 category: data-provider
 tagline: Find and verify work emails by name and company, LinkedIn URL or role, and find the person behind an email.
 docs: https://anymailfinder.com/email-finder-api/docs
+logo: https://cdn.growth.engineer/icons/companies/anymailfinder-36e76a1c.png
 mcp:
   url: https://api.anymailfinder.com/mcp
   auth: oauth
